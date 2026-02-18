@@ -3,693 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宿題提出管理アプリ</title>
+    <title>かがせんのHAPPYアプリ集</title>
+    
+    <!-- Google Fonts: Mochiy Pop One (可愛い日本語フォント) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind設定（カフェ風カラーに戻しました） -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'pop': ['"Mochiy Pop One"', 'sans-serif'],
+                        'maru': ['"Zen Maru Gothic"', 'sans-serif'],
+                    },
+                    colors: {
+                        'natural-bg': '#FFFEFA',    /* 背景：生成り色 */
+                        'natural-brown': '#5D4037', /* 文字：こげ茶 */
+                        'soft-orange': '#FFCCBC',   /* やさしいサーモンオレンジ */
+                        'soft-green': '#C5E1A5',    /* 抹茶ミルク色 */
+                        'soft-blue': '#B3E5FC',     /* 淡い空色 */
+                        'soft-pink': '#F8BBD0',     /* 淡いピンク */
+                        'soft-purple': '#E1BEE7',   /* 淡い紫 */
+                        'accent-orange': '#FFAB91', /* アクセント */
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
+        /* 背景：方眼紙風のデザインを復活 */
         body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f3f4f6; /* Tailwind bg-gray-100 */
+            background-color: #FFFEFA;
+            background-image: linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, transparent 1px);
+            background-size: 40px 40px;
         }
-        .tab-button.active {
-            border-color: #4f46e5; /* Tailwind indigo-600 */
-            color: #4f46e5;
-            font-weight: 600;
+        
+        /* カードのホバーアニメーション */
+        .app-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .tab-content {
-            display: none;
+        .app-card:hover {
+            transform: translateY(-4px);
         }
-        .tab-content.active {
-            display: block;
+
+        /* Googleサイトの埋め込み用にスクロールバーをきれいにする */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        #qr-reader {
-            width: 100%;
-            max-width: 400px; /* Adjusted for better mobile view */
-            border: 1px solid #d1d5db; /* Tailwind gray-300 */
-            margin: 1rem auto;
-            border-radius: 0.5rem; /* Tailwind rounded-lg */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
         }
-        .qr-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem;
-            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
-            border-radius: 0.5rem;
-            background-color: white;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Tailwind shadow-sm */
+        ::-webkit-scrollbar-thumb {
+            background: #FFCCBC; 
+            border-radius: 4px;
         }
-        .qr-item img, .qr-item canvas { 
-            margin-bottom: 0.5rem;
-            max-width: 100px; 
-            max-height: 100px;
-        }
-        .qr-item p {
-            font-size: 0.875rem; /* Tailwind text-sm */
-            color: #374151; /* Tailwind gray-700 */
-            text-align: center;
-        }
-        /* Table styling */
-        .submission-table th, .submission-table td {
-            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
-            padding: 0.5rem; /* Tailwind p-2 */
-            text-align: center;
-            font-size: 0.75rem; /* Tailwind text-xs */
-        }
-        .submission-table th {
-            background-color: #f9fafb; /* Tailwind gray-50 */
-        }
-        .submission-table td.submission-cell { 
-            cursor: pointer; 
-        }
-        .submission-table td.submitted {
-            background-color: #d1fae5; /* Tailwind green-100 */
-            color: #065f46; /* Tailwind green-800 */
-            font-weight: bold;
-        }
-        .submission-table tr.total-row td { /* Style for the total row */
-            font-weight: bold;
-            background-color: #eef2ff; /* Tailwind indigo-50 */
-        }
-        /* Responsive table container */
-        .table-container {
-            overflow-x: auto;
-            max-width: 100%;
-        }
-        /* Custom modal for messages */
-        .message-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000; 
-        }
-        .message-modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            text-align: center;
-            max-width: 90%;
-        }
-        .message-modal-content p {
-            margin-bottom: 1rem;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFAB91; 
         }
     </style>
 </head>
-<body class="p-2 sm:p-4 md:p-8">
-    <div class="container mx-auto max-w-5xl bg-white shadow-xl rounded-lg p-4 sm:p-6">
-        <header class="mb-6">
-            <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-700">宿題提出管理アプリ</h1>
-        </header>
+<body class="font-maru text-natural-brown min-h-screen flex flex-col">
 
-        <div class="mb-6 border-b border-gray-300">
-            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
-                <button id="tab-status-btn" class="tab-button active whitespace-nowrap px-3 py-2 sm:px-4 sm:py-3 font-medium text-sm rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none">
-                    提出状況
-                </button>
-                <button id="tab-generator-btn" class="tab-button whitespace-nowrap px-3 py-2 sm:px-4 sm:py-3 font-medium text-sm rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none">
-                    QRコード生成
-                </button>
-            </nav>
-        </div>
-
-        <main>
-            <div id="content-status" class="tab-content active space-y-4">
-                <h2 class="text-xl font-semibold text-gray-800">提出状況</h2>
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg shadow">
-                    <div class="flex items-center space-x-2">
-                        <label for="submission-date" class="font-medium text-gray-700">日付:</label>
-                        <input type="date" id="submission-date" class="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <button id="start-scan-btn" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-150">
-                        QR読み取り開始
-                    </button>
-                </div>
-                <div id="qr-reader-section" style="display:none;" class="p-4 border border-gray-200 rounded-lg bg-white shadow">
-                    <div id="qr-reader"></div>
-                    <p id="qr-scan-status" class="mt-2 text-sm text-center text-gray-600">カメラでQRコードをスキャンしてください。</p>
-                    <button id="stop-scan-btn" class="mt-2 w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150" disabled>
-                        読み取り停止
-                    </button>
-                </div>
-                <div class="table-container mt-4 bg-white p-1 rounded-lg shadow">
-                    <table id="submission-table" class="min-w-full w-full submission-table">
-                        <thead>
-                            <tr>
-                                <th class="sticky left-0 bg-gray-50 z-10">出席番号</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            </tbody>
-                    </table>
-                </div>
+    <!-- ヘッダーエリア（カフェ風デザイン） -->
+    <header class="w-full bg-white/80 backdrop-blur-sm py-4 border-b border-orange-100 sticky top-0 z-20">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- ロゴ -->
+            <div class="text-center md:text-left">
+                <h1 class="font-pop text-lg md:text-xl text-natural-brown tracking-widest flex items-center gap-2">
+                    <span class="text-accent-orange">✻</span>
+                    かがせんのHAPPYアプリ集
+                    <span class="text-accent-orange">✻</span>
+                </h1>
+                <p class="text-gray-400 text-xs tracking-wide ml-6">
+                    学校生活をもっと楽しく！
+                </p>
             </div>
 
-            <div id="content-generator" class="tab-content space-y-6">
-                <h2 class="text-xl font-semibold text-gray-800">QRコード生成</h2>
-                <div class="space-y-4 p-4 bg-gray-50 rounded-lg shadow">
-                    <div>
-                        <label for="homework-type-select" class="block text-sm font-medium text-gray-700 mb-1">宿題タイプ:</label>
-                        <select id="homework-type-select" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">出席番号:</label>
-                        <div class="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:space-x-4">
-                            <div class="flex items-center">
-                                <input id="select-all-students" name="student_selection_type" type="radio" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" checked>
-                                <label for="select-all-students" class="ml-2 block text-sm text-gray-900">全部 (1-<span id="max-student-label-all">42</span>)</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="select-range-students" name="student_selection_type" type="radio" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
-                                <label for="select-range-students" class="ml-2 block text-sm text-gray-900">範囲指定:</label>
-                            </div>
-                            <div id="range-inputs" class="flex items-center space-x-2 hidden">
-                                <input type="number" id="student-range-start" min="1" placeholder="開始" class="w-20 p-2 border border-gray-300 rounded-md shadow-sm text-sm">
-                                <span>～</span>
-                                <input type="number" id="student-range-end" min="1" placeholder="終了" class="w-20 p-2 border border-gray-300 rounded-md shadow-sm text-sm">
-                            </div>
-                        </div>
-                    </div>
-                    <button id="generate-qr-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-150">
-                        QRコード生成
-                    </button>
-                    <button id="show-qrs-btn" class="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150" style="display: none;"> 
-                        生成したQRを表示
-                    </button>
+            <!-- 検索バー（丸みのある優しいデザイン） -->
+            <div class="relative w-full md:w-80">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
                 </div>
-                <div id="generated-qrs-container" class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                </div>
+                <input type="text" id="searchInput" 
+                    class="block w-full pl-10 pr-3 py-2 border-2 border-orange-50 rounded-2xl leading-5 bg-white placeholder-gray-300 focus:outline-none focus:border-soft-orange focus:ring-0 transition duration-150 ease-in-out text-sm text-natural-brown"
+                    placeholder="アプリをさがす...">
             </div>
-        </main>
-    </div>
-
-    <div id="message-modal" class="message-modal hidden">
-        <div class="message-modal-content">
-            <p id="message-modal-text"></p>
-            <button id="message-modal-close-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md">閉じる</button>
         </div>
-    </div>
+    </header>
 
+    <!-- メインコンテンツ -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        
+        <!-- カテゴリフィルター -->
+        <div class="flex flex-wrap gap-3 mb-8 justify-center md:justify-start" id="categoryContainer">
+            <button class="filter-btn active px-5 py-2 rounded-xl text-sm font-bold bg-accent-orange text-white shadow-soft transition-all tracking-wider" data-category="all">
+                すべて
+            </button>
+            <button class="filter-btn px-5 py-2 rounded-xl text-sm font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="game">
+                <i data-lucide="gamepad-2" class="inline-block w-4 h-4 mr-1 mb-0.5 opacity-70"></i> ゲーム
+            </button>
+            <button class="filter-btn px-5 py-2 rounded-xl text-sm font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="study">
+                <i data-lucide="graduation-cap" class="inline-block w-4 h-4 mr-1 mb-0.5 opacity-70"></i> 授業用
+            </button>
+            <button class="filter-btn px-5 py-2 rounded-xl text-sm font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="tool">
+                <i data-lucide="timer" class="inline-block w-4 h-4 mr-1 mb-0.5 opacity-70"></i> 便利ツール
+            </button>
+        </div>
+
+        <!-- 表示件数とソート -->
+        <div class="flex justify-between items-center mb-6 px-1">
+            <p class="text-xs text-gray-400"><span id="countDisplay" class="font-bold text-natural-brown text-base">0</span> 件</p>
+            <div class="flex bg-white rounded-lg p-1 border border-orange-100">
+                <button id="sortNew" class="px-3 py-1 text-xs font-bold rounded bg-orange-50 text-natural-brown">新着順</button>
+                <button id="sortPopular" class="px-3 py-1 text-xs font-bold rounded text-gray-400 hover:bg-orange-50 hover:text-natural-brown transition">人気順</button>
+            </div>
+        </div>
+
+        <!-- アプリ一覧（カードグリッド） -->
+        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- ここにJavaScriptでカードが生成されます -->
+        </div>
+
+        <!-- データなし表示 -->
+        <div id="noData" class="hidden text-center py-20">
+            <div class="inline-block p-4 rounded-full bg-white border border-orange-100 mb-4">
+                <i data-lucide="coffee" class="w-8 h-8 text-gray-300"></i>
+            </div>
+            <p class="text-gray-400 text-sm">条件に合うアプリが見つかりませんでした。</p>
+        </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-white/60 border-t border-orange-100 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400 text-xs">
+                &copy; 2026 かがせんのHAPPYアプリ集
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScriptロジック -->
     <script>
-        // --- 定数 ---
-        const HOMEWORK_TYPES = [ // MODIFIED: Added "休み"
-            { name: "漢ド", code: "K1" }, { name: "計ド", code: "K2" },
-            { name: "音読", code: "O" },  { name: "自勉強", code: "J" },
-            { name: "その他1", code: "E1" },{ name: "その他2", code: "E2" },
-            { name: "その他3", code: "E3" },{ name: "忘れ", code: "W1" },
-            { name: "休み", code: "Y1" } // Added "休み"
+        // アプリデータ
+        // colorClass: カードの枠線やアイコン背景に使うクラス（tailwind.configの色）
+        const appsData = [
+            {
+                id: 1,
+                title: "わくわくタイマー",
+                description: "残り時間がひと目でわかる！掃除や給食の時間に使ってね。音もなるよ！",
+                category: "tool",
+                tags: ["便利ツール"],
+                date: "2026/02/18",
+                views: 1240,
+                colorClass: "soft-green", // 緑系
+                icon: "timer",
+                link: "#"
+            },
+            {
+                id: 2,
+                title: "ドキドキあみだくじ",
+                description: "誰が当たるかな？席替えや当番決めにぴったり！アニメーション付き。",
+                category: "tool",
+                tags: ["便利ツール"],
+                date: "2026/02/15",
+                views: 856,
+                colorClass: "soft-orange", // オレンジ系
+                icon: "shuffle",
+                link: "#"
+            },
+            {
+                id: 3,
+                title: "計算マスター",
+                description: "九九やたしざんの特訓だ！タイムアタックに挑戦してランキングを目指そう。",
+                category: "study",
+                tags: ["授業用"],
+                date: "2026/02/10",
+                views: 2103,
+                colorClass: "soft-blue", // 青系
+                icon: "calculator",
+                link: "#"
+            },
+            {
+                id: 4,
+                title: "シカくんとしりとり",
+                description: "AIのシカくんと戦おう！強い言葉を知っているかな？",
+                category: "game",
+                tags: ["ゲーム"],
+                date: "2026/01/25",
+                views: 532,
+                colorClass: "soft-pink", // ピンク系
+                icon: "message-circle",
+                link: "#"
+            },
+            {
+                id: 5,
+                title: "宿題提出ポスト",
+                description: "お家から宿題をパシャリ！先生に提出できるよ。",
+                category: "tool",
+                tags: ["便利ツール"],
+                date: "2026/02/19",
+                views: 12,
+                colorClass: "soft-purple", // 紫系
+                icon: "send",
+                link: "shukudai/index.html" // ここを修正しました！
+            }
         ];
-        const MAX_STUDENTS = 42;
-        const LOCAL_STORAGE_KEY = 'homeworkSubmissionData';
 
-        // --- DOM要素 ---
-        const tabStatusBtn = document.getElementById('tab-status-btn');
-        const tabGeneratorBtn = document.getElementById('tab-generator-btn');
-        const contentStatus = document.getElementById('content-status');
-        const contentGenerator = document.getElementById('content-generator');
-        
-        const submissionDateInput = document.getElementById('submission-date');
-        const startScanBtn = document.getElementById('start-scan-btn');
-        const stopScanBtn = document.getElementById('stop-scan-btn');
-        const qrReaderSection = document.getElementById('qr-reader-section');
-        const qrScanStatus = document.getElementById('qr-scan-status');
-        const submissionTable = document.getElementById('submission-table');
-        const submissionTableHeadRow = submissionTable.querySelector('thead tr');
-        const submissionTableBody = submissionTable.querySelector('tbody');
+        // 状態管理
+        let currentCategory = 'all';
+        let currentSort = 'new';
+        let searchQuery = '';
 
-        const homeworkTypeSelectEl = document.getElementById('homework-type-select');
-        const selectAllStudentsRadio = document.getElementById('select-all-students');
-        const selectRangeStudentsRadio = document.getElementById('select-range-students');
-        const rangeInputsDiv = document.getElementById('range-inputs');
-        const studentRangeStartInput = document.getElementById('student-range-start');
-        const studentRangeEndInput = document.getElementById('student-range-end');
-        const generateQrBtn = document.getElementById('generate-qr-btn');
-        const generatedQrsContainer = document.getElementById('generated-qrs-container');
-        const showQrsBtn = document.getElementById('show-qrs-btn');
-        const maxStudentLabelAll = document.getElementById('max-student-label-all');
+        // DOM要素
+        const appGrid = document.getElementById('appGrid');
+        const countDisplay = document.getElementById('countDisplay');
+        const noData = document.getElementById('noData');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('searchInput');
+        const sortNewBtn = document.getElementById('sortNew');
+        const sortPopularBtn = document.getElementById('sortPopular');
 
+        // 初期描画
+        renderApps();
 
-        const messageModal = document.getElementById('message-modal');
-        const messageModalText = document.getElementById('message-modal-text');
-        const messageModalCloseBtn = document.getElementById('message-modal-close-btn');
+        // イベントリスナー
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => {
+                    b.classList.remove('bg-accent-orange', 'text-white', 'active', 'shadow-soft');
+                    b.classList.add('bg-white', 'text-gray-500', 'border', 'border-orange-100');
+                });
+                btn.classList.remove('bg-white', 'text-gray-500', 'border', 'border-orange-100');
+                btn.classList.add('bg-accent-orange', 'text-white', 'active', 'shadow-soft');
 
-        let html5QrCodeScanner;
-        let submissionData = {};
+                currentCategory = btn.dataset.category;
+                renderApps();
+            });
+        });
 
-        function initializeApp() {
-            tabStatusBtn.addEventListener('click', () => switchTab('status'));
-            tabGeneratorBtn.addEventListener('click', () => switchTab('generator'));
-            
-            maxStudentLabelAll.textContent = MAX_STUDENTS;
-            studentRangeStartInput.max = MAX_STUDENTS;
-            studentRangeEndInput.max = MAX_STUDENTS;
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            renderApps();
+        });
 
-            initializeStatusTab();
-            initializeGeneratorTab();
-            messageModalCloseBtn.addEventListener('click', () => messageModal.classList.add('hidden'));
-            showQrsBtn.addEventListener('click', showGeneratedQRCodesInNewWindow); 
-            switchTab('status');
+        sortNewBtn.addEventListener('click', () => {
+            toggleSortBtn(sortNewBtn, sortPopularBtn);
+            currentSort = 'new';
+            renderApps();
+        });
+
+        sortPopularBtn.addEventListener('click', () => {
+            toggleSortBtn(sortPopularBtn, sortNewBtn);
+            currentSort = 'popular';
+            renderApps();
+        });
+
+        function toggleSortBtn(active, inactive) {
+            active.classList.remove('text-gray-400', 'hover:bg-orange-50');
+            active.classList.add('bg-orange-50', 'text-natural-brown');
+            inactive.classList.remove('bg-orange-50', 'text-natural-brown');
+            inactive.classList.add('text-gray-400', 'hover:bg-orange-50');
         }
 
-        function showMessage(message, isError = false) {
-            messageModalText.textContent = message;
-            messageModalText.className = isError ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold';
-            messageModal.classList.remove('hidden');
-        }
-        
-        function switchTab(tabName) {
-            contentStatus.classList.toggle('active', tabName === 'status');
-            contentGenerator.classList.toggle('active', tabName === 'generator');
-            tabStatusBtn.classList.toggle('active', tabName === 'status');
-            tabGeneratorBtn.classList.toggle('active', tabName === 'generator');
-            if (tabName === 'status') renderSubmissionTable();
-        }
-
-        function loadSubmissionData() {
-            const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-            submissionData = data ? JSON.parse(data) : {};
-        }
-
-        function saveSubmissionData() {
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(submissionData));
-        }
-
-        function initializeStatusTab() {
-            loadSubmissionData();
-            const today = new Date().toISOString().split('T')[0];
-            submissionDateInput.value = today;
-            submissionDateInput.addEventListener('change', renderSubmissionTable);
-
-            while (submissionTableHeadRow.children.length > 1) {
-                submissionTableHeadRow.removeChild(submissionTableHeadRow.lastChild);
-            }
-            submissionTableBody.innerHTML = '';
-
-            HOMEWORK_TYPES.forEach(hwType => {
-                const th = document.createElement('th');
-                th.textContent = hwType.name;
-                submissionTableHeadRow.appendChild(th);
+        function renderApps() {
+            let filtered = appsData.filter(app => {
+                const matchCategory = currentCategory === 'all' || app.category === currentCategory;
+                const matchSearch = app.title.toLowerCase().includes(searchQuery) || 
+                                    app.description.toLowerCase().includes(searchQuery);
+                return matchCategory && matchSearch;
             });
 
-            for (let i = 1; i <= MAX_STUDENTS; i++) {
-                const tr = document.createElement('tr');
-                const tdId = document.createElement('td');
-                tdId.textContent = i;
-                tdId.classList.add('sticky', 'left-0', 'bg-white', 'z-0'); 
-                if (i % 2 === 0) tr.classList.add('bg-gray-50');
-                tr.appendChild(tdId);
-
-                HOMEWORK_TYPES.forEach((hwType, index) => {
-                    const td = document.createElement('td');
-                    const cellId = `s${i}-h${index}`; 
-                    td.id = cellId;
-                    td.classList.add('submission-cell'); 
-                    td.dataset.studentId = i; 
-                    td.dataset.homeworkIndex = index; 
-                    td.addEventListener('click', handleManualCheck); 
-                    tr.appendChild(td);
-                });
-                submissionTableBody.appendChild(tr);
-            }
-            
-            // Add Total Row
-            const totalRow = document.createElement('tr');
-            totalRow.classList.add('total-row'); // Add class for styling
-            const totalTh = document.createElement('td');
-            totalTh.textContent = '合計';
-            totalTh.classList.add('sticky', 'left-0', 'bg-indigo-50', 'z-0'); // Style for the "合計" cell
-            totalRow.appendChild(totalTh);
-
-            HOMEWORK_TYPES.forEach((hwType, index) => {
-                const totalTd = document.createElement('td');
-                totalTd.id = `total-h${index}`;
-                totalRow.appendChild(totalTd);
-            });
-            submissionTableBody.appendChild(totalRow);
-
-            renderSubmissionTable();
-            startScanBtn.addEventListener('click', startQrScanner);
-            stopScanBtn.addEventListener('click', stopQrScanner);
-        }
-
-        function handleManualCheck(event) {
-            const cell = event.currentTarget;
-            const studentId = parseInt(cell.dataset.studentId, 10);
-            const homeworkIndex = parseInt(cell.dataset.homeworkIndex, 10);
-            const selectedDate = submissionDateInput.value;
-
-            if (!selectedDate) {
-                showMessage("日付を選択してください。", true); return;
-            }
-            if (!submissionData[selectedDate]) submissionData[selectedDate] = {};
-            const cellKey = `s${studentId}-h${homeworkIndex}`;
-            submissionData[selectedDate][cellKey] = !submissionData[selectedDate][cellKey]; 
-            saveSubmissionData();
-            renderSubmissionTable(); 
-        }
-
-        function renderSubmissionTable() {
-            const selectedDate = submissionDateInput.value;
-            if (!selectedDate) return; 
-            const dailyData = submissionData[selectedDate] || {};
-
-            // Render student rows
-            for (let i = 1; i <= MAX_STUDENTS; i++) {
-                HOMEWORK_TYPES.forEach((hwType, index) => { 
-                    const cellKey = `s${i}-h${index}`;
-                    const cell = document.getElementById(cellKey);
-                    if (cell) {
-                        cell.textContent = dailyData[cellKey] ? '✔' : '';
-                        cell.classList.toggle('submitted', !!dailyData[cellKey]);
-                    }
-                });
-            }
-
-            // Calculate and render totals
-            HOMEWORK_TYPES.forEach((hwType, index) => {
-                let count = 0;
-                for (let i = 1; i <= MAX_STUDENTS; i++) {
-                    const cellKey = `s${i}-h${index}`;
-                    if (dailyData[cellKey]) {
-                        count++;
-                    }
-                }
-                const totalCell = document.getElementById(`total-h${index}`);
-                if (totalCell) {
-                    totalCell.textContent = count;
+            filtered.sort((a, b) => {
+                if (currentSort === 'new') {
+                    return new Date(b.date) - new Date(a.date);
+                } else {
+                    return b.views - a.views;
                 }
             });
-        }
 
-        function startQrScanner() {
-            qrReaderSection.style.display = 'block';
-            startScanBtn.disabled = true;
-            stopScanBtn.disabled = false; 
-            qrScanStatus.textContent = "カメラを起動しています...";
+            countDisplay.textContent = filtered.length;
+            appGrid.innerHTML = '';
 
-            if (!html5QrCodeScanner) html5QrCodeScanner = new Html5Qrcode("qr-reader");
-            
-            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-                try {
-                    const data = JSON.parse(decodedText);
-                    if (data.h && typeof data.s !== 'undefined') { 
-                        const studentId = parseInt(data.s, 10);
-                        const homeworkCode = data.h; 
-                        const homeworkObj = HOMEWORK_TYPES.find(hw => hw.code === homeworkCode);
-                        if (!homeworkObj) {
-                            qrScanStatus.textContent = "無効な宿題コードです。";
-                            showMessage("無効な宿題コードです。", true); return;
-                        }
-                        const homeworkIndex = HOMEWORK_TYPES.indexOf(homeworkObj);
-                        const homeworkName = homeworkObj.name;
-
-                        if (studentId >= 1 && studentId <= MAX_STUDENTS && homeworkIndex !== -1) {
-                            const selectedDate = submissionDateInput.value;
-                            if (!selectedDate) {
-                                qrScanStatus.textContent = "日付を選択してください。";
-                                showMessage("記録する日付が選択されていません。", true); return;
-                            }
-                            if (!submissionData[selectedDate]) submissionData[selectedDate] = {};
-                            const cellKey = `s${studentId}-h${homeworkIndex}`;
-                            submissionData[selectedDate][cellKey] = true; 
-                            saveSubmissionData();
-                            renderSubmissionTable();
-                            qrScanStatus.textContent = `出席番号${studentId}の「${homeworkName}」を記録しました。`;
-                            showMessage(`出席番号${studentId}の「${homeworkName}」を記録しました。`);
-                        } else {
-                            qrScanStatus.textContent = "無効なQRコードデータです（生徒ID範囲外）。";
-                            showMessage("無効なQRコードデータです。", true);
-                        }
-                    } else {
-                        qrScanStatus.textContent = "QRコードの形式が正しくありません（hまたはs不明）。";
-                        showMessage("QRコードの形式が正しくありません。", true);
-                    }
-                } catch (e) {
-                    qrScanStatus.textContent = "QRコードの解析に失敗しました。";
-                    console.error("QR Parse Error:", e, decodedText);
-                    showMessage("QRコードの解析に失敗しました。", true);
-                }
-            };
-
-            const config = { fps: 10, qrbox: { width: 250, height: 250 }}; 
-            
-            html5QrCodeScanner.start({ facingMode: "user" }, config, qrCodeSuccessCallback)
-                .then(() => { qrScanStatus.textContent = "カメラでQRコードをスキャンしてください。"; })
-                .catch(err => {
-                    console.error("QR Scanner Start Error:", err);
-                    qrScanStatus.textContent = "カメラの起動に失敗しました。";
-                    qrReaderSection.style.display = 'none';
-                    startScanBtn.disabled = false;
-                    stopScanBtn.disabled = true; 
-                    showMessage("カメラの起動に失敗しました。カメラへのアクセス許可を確認してください。", true);
-                });
-        }
-
-        function stopQrScanner() {
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                html5QrCodeScanner.stop()
-                    .then(() => { qrScanStatus.textContent = "スキャンを停止しました。"; })
-                    .catch(err => {
-                        console.error("Error stopping scanner:", err);
-                        qrScanStatus.textContent = "スキャナー停止に失敗しました。";
-                        showMessage("スキャナーの停止に失敗しました。", true);
-                    })
-                    .finally(() => {
-                        qrReaderSection.style.display = 'none';
-                        startScanBtn.disabled = false;
-                        stopScanBtn.disabled = true; 
-                    });
+            if (filtered.length === 0) {
+                appGrid.classList.add('hidden');
+                noData.classList.remove('hidden');
             } else {
-                qrReaderSection.style.display = 'none';
-                startScanBtn.disabled = false;
-                stopScanBtn.disabled = true; 
-            }
-        }
+                appGrid.classList.remove('hidden');
+                noData.classList.add('hidden');
 
-        function initializeGeneratorTab() {
-            homeworkTypeSelectEl.innerHTML = ''; 
-            HOMEWORK_TYPES.forEach(hwType => {
-                const option = document.createElement('option');
-                option.value = hwType.code; 
-                option.textContent = hwType.name; 
-                homeworkTypeSelectEl.appendChild(option);
-            });
+                filtered.forEach(app => {
+                    const card = document.createElement('a');
+                    card.href = app.link;
+                    // カフェ風：枠線を細く、影を柔らかく、角丸を大きく
+                    card.className = `group block bg-white rounded-2xl overflow-hidden border-2 border-${app.colorClass} shadow-soft hover:shadow-card h-full flex flex-col relative app-card`;
+                    
+                    const isNew = new Date(app.date) > new Date('2026-02-01');
+                    const newBadge = isNew ? `<span class="absolute top-2 right-2 bg-accent-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 tracking-widest">NEW</span>` : '';
 
-            selectAllStudentsRadio.addEventListener('change', () => {
-                rangeInputsDiv.classList.toggle('hidden', selectAllStudentsRadio.checked);
-            });
-            selectRangeStudentsRadio.addEventListener('change', () => {
-                rangeInputsDiv.classList.toggle('hidden', !selectRangeStudentsRadio.checked);
-            });
-            generateQrBtn.addEventListener('click', generateQRCodes);
-        }
+                    card.innerHTML = `
+                        ${newBadge}
+                        <!-- アイコンエリア（淡い背景色） -->
+                        <div class="bg-${app.colorClass}/20 p-6 flex justify-center items-center h-32 group-hover:bg-${app.colorClass}/30 transition duration-300">
+                            <i data-lucide="${app.icon}" class="text-natural-brown w-12 h-12 opacity-80 group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        
+                        <!-- コンテンツエリア -->
+                        <div class="p-5 flex-grow flex flex-col items-center text-center">
+                            <h3 class="text-lg text-natural-brown mb-2 border-b-2 border-${app.colorClass}/30 pb-1 px-4 font-pop">${app.title}</h3>
+                            <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">
+                                ${app.description}
+                            </p>
+                            
+                            <!-- データ表示 -->
+                            <div class="w-full flex justify-between items-center text-[10px] text-gray-400 mt-2 mb-3 px-2">
+                                <span>📅 ${app.date}</span>
+                                <span>👀 ${app.views}</span>
+                            </div>
 
-        function generateQRCodes() {
-            if (typeof QRCode === "undefined") {
-                showMessage("QRコード生成ライブラリが読み込めていません。", true);
-                console.error("QRCode library (qrcode.min.js) is not loaded."); return;
-            }
-
-            const selectedHomeworkCode = homeworkTypeSelectEl.value; 
-            if (!selectedHomeworkCode) {
-                showMessage("宿題タイプが選択されていません。", true); return;
-            }
-            const selectedHomeworkObj = HOMEWORK_TYPES.find(hw => hw.code === selectedHomeworkCode);
-            const selectedHomeworkName = selectedHomeworkObj ? selectedHomeworkObj.name : "不明な宿題";
-
-            let studentNumbers = [];
-            if (selectAllStudentsRadio.checked) {
-                for (let i = 1; i <= MAX_STUDENTS; i++) studentNumbers.push(i);
-            } else if (selectRangeStudentsRadio.checked) {
-                const start = parseInt(studentRangeStartInput.value, 10);
-                const end = parseInt(studentRangeEndInput.value, 10);
-                if (isNaN(start) || isNaN(end) || start < 1 || end > MAX_STUDENTS || start > end) {
-                    showMessage(`出席番号の範囲指定が無効です。1から${MAX_STUDENTS}の間で正しく指定してください。`, true); return;
-                }
-                for (let i = start; i <= end; i++) studentNumbers.push(i);
-            } else {
-                 showMessage("出席番号の選択方法を選んでください。", true); return;
-            }
-
-            if (studentNumbers.length === 0) {
-                showMessage("対象の生徒がいません。", true); return;
-            }
-
-            generatedQrsContainer.innerHTML = ''; 
-            let generatedCount = 0;
-            let errorCount = 0;
-
-            studentNumbers.forEach(studentId => {
-                const qrItemDiv = document.createElement('div');
-                qrItemDiv.className = 'qr-item'; 
+                            <!-- ボタン -->
+                            <span class="bg-${app.colorClass} text-white py-1.5 px-6 rounded-lg text-sm shadow-sm group-hover:opacity-80 transition tracking-widest">
+                                OPEN
+                            </span>
+                        </div>
+                    `;
+                    appGrid.appendChild(card);
+                });
                 
-                const qrCodeDiv = document.createElement('div'); 
-                qrItemDiv.appendChild(qrCodeDiv);
-
-                const labelP = document.createElement('p');
-                labelP.innerHTML = `出席番号: ${studentId}<br>宿題: ${selectedHomeworkName}`; 
-                qrItemDiv.appendChild(labelP);
-                generatedQrsContainer.appendChild(qrItemDiv);
-
-                try {
-                    const qrData = JSON.stringify({ h: selectedHomeworkCode, s: studentId }); 
-                    new QRCode(qrCodeDiv, { 
-                        text: qrData, width: 100, height: 100,
-                        colorDark : "#000000", colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.L 
-                    });
-                    generatedCount++;
-                } catch (e) {
-                    console.error(`QR生成エラー(生徒ID:${studentId}, 宿題コード:${selectedHomeworkCode}):`, e);
-                    errorCount++;
-                    qrCodeDiv.innerHTML = `<span class="text-xs text-red-600">生成エラー</span>`; 
-                }
-            });
-
-            if (generatedCount > 0) {
-                showQrsBtn.style.display = 'block';
-            } else {
-                showQrsBtn.style.display = 'none';
-            }
-
-            if (generatedCount > 0 && errorCount === 0) {
-                 showMessage(`${generatedCount}件のQRコードを生成しました。`);
-            } else if (generatedCount > 0 && errorCount > 0) {
-                showMessage(`${generatedCount}件生成, ${errorCount}件エラー。詳細はコンソール確認。`, true);
-            } else if (errorCount > 0) {
-                showMessage(`全QR(${errorCount}件)生成エラー。詳細はコンソール確認。`, true);
-            } else {
-                showMessage("QRコードは生成されませんでした。", true);
+                lucide.createIcons();
             }
         }
-
-        function showGeneratedQRCodesInNewWindow() {
-            const qrItems = generatedQrsContainer.querySelectorAll('.qr-item');
-            if (qrItems.length === 0) {
-                showMessage("表示するQRコードがありません。", true);
-                return;
-            }
-
-            let newWindowContent = `
-                <html>
-                <head>
-                    <title>生成されたQRコード (印刷用)</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
-                    <style>
-                        body { 
-                            font-family: 'Noto Sans JP', sans-serif; 
-                            margin: 10mm; 
-                            background-color: #ffffff; 
-                        }
-                        .qr-print-header { 
-                            text-align: center; 
-                            font-size: 1.2em; 
-                            margin-bottom: 15px; 
-                            color: #000000; 
-                        }
-                        .qr-print-container { 
-                            display: flex; 
-                            flex-wrap: wrap; 
-                            gap: 5mm 2mm; 
-                            justify-content: flex-start; 
-                        }
-                        .qr-print-item {
-                            background-color: white;
-                            display: flex; 
-                            flex-direction: column;
-                            align-items: center; 
-                            justify-content: space-between; 
-                            border: 1px solid #cccccc; 
-                            border-radius: 4px; 
-                            width: calc((100% / 6) - 4mm); 
-                            height: 38mm; 
-                            box-sizing: border-box;
-                            padding: 2mm;
-                            page-break-inside: avoid; 
-                            overflow: hidden; 
-                        }
-                        .qr-print-item img {
-                            max-width: 25mm; 
-                            max-height: 25mm;
-                            margin-bottom: 1mm;
-                        }
-                        .qr-print-item p {
-                            font-size: 7pt; 
-                            text-align: center;
-                            margin: 0;
-                            color: #000000; 
-                            line-height: 1.2;
-                            word-break: break-word; 
-                        }
-                         @media print {
-                            body { margin: 10mm; } 
-                            .qr-print-header { display: none; } 
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1 class="qr-print-header">生成されたQRコード</h1>
-                    <div class="qr-print-container">
-            `;
-
-            qrItems.forEach(item => {
-                const canvas = item.querySelector('canvas');
-                const imgElement = item.querySelector('img'); 
-                const labelP = item.querySelector('p');
-                let qrImageSrc = '';
-
-                if (canvas) {
-                    qrImageSrc = canvas.toDataURL();
-                } else if (imgElement && imgElement.src && !imgElement.src.startsWith('data:image/gif;base64')) { 
-                    qrImageSrc = imgElement.src;
-                }
-
-                const labelHtml = labelP ? labelP.innerHTML : '';
-
-                if (qrImageSrc) {
-                    newWindowContent += `
-                        <div class="qr-print-item">
-                            <img src="${qrImageSrc}" alt="QR Code">
-                            <p>${labelHtml}</p>
-                        </div>
-                    `;
-                } else if (labelP) { 
-                     newWindowContent += `
-                        <div class="qr-print-item">
-                            <p style="color:red;">QR画像エラー</p>
-                            <p>${labelHtml}</p>
-                        </div>
-                    `;
-                }
-            });
-
-            newWindowContent += `
-                    </div>
-                </body>
-                </html>
-            `;
-
-            const newWindow = window.open("", "_blank");
-            if (newWindow) {
-                newWindow.document.open();
-                newWindow.document.write(newWindowContent);
-                newWindow.document.close();
-                newWindow.focus(); 
-            } else {
-                showMessage("新しいウィンドウを開けませんでした。ポップアップブロックの設定を確認してください。", true);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>

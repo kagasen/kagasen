@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ネット版ジャストワン</title>
+    <style>
+        /* --- 全体のスタイル --- */
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f0f8ff; /* 明るい水色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+            /* スマホでダブルタップズームを無効化 */
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 500px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            box-sizing: border-box; /* パディングを含めてサイズ計算 */
+            text-align: center;
+        }
+
+        h1 {
+            color: #4a90e2; /* ポップな青 */
+            margin-top: 0;
+        }
+
+        /* --- ボタンのスタイル --- */
+        .btn {
+            display: block;
+            width: 90%;
+            padding: 20px;
+            margin: 15px auto;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: #ff6347; /* トマト色 */
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 99, 71, 0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 5px rgba(255, 99, 71, 0.5);
+        }
+
+        .btn-secondary {
+            background-color: #ffd700; /* 黄色 */
+            color: #333;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn-secondary:active {
+            box-shadow: 0 2px 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-back {
+            background-color: #999; /* グレー */
+            font-size: 1rem;
+            padding: 15px;
+            width: 120px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(153, 153, 153, 0.3);
+        }
+        
+        .btn-back:active {
+            box-shadow: 0 2px 5px rgba(153, 153, 153, 0.5);
+        }
+
+        /* --- お題画面 --- */
+        #gameScreen {
+            display: none; /* 最初は非表示 */
+        }
+
+        #wordDisplay {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4a90e2;
+            background-color: #f0f8ff;
+            padding: 40px 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            min-height: 1.2em; /* 文字がなくても高さを維持 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- ホワイトボード画面 --- */
+        #whiteboardScreen {
+            display: none; /* 最初は非表示 */
+        }
+
+        #whiteboard {
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            cursor: crosshair;
+            touch-action: none; /* canvas内のタッチ操作を優先 */
+        }
+        
+        #whiteboardButtons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div id="titleScreen">
+            <h1>ネット版ジャストワン</h1>
+            <button class="btn" onclick="showGame()">お題を選ぶ</button>
+            <button class="btn btn-secondary" onclick="showWhiteboard()">ホワイトボード</button>
+        </div>
+
+        <div id="gameScreen">
+            <h1>お題</h1>
+            <div id="wordDisplay">（ここに表示）</div>
+            <button class="btn" onclick="drawWord()">もう一度</button>
+            <button class="btn btn-back" onclick="showTitle()">戻る</button>
+        </div>
+
+        <div id="whiteboardScreen">
+            <h1>ホワイトボード</h1>
+            <canvas id="whiteboard" width="400" height="300"></canvas>
+            
+            <div id="whiteboardButtons">
+                <button class="btn btn-secondary" onclick="clearCanvas()">消す</button>
+                <button class="btn btn-back" onclick="showTitle()">戻る</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- お題リスト (200個) ---
+        const wordList = [
+            "給食", "運動会", "修学旅行", "夏休み", "宿題", "卒業式", "委員会活動", "クラブ活動", "友達", "先生", 
+            "黒板", "体育館", "図書室", "保健室", "ランドセル", "理科室", "実験", "顕微鏡", "リトマス紙", "アルコールランプ", 
+            "磁石", "地球", "月", "太陽", "星座", "地震", "台風", "光合成", "化石", "恐竜", 
+            "歴史", "聖徳太子", "織田信長", "徳川家康", "卑弥呼", "ペリー", "縄文時代", "国会議事堂", "裁判所", "税金", 
+            "選挙", "世界遺産", "富士山", "京都", "沖縄", "カレーライス", "寿司", "ラーメン", "たこ焼き", "ハンバーガー", 
+            "唐揚げ", "ポテトチップス", "アイスクリーム", "コーラ", "メロンソーダ", "スマートフォン", "YouTube", "テレビゲーム", "マインクラフト", "スプラトゥーン", 
+            "ポケモン", "ドラえもん", "マリオ", "鬼ごっこ", "かくれんbo", "ドッジボール", "マンガ", "トランプ", "映画館", "遊園地", 
+            "野球", "サッカー", "バスケットボール", "水泳", "なわとび", "オリンピック", "ワールドカップ", "相撲", "スキー", "体育", 
+            "コンビニ", "水族館", "動物園", "新幹線", "飛行機", "自転車", "パソコン", "テレビ", "冷蔵庫", "電子レンジ", 
+            "医者", "警察官", "消防士", "ユーチューバー", "漫画家", "誕生日", "クリスマス", "お正月", "家族", "信号機", 
+            "遠足", "自由研究", "習字", "リコーダー", "音楽室", "図工室", "放送室", "職員室", "昼休み", "大掃除", 
+            "席替え", "学級会", "テスト", "通知表", "転校生", "算数", "国語", "英語", "家庭科", "彫刻刀", 
+            "コンパス", "分度器", "地図帳", "百人一首", "辞書", "ウサギ", "ハムスター", "金魚", "カブトムシ", "クワガタ", 
+            "蝶", "トンボ", "昆虫採集", "桜", "朝顔", "ヒマワリ", "チューリップ", "雑草", "宇宙人", "ペット", 
+            "お好み焼き", "焼肉", "うどん", "そば", "天ぷら", "卵焼き", "味噌汁", "お弁当", "駄菓子屋", "ガム", 
+            "グミ", "せんべい", "わたあめ", "かき氷", "自動販売機", "アニメ", "クイズ番組", "お笑い芸人", "宝探し", "探偵", 
+            "魔法使い", "ヒーロー", "漫才", "UFOキャッチャー", "ジェットコースター", "お化け屋敷", "ボウリング", "ボードゲーム", "塗り絵", "TikTok", 
+            "公園", "スーパーマーケット", "デパート", "100円ショップ", "郵便局", "交番", "空港", "港", "お城", "博物館", 
+            "キャンプ場", "砂漠", "南極", "北極", "無人島", "鉛筆", "消しゴム", "ノート", "教科書", "絵の具", 
+            "扇風機", "エアコン", "救急車", "パトカー", "船", "ロボット", "忍者", "侍", "宝物", "天気予報"
+        ];
+
+        // --- 画面切り替え ---
+        const titleScreen = document.getElementById('titleScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const whiteboardScreen = document.getElementById('whiteboardScreen');
+        const wordDisplay = document.getElementById('wordDisplay');
+
+        function showTitle() {
+            titleScreen.style.display = 'block';
+            gameScreen.style.display = 'none';
+            whiteboardScreen.style.display = 'none';
+        }
+
+        function showGame() {
+            titleScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            whiteboardScreen.style.display = 'none';
+            drawWord(); // 最初に表示するときにお題を抽選
+        }
+
+        function showWhiteboard() {
+            titleScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            whiteboardScreen.style.display = 'block';
+            resizeCanvas(); // ホワイトボード表示時にサイズ調整
+        }
+
+        // --- お題抽選機能 ---
+        function drawWord() {
+            const randomIndex = Math.floor(Math.random() * wordList.length);
+            wordDisplay.innerText = wordList[randomIndex];
+        }
+
+        // --- ホワイトボード機能 ---
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Canvasのサイズを親要素に合わせる
+        function resizeCanvas() {
+            const containerWidth = canvas.parentElement.clientWidth;
+            canvas.width = containerWidth - 10; // 少し余白
+            canvas.height = window.innerHeight * 0.5; // 画面の高さの半分
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // イベント座標を取得
+            let x, y;
+            if (e.touches) {
+                // タッチイベント
+                const rect = canvas.getBoundingClientRect();
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                // マウスイベント
+                x = e.offsetX;
+                y = e.offsetY;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            // 座標を更新
+            [lastX, lastY] = [x, y];
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            
+            // イベント座標を取得
+            if (e.touches) {
+                const rect = canvas.getBoundingClientRect();
+                [lastX, lastY] = [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
+            } else {
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // PC（マウス）用イベントリスナー
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing); // canvasから外れたら終了
+
+        // スマホ（タッチ）用イベントリスナー
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+        
+        // ウィンドウリサイズ時にもCanvasサイズを調整
+        window.addEventListener('resize', resizeCanvas);
+
+    </script>
+
+</body>
+</html>

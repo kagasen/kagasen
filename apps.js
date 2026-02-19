@@ -25,7 +25,7 @@ const appsData = [
         category: "others",        // 体育は「その他」に分類
         tagName: "体育",
         date: "2026/02/19",
-        colorClass: "subject-blue",
+        colorClass: "subject-purple",
         icon: "users",
         link: "taiikuti-muwake/index.html" // 実際のフォルダ名を追加！
     }

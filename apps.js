@@ -1,34 +1,32 @@
-// ここにアプリの情報を書いていくよ！
 const appsData = [
     {
         title: "宿題提出ポスト",
         description: "先生の仕事を減らす!? QRコードで提出状況が一瞬でわかるよ。",
-        category: "teacher",       // フィルター用 (japanese, math, science, social, others, teacher)
-        tagName: "先生用",          // 画面に表示するタグ名
-        date: "2026/02/19",        // 作った日
-        colorClass: "subject-gray",// 色 (subject-red, blue, green, orange, purple, gray)
-        icon: "send",              // アイコン名 (lucide.dev/icons から選べる)
-        link: "shukudai/index.html" // 飛ばす先のファイル
+        category: "teacher",       // 先生用
+        tagName: "先生用",
+        date: "2026/02/19",
+        colorClass: "subject-gray",
+        icon: "send",
+        link: "shukudai/index.html" // shukudaiフォルダに繋ぐ
     },
     {
         title: "体育作戦ボード",
         description: "体育の試合や練習で使える！マグネットみたいに動かせるよ。",
-        category: "others",
+        category: "others",        // 体育は「その他」に分類
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
         icon: "users",
-        link: "taiiku-board/index.html"
+        link: "taiikusakusennbo-do/index.html" // 実際のフォルダ名に修正！
     },
     {
-        title: "わくわくタイマー",
-        description: "残り時間がひと目でわかる！掃除や給食の時間に使ってね。",
-        category: "teacher",
-        tagName: "便利ツール",
-        date: "2026/02/18",
-        colorClass: "subject-green",
-        icon: "timer",
-        link: "timer/index.html"
+        title: "体育チーム分け",
+        description: "体育の授業などで使える！スムーズにチーム分けができるよ。",
+        category: "others",        // 体育は「その他」に分類
+        tagName: "体育",
+        date: "2026/02/19",
+        colorClass: "subject-blue",
+        icon: "users",
+        link: "taiikuti-muwake/index.html" // 実際のフォルダ名を追加！
     }
-    // 新しいアプリはここに追加してね
 ];

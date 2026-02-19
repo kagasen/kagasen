@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>体育チーム分けツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            color: #495057;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.2);
+        }
+        
+        .student-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        
+        .students-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+        }
+        
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4ecdc4;
+        }
+        
+        .student-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .student-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .student-gender {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .student-gender.female {
+            background: #e91e63;
+        }
+        
+        .student-ability {
+            background: #f39c12;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .student-ability.ability-a {
+            background: #27ae60;
+        }
+        
+        .student-ability.ability-b {
+            background: #f39c12;
+        }
+        
+        .student-ability.ability-c {
+            background: #e74c3c;
+        }
+        
+        .results-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .teams-container {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .team {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 6px solid #4ecdc4;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .team:hover {
+            transform: translateY(-2px);
+        }
+        
+        .team:nth-child(2n) {
+            border-left-color: #ff6b6b;
+        }
+        
+        .team:nth-child(3n) {
+            border-left-color: #feca57;
+        }
+        
+        .team:nth-child(4n) {
+            border-left-color: #48dbfb;
+        }
+        
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f1f2f6;
+        }
+        
+        .team-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .team-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .stat {
+            background: #ecf0f1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .member {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: move;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .member * {
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: none;
+        }
+        
+        .member.male {
+            background: #e3f2fd;
+        }
+        
+        .member.female {
+            background: #fce4ec;
+        }
+        
+        .member .student-gender {
+            display: none;
+        }
+        
+        .member:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .member.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .team.drag-over {
+            background: #e8f5e8;
+            border-color: #28a745;
+        }
+        
+        .print-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .final-teams-grid {
+            display: grid;
+            gap: 15px;
+            max-width: 100%;
+            width: 100%;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        /* 特定のチーム数での最適化 */
+        .final-teams-grid.teams-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .final-teams-grid.teams-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .final-teams-grid.teams-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .final-teams-grid.teams-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        .final-teams-grid.teams-6 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .final-teams-grid.teams-7 {
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        .final-teams-grid.teams-8 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .final-teams-grid.teams-9 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .final-teams-grid.teams-10 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        /* 10チーム以上は自動レイアウト */
+        .final-teams-grid.teams-11,
+        .final-teams-grid.teams-12 {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        
+        .final-team {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 5px solid #4ecdc4;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 180px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 12色のカラーパターン */
+        .final-team:nth-child(12n+1) { border-left-color: #4ecdc4; }
+        .final-team:nth-child(12n+2) { border-left-color: #ff6b6b; }
+        .final-team:nth-child(12n+3) { border-left-color: #feca57; }
+        .final-team:nth-child(12n+4) { border-left-color: #48dbfb; }
+        .final-team:nth-child(12n+5) { border-left-color: #ff9ff3; }
+        .final-team:nth-child(12n+6) { border-left-color: #54a0ff; }
+        .final-team:nth-child(12n+7) { border-left-color: #5f27cd; }
+        .final-team:nth-child(12n+8) { border-left-color: #00d2d3; }
+        .final-team:nth-child(12n+9) { border-left-color: #ff9f43; }
+        .final-team:nth-child(12n+10) { border-left-color: #10ac84; }
+        .final-team:nth-child(12n+11) { border-left-color: #ee5a24; }
+        .final-team:nth-child(12n+12) { border-left-color: #0984e3; }
+        
+        .final-team-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+        
+        .final-members {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+        }
+        
+        .final-member {
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            border: 2px solid #dee2e6;
+            flex-shrink: 0;
+        }
+        
+        .final-member.male {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .final-member.female {
+            background: #fce4ec;
+            border-color: #e91e63;
+        }
+        
+        @media (max-width: 1200px) {
+            .final-teams-grid.teams-5,
+            .final-teams-grid.teams-7,
+            .final-teams-grid.teams-10 {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .final-teams-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .final-teams-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .final-teams-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .final-teams-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .final-team {
+                padding: 12px;
+                min-height: 150px;
+            }
+            
+            .final-team-name {
+                font-size: 1em;
+                padding: 6px;
+            }
+            
+            .final-member {
+                padding: 6px;
+                font-size: 12px;
+            }
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .student-form {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏃‍♂️ 体育チーム分けツール 🏐</h1>
+            <p>公平で楽しいチーム分けを自動で作成します</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">⚙️ 設定</h2>
+                
+                <div class="form-group">
+                    <label for="teamCount">チーム数:</label>
+                    <input type="number" id="teamCount" min="2" max="10" value="2" placeholder="2〜10">
+                </div>
+                
+                <h3 style="margin: 25px 0 15px 0; color: #495057;">👥 生徒登録</h3>
+                
+                <div id="nameInputPhase">
+                    <div class="form-group">
+                        <label for="nameList">生徒名前（改行で区切って入力）:</label>
+                        <textarea id="nameList" rows="8" placeholder="田中太郎&#10;佐藤花子&#10;山田次郎&#10;鈴木美咲&#10;（改行で区切って入力してください）" style="width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="processNames()">名前を登録</button>
+                </div>
+                
+                <div id="detailInputPhase" style="display: none;">
+                    <div id="studentDetailsList"></div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="finalizeStudents()">登録完了</button>
+                        <button class="btn btn-secondary" onclick="backToNameInput()">名前入力に戻る</button>
+                    </div>
+                </div>
+                
+                <div class="students-list" id="studentsList">
+                    <p style="text-align: center; color: #6c757d;">まだ生徒が登録されていません</p>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="createTeams()" id="createTeamsBtn" disabled>チーム分け実行</button>
+                </div>
+            </div>
+            
+            <div class="results-section">
+                <h2 class="section-title">🏆 チーム分け結果</h2>
+                <div id="teamsContainer">
+                    <p style="text-align: center; color: #6c757d; margin-top: 50px;">
+                        まず生徒を登録してから<br>「チーム分け実行」ボタンを押してください
+                    </p>
+                </div>
+                <div class="print-section" id="printSection" style="display: none;">
+                    <button class="btn btn-primary" onclick="finalizeTeams()">✅ 決定</button>
+                    <button class="btn btn-secondary" onclick="showTeamResults()" id="showResultsBtn" style="display: none;">📊 結果を見る</button>
+                </div>
+                
+                <div id="finalResults" style="display: none;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="backToTeamEdit()">⬅️ チーム分けに戻る</button>
+                    </div>
+                    <h2 class="section-title">📋 最終チーム分け結果</h2>
+                    <div id="finalTeamsContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let tempNames = [];
+
+        function processNames() {
+            const nameListText = document.getElementById('nameList').value.trim();
+            if (!nameListText) {
+                alert('生徒の名前を入力してください。');
+                return;
+            }
+
+            tempNames = nameListText.split('\n')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+
+            if (tempNames.length === 0) {
+                alert('有効な名前が入力されていません。');
+                return;
+            }
+
+            // 重複チェック
+            const duplicates = tempNames.filter((name, index) => tempNames.indexOf(name) !== index);
+            if (duplicates.length > 0) {
+                alert(`重複する名前があります: ${duplicates.join(', ')}`);
+                return;
+            }
+
+            showDetailInputPhase();
+        }
+
+        function showDetailInputPhase() {
+            document.getElementById('nameInputPhase').style.display = 'none';
+            document.getElementById('detailInputPhase').style.display = 'block';
+
+            const container = document.getElementById('studentDetailsList');
+            container.innerHTML = tempNames.map((name, index) => `
+                <div class="detail-input-item">
+                    <span class="student-name">${name}</span>
+                    <select id="gender_${index}">
+                        <option value="男">男子</option>
+                        <option value="女">女子</option>
+                    </select>
+                    <select id="ability_${index}">
+                        <option value="A">A (上級)</option>
+                        <option value="B">B (中級)</option>
+                        <option value="C">C (初級)</option>
+                    </select>
+                </div>
+            `).join('');
+        }
+
+        function finalizeStudents() {
+            students = tempNames.map((name, index) => ({
+                name: name,
+                gender: document.getElementById(`gender_${index}`).value,
+                ability: document.getElementById(`ability_${index}`).value
+            }));
+
+            updateStudentsList();
+            document.getElementById('createTeamsBtn').disabled = false;
+            
+            // 詳細入力フェーズを隠して名前入力フェーズを表示
+            document.getElementById('detailInputPhase').style.display = 'none';
+            document.getElementById('nameInputPhase').style.display = 'block';
+            
+            alert(`${students.length}名の生徒が登録されました！`);
+        }
+
+        function backToNameInput() {
+            document.getElementById('detailInputPhase').style.display = 'none';
+            document.getElementById('nameInputPhase').style.display = 'block';
+        }
+
+        function updateStudentsList() {
+            const container = document.getElementById('studentsList');
+            
+            if (students.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d;">まだ生徒が登録されていません</p>';
+                return;
+            }
+
+            container.innerHTML = students.map((student, index) => `
+                <div class="student-item ${student.gender === '男' ? 'male' : 'female'}">
+                    <div class="student-info">
+                        <span class="student-name">${student.name}</span>
+                        <span class="student-gender">${student.gender}</span>
+                        <span class="student-ability ability-${student.ability.toLowerCase()}">${student.ability}</span>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeStudent(${index})">削除</button>
+                </div>
+            `).join('');
+        }
+
+        function removeStudent(index) {
+            students.splice(index, 1);
+            updateStudentsList();
+            if (students.length === 0) {
+                document.getElementById('createTeamsBtn').disabled = true;
+            }
+        }
+
+        function createTeams() {
+            const teamCount = parseInt(document.getElementById('teamCount').value);
+            
+            if (students.length === 0) {
+                alert('まず生徒を登録してください。');
+                return;
+            }
+
+            if (teamCount < 2 || teamCount > students.length) {
+                alert('チーム数は2以上、生徒数以下にしてください。');
+                return;
+            }
+
+            // 能力レベル別の人数チェック
+            const abilityCount = {
+                A: students.filter(s => s.ability === 'A').length,
+                B: students.filter(s => s.ability === 'B').length,
+                C: students.filter(s => s.ability === 'C').length
+            };
+
+            // Aレベルの生徒が全チームに1人以上入れるかチェック
+            if (abilityCount.A < teamCount) {
+                alert(`Aレベルの生徒が${abilityCount.A}人しかいないため、全チーム（${teamCount}チーム）にAレベルを1人ずつ配置できません。\nAレベルの生徒を増やすか、チーム数を${abilityCount.A}以下にしてください。`);
+                return;
+            }
+
+            // 基本人数を計算
+            const baseMembers = Math.floor(students.length / teamCount);
+            const extraMembers = students.length % teamCount;
+
+            // チームの初期化（各チームの目標人数を設定）
+            const teams = Array.from({ length: teamCount }, (_, i) => ({
+                name: `チーム${i + 1}`,
+                members: [],
+                targetSize: baseMembers + (i < extraMembers ? 1 : 0),
+                stats: { male: 0, female: 0, A: 0, B: 0, C: 0, total: 0 }
+            }));
+
+            // 生徒を能力と性別でグループ分け
+            const abilityGroups = {
+                A: students.filter(s => s.ability === 'A').sort(() => Math.random() - 0.5),
+                B: students.filter(s => s.ability === 'B').sort(() => Math.random() - 0.5),
+                C: students.filter(s => s.ability === 'C').sort(() => Math.random() - 0.5)
+            };
+
+            // 配置関数
+            function addStudentToTeam(student, teamIndex) {
+                teams[teamIndex].members.push(student);
+                teams[teamIndex].stats[student.gender === '男' ? 'male' : 'female']++;
+                teams[teamIndex].stats[student.ability]++;
+                teams[teamIndex].stats.total++;
+            }
+
+            // 1. まず各チームにAレベルを1人ずつ配置
+            for (let i = 0; i < teamCount; i++) {
+                if (abilityGroups.A.length > 0) {
+                    addStudentToTeam(abilityGroups.A.shift(), i);
+                }
+            }
+
+            // 2. 残りのAレベルを均等配置
+            let teamIndex = 0;
+            while (abilityGroups.A.length > 0) {
+                // 人数に余裕があり、Aが最も少ないチームを選択
+                teams.sort((a, b) => {
+                    if (a.stats.A !== b.stats.A) return a.stats.A - b.stats.A; // A少ない順
+                    if ((a.targetSize - a.members.length) !== (b.targetSize - b.members.length)) {
+                        return (b.targetSize - b.members.length) - (a.targetSize - a.members.length); // 余裕多い順
+                    }
+                    return a.members.length - b.members.length; // 人数少ない順
+                });
+                
+                const targetTeam = teams.find(team => team.members.length < team.targetSize);
+                if (targetTeam) {
+                    const teamIdx = teams.indexOf(targetTeam);
+                    addStudentToTeam(abilityGroups.A.shift(), teamIdx);
+                } else {
+                    break;
+                }
+            }
+
+            // 3. BレベルとCレベルを交互に均等配置
+            const remainingStudents = [...abilityGroups.B, ...abilityGroups.C].sort(() => Math.random() - 0.5);
+            
+            while (remainingStudents.length > 0) {
+                // 各チームの現在の状況を評価して最適なチームを選択
+                teams.sort((a, b) => {
+                    // まず人数の余裕があるかチェック
+                    const aSpace = a.targetSize - a.members.length;
+                    const bSpace = b.targetSize - b.members.length;
+                    if (aSpace !== bSpace) return bSpace - aSpace; // 余裕多い順
+
+                    // 次に能力バランスをチェック（BとCの偏りを評価）
+                    const aDiff = Math.abs(a.stats.B - a.stats.C);
+                    const bDiff = Math.abs(b.stats.B - b.stats.C);
+                    if (aDiff !== bDiff) return aDiff - bDiff; // バランス良い順
+
+                    // 最後に総人数で調整
+                    return a.members.length - b.members.length; // 人数少ない順
+                });
+
+                const targetTeam = teams.find(team => team.members.length < team.targetSize);
+                if (targetTeam) {
+                    const teamIdx = teams.indexOf(targetTeam);
+                    const student = remainingStudents.shift();
+                    addStudentToTeam(student, teamIdx);
+                } else {
+                    break;
+                }
+            }
+
+            displayTeams(teams);
+        }
+
+        function displayTeams(teams) {
+            // チームを番号順にソート
+            teams.sort((a, b) => {
+                const aNum = parseInt(a.name.replace('チーム', ''));
+                const bNum = parseInt(b.name.replace('チーム', ''));
+                return aNum - bNum;
+            });
+
+            const container = document.getElementById('teamsContainer');
+            
+            container.innerHTML = teams.map((team, teamIndex) => `
+                <div class="team" data-team-index="${teamIndex}" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                    <div class="team-header">
+                        <h3 class="team-name">${team.name}</h3>
+                        <div class="team-stats">
+                            <div class="stat">👥 ${team.stats.total}名</div>
+                            <div class="stat">👨 ${team.stats.male}名</div>
+                            <div class="stat">👩 ${team.stats.female}名</div>
+                            <div class="stat">A:${team.stats.A} B:${team.stats.B} C:${team.stats.C}</div>
+                        </div>
+                    </div>
+                    <div class="team-members">
+                        ${team.members.map((member, memberIndex) => `
+                            <div class="member ${member.gender === '男' ? 'male' : 'female'}" draggable="true" ondragstart="drag(event)" data-team-index="${teamIndex}" data-member-index="${memberIndex}">
+                                <span class="student-name">${member.name}</span>
+                                <span class="student-gender">${member.gender}</span>
+                                <span class="student-ability ability-${member.ability.toLowerCase()}">${member.ability}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            // 印刷ボタンを表示
+            document.getElementById('printSection').style.display = 'block';
+            document.getElementById('showResultsBtn').style.display = 'none';
+        }
+
+        // ドラッグ&ドロップ関数
+        let draggedElement = null;
+        let draggedData = null;
+        let isDragging = false;
+
+        function drag(event) {
+            if (!event.dataTransfer) return;
+            
+            draggedElement = event.target;
+            const teamIndex = parseInt(event.target.getAttribute('data-team-index'));
+            const memberIndex = parseInt(event.target.getAttribute('data-member-index'));
+            draggedData = { teamIndex, memberIndex };
+            isDragging = true;
+            
+            event.target.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', 'member');
+            
+            // スクロール無効化
+            document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+                if (draggedElement) {
+                    draggedElement.style.opacity = '0.5';
+                }
+            }, 0);
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            if (isDragging) {
+                event.currentTarget.classList.add('drag-over');
+                event.dataTransfer.dropEffect = 'move';
+            }
+        }
+
+        function dragLeave(event) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            
+            // スクロール再有効化
+            document.body.style.overflow = 'auto';
+            
+            if (!draggedData || !draggedElement || !isDragging) {
+                resetDragState();
+                return;
+            }
+
+            const targetTeamIndex = parseInt(event.currentTarget.getAttribute('data-team-index'));
+            const sourceTeamIndex = draggedData.teamIndex;
+            const sourceMemberIndex = draggedData.memberIndex;
+
+            if (targetTeamIndex === sourceTeamIndex) {
+                resetDragState();
+                return;
+            }
+
+            // 現在のチーム状態を取得
+            const currentTeams = getCurrentTeamsState();
+            
+            // メンバーを移動
+            const movedMember = currentTeams[sourceTeamIndex].members.splice(sourceMemberIndex, 1)[0];
+            currentTeams[targetTeamIndex].members.push(movedMember);
+
+            // 統計を更新
+            updateTeamStats(currentTeams);
+            
+            // 表示を更新
+            displayTeams(currentTeams);
+            
+            resetDragState();
+        }
+
+        function resetDragState() {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement.style.opacity = '';
+            }
+            draggedElement = null;
+            draggedData = null;
+            isDragging = false;
+            document.body.style.overflow = 'auto';
+            
+            // すべてのドラッグオーバー状態をクリア
+            document.querySelectorAll('.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        }
+
+        // ドラッグ終了時の処理
+        document.addEventListener('dragend', resetDragState);
+        
+        // エスケープキーでドラッグをキャンセル
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && isDragging) {
+                resetDragState();
+            }
+        });
+
+        function getCurrentTeamsState() {
+            const teams = [];
+            const teamElements = document.querySelectorAll('.team');
+            
+            teamElements.forEach((teamEl, teamIndex) => {
+                const teamName = teamEl.querySelector('.team-name').textContent;
+                const members = [];
+                const memberElements = teamEl.querySelectorAll('.member');
+                
+                memberElements.forEach(memberEl => {
+                    const name = memberEl.querySelector('.student-name').textContent;
+                    const gender = memberEl.querySelector('.student-gender').textContent;
+                    const ability = memberEl.querySelector('.student-ability').textContent;
+                    members.push({ name, gender, ability });
+                });
+                
+                teams.push({
+                    name: teamName,
+                    members: members,
+                    stats: { male: 0, female: 0, A: 0, B: 0, C: 0, total: 0 }
+                });
+            });
+            
+            return teams;
+        }
+
+        function updateTeamStats(teams) {
+            teams.forEach(team => {
+                team.stats = { male: 0, female: 0, A: 0, B: 0, C: 0, total: 0 };
+                team.members.forEach(member => {
+                    team.stats[member.gender === '男' ? 'male' : 'female']++;
+                    team.stats[member.ability]++;
+                    team.stats.total++;
+                });
+            });
+        }
+
+        function printTeams() {
+            const currentTeams = getCurrentTeamsState();
+            
+            // 新しいウィンドウを開いて印刷用ページを作成
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            
+            const printContent = `
+                <!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>チーム分け結果</title>
+                    <style>
+                        body {
+                            font-family: 'Arial', sans-serif;
+                            margin: 20px;
+                            background: white;
+                        }
+                        .print-header {
+                            text-align: center;
+                            margin-bottom: 40px;
+                            border-bottom: 3px solid #333;
+                            padding-bottom: 20px;
+                        }
+                        .print-header h1 {
+                            font-size: 32px;
+                            margin: 0;
+                            color: #333;
+                        }
+                        .print-team {
+                            margin-bottom: 40px;
+                            page-break-inside: avoid;
+                        }
+                        .print-team-name {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #333;
+                            margin-bottom: 20px;
+                            padding: 15px;
+                            background: #f8f9fa;
+                            border-left: 5px solid #007bff;
+                            border-radius: 5px;
+                        }
+                        .print-members {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 15px;
+                        }
+                        .print-member {
+                            padding: 15px;
+                            border: 2px solid #dee2e6;
+                            border-radius: 8px;
+                            text-align: center;
+                            font-size: 18px;
+                            font-weight: bold;
+                            background: white;
+                        }
+                        .controls {
+                            text-align: center;
+                            margin: 30px 0;
+                            padding: 20px;
+                            border-top: 2px solid #eee;
+                        }
+                        .btn {
+                            padding: 12px 24px;
+                            margin: 0 10px;
+                            border: none;
+                            border-radius: 8px;
+                            font-size: 16px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            background: #007bff;
+                            color: white;
+                        }
+                        .btn:hover {
+                            background: #0056b3;
+                        }
+                        @media print {
+                            .controls {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-header">
+                        <h1>🏃‍♂️ チーム分け結果 ⚽</h1>
+                        <p>日付: ${new Date().toLocaleDateString('ja-JP')}</p>
+                    </div>
+                    
+                    ${currentTeams.map(team => `
+                        <div class="print-team">
+                            <div class="print-team-name">${team.name} (${team.members.length}名)</div>
+                            <div class="print-members">
+                                ${team.members.map(member => `
+                                    <div class="print-member">${member.name}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                    
+                    <div class="controls">
+                        <button class="btn" onclick="window.print()">🖨️ 印刷</button>
+                        <button class="btn" onclick="window.close()">❌ 閉じる</button>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+        }
+
+        function finalizeTeams() {
+            const currentTeams = getCurrentTeamsState();
+            const teamCount = currentTeams.length;
+            
+            // 最終結果を表示
+            const finalContainer = document.getElementById('finalTeamsContainer');
+            finalContainer.innerHTML = `
+                <div class="final-teams-grid teams-${teamCount}">
+                    ${currentTeams.map(team => `
+                        <div class="final-team">
+                            <div class="final-team-name">${team.name} (${team.members.length}名)</div>
+                            <div class="final-members">
+                                ${team.members.map(member => `
+                                    <div class="final-member ${member.gender === '男' ? 'male' : 'female'}">
+                                        ${member.name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // ボタンの表示切り替え
+            document.getElementById('printSection').style.display = 'none';
+            document.getElementById('finalResults').style.display = 'block';
+            
+            // ページの最終結果までスクロール
+            document.getElementById('finalResults').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function backToTeamEdit() {
+            // 最終結果を非表示
+            document.getElementById('finalResults').style.display = 'none';
+            // 決定ボタンセクションを表示
+            document.getElementById('printSection').style.display = 'block';
+            // 結果ボタンを表示
+            document.getElementById('showResultsBtn').style.display = 'inline-block';
+            
+            // チーム分け結果までスクロール
+            document.getElementById('teamsContainer').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function showTeamResults() {
+            // 最終結果を表示
+            document.getElementById('finalResults').style.display = 'block';
+            // 最終結果までスクロール
+            document.getElementById('finalResults').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        // ページ読み込み時とページ離脱時にデータをクリア
+        function clearAllData() {
+            students = [];
+            tempNames = [];
+            if (document.getElementById('nameList')) {
+                document.getElementById('nameList').value = '';
+            }
+            if (document.getElementById('nameInputPhase')) {
+                document.getElementById('nameInputPhase').style.display = 'block';
+            }
+            if (document.getElementById('detailInputPhase')) {
+                document.getElementById('detailInputPhase').style.display = 'none';
+            }
+            if (document.getElementById('createTeamsBtn')) {
+                document.getElementById('createTeamsBtn').disabled = true;
+            }
+            if (document.getElementById('studentsList')) {
+                document.getElementById('studentsList').innerHTML = '<p style="text-align: center; color: #6c757d;">まだ生徒が登録されていません</p>';
+            }
+            if (document.getElementById('teamsContainer')) {
+                document.getElementById('teamsContainer').innerHTML = `
+                    <p style="text-align: center; color: #6c757d; margin-top: 50px;">
+                        まず生徒を登録してから<br>「チーム分け実行」ボタンを押してください
+                    </p>
+                `;
+            }
+            if (document.getElementById('printSection')) {
+                document.getElementById('printSection').style.display = 'none';
+            }
+            if (document.getElementById('finalResults')) {
+                document.getElementById('finalResults').style.display = 'none';
+            }
+        }
+
+        // ページ読み込み時にデータクリア
+        window.addEventListener('load', clearAllData);
+        
+        // ページ離脱前にデータクリア
+        window.addEventListener('beforeunload', clearAllData);
+        
+        // ページが非表示になった時にデータクリア
+        window.addEventListener('pagehide', clearAllData);
+
+        function clearAll() {
+            if (confirm('全ての登録データを削除しますか？')) {
+                students = [];
+                tempNames = [];
+                document.getElementById('nameList').value = '';
+                document.getElementById('nameInputPhase').style.display = 'block';
+                document.getElementById('detailInputPhase').style.display = 'none';
+                document.getElementById('createTeamsBtn').disabled = true;
+                updateStudentsList();
+                document.getElementById('teamsContainer').innerHTML = `
+                    <p style="text-align: center; color: #6c757d; margin-top: 50px;">
+                        まず生徒を登録してから<br>「チーム分け実行」ボタンを押してください
+                    </p>
+                `;
+                document.getElementById('printSection').style.display = 'none';
+                document.getElementById('finalResults').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

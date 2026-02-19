@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おかわりくじ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #f0f9ff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        
+        .ticket {
+            transition: all 0.3s ease;
+        }
+        
+        .ticket:hover:not(.disabled) {
+            transform: translateY(-5px);
+        }
+        
+        .ticket.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: fall 3s ease-in infinite;
+            z-index: 60;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(500px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .page {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            width: 100%;
+        }
+        
+        .hidden-page {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            position: absolute;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .visible-page {
+            opacity: 1;
+            transform: translateY(0);
+            position: relative;
+            height: auto;
+        }
+        
+        .food-emoji {
+            font-size: 3rem;
+            line-height: 1.2;
+        }
+        
+        .result-emoji {
+            font-size: 4rem;
+            line-height: 1.2;
+        }
+        
+        .winner-star {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 2rem;
+            color: gold;
+            filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));
+            animation: pulse 1.5s infinite;
+            z-index: 10;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .message-box {
+            border-radius: 20px;
+            background: linear-gradient(145deg, #e6f5ff, #d1e6ff);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        /* カスタムスクロールバー */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 設定ページ -->
+    <div id="setupPage" class="page visible-page w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <h1 class="text-3xl font-extrabold text-center text-blue-600 mb-2">🍚 おかわりくじ 🍚</h1>
+            <p class="text-center text-gray-500 mb-8 text-sm">誰がおかわりするか決めよう！</p>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="totalPeople">
+                    参加人数
+                </label>
+                <input id="totalPeople" type="number" min="1" value="5" 
+                    class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+            
+            <div class="mb-8">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="winnerCount">
+                    当たりの数
+                </label>
+                <input id="winnerCount" type="number" min="1" value="2" 
+                    class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+            
+            <button id="generateBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-xl shadow-md transform hover:-translate-y-1 transition duration-200 flex items-center justify-center">
+                <span class="mr-2">🎲</span> くじを作成する
+            </button>
+        </div>
+    </div>
+    
+    <!-- くじ引きページ -->
+    <div id="ticketsPage" class="page hidden-page w-full max-w-4xl flex flex-col items-center">
+        <div class="w-full bg-white rounded-xl shadow-lg p-6 mb-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-purple-500"></div>
+            <h1 class="text-3xl font-bold text-center text-blue-600 mb-2">どれにする？</h1>
+            <p class="text-gray-600">好きな食べ物を選んでタップしてね</p>
+            <div class="mt-4 inline-block bg-red-100 text-red-600 px-4 py-1 rounded-full text-lg font-bold border border-red-200">
+                <span id="remainingWinners"></span>
+            </div>
+        </div>
+        
+        <div id="ticketsContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 justify-items-center w-full">
+            <!-- くじはここに生成されます -->
+        </div>
+        
+        <div class="mt-10 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 w-full max-w-md">
+            <button id="showResultsBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl shadow-md transform hover:-translate-y-1 transition duration-200 flex-1">
+                結果一覧
+            </button>
+            <button id="resetBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-xl shadow-md transform hover:-translate-y-1 transition duration-200 flex-1">
+                最初に戻る
+            </button>
+        </div>
+    </div>
+    
+    <!-- 結果モーダル (個別のくじ結果) -->
+    <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center relative shadow-2xl transform transition-all scale-100 mx-4">
+            <button id="closeModal" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <div id="resultContent" class="py-6 flex flex-col items-center"></div>
+            <button id="okButton" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-200">
+                OK
+            </button>
+        </div>
+    </div>
+    
+    <!-- 最終結果モーダル (一覧) -->
+    <div id="finalResultModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full relative shadow-2xl mx-4 flex flex-col max-h-[90vh]">
+            <button id="closeFinalModal" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold text-center text-blue-600 mb-6 flex items-center justify-center">
+                <span class="mr-2">🏆</span> 当たりくじの結果
+            </h2>
+            
+            <div id="finalResultContent" class="py-2 overflow-y-auto flex-grow custom-scrollbar"></div>
+            
+            <div class="message-box mt-6 p-4 text-center bg-blue-50 border border-blue-200 rounded-xl">
+                <p class="text-lg font-bold text-blue-800">おめでとう！</p>
+                <p class="text-sm text-blue-600 mt-1">はずれた人も次は当たるかも…？</p>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button id="okFinalButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-200">
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const setupPage = document.getElementById('setupPage');
+        const ticketsPage = document.getElementById('ticketsPage');
+        const totalPeopleInput = document.getElementById('totalPeople');
+        const winnerCountInput = document.getElementById('winnerCount');
+        const generateBtn = document.getElementById('generateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const showResultsBtn = document.getElementById('showResultsBtn');
+        const ticketsContainer = document.getElementById('ticketsContainer');
+        const resultModal = document.getElementById('resultModal');
+        const resultContent = document.getElementById('resultContent');
+        const closeModal = document.getElementById('closeModal');
+        const okButton = document.getElementById('okButton');
+        const finalResultModal = document.getElementById('finalResultModal');
+        const finalResultContent = document.getElementById('finalResultContent');
+        const closeFinalModal = document.getElementById('closeFinalModal');
+        const okFinalButton = document.getElementById('okFinalButton');
+        const remainingWinners = document.getElementById('remainingWinners');
+        
+        let tickets = [];
+        let winningTickets = [];
+        let remainingWinnerCount = 0;
+        let foodAssignments = [];
+        
+        // 食べ物の絵文字
+        const foodEmojis = [
+            { name: "おにぎり", emoji: "🍙" },
+            { name: "ハンバーガー", emoji: "🍔" },
+            { name: "ピザ", emoji: "🍕" },
+            { name: "アイスクリーム", emoji: "🍦" },
+            { name: "ラーメン", emoji: "🍜" },
+            { name: "すし", emoji: "🍣" },
+            { name: "フライドポテト", emoji: "🍟" },
+            { name: "ケーキ", emoji: "🍰" },
+            { name: "チョコレート", emoji: "🍫" },
+            { name: "カレー", emoji: "🍛" },
+            { name: "パン", emoji: "🍞" },
+            { name: "ドーナツ", emoji: "🍩" },
+            { name: "たこ焼き", emoji: "🐙" },
+            { name: "りんご", emoji: "🍎" },
+            { name: "バナナ", emoji: "🍌" },
+            { name: "みかん", emoji: "🍊" },
+            { name: "だんご", emoji: "🍡" },
+            { name: "エビフライ", emoji: "🍤" },
+            { name: "べんとう", emoji: "🍱" },
+            { name: "プリン", emoji: "🍮" }
+        ];
+        
+        // 結果の絵文字
+        const resultEmojis = {
+            win: "😆",  // 嬉しそうな顔
+            lose: "🥺"  // 悲しい顔
+        };
+        
+        generateBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        showResultsBtn.addEventListener('click', showFinalResults);
+        closeModal.addEventListener('click', hideModal);
+        okButton.addEventListener('click', hideModal);
+        closeFinalModal.addEventListener('click', hideFinalModal);
+        okFinalButton.addEventListener('click', hideFinalModal);
+        
+        // モーダルの背景クリックでも閉じるように
+        resultModal.addEventListener('click', (e) => {
+            if (e.target === resultModal) hideModal();
+        });
+        finalResultModal.addEventListener('click', (e) => {
+            if (e.target === finalResultModal) hideFinalModal();
+        });
+        
+        function startGame() {
+            const totalPeople = parseInt(totalPeopleInput.value);
+            const winnerCount = parseInt(winnerCountInput.value);
+            
+            if (isNaN(totalPeople) || totalPeople < 1) {
+                alert('参加人数は1以上の数値を入力してください');
+                return;
+            }
+            
+            if (isNaN(winnerCount) || winnerCount < 1) {
+                alert('当たりの数は1以上の数値を入力してください');
+                return;
+            }
+            
+            if (winnerCount > totalPeople) {
+                alert('当たりの数は参加人数以下にしてください');
+                return;
+            }
+            
+            // くじを初期化
+            tickets = Array(totalPeople).fill(false);
+            
+            // 当たりくじを設定
+            winningTickets = [];
+            while (winningTickets.length < winnerCount) {
+                const randomIndex = Math.floor(Math.random() * totalPeople);
+                if (!winningTickets.includes(randomIndex)) {
+                    winningTickets.push(randomIndex);
+                }
+            }
+            
+            remainingWinnerCount = winnerCount;
+            updateRemainingWinners();
+            
+            // 食べ物絵文字をシャッフルして割り当て
+            // 参加人数が多い場合は絵文字リストをループして使用
+            let availableFoods = [];
+            while (availableFoods.length < totalPeople) {
+                availableFoods = availableFoods.concat([...foodEmojis].sort(() => Math.random() - 0.5));
+            }
+            
+            foodAssignments = [];
+            
+            for (let i = 0; i < totalPeople; i++) {
+                foodAssignments.push({
+                    index: i,
+                    food: availableFoods[i],
+                    isWinner: winningTickets.includes(i)
+                });
+            }
+            
+            // ページ切り替え
+            setupPage.classList.remove('visible-page');
+            setupPage.classList.add('hidden-page');
+            
+            ticketsPage.classList.remove('hidden-page');
+            ticketsPage.classList.add('visible-page');
+            
+            renderTickets();
+        }
+        
+        function resetGame() {
+            // ページ切り替え
+            ticketsPage.classList.remove('visible-page');
+            ticketsPage.classList.add('hidden-page');
+            
+            setupPage.classList.remove('hidden-page');
+            setupPage.classList.add('visible-page');
+            
+            // 少し遅延させてから初期状態に戻す（アニメーションのため）
+            setTimeout(() => {
+                ticketsContainer.innerHTML = '';
+            }, 500);
+        }
+        
+        function renderTickets() {
+            ticketsContainer.innerHTML = '';
+            
+            foodAssignments.forEach((item, index) => {
+                const ticket = document.createElement('div');
+                // クラス名を動的に設定
+                const baseClasses = "ticket bg-white border-2 border-blue-200 rounded-2xl p-2 w-full h-40 flex flex-col items-center justify-center shadow-sm relative overflow-hidden";
+                const stateClasses = tickets[index] 
+                    ? 'disabled bg-gray-50' 
+                    : 'cursor-pointer hover:border-blue-400 hover:shadow-md';
+                
+                ticket.className = `${baseClasses} ${stateClasses}`;
+                
+                // 結果確認モードで当たりくじに星マークを表示
+                if (item.isWinner && tickets[index]) {
+                    ticket.classList.add('border-yellow-400', 'bg-yellow-50');
+                    ticket.innerHTML = `
+                        <div class="winner-star">⭐</div>
+                        <div class="text-center w-full z-10">
+                            <div class="food-emoji mb-2 transform scale-110 transition-transform">${item.food.emoji}</div>
+                            <div class="text-sm font-bold text-gray-500 mb-1">くじ ${index + 1}</div>
+                            <div class="text-lg font-black text-red-500">当たり！</div>
+                        </div>
+                        <div class="absolute inset-0 bg-yellow-100 opacity-20 pointer-events-none"></div>
+                    `;
+                } else if (tickets[index]) {
+                    // はずれ（開封済み）
+                    ticket.innerHTML = `
+                        <div class="text-center w-full opacity-70">
+                            <div class="food-emoji mb-2 filter grayscale-[0.5] scale-90">${item.food.emoji}</div>
+                            <div class="text-sm font-bold text-gray-400 mb-1">くじ ${index + 1}</div>
+                            <div class="text-md font-bold text-blue-400">はずれ</div>
+                        </div>
+                    `;
+                } else {
+                    // 未開封
+                    ticket.innerHTML = `
+                        <div class="text-center w-full">
+                            <div class="food-emoji mb-2 animate-bounce-slow">${item.food.emoji}</div>
+                            <div class="text-lg font-bold text-gray-700">くじ ${index + 1}</div>
+                            <div class="text-xs text-gray-400 mt-1">タップしてね</div>
+                        </div>
+                    `;
+                }
+                
+                if (!tickets[index]) {
+                    ticket.addEventListener('click', () => revealTicket(index));
+                }
+                
+                ticketsContainer.appendChild(ticket);
+            });
+        }
+        
+        function revealTicket(index) {
+            const isWinner = winningTickets.includes(index);
+            
+            // くじを開いた状態にする
+            tickets[index] = true;
+            
+            if (isWinner) {
+                remainingWinnerCount--;
+                updateRemainingWinners();
+            }
+            
+            resultContent.innerHTML = '';
+            
+            if (isWinner) {
+                resultContent.innerHTML = `
+                    <div class="text-4xl font-extrabold text-red-500 mb-2 drop-shadow-sm">当たり！</div>
+                    <div class="text-lg font-bold text-gray-700 mb-4">おめでとうございます！</div>
+                    <div class="result-emoji animate-pulse">${resultEmojis.win}</div>
+                    <div class="text-5xl mt-4 animate-bounce">🎊</div>
+                `;
+                createConfetti();
+            } else {
+                resultContent.innerHTML = `
+                    <div class="text-3xl font-bold text-blue-500 mb-2">はずれ...</div>
+                    <div class="text-lg text-gray-600 mb-4">どんまい！</div>
+                    <div class="result-emoji">${resultEmojis.lose}</div>
+                `;
+            }
+            
+            resultModal.classList.remove('hidden');
+            
+            // くじを再描画
+            renderTickets();
+            
+            // すべてのくじが開かれたら結果を表示
+            if (tickets.every(t => t === true)) {
+                // 少し長めに待ってから最終結果を表示
+                setTimeout(() => {
+                    if(!resultModal.classList.contains('hidden')) {
+                        hideModal();
+                    }
+                    showFinalResults();
+                }, 2000);
+            }
+        }
+        
+        function showFinalResults() {
+            finalResultContent.innerHTML = '';
+            
+            // 当たりくじの情報を表示
+            const winnersList = document.createElement('div');
+            winnersList.className = 'space-y-3';
+            
+            // 当たりくじの一覧
+            let hasWinners = false;
+            foodAssignments.forEach((item, index) => {
+                if (item.isWinner) {
+                    hasWinners = true;
+                    const winnerItem = document.createElement('div');
+                    winnerItem.className = 'bg-yellow-50 p-4 rounded-xl flex items-center justify-between border-2 border-yellow-200 shadow-sm';
+                    winnerItem.innerHTML = `
+                        <div class="flex items-center space-x-4">
+                            <div class="text-4xl bg-white rounded-full p-2 shadow-sm">${item.food.emoji}</div>
+                            <div class="text-left">
+                                <div class="font-bold text-gray-800 text-lg">くじ ${index + 1}</div>
+                                <div class="text-sm text-gray-500 font-medium">${item.food.name}</div>
+                            </div>
+                        </div>
+                        <div class="text-2xl animate-pulse">⭐</div>
+                    `;
+                    winnersList.appendChild(winnerItem);
+                }
+            });
+            
+            // まだくじが引かれていない（または全部外れた）場合
+            // ※仕様上、当たりは必ず存在しますが、初期状態で結果ボタンを押した場合などの対応
+            if (!hasWinners) {
+                const noWinnersMsg = document.createElement('div');
+                noWinnersMsg.className = 'text-center p-8 bg-gray-50 rounded-xl border border-dashed border-gray-300';
+                noWinnersMsg.innerHTML = `
+                    <div class="text-4xl mb-2">🤔</div>
+                    <div class="text-lg font-bold text-gray-500">まだ当たりが出ていません</div>
+                `;
+                winnersList.appendChild(noWinnersMsg);
+            }
+            
+            finalResultContent.appendChild(winnersList);
+            finalResultModal.classList.remove('hidden');
+        }
+        
+        function updateRemainingWinners() {
+            remainingWinners.textContent = `当たり残り: ${remainingWinnerCount}個`;
+        }
+        
+        function hideModal() {
+            resultModal.classList.add('hidden');
+            
+            // 紙吹雪を削除（もし残っていれば）
+            const confettiContainer = resultModal.querySelector('.confetti-container');
+            if (confettiContainer) {
+                confettiContainer.remove();
+            }
+        }
+        
+        function hideFinalModal() {
+            finalResultModal.classList.add('hidden');
+        }
+        
+        function createConfetti() {
+            // 既存の紙吹雪コンテナがあれば削除
+            const existingContainer = resultModal.querySelector('.confetti-container');
+            if (existingContainer) existingContainer.remove();
+
+            const confettiContainer = document.createElement('div');
+            confettiContainer.className = 'confetti-container';
+            confettiContainer.style.position = 'absolute';
+            confettiContainer.style.top = '0';
+            confettiContainer.style.left = '0';
+            confettiContainer.style.width = '100%';
+            confettiContainer.style.height = '100%';
+            confettiContainer.style.overflow = 'hidden';
+            confettiContainer.style.pointerEvents = 'none';
+            confettiContainer.style.zIndex = '100';
+            confettiContainer.style.borderRadius = '1rem'; // モーダルの角丸に合わせる
+            
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                // 開始位置を少しばらつかせる
+                confetti.style.top = -20 + 'px';
+                
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const size = Math.random() * 8 + 6;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                
+                // アニメーション設定
+                confetti.style.animationDelay = Math.random() * 1 + 's';
+                confetti.style.animationDuration = Math.random() * 2 + 1.5 + 's';
+                
+                confettiContainer.appendChild(confetti);
+            }
+            
+            resultModal.querySelector('.bg-white').appendChild(confettiContainer);
+            
+            setTimeout(() => {
+                confettiContainer.remove();
+            }, 5000);
+        }
+    });
+</script>
+</body>
+</html>

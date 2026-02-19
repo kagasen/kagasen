@@ -28,5 +28,16 @@ const appsData = [
         colorClass: "subject-purple",
         icon: "users",
         link: "taiikuti-muwake/index.html" // 実際のフォルダ名を追加！
+    },
+    ,
+    {
+        title: "給食おかわりくじ",
+        description: "給食のおかわりを誰がするか、楽しくくじ引きで決めよう！",
+        category: "teacher",       // 先生用カテゴリー
+        tagName: "先生用",
+        date: "2026/02/19",
+        colorClass: "subject-gray",// 先生用の色（グレー）
+        icon: "utensils",          // ナイフとフォークのアイコン
+        link: "kyushoku-kuji/index.html"
     }
 ];

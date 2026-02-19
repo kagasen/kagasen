@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>かがせんのHAPPYアプリ集</title>
     
-    <!-- Google Fonts: Mochiy Pop One (可愛い日本語フォント) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Tailwind設定 -->
     <script>
         tailwind.config = {
             theme: {
@@ -27,11 +23,15 @@
                         'maru': ['"Zen Maru Gothic"', 'sans-serif'],
                     },
                     colors: {
-                        'natural-bg': '#FFFEFA',    /* 背景：生成り色 */
-                        'natural-brown': '#5D4037', /* 文字：こげ茶 */
-                        'soft-orange': '#FFCCBC',   /* 子ども用：やさしいオレンジ */
-                        'soft-blue': '#B3E5FC',     /* 先生用：やさしい青 */
-                        'accent-orange': '#FFAB91', /* アクセント */
+                        'natural-bg': '#FFFEFA',
+                        'natural-brown': '#5D4037',
+                        'subject-red': '#FFCDD2',
+                        'subject-blue': '#B3E5FC',
+                        'subject-green': '#C5E1A5',
+                        'subject-orange': '#FFCCBC',
+                        'subject-purple': '#E1BEE7',
+                        'subject-gray': '#E0E0E0',
+                        'accent-orange': '#FFAB91',
                     },
                     boxShadow: {
                         'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
@@ -43,86 +43,54 @@
     </script>
 
     <style>
-        /* 背景：方眼紙風のデザイン */
         body {
             background-color: #FFFEFA;
             background-image: linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, transparent 1px);
             background-size: 40px 40px;
         }
-        
-        /* カードのホバーアニメーション */
-        .app-card {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .app-card:hover {
-            transform: translateY(-4px);
-        }
-
-        /* Googleサイトの埋め込み用にスクロールバーをきれいにする */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #FFCCBC; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #FFAB91; 
-        }
+        .app-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .app-card:hover { transform: translateY(-4px); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #FFCCBC; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFAB91; }
     </style>
 </head>
 <body class="font-maru text-natural-brown min-h-screen flex flex-col">
 
-    <!-- ヘッダーエリア -->
     <header class="w-full bg-white/80 backdrop-blur-sm py-4 border-b border-orange-100 sticky top-0 z-20">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <!-- ロゴ -->
             <div class="text-center md:text-left">
                 <h1 class="font-pop text-lg md:text-xl text-natural-brown tracking-widest flex items-center gap-2">
                     <span class="text-accent-orange">✻</span>
                     かがせんのHAPPYアプリ集
                     <span class="text-accent-orange">✻</span>
                 </h1>
-                <p class="text-gray-400 text-xs tracking-wide ml-6">
-                    学校生活をもっと楽しく！
-                </p>
+                <p class="text-gray-400 text-xs tracking-wide ml-6">学校生活をもっと楽しく！</p>
             </div>
-
-            <!-- 検索バー -->
             <div class="relative w-full md:w-80">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
                 </div>
                 <input type="text" id="searchInput" 
-                    class="block w-full pl-10 pr-3 py-2 border-2 border-orange-50 rounded-2xl leading-5 bg-white placeholder-gray-300 focus:outline-none focus:border-soft-orange focus:ring-0 transition duration-150 ease-in-out text-sm text-natural-brown"
+                    class="block w-full pl-10 pr-3 py-2 border-2 border-orange-50 rounded-2xl leading-5 bg-white placeholder-gray-300 focus:outline-none focus:border-subject-orange focus:ring-0 transition duration-150 ease-in-out text-sm text-natural-brown"
                     placeholder="アプリをさがす...">
             </div>
         </div>
     </header>
 
-    <!-- メインコンテンツ -->
     <main class="flex-grow container mx-auto px-4 py-8">
         
-        <!-- カテゴリフィルター -->
-        <div class="flex flex-wrap gap-3 mb-8 justify-center md:justify-start" id="categoryContainer">
-            <button class="filter-btn active px-5 py-2 rounded-xl text-sm font-bold bg-accent-orange text-white shadow-soft transition-all tracking-wider" data-category="all">
-                すべて
-            </button>
-            <button class="filter-btn px-5 py-2 rounded-xl text-sm font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="game">
-                <i data-lucide="gamepad-2" class="inline-block w-4 h-4 mr-1 mb-0.5 opacity-70"></i> ゲーム
-            </button>
-            <button class="filter-btn px-5 py-2 rounded-xl text-sm font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="study">
-                <i data-lucide="graduation-cap" class="inline-block w-4 h-4 mr-1 mb-0.5 opacity-70"></i> 授業用
-            </button>
-            <button class="filter-btn px-5 py-2 rounded-xl text-sm font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="tool">
-                <i data-lucide="timer" class="inline-block w-4 h-4 mr-1 mb-0.5 opacity-70"></i> 便利ツール
-            </button>
+        <div class="flex flex-wrap gap-2 mb-8 justify-center md:justify-start" id="categoryContainer">
+            <button class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold bg-accent-orange text-white shadow-soft transition-all tracking-wider" data-category="all">すべて</button>
+            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="japanese"><i data-lucide="book-open" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 国語</button>
+            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="math"><i data-lucide="calculator" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 算数</button>
+            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="science"><i data-lucide="flask-conical" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 理科</button>
+            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="social"><i data-lucide="globe" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 社会</button>
+            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="others"><i data-lucide="star" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> その他</button>
+            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="teacher"><i data-lucide="user-cog" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 先生用</button>
         </div>
 
-        <!-- 表示件数とソート -->
         <div class="flex justify-between items-center mb-6 px-1">
             <p class="text-xs text-gray-400"><span id="countDisplay" class="font-bold text-natural-brown text-base">0</span> 件</p>
             <div class="flex bg-white rounded-lg p-1 border border-orange-100">
@@ -131,110 +99,27 @@
             </div>
         </div>
 
-        <!-- アプリ一覧（カードグリッド） -->
-        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- ここにJavaScriptでカードが生成されます -->
-        </div>
-
-        <!-- データなし表示 -->
+        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         <div id="noData" class="hidden text-center py-20">
-            <div class="inline-block p-4 rounded-full bg-white border border-orange-100 mb-4">
-                <i data-lucide="coffee" class="w-8 h-8 text-gray-300"></i>
-            </div>
+            <div class="inline-block p-4 rounded-full bg-white border border-orange-100 mb-4"><i data-lucide="coffee" class="w-8 h-8 text-gray-300"></i></div>
             <p class="text-gray-400 text-sm">条件に合うアプリが見つかりませんでした。</p>
         </div>
-
     </main>
 
-    <!-- フッター -->
     <footer class="bg-white/60 border-t border-orange-100 py-8 mt-12">
         <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-400 text-xs">
-                &copy; 2026 かがせんのHAPPYアプリ集
-            </p>
+            <p class="text-gray-400 text-xs">&copy; 2026 かがせんのHAPPYアプリ集</p>
         </div>
     </footer>
 
-    <!-- JavaScriptロジック -->
-    <script>
-        // アプリデータ
-        // 先生用 = soft-blue (青)
-        // 子ども用 = soft-orange (オレンジ)
-        const appsData = [
-            {
-                id: 1,
-                title: "わくわくタイマー",
-                description: "残り時間がひと目でわかる！掃除や給食の時間に使ってね。音もなるよ！",
-                category: "tool",
-                tags: ["先生用"],
-                date: "2026/02/18",
-                colorClass: "soft-blue", // 先生用：青
-                icon: "timer",
-                link: "#"
-            },
-            {
-                id: 2,
-                title: "ドキドキあみだくじ",
-                description: "誰が当たるかな？席替えや当番決めにぴったり！アニメーション付き。",
-                category: "tool",
-                tags: ["先生用"],
-                date: "2026/02/15",
-                colorClass: "soft-blue", // 先生用：青
-                icon: "shuffle",
-                link: "#"
-            },
-            {
-                id: 3,
-                title: "計算マスター",
-                description: "九九やたしざんの特訓だ！タイムアタックに挑戦してランキングを目指そう。",
-                category: "study",
-                tags: ["子ども用"],
-                date: "2026/02/10",
-                colorClass: "soft-orange", // 子ども用：オレンジ
-                icon: "calculator",
-                link: "#"
-            },
-            {
-                id: 4,
-                title: "シカくんとしりとり",
-                description: "AIのシカくんと戦おう！強い言葉を知っているかな？",
-                category: "game",
-                tags: ["子ども用"],
-                date: "2026/01/25",
-                colorClass: "soft-orange", // 子ども用：オレンジ
-                icon: "message-circle",
-                link: "#"
-            },
-            {
-                id: 5,
-                title: "宿題提出ポスト",
-                description: "先生の仕事を減らす!?QRコードを作成して、そのQRコードを読み取れば誰が提出したのかが一瞬でわかるよ。",
-                category: "tool",
-                tags: ["先生用"],
-                date: "2026/02/19",
-                colorClass: "soft-blue", // 先生用：青
-                icon: "send",
-                link: "shukudai/index.html"
-            },
-            {
-                id: 6,
-                title: "体育チーム分けアプリ",
-                description: "体育の授業などで使える！スムーズにチーム分けができるよ。",
-                category: "tool",
-                tags: ["先生用"],
-                date: "2026/02/19",
-                colorClass: "soft-blue", // 先生用：青
-                icon: "users",
-                link: "taiikuti-muwake/index.html"
-            }
-        ];
+    <script src="apps.js"></script>
 
+    <script>
         // 状態管理
         let currentCategory = 'all';
         let currentSort = 'new';
         let searchQuery = '';
 
-        // DOM要素
         const appGrid = document.getElementById('appGrid');
         const countDisplay = document.getElementById('countDisplay');
         const noData = document.getElementById('noData');
@@ -243,10 +128,9 @@
         const sortNewBtn = document.getElementById('sortNew');
         const sortPopularBtn = document.getElementById('sortPopular');
 
-        // 初期描画
+        // apps.js が読み込まれた後に実行
         renderApps();
 
-        // イベントリスナー
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 filterBtns.forEach(b => {
@@ -255,7 +139,6 @@
                 });
                 btn.classList.remove('bg-white', 'text-gray-500', 'border', 'border-orange-100');
                 btn.classList.add('bg-accent-orange', 'text-white', 'active', 'shadow-soft');
-
                 currentCategory = btn.dataset.category;
                 renderApps();
             });
@@ -274,7 +157,7 @@
 
         sortPopularBtn.addEventListener('click', () => {
             toggleSortBtn(sortPopularBtn, sortNewBtn);
-            currentSort = 'name'; // 人気順は削除したので名前順に変更
+            currentSort = 'name'; 
             renderApps();
         });
 
@@ -286,6 +169,9 @@
         }
 
         function renderApps() {
+            // appsData が存在しない場合のエラー回避
+            if (typeof appsData === 'undefined') return;
+
             let filtered = appsData.filter(app => {
                 const matchCategory = currentCategory === 'all' || app.category === currentCategory;
                 const matchSearch = app.title.toLowerCase().includes(searchQuery) || 
@@ -297,7 +183,7 @@
                 if (currentSort === 'new') {
                     return new Date(b.date) - new Date(a.date);
                 } else {
-                    return a.title.localeCompare(b.title, 'ja'); // 名前順ソート
+                    return a.title.localeCompare(b.title, 'ja');
                 }
             });
 
@@ -319,41 +205,30 @@
                     const isNew = new Date(app.date) > new Date('2026-02-01');
                     const newBadge = isNew ? `<span class="absolute top-2 right-2 bg-accent-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 tracking-widest">NEW</span>` : '';
                     
-                    // タグ（先生用/子ども用）の表示ラベル
-                    const tagLabel = app.colorClass === 'soft-blue' ? '先生用' : '子ども用';
-                    const tagColor = app.colorClass === 'soft-blue' ? 'text-blue-500 bg-blue-50' : 'text-orange-500 bg-orange-50';
+                    let tagColorClass = "text-gray-600 bg-gray-100";
+                    if(app.colorClass === 'subject-red') tagColorClass = "text-red-600 bg-red-50";
+                    if(app.colorClass === 'subject-blue') tagColorClass = "text-blue-600 bg-blue-50";
+                    if(app.colorClass === 'subject-green') tagColorClass = "text-green-700 bg-green-50";
+                    if(app.colorClass === 'subject-orange') tagColorClass = "text-orange-700 bg-orange-50";
+                    if(app.colorClass === 'subject-purple') tagColorClass = "text-purple-700 bg-purple-50";
 
                     card.innerHTML = `
                         ${newBadge}
-                        <!-- アイコンエリア -->
                         <div class="bg-${app.colorClass}/20 p-6 flex justify-center items-center h-32 group-hover:bg-${app.colorClass}/30 transition duration-300">
                             <i data-lucide="${app.icon}" class="text-natural-brown w-12 h-12 opacity-80 group-hover:scale-110 transition-transform duration-300"></i>
                         </div>
-                        
-                        <!-- コンテンツエリア -->
                         <div class="p-5 flex-grow flex flex-col items-center text-center">
-                            <!-- タグ表示 -->
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded mb-2 ${tagColor}">${tagLabel}</span>
-
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded mb-2 ${tagColorClass}">${app.tagName}</span>
                             <h3 class="text-lg text-natural-brown mb-2 border-b-2 border-${app.colorClass}/30 pb-1 px-4 font-pop">${app.title}</h3>
-                            <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">
-                                ${app.description}
-                            </p>
-                            
-                            <!-- 日付のみ表示（閲覧数は削除） -->
+                            <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">${app.description}</p>
                             <div class="w-full flex justify-end items-center text-[10px] text-gray-400 mt-2 mb-3 px-2">
                                 <span>📅 ${app.date}</span>
                             </div>
-
-                            <!-- ボタン -->
-                            <span class="bg-${app.colorClass} text-white py-1.5 px-6 rounded-lg text-sm shadow-sm group-hover:opacity-80 transition tracking-widest">
-                                OPEN
-                            </span>
+                            <span class="bg-${app.colorClass} text-natural-brown py-1.5 px-6 rounded-lg text-sm shadow-sm group-hover:opacity-80 transition tracking-widest border border-black/5">OPEN</span>
                         </div>
                     `;
                     appGrid.appendChild(card);
                 });
-                
                 lucide.createIcons();
             }
         }

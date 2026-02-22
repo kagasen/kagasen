@@ -58,5 +58,15 @@ const appsData = [
         colorClass: "subject-blue",
         image: "images/tonament.jpg", // サムネイル画像
         link: "taiiku-tournament/index.html"
+    },
+    {
+        title: "体育リーグ戦メーカー",
+        description: "総当たりのリーグ戦スケジュールを自動作成！コート数も指定できて順位表も自動計算。",
+        category: "others",        // 体育は「その他」に分類
+        tagName: "体育",
+        date: "2026/02/22",
+        colorClass: "subject-blue",
+        image: "images/ri-gusen.jpg", // サムネイル画像
+        link: "taiiku-league/index.html"
     }
 ];

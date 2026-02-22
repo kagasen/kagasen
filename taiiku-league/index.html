@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>リーグ戦対戦表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+
+        body {
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #e0f2fe;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2393c5fd' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            transition: all 0.3s ease;
+        }
+
+        .team-input {
+            transition: all 0.2s ease;
+        }
+
+        .team-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        button:active {
+            transform: translateY(2px);
+        }
+
+        .ranking-table tr:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        @keyframes flash {
+
+            0%,
+            50%,
+            100% {
+                background-color: #fee2e2;
+            }
+
+            25%,
+            75% {
+                background-color: #fecaca;
+            }
+        }
+
+        .timer-flash {
+            animation: flash 1s infinite;
+        }
+
+        @keyframes strongFlash {
+
+            0%,
+            100% {
+                background-color: #ef4444;
+                color: white;
+                transform: scale(1.05);
+            }
+
+            50% {
+                background-color: #b91c1c;
+                color: white;
+                transform: scale(1);
+            }
+        }
+
+        .timer-end-flash {
+            animation: strongFlash 0.5s infinite;
+        }
+
+        .sports-bg {
+            background-color: #60a5fa;
+            border: 4px solid #2563eb;
+            border-radius: 16px;
+            box-shadow: 0 8px 0 #1e40af, 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sports-btn {
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 0 #1e40af, 0 6px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .sports-btn:active {
+            box-shadow: 0 2px 0 #1e40af, 0 3px 5px rgba(0, 0, 0, 0.1);
+            transform: translateY(2px);
+        }
+
+        .whistle-icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .medal-gold {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: #7c2d12;
+        }
+
+        .medal-silver {
+            background: linear-gradient(45deg, #e5e7eb, #d1d5db);
+            color: #1f2937;
+        }
+
+        .medal-bronze {
+            background: linear-gradient(45deg, #d97706, #b45309);
+            color: #78350f;
+        }
+
+        .match-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .match-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .match-header {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 12px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .match-content {
+            padding: 20px 16px;
+        }
+
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .team-name {
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: #1e40af;
+            width: 40%;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .vs-badge {
+            background: #f0f9ff;
+            color: #1e40af;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .court-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .score-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .score-input-new {
+            width: 80px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 3px solid #bfdbfe;
+            border-radius: 12px;
+            background: #f0f9ff;
+            color: #1e40af;
+            transition: all 0.2s ease;
+        }
+
+        .score-input-new:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+            outline: none;
+            background: #fff;
+        }
+
+        .score-separator {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #6b7280;
+        }
+
+        .match-round-header {
+            background: linear-gradient(135deg, #f472b6, #db2777);
+            color: white;
+            padding: 16px;
+            margin: 24px 0 16px 0;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .rest-card {
+            background: #fffbeb;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px dashed #f59e0b;
+        }
+
+        .rest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .rest-header {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #7c2d12;
+            padding: 12px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .rest-content {
+            padding: 20px 16px;
+        }
+
+        .rest-team-badge {
+            background: #fffbeb;
+            color: #92400e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: inline-block;
+            margin: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .timer-notification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(239, 68, 68, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            animation: fadeInOut 1s infinite alternate;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        @keyframes fadeInOut {
+            from {
+                opacity: 0.8;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .timer-notification-text {
+            font-size: 5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            animation: pulse 0.5s infinite alternate;
+            text-align: center;
+        }
+
+        .timer-notification-subtext {
+            font-size: 1.5rem;
+            color: white;
+            margin-top: 1rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.05);
+            }
+        }
+
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-800 mb-2 tracking-wide">リーグ戦対戦表</h1>
+            <p class="text-blue-600 font-bold text-lg md:text-xl">みんなで楽しく総当たり戦！</p>
+        </header>
+
+        <div class="sports-bg p-6 md:p-8 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-white font-bold mb-2 text-xl" for="teamCount">チーム数</label>
+                    <div class="flex items-center">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="teamCount" min="3" value="8"
+                            class="w-full px-6 py-4 border-4 border-yellow-400 rounded-lg focus:outline-none focus:ring-4 focus:ring-yellow-500 text-2xl font-bold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-white font-bold mb-2 text-xl" for="courtCount">コート数</label>
+                    <div class="flex items-center">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="courtCount" min="1" value="3"
+                            class="w-full px-6 py-4 border-4 border-yellow-400 rounded-lg focus:outline-none focus:ring-4 focus:ring-yellow-500 text-2xl font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <label class="block text-white font-bold mb-2 text-xl">チーム名</label>
+                <div id="teamInputs" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center">
+                <button id="generateBtn"
+                    class="sports-btn px-10 py-5 bg-yellow-400 text-blue-800 text-2xl rounded-xl hover:bg-yellow-300 transition-colors focus:outline-none w-full md:w-auto">
+                    <span class="whistle-icon">🏆</span>スケジュール作成
+                </button>
+            </div>
+        </div>
+
+        <div id="timerContainer" class="hidden sports-bg p-6 md:p-8 mb-8">
+            <h2 class="text-3xl font-extrabold text-white mb-6 flex items-center justify-center"><span
+                    class="whistle-icon">⏱️</span>試合タイマー</h2>
+            <div class="flex flex-col items-center">
+                <div id="timerDisplay"
+                    class="text-7xl md:text-8xl font-bold text-white mb-6 py-6 px-12 rounded-2xl bg-blue-700 border-4 border-white shadow-xl">
+                    05:00
+                </div>
+                <div class="flex flex-wrap justify-center items-end gap-4 mb-8">
+                    <div class="flex flex-col items-center">
+                        <label for="timerMinutes" class="font-bold text-white text-lg mb-1">分</label>
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="timerMinutes" min="0" max="59"
+                            value="5"
+                            class="w-24 px-4 py-4 border-4 border-yellow-400 rounded-lg focus:outline-none focus:ring-4 focus:ring-yellow-500 text-2xl font-bold text-center">
+                    </div>
+                    <div class="text-white text-3xl font-bold pb-4">:</div>
+                    <div class="flex flex-col items-center">
+                        <label for="timerSeconds" class="font-bold text-white text-lg mb-1">秒</label>
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="timerSeconds" min="0" max="59"
+                            value="0"
+                            class="w-24 px-4 py-4 border-4 border-yellow-400 rounded-lg focus:outline-none focus:ring-4 focus:ring-yellow-500 text-2xl font-bold text-center">
+                    </div>
+                    <button id="setTimerBtn"
+                        class="sports-btn px-6 py-4 bg-green-500 text-white text-xl font-bold rounded-lg hover:bg-green-400 transition-colors focus:outline-none h-[68px]">
+                        設定
+                    </button>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 mb-4 w-full">
+                    <button id="startTimerBtn"
+                        class="sports-btn flex-1 md:flex-none px-6 md:px-10 py-5 bg-green-500 text-white text-xl md:text-2xl font-bold rounded-xl hover:bg-green-400 transition-colors focus:outline-none min-w-[140px]">
+                        <span class="whistle-icon">▶️</span>スタート
+                    </button>
+                    <button id="pauseTimerBtn"
+                        class="sports-btn flex-1 md:flex-none px-6 md:px-10 py-5 bg-yellow-500 text-white text-xl md:text-2xl font-bold rounded-xl hover:bg-yellow-400 transition-colors focus:outline-none min-w-[140px]">
+                        <span class="whistle-icon">⏸️</span>停止
+                    </button>
+                    <button id="resetTimerBtn"
+                        class="sports-btn flex-1 md:flex-none px-6 md:px-10 py-5 bg-red-500 text-white text-xl md:text-2xl font-bold rounded-xl hover:bg-red-400 transition-colors focus:outline-none min-w-[140px]">
+                        <span class="whistle-icon">🔄</span>リセット
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="scheduleContainer" class="hidden sports-bg p-6 md:p-8 mb-8">
+            <h2 class="text-3xl font-extrabold text-white mb-6 flex items-center justify-center"><span
+                    class="whistle-icon">📋</span>試合スケジュール</h2>
+            <div id="scheduleCards" class="bg-white rounded-xl p-4 md:p-6">
+            </div>
+        </div>
+
+        <div id="rankingContainer" class="hidden sports-bg p-6 md:p-8 mb-8">
+            <h2 class="text-3xl font-extrabold text-white mb-6 flex items-center justify-center"><span
+                    class="whistle-icon">🏅</span>順位表</h2>
+            <div class="overflow-x-auto bg-white rounded-xl p-4 md:p-6 shadow-inner">
+                <table id="rankingTable" class="ranking-table w-full border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-blue-100 text-lg">
+                            <th class="px-5 py-4 text-left border-4 border-blue-300 w-20">順位</th>
+                            <th class="px-5 py-4 text-left border-4 border-blue-300">チーム名</th>
+                            <th class="px-3 py-4 text-center border-4 border-blue-300">試合</th>
+                            <th class="px-3 py-4 text-center border-4 border-blue-300">勝</th>
+                            <th class="px-3 py-4 text-center border-4 border-blue-300">分</th>
+                            <th class="px-3 py-4 text-center border-4 border-blue-300">負</th>
+                            <th class="px-3 py-4 text-center border-4 border-blue-300">得点</th>
+                            <th class="px-3 py-4 text-center border-4 border-blue-300">失点</th>
+                            <th class="px-4 py-4 text-center border-4 border-blue-300">得失差</th>
+                            <th class="px-5 py-4 text-center border-4 border-blue-300 text-xl text-blue-800">Pt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingTableBody" class="text-lg">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="timerNotification" class="timer-notification" style="display: none;">
+        <div class="flex flex-col items-center">
+            <div class="timer-notification-text">時間終了！</div>
+            <div class="timer-notification-subtext bg-black/30 px-6 py-2 rounded-full mt-4">画面をタップして閉じる</div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const teamCountInput = document.getElementById('teamCount');
+            const courtCountInput = document.getElementById('courtCount');
+            const teamInputsContainer = document.getElementById('teamInputs');
+            const generateBtn = document.getElementById('generateBtn');
+            const scheduleContainer = document.getElementById('scheduleContainer');
+            const scheduleCards = document.getElementById('scheduleCards');
+            const rankingContainer = document.getElementById('rankingContainer');
+            const rankingTableBody = document.getElementById('rankingTableBody');
+            const timerContainer = document.getElementById('timerContainer');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerMinutesInput = document.getElementById('timerMinutes');
+            const timerSecondsInput = document.getElementById('timerSeconds');
+            const setTimerBtn = document.getElementById('setTimerBtn');
+            const startTimerBtn = document.getElementById('startTimerBtn');
+            const pauseTimerBtn = document.getElementById('pauseTimerBtn');
+            const resetTimerBtn = document.getElementById('resetTimerBtn');
+            const timerNotification = document.getElementById('timerNotification');
+
+            let allMatches = [];
+            let teamsList = [];
+            let teamStats = {};
+            let matchesByRound = [];
+
+            let timerSeconds = 300;
+            let timerInterval = null;
+            let timerRunning = false;
+            let timerFinished = false;
+
+            // Web Audio APIを使った音声生成
+            let audioCtx = null;
+
+            function initAudio() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playBeep() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.5);
+            }
+
+            teamCountInput.addEventListener('change', updateTeamInputs);
+            updateTeamInputs();
+
+            function updateTeamInputs() {
+                const teamCount = parseInt(teamCountInput.value);
+                teamInputsContainer.innerHTML = '';
+                for (let i = 1; i <= teamCount; i++) {
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'mb-2';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `team${i}`;
+                    input.className = 'team-input w-full px-5 py-4 border-4 border-white rounded-lg focus:outline-none focus:ring-4 focus:ring-yellow-500 text-xl font-bold';
+                    input.placeholder = `チーム ${i}`;
+                    input.value = `チーム ${i}`;
+                    inputDiv.appendChild(input);
+                    teamInputsContainer.appendChild(inputDiv);
+                }
+            }
+
+            generateBtn.addEventListener('click', () => {
+                initAudio(); // ユーザー操作時に音声エンジンを初期化
+                generateSchedule();
+            });
+
+            function generateSchedule() {
+                const teamCount = parseInt(teamCountInput.value);
+                const courtCount = parseInt(courtCountInput.value);
+                teamsList = [];
+                for (let i = 1; i <= teamCount; i++) {
+                    const teamInput = document.getElementById(`team${i}`);
+                    teamsList.push(teamInput.value || `チーム ${i}`);
+                }
+                allMatches = generateRoundRobinSchedule(teamsList);
+                matchesByRound = divideMatchesByCourt(allMatches, courtCount);
+                generateScheduleCards(matchesByRound);
+                initializeTeamStats();
+                updateRankingTable();
+                scheduleContainer.classList.remove('hidden');
+                rankingContainer.classList.remove('hidden');
+                timerContainer.classList.remove('hidden');
+            }
+
+            function generateRoundRobinSchedule(teams) {
+                const matches = [];
+                const n = teams.length;
+                const usesDummy = n % 2 === 1;
+                const totalTeams = usesDummy ? n + 1 : n;
+                for (let round = 0; round < totalTeams - 1; round++) {
+                    for (let match = 0; match < totalTeams / 2; match++) {
+                        const home = (round + match) % (totalTeams - 1);
+                        const away = (totalTeams - 1 - match + round) % (totalTeams - 1);
+                        if (match === 0) {
+                            const awayTeam = (round % 2 === 0) ? totalTeams - 1 : home;
+                            const homeTeam = (round % 2 === 0) ? home : totalTeams - 1;
+                            if (!usesDummy || (homeTeam < n && awayTeam < n)) {
+                                matches.push({ home: teams[homeTeam], away: teams[awayTeam], homeScore: null, awayScore: null, round: round });
+                            }
+                        } else {
+                            if (!usesDummy || (home < n && away < n)) {
+                                matches.push({ home: teams[home], away: teams[away], homeScore: null, awayScore: null, round: round });
+                            }
+                        }
+                    }
+                }
+                return matches;
+            }
+
+            function divideMatchesByCourt(matches, courtCount) {
+                const rounds = [];
+                let matchIndex = 0;
+                while (matchIndex < matches.length) {
+                    const currentRound = matches[matchIndex].round;
+                    const roundMatches = matches.filter(match => match.round === currentRound);
+                    const matchesInThisRound = Math.min(roundMatches.length, courtCount);
+                    const currentRoundMatches = [];
+                    for (let i = 0; i < matchesInThisRound; i++) {
+                        if (matchIndex < matches.length) {
+                            currentRoundMatches.push(matches[matchIndex]);
+                            matchIndex++;
+                        }
+                    }
+                    if (currentRoundMatches.length > 0) rounds.push(currentRoundMatches);
+                }
+                return rounds;
+            }
+
+            function getRestingTeams(round, allTeams) {
+                const participatingTeams = new Set();
+                round.forEach(match => { participatingTeams.add(match.home); participatingTeams.add(match.away); });
+                return allTeams.filter(team => !participatingTeams.has(team));
+            }
+
+            function generateScheduleCards(matchesByRound) {
+                scheduleCards.innerHTML = '';
+                matchesByRound.forEach((round, roundIndex) => {
+                    const roundHeader = document.createElement('div');
+                    roundHeader.className = 'match-round-header';
+                    roundHeader.innerHTML = `<span class="whistle-icon">🏆</span> ${roundIndex + 1}試合目`;
+                    scheduleCards.appendChild(roundHeader);
+
+                    const matchGrid = document.createElement('div');
+                    matchGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 mb-8';
+
+                    round.forEach((match, courtIndex) => {
+                        const matchCard = document.createElement('div');
+                        matchCard.className = 'match-card';
+                        matchCard.innerHTML = `
+                            <div class="match-header">${roundIndex + 1}試合目</div>
+                            <div class="court-badge">コート ${courtIndex + 1}</div>
+                            <div class="match-content">
+                                <div class="match-teams">
+                                    <div class="team-name">${match.home}</div>
+                                    <div class="vs-badge">VS</div>
+                                    <div class="team-name">${match.away}</div>
+                                </div>
+                                <div class="score-container">
+                                    <input type="number" inputmode="numeric" pattern="[0-9]*" class="score-input-new home-score" placeholder="0" value="${match.homeScore !== null ? match.homeScore : ''}">
+                                    <span class="score-separator">-</span>
+                                    <input type="number" inputmode="numeric" pattern="[0-9]*" class="score-input-new away-score" placeholder="0" value="${match.awayScore !== null ? match.awayScore : ''}">
+                                </div>
+                            </div>
+                        `;
+                        const mIdx = allMatches.findIndex(m => m.home === match.home && m.away === match.away);
+                        const hIn = matchCard.querySelector('.home-score');
+                        const aIn = matchCard.querySelector('.away-score');
+                        hIn.addEventListener('input', () => { allMatches[mIdx].homeScore = parseInt(hIn.value); updateTeamStats(); updateRankingTable(); });
+                        aIn.addEventListener('input', () => { allMatches[mIdx].awayScore = parseInt(aIn.value); updateTeamStats(); updateRankingTable(); });
+                        matchGrid.appendChild(matchCard);
+                    });
+
+                    const restingTeams = getRestingTeams(round, teamsList);
+                    if (restingTeams.length > 0) {
+                        const restCard = document.createElement('div');
+                        restCard.className = 'rest-card';
+                        restCard.innerHTML = `<div class="rest-header"><span class="whistle-icon">🛌</span> 休憩チーム</div><div class="rest-content"><div class="flex flex-wrap gap-3 justify-center">${restingTeams.map(t => `<span class="rest-team-badge">${t}</span>`).join('')}</div></div>`;
+                        matchGrid.appendChild(restCard);
+                    }
+                    scheduleCards.appendChild(matchGrid);
+                });
+            }
+
+            function initializeTeamStats() {
+                teamStats = {};
+                teamsList.forEach(team => {
+                    teamStats[team] = { played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 };
+                });
+            }
+
+            function updateTeamStats() {
+                teamsList.forEach(team => {
+                    teamStats[team] = { played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 };
+                });
+                allMatches.forEach(match => {
+                    if (match.homeScore !== null && match.awayScore !== null && !isNaN(match.homeScore) && !isNaN(match.awayScore)) {
+                        const { home, away, homeScore, awayScore } = match;
+                        teamStats[home].played++; teamStats[away].played++;
+                        teamStats[home].goalsFor += homeScore; teamStats[home].goalsAgainst += awayScore;
+                        teamStats[away].goalsFor += awayScore; teamStats[away].goalsAgainst += homeScore;
+                        if (homeScore > awayScore) { teamStats[home].won++; teamStats[home].points += 3; teamStats[away].lost++; }
+                        else if (homeScore < awayScore) { teamStats[away].won++; teamStats[away].points += 3; teamStats[home].lost++; }
+                        else { teamStats[home].drawn++; teamStats[home].points += 1; teamStats[away].drawn++; teamStats[away].points += 1; }
+                    }
+                });
+                teamsList.forEach(team => { teamStats[team].goalDifference = teamStats[team].goalsFor - teamStats[team].goalsAgainst; });
+            }
+
+            function updateRankingTable() {
+                rankingTableBody.innerHTML = '';
+                const sorted = Object.keys(teamStats).sort((a, b) => {
+                    if (teamStats[b].points !== teamStats[a].points) return teamStats[b].points - teamStats[a].points;
+                    if (teamStats[b].goalDifference !== teamStats[a].goalDifference) return teamStats[b].goalDifference - teamStats[a].goalDifference;
+                    return teamStats[b].goalsFor - teamStats[a].goalsFor;
+                });
+                sorted.forEach((team, index) => {
+                    const stats = teamStats[team];
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-blue-50 transition-colors border-b-2 border-blue-100';
+                    const rankClass = index === 0 ? 'medal-gold' : index === 1 ? 'medal-silver' : index === 2 ? 'medal-bronze' : '';
+                    row.innerHTML = `
+                        <td class="px-5 py-4 text-center border-x-4 border-blue-300 font-bold text-xl ${rankClass}">${index + 1}</td>
+                        <td class="px-5 py-4 border-r-4 border-blue-300 font-bold text-xl">${team}</td>
+                        <td class="px-3 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.played}</td>
+                        <td class="px-3 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.won}</td>
+                        <td class="px-3 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.drawn}</td>
+                        <td class="px-3 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.lost}</td>
+                        <td class="px-3 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.goalsFor}</td>
+                        <td class="px-3 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.goalsAgainst}</td>
+                        <td class="px-4 py-4 text-center border-r-4 border-blue-300 font-medium">${stats.goalDifference > 0 ? '+' + stats.goalDifference : stats.goalDifference}</td>
+                        <td class="px-5 py-4 text-center border-r-4 border-blue-300 font-extrabold text-2xl text-blue-800">${stats.points}</td>
+                    `;
+                    rankingTableBody.appendChild(row);
+                });
+            }
+
+            setTimerBtn.addEventListener('click', () => {
+                initAudio();
+                timerSeconds = (parseInt(timerMinutesInput.value) || 0) * 60 + (parseInt(timerSecondsInput.value) || 0);
+                updateTimerDisplay();
+            });
+
+            startTimerBtn.addEventListener('click', () => {
+                initAudio();
+                if (!timerRunning) {
+                    timerRunning = true; timerFinished = false;
+                    timerDisplay.classList.remove('timer-flash', 'timer-end-flash');
+                    timerNotification.style.display = 'none';
+                    timerInterval = setInterval(() => {
+                        if (timerSeconds > 0) {
+                            timerSeconds--; updateTimerDisplay();
+                            if (timerSeconds <= 10) timerDisplay.classList.add('timer-flash');
+                            if (timerSeconds === 0) {
+                                timerFinished = true; timerRunning = false; clearInterval(timerInterval);
+                                timerDisplay.classList.remove('timer-flash'); timerDisplay.classList.add('timer-end-flash');
+                                timerNotification.style.display = 'flex';
+                                try { playBeep(); } catch (e) { console.error("Sound play failed", e); }
+                            }
+                        }
+                    }, 1000);
+                }
+            });
+
+            pauseTimerBtn.addEventListener('click', () => { timerRunning = false; clearInterval(timerInterval); });
+            resetTimerBtn.addEventListener('click', () => {
+                timerRunning = false; clearInterval(timerInterval);
+                timerSeconds = (parseInt(timerMinutesInput.value) || 0) * 60 + (parseInt(timerSecondsInput.value) || 0);
+                timerDisplay.classList.remove('timer-flash', 'timer-end-flash');
+                timerNotification.style.display = 'none'; updateTimerDisplay();
+            });
+
+            function updateTimerDisplay() {
+                const m = Math.floor(timerSeconds / 60); const s = timerSeconds % 60;
+                timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+
+            timerNotification.addEventListener('click', () => {
+                if (timerFinished) { timerNotification.style.display = 'none'; timerDisplay.classList.remove('timer-end-flash'); }
+            });
+        })();
+    </script>
+</body>
+
+</html>

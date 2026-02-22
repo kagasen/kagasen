@@ -55,7 +55,7 @@ const appsData = [
         category: "others",        // 体育は「その他」に分類
         tagName: "体育",
         date: "2026/02/22",
-        colorClass: "subject-blue",
+        colorClass: "subject-purple",
         image: "images/tonament.jpg", // サムネイル画像
         link: "taiiku-tournament/index.html"
     },
@@ -65,7 +65,7 @@ const appsData = [
         category: "others",        // 体育は「その他」に分類
         tagName: "体育",
         date: "2026/02/22",
-        colorClass: "subject-blue",
+        colorClass: "subject-purple",
         image: "images/ri-gusen.jpg", // サムネイル画像
         link: "taiiku-league/index.html"
     }

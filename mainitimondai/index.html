@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毎日謎解き ✨ 学年を選んでね！</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ページ全体のスタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Zen Maru Gothic', 'Mochiy Pop One', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff9c4 0%, #fce4ec 30%, #e8f4fd 60%, #e8f5e9 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景の飾り（星・ハート・まる）アニメーション */
+        .bg-deco {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .deco-item {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.15;
+            animation: floatAnim 6s ease-in-out infinite;
+        }
+
+        @keyframes floatAnim {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+        }
+
+        /* メインコンテンツ */
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ヘッダー部分 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        .header-emoji {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 10px;
+            animation: bounceEmoji 2s ease-in-out infinite;
+        }
+
+        @keyframes bounceEmoji {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        .header-title {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 2.5rem;
+            color: #6a1b9a;
+            text-shadow:
+                3px 3px 0 #f8bbd0,
+                6px 6px 0 rgba(106, 27, 154, 0.1);
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .header-sub {
+            font-size: 1.1rem;
+            color: #7b5ea7;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        /* 虹色のデコレーションライン */
+        .rainbow-line {
+            width: 100%;
+            max-width: 500px;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+            border-radius: 10px;
+            margin: 15px auto;
+        }
+
+        /* 学年ボタングリッド */
+        .grade-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 680px;
+            margin-bottom: 40px;
+        }
+
+        @media (min-width: 600px) {
+            .grade-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .header-title {
+                font-size: 3rem;
+            }
+        }
+
+        /* 各学年カード */
+        .grade-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            border-radius: 24px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease,
+                filter 0.2s ease;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow:
+                0 8px 24px rgba(0, 0, 0, 0.12),
+                0 0 0 0 rgba(255, 255, 255, 0.6) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grade-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .grade-card:hover {
+            transform: translateY(-8px) scale(1.04);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.18),
+                0 0 0 0 rgba(255, 255, 255, 0.6) inset;
+        }
+
+        .grade-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        /* 各学年のカラー */
+        .grade-1 {
+            background: linear-gradient(135deg, #ff8a80, #ff5252);
+            color: white;
+        }
+
+        .grade-2 {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .grade-3 {
+            background: linear-gradient(135deg, #ffee58, #fdd835);
+            color: #5d4037;
+        }
+
+        .grade-4 {
+            background: linear-gradient(135deg, #66bb6a, #388e3c);
+            color: white;
+        }
+
+        .grade-5 {
+            background: linear-gradient(135deg, #42a5f5, #1565c0);
+            color: white;
+        }
+
+        .grade-6 {
+            background: linear-gradient(135deg, #ab47bc, #6a1b9a);
+            color: white;
+        }
+
+        /* カード内のアイコン（絵文字） */
+        .grade-icon {
+            font-size: 3.5rem;
+            margin-bottom: 8px;
+            display: block;
+            filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.2));
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        /* アイコンのフロートアニメーション（学年によって少しずらす） */
+        .grade-card:nth-child(1) .grade-icon {
+            animation-delay: 0s;
+        }
+
+        .grade-card:nth-child(2) .grade-icon {
+            animation-delay: 0.4s;
+        }
+
+        .grade-card:nth-child(3) .grade-icon {
+            animation-delay: 0.8s;
+        }
+
+        .grade-card:nth-child(4) .grade-icon {
+            animation-delay: 1.2s;
+        }
+
+        .grade-card:nth-child(5) .grade-icon {
+            animation-delay: 1.6s;
+        }
+
+        .grade-card:nth-child(6) .grade-icon {
+            animation-delay: 2.0s;
+        }
+
+        @keyframes iconFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        /* 学年テキスト */
+        .grade-number {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 4px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .grade-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+        /* バッジ（NEW!など） */
+        .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff1744;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 900;
+            font-family: 'Mochiy Pop One', sans-serif;
+            padding: 3px 8px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(255, 23, 68, 0.5);
+            animation: pulseBadge 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseBadge {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* フッター */
+        .footer {
+            text-align: center;
+            color: #9575cd;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding-bottom: 20px;
+        }
+
+        .footer-emoji {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* クリックしたときのエフェクト（ripple） */
+        @keyframes rippleEffect {
+            0% {
+                transform: scale(0);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            animation: rippleEffect 0.6s ease-out forwards;
+            transform-origin: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 背景の浮かぶ飾り -->
+    <div class="bg-deco" id="bgDeco"></div>
+
+    <div class="main-wrapper">
+        <!-- ヘッダー -->
+        <header class="header">
+            <span class="header-emoji">🌟</span>
+            <h1 class="header-title">毎日謎解き</h1>
+            <div class="rainbow-line"></div>
+            <p class="header-sub">✨ 何年生かな？ えらんでね！ ✨</p>
+        </header>
+
+        <!-- 学年ボタングリッド -->
+        <div class="grade-grid" id="gradeGrid">
+
+            <!-- 1年生 -->
+            <a href="./1nen/index.html" class="grade-card grade-1" onclick="addRipple(event)">
+                <span class="grade-icon">🌸</span>
+                <div class="grade-number">1年</div>
+                <div class="grade-label">いちねんせい</div>
+            </a>
+
+            <!-- 2年生 -->
+            <a href="./2nen/index.html" class="grade-card grade-2" onclick="addRipple(event)">
+                <span class="grade-icon">🌻</span>
+                <div class="grade-number">2年</div>
+                <div class="grade-label">にねんせい</div>
+            </a>
+
+            <!-- 3年生 -->
+            <a href="./3nen/index.html" class="grade-card grade-3" onclick="addRipple(event)">
+                <span class="grade-icon">🍀</span>
+                <div class="grade-number">3年</div>
+                <div class="grade-label">さんねんせい</div>
+            </a>
+
+            <!-- 4年生 -->
+            <a href="./4nen/index.html" class="grade-card grade-4" onclick="addRipple(event)">
+                <span class="grade-icon">🌈</span>
+                <div class="grade-number">4年</div>
+                <div class="grade-label">よねんせい</div>
+            </a>
+
+            <!-- 5年生 -->
+            <a href="./5nen/index.html" class="grade-card grade-5" onclick="addRipple(event)">
+                <span class="grade-icon">🚀</span>
+                <div class="grade-number">5年</div>
+                <div class="grade-label">ごねんせい</div>
+            </a>
+
+            <!-- 6年生 -->
+            <a href="./6nen/index.html" class="grade-card grade-6" onclick="addRipple(event)">
+                <span class="grade-icon">👑</span>
+                <div class="grade-number">6年</div>
+                <div class="grade-label">ろくねんせい</div>
+            </a>
+
+        </div>
+
+        <!-- フッター -->
+        <footer class="footer">
+            <span class="footer-emoji">🎉</span>
+            <p>まいにち チャレンジ しよう！</p>
+        </footer>
+    </div>
+
+    <script>
+        // 背景の浮かぶ飾り絵文字を生成する
+        const decoEmojis = ['⭐', '✨', '🌙', '💫', '🎵', '🎶', '🌺', '🦋', '🍭', '🎈', '🍬', '❤️', '🌟', '💕', '🎀'];
+        const bgDeco = document.getElementById('bgDeco');
+
+        // ランダムな位置・サイズ・遅延で絵文字を配置
+        for (let i = 0; i < 20; i++) {
+            const el = document.createElement('div');
+            el.className = 'deco-item';
+            el.textContent = decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
+            el.style.left = Math.random() * 100 + '%';
+            el.style.top = Math.random() * 100 + '%';
+            el.style.fontSize = (1.5 + Math.random() * 2) + 'rem';
+            el.style.animationDelay = (Math.random() * 4) + 's';
+            el.style.animationDuration = (4 + Math.random() * 4) + 's';
+            bgDeco.appendChild(el);
+        }
+
+        /**
+         * カードをクリックしたときのリップルエフェクト（波紋）を追加する
+         * @param {MouseEvent} event - クリックイベント
+         */
+        function addRipple(event) {
+            const card = event.currentTarget;
+            const rect = card.getBoundingClientRect();
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            // クリック位置を中心に波紋を表示
+            ripple.style.left = (event.clientX - rect.left - 30) + 'px';
+            ripple.style.top = (event.clientY - rect.top - 30) + 'px';
+            card.appendChild(ripple);
+            // アニメーション後に要素を削除
+            ripple.addEventListener('animationend', () => ripple.remove());
+        }
+    </script>
+</body>
+
+</html>

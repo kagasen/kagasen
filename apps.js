@@ -75,7 +75,7 @@ const appsData = [
         category: "others",        // その他に分類
         tagName: "その他",
         date: "2026/02/23",
-        colorClass: "subject-orange",
+        colorClass: "subject-purple",
         image: "images/mainitimondai.jpg", // サムネイル画像
         link: "mainitimondai/index.html"
     }

@@ -48,5 +48,15 @@ const appsData = [
         colorClass: "subject-gray",
         image: "images/kyushoku.jpg", // サムネイル画像
         link: "kyushoku-kuji/index.html"
+    },
+    {
+        title: "体育トーナメントメーカー",
+        description: "4〜41チームのトーナメント表を自動作成！試合タイマーつきで本番も万全。",
+        category: "others",        // 体育は「その他」に分類
+        tagName: "体育",
+        date: "2026/02/22",
+        colorClass: "subject-blue",
+        image: "images/tonament.jpg", // サムネイル画像
+        link: "taiiku-tournament/index.html"
     }
 ];

@@ -29,6 +29,16 @@ const appsData = [
         icon: "users",
         link: "taiikuti-muwake/index.html" // 実際のフォルダ名を追加！
     },
+     {
+        title: "しりとり魔神",
+        description: "最強しりとり魔神と何回ラリーできるかな？。",
+        category: "japanese",        // 体育は「その他」に分類
+        tagName: "国語",
+        date: "2026/02/22",
+        colorClass: "subject-red",
+        icon: "message-circle",
+        link: "shiritori/index.html" // 実際のフォルダ名を追加！
+    },
     ,
     {
         title: "給食おかわりくじ",

@@ -68,5 +68,15 @@ const appsData = [
         colorClass: "subject-purple",
         image: "images/ri-gusen.jpg", // サムネイル画像
         link: "taiiku-league/index.html"
+    },
+    {
+        title: "毎日問題",
+        description: "1年生から6年生まで、毎日チャレンジできる謎解き問題！学年を選んでスタート！",
+        category: "others",        // その他に分類
+        tagName: "その他",
+        date: "2026/02/23",
+        colorClass: "subject-orange",
+        image: "images/mainitimondai.jpg", // サムネイル画像
+        link: "mainitimondai/index.html"
     }
 ];

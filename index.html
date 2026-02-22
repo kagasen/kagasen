@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>かがせんのHAPPYアプリ集</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
@@ -48,14 +49,55 @@
             background-image: linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, transparent 1px);
             background-size: 40px 40px;
         }
-        .app-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .app-card:hover { transform: translateY(-4px); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #FFCCBC; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #FFAB91; }
+
+        .app-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* サムネイル画像エリア */
+        .card-thumbnail {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+
+        .app-card:hover .card-thumbnail img {
+            transform: scale(1.06);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FFCCBC;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFAB91;
+        }
     </style>
 </head>
+
 <body class="font-maru text-natural-brown min-h-screen flex flex-col">
 
     <header class="w-full bg-white/80 backdrop-blur-sm py-4 border-b border-orange-100 sticky top-0 z-20">
@@ -72,7 +114,7 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
                 </div>
-                <input type="text" id="searchInput" 
+                <input type="text" id="searchInput"
                     class="block w-full pl-10 pr-3 py-2 border-2 border-orange-50 rounded-2xl leading-5 bg-white placeholder-gray-300 focus:outline-none focus:border-subject-orange focus:ring-0 transition duration-150 ease-in-out text-sm text-natural-brown"
                     placeholder="アプリをさがす...">
             </div>
@@ -80,28 +122,52 @@
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8">
-        
+
         <div class="flex flex-wrap gap-2 mb-8 justify-center md:justify-start" id="categoryContainer">
-            <button class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold bg-accent-orange text-white shadow-soft transition-all tracking-wider" data-category="all">すべて</button>
-            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="japanese"><i data-lucide="book-open" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 国語</button>
-            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="math"><i data-lucide="calculator" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 算数</button>
-            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="science"><i data-lucide="flask-conical" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 理科</button>
-            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="social"><i data-lucide="globe" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 社会</button>
-            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="others"><i data-lucide="star" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> その他</button>
-            <button class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider" data-category="teacher"><i data-lucide="user-cog" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 先生用</button>
+            <button
+                class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold bg-accent-orange text-white shadow-soft transition-all tracking-wider"
+                data-category="all">すべて</button>
+            <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
+                data-category="japanese"><i data-lucide="book-open"
+                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 国語</button>
+            <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
+                data-category="math"><i data-lucide="calculator"
+                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 算数</button>
+            <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
+                data-category="science"><i data-lucide="flask-conical"
+                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 理科</button>
+            <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
+                data-category="social"><i data-lucide="globe" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>
+                社会</button>
+            <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
+                data-category="others"><i data-lucide="star" class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>
+                その他</button>
+            <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
+                data-category="teacher"><i data-lucide="user-cog"
+                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i> 先生用</button>
         </div>
 
         <div class="flex justify-between items-center mb-6 px-1">
-            <p class="text-xs text-gray-400"><span id="countDisplay" class="font-bold text-natural-brown text-base">0</span> 件</p>
+            <p class="text-xs text-gray-400"><span id="countDisplay"
+                    class="font-bold text-natural-brown text-base">0</span> 件</p>
             <div class="flex bg-white rounded-lg p-1 border border-orange-100">
-                <button id="sortNew" class="px-3 py-1 text-xs font-bold rounded bg-orange-50 text-natural-brown">新着順</button>
-                <button id="sortPopular" class="px-3 py-1 text-xs font-bold rounded text-gray-400 hover:bg-orange-50 hover:text-natural-brown transition">名前順</button>
+                <button id="sortNew"
+                    class="px-3 py-1 text-xs font-bold rounded bg-orange-50 text-natural-brown">新着順</button>
+                <button id="sortPopular"
+                    class="px-3 py-1 text-xs font-bold rounded text-gray-400 hover:bg-orange-50 hover:text-natural-brown transition">名前順</button>
             </div>
         </div>
 
         <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         <div id="noData" class="hidden text-center py-20">
-            <div class="inline-block p-4 rounded-full bg-white border border-orange-100 mb-4"><i data-lucide="coffee" class="w-8 h-8 text-gray-300"></i></div>
+            <div class="inline-block p-4 rounded-full bg-white border border-orange-100 mb-4"><i data-lucide="coffee"
+                    class="w-8 h-8 text-gray-300"></i></div>
             <p class="text-gray-400 text-sm">条件に合うアプリが見つかりませんでした。</p>
         </div>
     </main>
@@ -157,7 +223,7 @@
 
         sortPopularBtn.addEventListener('click', () => {
             toggleSortBtn(sortPopularBtn, sortNewBtn);
-            currentSort = 'name'; 
+            currentSort = 'name';
             renderApps();
         });
 
@@ -174,8 +240,8 @@
 
             let filtered = appsData.filter(app => {
                 const matchCategory = currentCategory === 'all' || app.category === currentCategory;
-                const matchSearch = app.title.toLowerCase().includes(searchQuery) || 
-                                    app.description.toLowerCase().includes(searchQuery);
+                const matchSearch = app.title.toLowerCase().includes(searchQuery) ||
+                    app.description.toLowerCase().includes(searchQuery);
                 return matchCategory && matchSearch;
             });
 
@@ -201,21 +267,21 @@
                     const card = document.createElement('a');
                     card.href = app.link;
                     card.className = `group block bg-white rounded-2xl overflow-hidden border-2 border-${app.colorClass} shadow-soft hover:shadow-card h-full flex flex-col relative app-card`;
-                    
+
                     const isNew = new Date(app.date) > new Date('2026-02-01');
                     const newBadge = isNew ? `<span class="absolute top-2 right-2 bg-accent-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 tracking-widest">NEW</span>` : '';
-                    
+
                     let tagColorClass = "text-gray-600 bg-gray-100";
-                    if(app.colorClass === 'subject-red') tagColorClass = "text-red-600 bg-red-50";
-                    if(app.colorClass === 'subject-blue') tagColorClass = "text-blue-600 bg-blue-50";
-                    if(app.colorClass === 'subject-green') tagColorClass = "text-green-700 bg-green-50";
-                    if(app.colorClass === 'subject-orange') tagColorClass = "text-orange-700 bg-orange-50";
-                    if(app.colorClass === 'subject-purple') tagColorClass = "text-purple-700 bg-purple-50";
+                    if (app.colorClass === 'subject-red') tagColorClass = "text-red-600 bg-red-50";
+                    if (app.colorClass === 'subject-blue') tagColorClass = "text-blue-600 bg-blue-50";
+                    if (app.colorClass === 'subject-green') tagColorClass = "text-green-700 bg-green-50";
+                    if (app.colorClass === 'subject-orange') tagColorClass = "text-orange-700 bg-orange-50";
+                    if (app.colorClass === 'subject-purple') tagColorClass = "text-purple-700 bg-purple-50";
 
                     card.innerHTML = `
                         ${newBadge}
-                        <div class="bg-${app.colorClass}/20 p-6 flex justify-center items-center h-32 group-hover:bg-${app.colorClass}/30 transition duration-300">
-                            <i data-lucide="${app.icon}" class="text-natural-brown w-12 h-12 opacity-80 group-hover:scale-110 transition-transform duration-300"></i>
+                        <div class="card-thumbnail">
+                            <img src="${app.image}" alt="${app.title}のサムネイル">
                         </div>
                         <div class="p-5 flex-grow flex flex-col items-center text-center">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded mb-2 ${tagColorClass}">${app.tagName}</span>
@@ -229,9 +295,9 @@
                     `;
                     appGrid.appendChild(card);
                 });
-                lucide.createIcons();
             }
         }
     </script>
 </body>
+
 </html>

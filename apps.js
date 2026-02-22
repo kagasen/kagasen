@@ -6,8 +6,8 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/19",
         colorClass: "subject-gray",
-        icon: "send",
-        link: "shukudai/index.html" // shukudaiフォルダに繋ぐ
+        image: "images/shukudai.jpg", // サムネイル画像
+        link: "shukudai/index.html"
     },
     {
         title: "体育作戦ボード",
@@ -16,8 +16,8 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
-        icon: "users",
-        link: "taiikusakusennbo-do/index.html" // 実際のフォルダ名に修正！
+        image: "images/sakusen.jpg", // サムネイル画像
+        link: "taiikusakusennbo-do/index.html"
     },
     {
         title: "体育チーム分け",
@@ -26,28 +26,27 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
-        icon: "users",
-        link: "taiikuti-muwake/index.html" // 実際のフォルダ名を追加！
+        image: "images/team.jpg",    // サムネイル画像
+        link: "taiikuti-muwake/index.html"
     },
-     {
+    {
         title: "しりとり魔神",
         description: "最強しりとり魔神と何回ラリーできるかな？。",
-        category: "japanese",        // 体育は「その他」に分類
+        category: "japanese",
         tagName: "国語",
         date: "2026/02/22",
         colorClass: "subject-red",
-        icon: "message-circle",
-        link: "shiritori/index.html" // 実際のフォルダ名を追加！
+        image: "images/shiritori.jpg", // サムネイル画像
+        link: "shiritori/index.html"
     },
-    ,
     {
         title: "給食おかわりくじ",
         description: "給食のおかわりを誰がするか、楽しくくじ引きで決めよう！",
         category: "teacher",       // 先生用カテゴリー
         tagName: "先生用",
         date: "2026/02/19",
-        colorClass: "subject-gray",// 先生用の色（グレー）
-        icon: "utensils",          // ナイフとフォークのアイコン
+        colorClass: "subject-gray",
+        image: "images/kyushoku.jpg", // サムネイル画像
         link: "kyushoku-kuji/index.html"
     }
 ];

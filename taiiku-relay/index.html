@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リレーチーム編成メーカー</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 編集可能なセルのスタイル */
+        .editable-cell {
+            padding: 2px 4px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .editable-cell:hover {
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        .editable-cell:focus {
+            outline: none;
+            background-color: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* ドロップゾーンのハイライト用 */
+        .drop-active {
+            background-color: #eff6ff !important;
+            border-color: #93c5fd !important;
+            border-style: dashed !important;
+            border-width: 2px !important;
+        }
+
+        /* 印刷用のスタイル */
+        @media print {
+
+            /* 印刷時に不要な要素を完全に非表示 */
+            nav,
+            #input-area-container,
+            #settings-panel {
+                display: none !important;
+            }
+
+            /* ページ全体のリセット */
+            @page {
+                margin: 10mm;
+                /* 紙の余白を最小限に設定 */
+            }
+
+            body {
+                background-color: white !important;
+                margin: 0;
+                padding: 0;
+            }
+
+            .mt-6 {
+                margin-top: 0 !important;
+            }
+
+            .max-w-7xl {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+            }
+
+            .grid {
+                display: block !important;
+            }
+
+            /* 1ページに収めるための結果エリアのレイアウト調整 */
+            #results-area {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+                justify-content: flex-start !important;
+                align-items: flex-start !important;
+            }
+
+            /* チームカードを小さくして3列〜4列で敷き詰める */
+            .team-card {
+                flex: 1 1 calc(33.333% - 10px) !important;
+                min-width: 180px !important;
+                page-break-inside: avoid !important;
+                /* 途中で切れないようにする */
+                break-inside: avoid !important;
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                margin: 0 !important;
+            }
+
+            /* カード内の余白を極限まで詰める */
+            .team-card h2 {
+                font-size: 1rem !important;
+                padding: 0.25rem 0.5rem !important;
+                margin: 0 !important;
+            }
+
+            .team-card .p-3 {
+                padding: 0.25rem !important;
+            }
+
+            .team-card ul.space-y-2 {
+                margin: 0 !important;
+                gap: 0 !important;
+            }
+
+            .team-card ul.space-y-2>li {
+                margin-bottom: 2px !important;
+                padding: 0.15rem 0.4rem !important;
+                min-height: auto !important;
+            }
+
+            .team-card .px-5 {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+
+            .team-card .py-3 {
+                padding-top: 0.25rem !important;
+                padding-bottom: 0.25rem !important;
+            }
+
+            /* テキストサイズを全体的に縮小 */
+            .team-card .text-xs {
+                font-size: 0.6rem !important;
+            }
+
+            .team-card .text-sm {
+                font-size: 0.7rem !important;
+            }
+
+            .team-card .text-base {
+                font-size: 0.8rem !important;
+            }
+
+            .team-card .text-lg {
+                font-size: 0.95rem !important;
+            }
+
+            /* UI用の装飾を消す（グリップアイコン等） */
+            .cursor-move {
+                cursor: default !important;
+            }
+
+            [data-lucide="grip-vertical"] {
+                display: none !important;
+            }
+
+            /* プルダウンリストを普通のテキストのように見せる */
+            select {
+                appearance: none !important;
+                -webkit-appearance: none !important;
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                font-weight: 600 !important;
+                color: #334155 !important;
+            }
+
+            /* 背景色やグラデーションを白黒印刷でも綺麗に出力させるためのおまじない */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased min-h-screen pb-20">
+
+    <nav class="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2 text-white">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                    <span class="font-bold text-xl tracking-tight">リレーチーム編成メーカー</span>
+                </div>
+                <button onclick="clearAllData()"
+                    class="text-indigo-100 hover:text-white text-sm font-medium flex items-center gap-1 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> 全データ消去
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- 左カラム：データ入力エリア -->
+            <div id="input-area-container" class="lg:col-span-5 flex flex-col gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+
+                    <!-- タブナビゲーション -->
+                    <div class="flex border-b border-slate-200 bg-slate-50">
+                        <button onclick="switchTab('single')" id="tab-single"
+                            class="flex-1 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 bg-white">個別入力（最速）</button>
+                        <button onclick="switchTab('bulk')" id="tab-bulk"
+                            class="flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">エクセルから一括</button>
+                    </div>
+
+                    <!-- 個別入力フォーム -->
+                    <div id="panel-single" class="p-4">
+                        <form id="add-form" class="flex gap-2">
+                            <div class="flex-1">
+                                <input type="text" id="input-name" required placeholder="名前 (例: 山田)"
+                                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                            </div>
+                            <div class="w-28 relative">
+                                <input type="number" id="input-time" required step="0.01" min="0" placeholder="タイム"
+                                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow pr-8">
+                                <span
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">秒</span>
+                            </div>
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1">
+                                <i data-lucide="plus" class="w-4 h-4"></i> 追加
+                            </button>
+                        </form>
+                        <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                            <i data-lucide="info" class="w-3 h-3"></i> TabキーとEnterキーでサクサク連続入力できます。
+                        </p>
+                    </div>
+
+                    <!-- 一括入力フォーム -->
+                    <div id="panel-bulk" class="p-4 hidden">
+                        <textarea id="bulk-input" rows="4"
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow text-sm"
+                            placeholder="エクセル等から名前とタイム（タブ区切り）をコピーして貼り付けてください。&#10;例:&#10;山田太郎    12.5&#10;佐藤花子    13.2"></textarea>
+                        <button onclick="processBulkInput()"
+                            class="mt-2 w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2">
+                            <i data-lucide="clipboard-paste" class="w-4 h-4"></i> データをリストに取り込む
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 登録リスト -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-grow h-[400px]">
+                    <div
+                        class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center rounded-t-xl">
+                        <h3 class="font-semibold text-slate-700 flex items-center gap-2">
+                            <i data-lucide="list" class="w-4 h-4"></i> 登録済みの児童 (<span id="runner-count">0</span>名)
+                        </h3>
+                    </div>
+                    <div class="overflow-y-auto flex-grow p-2" id="runner-list-container">
+                        <!-- リストがここに生成されます -->
+                        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-400">
+                            <i data-lucide="ghost" class="w-12 h-12 mb-2 opacity-50"></i>
+                            <p class="text-sm">データがありません</p>
+                        </div>
+                        <ul id="runner-list" class="space-y-1"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右カラム：設定と結果エリア -->
+            <div class="lg:col-span-7 flex flex-col gap-4">
+                <div id="settings-panel" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
+                    <h3 class="font-semibold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                        <i data-lucide="settings" class="w-4 h-4"></i> 編成設定
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">チーム数</label>
+                            <select id="team-count"
+                                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm">
+                                <option value="2">2チーム</option>
+                                <option value="3">3チーム</option>
+                                <option value="4" selected>4チーム</option>
+                                <option value="5">5チーム</option>
+                                <option value="6">6チーム</option>
+                                <option value="7">7チーム</option>
+                                <option value="8">8チーム</option>
+                                <option value="9">9チーム</option>
+                                <option value="10">10チーム</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">振り分け方式</label>
+                            <select id="order-type"
+                                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm">
+                                <option value="snake">均等化 (S字/蛇腹配置)</option>
+                                <option value="random">ランダム配置</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="generateTeams()"
+                            class="flex-1 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                            <i data-lucide="zap" class="w-5 h-5"></i> チームを作成する
+                        </button>
+                        <button onclick="togglePrivacy()" id="btn-privacy"
+                            class="px-4 py-3 bg-white border border-slate-300 text-slate-600 rounded-xl hover:bg-slate-50 font-medium transition-colors flex items-center gap-2 shadow-sm">
+                            <i data-lucide="eye-off" class="w-4 h-4" id="icon-privacy"></i> <span
+                                id="text-privacy">タイムを隠す</span>
+                        </button>
+                        <button onclick="window.print()"
+                            class="px-4 py-3 bg-white border border-slate-300 text-slate-600 rounded-xl hover:bg-slate-50 font-medium transition-colors flex items-center gap-2 shadow-sm">
+                            <i data-lucide="printer" class="w-4 h-4"></i> 印刷する
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 結果表示エリア -->
+                <div id="results-area" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- ここに結果カードが生成されます -->
+                    <div
+                        class="md:col-span-2 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 p-10 flex flex-col items-center justify-center text-slate-400">
+                        <i data-lucide="medal" class="w-16 h-16 mb-3 opacity-20"></i>
+                        <p>「チームを作成する」ボタンを押すと、ここに結果が表示されます</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 状態管理 ---
+        let runners = [];
+        let showTimeData = true;
+        let currentTeams = []; // 生成されたチームデータを保持
+        let extraRunnersState = {}; // 追加枠の選択状態を保持 { "teamIndex_slotIndex": "runnerId" }
+        const STORAGE_KEY = 'relay_runners_v1';
+
+        // --- 初期化処理 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadData();
+            renderRunnerList();
+
+            // 個別入力フォームの送信イベント
+            document.getElementById('add-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addRunnerFromForm();
+            });
+        });
+
+        // --- データ操作 ---
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    runners = JSON.parse(saved);
+                } catch (e) {
+                    runners = [];
+                }
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(runners));
+            renderRunnerList();
+        }
+
+        function clearAllData() {
+            if (runners.length === 0) return;
+            if (confirm('本当にすべてのデータを消去しますか？\n（復元できません）')) {
+                runners = [];
+                currentTeams = [];
+                extraRunnersState = {};
+                saveData();
+                document.getElementById('results-area').innerHTML = `
+                    <div class="md:col-span-2 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 p-10 flex flex-col items-center justify-center text-slate-400">
+                        <i data-lucide="medal" class="w-16 h-16 mb-3 opacity-20"></i>
+                        <p>データをクリアしました</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function addRunnerFromForm() {
+            const nameInput = document.getElementById('input-name');
+            const timeInput = document.getElementById('input-time');
+            const name = nameInput.value.trim();
+            const time = parseFloat(timeInput.value);
+
+            if (name && !isNaN(time) && time > 0) {
+                runners.push({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), name, time });
+                saveData();
+
+                // 次の入力のためにリセットしてフォーカス
+                nameInput.value = '';
+                timeInput.value = '';
+                nameInput.focus();
+            }
+        }
+
+        function removeRunner(id) {
+            runners = runners.filter(r => r.id !== id);
+            saveData();
+        }
+
+        function updateRunner(id, field, value) {
+            const runner = runners.find(r => r.id === id);
+            if (runner) {
+                if (field === 'time') {
+                    const parsed = parseFloat(value);
+                    if (!isNaN(parsed) && parsed > 0) runner.time = parsed;
+                } else {
+                    if (value.trim() !== '') runner.name = value.trim();
+                }
+                saveData();
+            }
+        }
+
+        function processBulkInput() {
+            const input = document.getElementById('bulk-input').value;
+            const lines = input.trim().split('\n');
+            let addedCount = 0;
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                // タブ、全角・半角スペース、カンマで分割を試みる
+                const parts = line.split(/[\t\s,]+/).filter(p => p.trim() !== '');
+
+                if (parts.length >= 2) {
+                    const name = parts[0].trim();
+                    // "秒"などの文字を除去して数値化
+                    const timeStr = parts[1].trim().replace(/[^0-9.]/g, '');
+                    const time = parseFloat(timeStr);
+
+                    if (name && !isNaN(time) && time > 0) {
+                        runners.push({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), name, time });
+                        addedCount++;
+                    }
+                }
+            }
+
+            if (addedCount > 0) {
+                saveData();
+                document.getElementById('bulk-input').value = ''; // クリア
+                switchTab('single'); // 成功したら個別タブに戻す
+                alert(`${addedCount}名のデータを取り込みました！`);
+            } else {
+                alert('有効なデータが見つかりませんでした。フォーマットを確認してください。');
+            }
+        }
+
+        // --- UI操作 ---
+        function switchTab(tabName) {
+            const tabSingle = document.getElementById('tab-single');
+            const tabBulk = document.getElementById('tab-bulk');
+            const panelSingle = document.getElementById('panel-single');
+            const panelBulk = document.getElementById('panel-bulk');
+
+            if (tabName === 'single') {
+                tabSingle.className = "flex-1 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 bg-white";
+                tabBulk.className = "flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors";
+                panelSingle.classList.remove('hidden');
+                panelBulk.classList.add('hidden');
+                document.getElementById('input-name').focus();
+            } else {
+                tabBulk.className = "flex-1 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 bg-white";
+                tabSingle.className = "flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors";
+                panelBulk.classList.remove('hidden');
+                panelSingle.classList.add('hidden');
+                document.getElementById('bulk-input').focus();
+            }
+        }
+
+        function togglePrivacy() {
+            showTimeData = !showTimeData;
+            const textEl = document.getElementById('text-privacy');
+            const iconEl = document.getElementById('icon-privacy');
+
+            if (showTimeData) {
+                textEl.textContent = "タイムを隠す";
+                iconEl.setAttribute('data-lucide', 'eye-off');
+            } else {
+                textEl.textContent = "タイムを表示";
+                iconEl.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+
+            // 結果が表示されていれば再描画（スクロール移動はしない）
+            if (currentTeams.length > 0) {
+                renderResults(currentTeams, false);
+            }
+        }
+
+        // --- 描画処理 ---
+        function renderRunnerList() {
+            const listEl = document.getElementById('runner-list');
+            const emptyEl = document.getElementById('empty-state');
+            document.getElementById('runner-count').textContent = runners.length;
+
+            if (runners.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+
+            let html = '';
+            runners.forEach((runner, index) => {
+                html += `
+                    <li class="flex items-center justify-between p-2 hover:bg-slate-100 rounded-lg group border border-transparent hover:border-slate-200 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-mono text-slate-400 w-5 text-right">${index + 1}.</span>
+                            <div 
+                                contenteditable="true" 
+                                class="editable-cell font-medium text-slate-700 min-w-[80px]" 
+                                onblur="updateRunner('${runner.id}', 'name', this.innerText)"
+                                onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${runner.name}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div 
+                                contenteditable="true" 
+                                class="editable-cell text-blue-600 font-mono font-semibold" 
+                                onblur="updateRunner('${runner.id}', 'time', this.innerText)"
+                                onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">${runner.time.toFixed(2)}</div>
+                            <span class="text-xs text-slate-400 mr-2">秒</span>
+                            <button onclick="removeRunner('${runner.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="削除">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </li>
+                `;
+            });
+            listEl.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- 編成ロジック ---
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function generateTeams() {
+            if (runners.length === 0) {
+                alert('児童のデータが入力されていません。');
+                return;
+            }
+
+            const teamCount = parseInt(document.getElementById('team-count').value);
+            const orderType = document.getElementById('order-type').value;
+
+            let sortedRunners = [...runners];
+
+            if (orderType === 'snake') {
+                // 均等化（蛇腹）のため、まずはタイムの早い順（昇順）にソート
+                sortedRunners.sort((a, b) => a.time - b.time);
+            } else {
+                // ランダム
+                sortedRunners = shuffleArray(sortedRunners);
+            }
+
+            const teams = Array.from({ length: teamCount }, () => []);
+
+            if (orderType === 'snake') {
+                // 蛇腹方式（S字分配）: 1->2->3->3->2->1...
+                let direction = 1;
+                let currentTeam = 0;
+                for (const runner of sortedRunners) {
+                    teams[currentTeam].push(runner);
+                    currentTeam += direction;
+                    // 端に到達したら方向転換
+                    if (currentTeam >= teamCount) {
+                        currentTeam = teamCount - 1;
+                        direction = -1;
+                    } else if (currentTeam < 0) {
+                        currentTeam = 0;
+                        direction = 1;
+                    }
+                }
+            } else {
+                // ランダム分配：順番に配るだけ
+                sortedRunners.forEach((runner, i) => {
+                    teams[i % teamCount].push(runner);
+                });
+            }
+
+            // 状態を保存して描画
+            currentTeams = teams;
+            extraRunnersState = {}; // 編成し直すたびにリセット
+            renderResults(currentTeams, true);
+        }
+
+        // --- ドラッグ＆ドロップ用関数群 ---
+        function dragStart(event, fromTeamIndex, runnerIndex) {
+            const data = { fromTeamIndex, runnerIndex };
+            event.dataTransfer.setData('text/plain', JSON.stringify(data));
+            event.dataTransfer.effectAllowed = 'move';
+
+            // ドラッグ中の見た目を変更（setTimeoutを使ってドラッグアイコンが消えないようにする）
+            setTimeout(() => {
+                event.target.classList.add('opacity-50', 'ring-2', 'ring-blue-500');
+            }, 0);
+        }
+
+        function dragEnd(event) {
+            event.target.classList.remove('opacity-50', 'ring-2', 'ring-blue-500');
+            // ドロップゾーンのハイライトをすべて消去
+            document.querySelectorAll('.drop-zone').forEach(el => {
+                el.classList.remove('drop-active');
+            });
+        }
+
+        function allowDrop(event) {
+            event.preventDefault(); // ドロップを許可するために必須
+            event.dataTransfer.dropEffect = 'move';
+        }
+
+        function dragEnter(event) {
+            event.preventDefault();
+            // 親のul要素を探してハイライトする
+            const ul = event.currentTarget;
+            ul.classList.add('drop-active');
+        }
+
+        function dragLeave(event) {
+            // 子要素に入った時にもleaveイベントが発火するため、関連ターゲットをチェック
+            const ul = event.currentTarget;
+            if (!ul.contains(event.relatedTarget)) {
+                ul.classList.remove('drop-active');
+            }
+        }
+
+        function dropRunner(event, toTeamIndex) {
+            event.preventDefault();
+            const ul = event.currentTarget;
+            ul.classList.remove('drop-active');
+
+            const dataStr = event.dataTransfer.getData('text/plain');
+            if (!dataStr) return;
+
+            try {
+                const { fromTeamIndex, runnerIndex } = JSON.parse(dataStr);
+
+                // 同じチーム内への移動は今回は無視（もしくは末尾移動）
+                if (fromTeamIndex === toTeamIndex) return;
+
+                // データの移動
+                const runner = currentTeams[fromTeamIndex].splice(runnerIndex, 1)[0];
+                currentTeams[toTeamIndex].push(runner);
+
+                // 再描画（スクロール移動はしない）
+                renderResults(currentTeams, false);
+            } catch (e) {
+                console.error("Drop error", e);
+            }
+        }
+
+        // --- 追加枠の更新 ---
+        function updateExtraRunner(teamIndex, slotIndex, runnerId) {
+            const key = `${teamIndex}_${slotIndex}`;
+            if (runnerId) {
+                extraRunnersState[key] = runnerId;
+            } else {
+                delete extraRunnersState[key];
+            }
+            renderResults(currentTeams, false); // 再描画
+        }
+
+        // --- 結果の描画 ---
+        function renderResults(teams, shouldScroll = true) {
+            const container = document.getElementById('results-area');
+            let html = '';
+
+            // チーム間の最大人数を取得（人数の差分を計算するため）
+            const maxMembers = teams.length > 0 ? Math.max(...teams.map(t => t.length)) : 0;
+
+            // カラースキーム（チームごと）
+            const colors = [
+                'from-red-500 to-rose-600',
+                'from-blue-500 to-indigo-600',
+                'from-emerald-500 to-teal-600',
+                'from-amber-400 to-orange-500',
+                'from-purple-500 to-fuchsia-600',
+                'from-cyan-500 to-blue-500',
+                'from-pink-500 to-rose-500',
+                'from-lime-500 to-green-600',
+                'from-indigo-500 to-violet-600',
+                'from-orange-500 to-red-600'
+            ];
+
+            teams.forEach((team, index) => {
+                let extraTime = 0;
+                let extraCount = 0;
+                let extraHtml = '';
+
+                // 不足している人数分だけ追加枠を生成
+                const shortage = maxMembers - team.length;
+
+                for (let i = 0; i < shortage; i++) {
+                    const stateKey = `${index}_${i}`;
+                    const selectedRunnerId = extraRunnersState[stateKey];
+                    // ドラッグ＆ドロップで別チームに移動したメンバーが選ばれていた場合の対策
+                    const selectedRunner = team.find(r => r.id === selectedRunnerId);
+
+                    if (selectedRunnerId && !selectedRunner) {
+                        delete extraRunnersState[stateKey]; // 存在しない場合はリセット
+                    } else if (selectedRunner) {
+                        extraTime += selectedRunner.time;
+                        extraCount++;
+                    }
+
+                    // プルダウンのオプション生成
+                    let optionsHtml = '<option value="">-- もう一度走る人を選択 --</option>';
+                    team.forEach(r => {
+                        const selected = (r.id === extraRunnersState[stateKey]) ? 'selected' : '';
+                        optionsHtml += `<option value="${r.id}" ${selected}>${r.name}${showTimeData ? ` (${r.time.toFixed(2)}秒)` : ''}</option>`;
+                    });
+
+                    extraHtml += `
+                        <li class="flex justify-between items-center p-2 rounded bg-amber-50 border border-amber-200 shadow-sm">
+                            <div class="flex items-center gap-2 w-full">
+                                <i data-lucide="repeat" class="w-4 h-4 text-amber-500"></i>
+                                <span class="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded flex shrink-0 items-center justify-center">追加枠</span>
+                                <select class="flex-grow text-sm border border-amber-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-700" onchange="updateExtraRunner(${index}, ${i}, this.value)">
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                            ${selectedRunner && showTimeData ? `<span class="text-sm font-mono font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded border border-amber-200 ml-2 shrink-0">${selectedRunner.time.toFixed(2)}<span class="text-[10px] text-amber-600 ml-1">秒</span></span>` : ''}
+                        </li>
+                    `;
+                }
+
+                // タイム計算（本来のメンバー ＋ 選択された追加枠）
+                const baseTotalTime = team.reduce((sum, r) => sum + r.time, 0);
+                const totalTime = baseTotalTime + extraTime;
+
+                // 走る人数の合計（元の人数 + 選択された追加枠の数）
+                const activeRunnersCount = team.length + extraCount;
+                const avgTime = activeRunnersCount > 0 ? (totalTime / activeRunnersCount) : 0;
+
+                const colorClass = colors[index % colors.length];
+
+                html += `
+                    <div class="team-card bg-white rounded-xl shadow-md overflow-hidden border border-slate-100 flex flex-col transition-all">
+                        <div class="bg-gradient-to-r ${colorClass} px-5 py-3 text-white flex justify-between items-center shadow-sm z-10">
+                            <h2 class="text-lg font-bold flex items-center gap-2">
+                                <i data-lucide="flag" class="w-4 h-4"></i> チーム ${index + 1}
+                            </h2>
+                            <div class="text-right">
+                                <div class="text-sm opacity-90 font-medium">基本 ${team.length}名 ${shortage > 0 ? `<span class="text-xs bg-white/20 px-1.5 py-0.5 rounded ml-1">+${shortage}枠</span>` : ''}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-3 flex-grow bg-slate-50/50 flex flex-col gap-2">
+                            <!-- ここがドロップゾーン -->
+                            <ul class="drop-zone space-y-2 min-h-[60px] p-2 rounded-lg border-2 border-transparent transition-colors"
+                                ondragover="allowDrop(event)"
+                                ondragenter="dragEnter(event)"
+                                ondragleave="dragLeave(event)"
+                                ondrop="dropRunner(event, ${index})">
+                                
+                                ${team.length === 0 ? '<li class="text-center text-slate-400 text-sm py-4 border-2 border-dashed border-slate-200 rounded-lg">ここにドラッグ＆ドロップ</li>' : ''}
+                                
+                                ${team.map((runner, rIndex) => `
+                                    <li draggable="true"
+                                        ondragstart="dragStart(event, ${index}, ${rIndex})"
+                                        ondragend="dragEnd(event)"
+                                        class="flex justify-between items-center p-2 rounded bg-white border border-slate-200 shadow-sm cursor-move hover:shadow-md hover:border-blue-300 transition-all group">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-300 group-hover:text-blue-400 transition-colors"></i>
+                                            <span class="text-xs font-bold text-slate-400 bg-slate-100 w-5 h-5 rounded-full flex items-center justify-center">${rIndex + 1}</span>
+                                            <span class="font-medium text-slate-700">${runner.name}</span>
+                                        </div>
+                                        ${showTimeData ? `<span class="text-sm font-mono font-semibold text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-100">${runner.time.toFixed(2)}<span class="text-[10px] text-slate-400 ml-1">秒</span></span>` : ''}
+                                    </li>
+                                `).join('')}
+                            </ul>
+
+                            <!-- 追加枠エリア -->
+                            ${extraHtml ? `
+                            <div class="px-2 pb-2 mt-auto border-t border-dashed border-slate-200 pt-3">
+                                <div class="text-xs text-amber-600 font-semibold mb-2 flex items-center gap-1">
+                                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> チーム人数を揃えるため、${shortage}人追加で走ります
+                                </div>
+                                <ul class="space-y-2">
+                                    ${extraHtml}
+                                </ul>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${showTimeData ? `
+                        <div class="bg-white px-5 py-3 border-t border-slate-100 flex justify-between text-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
+                            <div class="text-slate-500">平均: <span class="font-bold ${avgTime > 0 ? 'text-slate-700' : 'text-slate-300'} font-mono">${avgTime.toFixed(2)}</span>秒</div>
+                            <div class="text-slate-500">合計: <span class="font-bold ${totalTime > 0 ? 'text-slate-800' : 'text-slate-300'} text-base font-mono">${totalTime.toFixed(2)}</span>秒</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+
+            // 初回生成時のみ結果エリアへスクロール（ドラッグ＆ドロップ時はスクロールさせない）
+            if (shouldScroll) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    </script>
+</body>
+
+</html>

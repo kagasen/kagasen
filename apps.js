@@ -78,5 +78,15 @@ const appsData = [
         colorClass: "subject-purple",
         image: "images/mainitimondai.jpg", // サムネイル画像
         link: "mainitimondai/index.html"
+    },
+    {
+        title: "体育リレーチーム編成メーカー",
+        description: "タイムを入力するだけで公平なリレーチームを自動作成！ドラッグ＆ドロップで手動調整も可能。",
+        category: "others",        // 体育は「その他」に分類
+        tagName: "体育",
+        date: "2026/02/23",
+        colorClass: "subject-purple",
+        image: "images/ri-gusen.jpg", // サムネイル画像（仮）
+        link: "taiiku-relay/index.html"
     }
 ];

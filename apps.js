@@ -98,5 +98,15 @@ const appsData = [
         colorClass: "subject-gray",
         image: "images/guru-puwake.jpg", // サムネイル画像
         link: "group-maker/index.html"
+    },
+    {
+        title: "教室の席替えツール",
+        description: "教室のサイズや席の種類を設定し、ランダムに席替え！ドラッグ＆ドロップで微調整も可能。",
+        category: "teacher",       // 先生用
+        tagName: "先生用",
+        date: "2026/02/23",
+        colorClass: "subject-gray",
+        image: "images/sekigae.jpg", // サムネイル画像
+        link: "sekigae/index.html"
     }
 ];

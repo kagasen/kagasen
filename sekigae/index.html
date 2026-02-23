@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教室の席替えツール</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* 教卓のスタイル */
+        .teacher-desk {
+            background: linear-gradient(135deg, #fde047 0%, #facc15 100%);
+            padding: 0.75rem 3rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-weight: 700;
+            color: #854d0e;
+            border-bottom: 4px solid #ca8a04;
+        }
+
+        /* 席の基本スタイル */
+        .seat {
+            width: 4.5rem;
+            height: 4.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            padding: 0.25rem;
+            position: relative;
+        }
+
+        .seat:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .seat:active {
+            transform: scale(0.95);
+        }
+
+        /* 席の状態別スタイル */
+        .seat.empty {
+            background-color: #f9fafb;
+            border: 2px dashed #d1d5db;
+        }
+
+        .seat.boy {
+            background-color: #eff6ff;
+            border: 2px solid #3b82f6;
+        }
+
+        .seat.girl {
+            background-color: #fdf2f8;
+            border: 2px solid #ec4899;
+        }
+
+        .seat.front {
+            background-color: #ecfdf5;
+            border: 2px solid #10b981;
+        }
+
+        .seat.none {
+            background-color: #e5e7eb;
+            border: 2px solid #9ca3af;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ドラッグ＆ドロップ時のスタイル */
+        .seat.drag-over {
+            border: 2px solid #4f46e5 !important;
+            background-color: #e0e7ff !important;
+            transform: scale(1.05);
+        }
+
+        .seat.dragging {
+            opacity: 0.4;
+        }
+
+        /* 席内のテキストスタイル */
+        .seat-number {
+            font-size: 0.65rem;
+            color: #9ca3af;
+            position: absolute;
+            top: 0.25rem;
+            left: 0.25rem;
+        }
+
+        .seat-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            word-break: break-word;
+            line-height: 1.2;
+            width: 100%;
+        }
+
+        .seat.boy .seat-name {
+            color: #1e40af;
+        }
+
+        .seat.girl .seat-name {
+            color: #be185d;
+        }
+
+        .seat.front .seat-name {
+            color: #047857;
+        }
+
+        .seat.boy .seat-number {
+            color: #93c5fd;
+        }
+
+        .seat.girl .seat-number {
+            color: #fbcfe8;
+        }
+
+        .seat.front .seat-number {
+            color: #6ee7b7;
+        }
+
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- ヘッダー -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 tracking-tight">教室の席替えツール</h1>
+            <p class="text-gray-600 mt-2">教室のサイズや席の種類を設定し、ドラッグ＆ドロップで調整できます。</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- 左側: 座席配置 (7カラム幅) -->
+            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-xl font-bold text-gray-800">1. 座席の配置</h2>
+
+                    <!-- グリッド設定 -->
+                    <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                        <div class="flex items-center">
+                            <label class="text-sm text-gray-600 mr-1">横(列):</label>
+                            <input type="number" id="grid-cols" value="6" min="1" max="12"
+                                class="w-14 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex items-center">
+                            <label class="text-sm text-gray-600 mr-1">縦(行):</label>
+                            <input type="number" id="grid-rows" value="6" min="1" max="12"
+                                class="w-14 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <button id="apply-grid"
+                            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1 px-3 rounded transition-colors">
+                            変更
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-sm text-gray-500 mb-4 text-center">
+                    💡 席をクリックして種類を変更 / 割り当て後はドラッグ＆ドロップで席を入れ替えられます
+                </div>
+
+                <!-- 教卓 -->
+                <div class="flex justify-center mb-8">
+                    <div class="teacher-desk">教卓</div>
+                </div>
+
+                <!-- 教室のグリッド -->
+                <div class="flex-grow flex justify-center items-center overflow-x-auto pb-4">
+                    <div id="classroom" class="grid gap-2 sm:gap-3">
+                        <!-- 座席はJavaScriptで生成されます -->
+                    </div>
+                </div>
+
+                <!-- 凡例 -->
+                <div class="flex flex-wrap justify-center gap-4 mt-8 p-4 bg-gray-50 rounded-xl">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-[#f9fafb] border-2 border-dashed border-[#d1d5db] rounded"></div>
+                        <span class="ml-1 text-sm font-medium text-gray-700">通常空席</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-[#eff6ff] border-2 border-[#3b82f6] rounded"></div>
+                        <span class="ml-1 text-sm font-medium text-gray-700">男子席</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-[#fdf2f8] border-2 border-[#ec4899] rounded"></div>
+                        <span class="ml-1 text-sm font-medium text-gray-700">女子席</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-[#ecfdf5] border-2 border-[#10b981] rounded"></div>
+                        <span class="ml-1 text-sm font-medium text-gray-700">目が悪い人</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-[#e5e7eb] border-2 border-[#9ca3af] rounded"></div>
+                        <span class="ml-1 text-sm font-medium text-gray-700">使わない</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側: 生徒情報と操作 (5カラム幅) -->
+            <div class="lg:col-span-5 flex flex-col gap-6 h-full">
+
+                <!-- 生徒情報の追加 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">2. 生徒の追加</h2>
+
+                    <!-- タブナビゲーション -->
+                    <div class="flex space-x-4 border-b border-gray-200 mb-4">
+                        <button id="tab-btn-single"
+                            class="pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors">個別追加</button>
+                        <button id="tab-btn-bulk"
+                            class="pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">エクセル一括</button>
+                    </div>
+
+                    <!-- 個別追加タブ -->
+                    <div id="tab-single" class="space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="flex-grow">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">名前</label>
+                                <input type="text" id="student-name" placeholder="例: 山田 太郎"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                                <div class="flex bg-gray-100 p-1 rounded-lg">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="gender" value="boy" class="peer sr-only" checked>
+                                        <div
+                                            class="px-3 py-1 rounded-md text-sm font-medium text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm">
+                                            男子</div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="gender" value="girl" class="peer sr-only">
+                                        <div
+                                            class="px-3 py-1 rounded-md text-sm font-medium text-gray-500 peer-checked:bg-white peer-checked:text-pink-600 peer-checked:shadow-sm">
+                                            女子</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="student-needs-front"
+                                    class="form-checkbox h-5 w-5 text-emerald-500 rounded border-gray-300 focus:ring-emerald-500">
+                                <span class="ml-2 text-sm font-medium text-gray-700">目が悪い（優先席）</span>
+                            </label>
+                            <button id="add-student"
+                                class="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">追加</button>
+                        </div>
+                    </div>
+
+                    <!-- 一括追加タブ -->
+                    <div id="tab-bulk" class="hidden space-y-4">
+                        <p class="text-xs text-gray-600">エクセル等の表からコピーして貼り付けてください。<br>【名前】 【性別(男/女)】 【目が悪い(〇など)】</p>
+                        <textarea id="bulk-input" rows="4"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="山田太郎&#9;男&#9;〇&#10;佐藤花子&#9;女&#10;鈴木一郎&#9;男"></textarea>
+                        <button id="add-bulk-student"
+                            class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-lg transition-colors shadow-sm">一括追加する</button>
+                    </div>
+                </div>
+
+                <!-- 生徒リスト -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-grow flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">生徒リスト</h2>
+                        <div class="text-sm font-medium text-gray-500">
+                            計: <span id="total-count">0</span>名 (男:<span id="boy-count">0</span> 女:<span
+                                id="girl-count">0</span>)
+                        </div>
+                    </div>
+
+                    <div class="flex-grow overflow-hidden flex flex-col border border-gray-200 rounded-xl">
+                        <div class="overflow-y-auto max-h-[250px] lg:max-h-full">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase">名前
+                                        </th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase w-16">
+                                            性別</th>
+                                        <th
+                                            class="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase w-16">
+                                            視力</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase w-16">
+                                            座席</th>
+                                        <th
+                                            class="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase w-12">
+                                            削</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-list" class="bg-white divide-y divide-gray-100">
+                                    <!-- 生徒リストがここに入ります -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- アクションボタン -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="assign-seats"
+                        class="col-span-2 sm:col-span-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transform transition hover:-translate-y-0.5">
+                        ランダムに席替え
+                    </button>
+                    <button id="reset-all"
+                        class="col-span-2 sm:col-span-1 bg-white border border-red-200 text-red-600 hover:bg-red-50 font-medium py-3 px-6 rounded-xl transition-colors">
+                        すべてリセット
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 状態管理 ---
+            let rows = 6;
+            let cols = 6;
+            let seats = [];    // 座席データの配列
+            let students = []; // 生徒データの配列
+
+            // --- DOM要素の取得 ---
+            const classroom = document.getElementById('classroom');
+            const studentNameInput = document.getElementById('student-name');
+            const studentNeedsFrontInput = document.getElementById('student-needs-front');
+            const addStudentBtn = document.getElementById('add-student');
+            const bulkInput = document.getElementById('bulk-input');
+            const addBulkStudentBtn = document.getElementById('add-bulk-student');
+            const studentListTbody = document.getElementById('student-list');
+            const assignSeatsBtn = document.getElementById('assign-seats');
+            const resetAllBtn = document.getElementById('reset-all');
+            const applyGridBtn = document.getElementById('apply-grid');
+
+            // タブ
+            const tabBtnSingle = document.getElementById('tab-btn-single');
+            const tabBtnBulk = document.getElementById('tab-btn-bulk');
+            const tabSingle = document.getElementById('tab-single');
+            const tabBulk = document.getElementById('tab-bulk');
+
+            // カウント表示用
+            const totalCountEl = document.getElementById('total-count');
+            const boyCountEl = document.getElementById('boy-count');
+            const girlCountEl = document.getElementById('girl-count');
+
+            // 席の種類（ローテーション順）
+            const seatTypes = ['empty', 'boy', 'girl', 'front', 'none'];
+
+            // --- 1. グリッドの初期化と適用 ---
+            function initClassroom(keepOldSeats = false) {
+                const oldSeats = [...seats];
+                classroom.innerHTML = '';
+                classroom.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+                seats = [];
+
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        const seatId = `${i}-${j}`;
+
+                        // 引き継ぎデータの確認
+                        const oldSeat = keepOldSeats ? oldSeats.find(s => s.row === i && s.col === j) : null;
+
+                        const seatEl = document.createElement('div');
+                        seatEl.className = 'seat empty';
+
+                        const seatData = {
+                            id: seatId,
+                            row: i,
+                            col: j,
+                            type: oldSeat ? oldSeat.type : 'empty',
+                            studentId: oldSeat ? oldSeat.studentId : null,
+                            element: seatEl
+                        };
+
+                        setupSeatEvents(seatData);
+                        seats.push(seatData);
+                        classroom.appendChild(seatEl);
+                        updateSeatUI(seatData);
+                    }
+                }
+
+                // はみ出た席に座っていた生徒を「未定」にする
+                if (keepOldSeats) {
+                    students.forEach(student => {
+                        if (student.seatId) {
+                            if (!seats.find(s => s.id === student.seatId)) {
+                                student.seatId = null;
+                            }
+                        }
+                    });
+                }
+            }
+
+            // グリッドサイズ変更ボタン
+            applyGridBtn.addEventListener('click', () => {
+                const newRows = parseInt(document.getElementById('grid-rows').value);
+                const newCols = parseInt(document.getElementById('grid-cols').value);
+
+                if (isNaN(newRows) || newRows < 1 || isNaN(newCols) || newCols < 1) {
+                    alert('正しい行数・列数を入力してください。');
+                    return;
+                }
+                rows = newRows;
+                cols = newCols;
+                initClassroom(true);
+                updateStudentListUI();
+            });
+
+            // --- 2. 席のイベント（クリック＆ドラッグ＆ドロップ） ---
+            function setupSeatEvents(seatData) {
+                const el = seatData.element;
+
+                // クリックでタイプ切り替え
+                el.addEventListener('click', () => {
+                    const currentIndex = seatTypes.indexOf(seatData.type);
+                    seatData.type = seatTypes[(currentIndex + 1) % seatTypes.length];
+
+                    // 使わない席になった、または既に生徒がいる場合は解除
+                    if (seatData.type === 'none' || seatData.studentId) {
+                        if (seatData.studentId) {
+                            const student = students.find(s => s.id === seatData.studentId);
+                            if (student) student.seatId = null;
+                            seatData.studentId = null;
+                            updateStudentListUI();
+                        }
+                    }
+                    updateSeatUI(seatData);
+                });
+
+                // ドラッグ＆ドロップ実装
+                el.addEventListener('dragstart', (e) => {
+                    if (seatData.type === 'none') {
+                        e.preventDefault();
+                        return;
+                    }
+                    e.dataTransfer.setData('text/plain', seatData.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                    el.classList.add('dragging');
+                });
+
+                el.addEventListener('dragend', (e) => {
+                    el.classList.remove('dragging');
+                    document.querySelectorAll('.seat').forEach(s => s.classList.remove('drag-over'));
+                });
+
+                el.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (seatData.type === 'none') return;
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                el.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    if (seatData.type === 'none') return;
+                    el.classList.add('drag-over');
+                });
+
+                el.addEventListener('dragleave', (e) => {
+                    el.classList.remove('drag-over');
+                });
+
+                el.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    el.classList.remove('drag-over');
+                    if (seatData.type === 'none') return;
+
+                    const sourceId = e.dataTransfer.getData('text/plain');
+                    if (sourceId === seatData.id) return; // 同じ席
+
+                    const sourceSeat = seats.find(s => s.id === sourceId);
+                    if (!sourceSeat) return;
+
+                    // 生徒データのIDをスワップする
+                    const tempStudentId = sourceSeat.studentId;
+                    sourceSeat.studentId = seatData.studentId;
+                    seatData.studentId = tempStudentId;
+
+                    // 生徒側の参照を更新
+                    if (sourceSeat.studentId) {
+                        const s1 = students.find(s => s.id === sourceSeat.studentId);
+                        if (s1) s1.seatId = sourceSeat.id;
+                    }
+                    if (seatData.studentId) {
+                        const s2 = students.find(s => s.id === seatData.studentId);
+                        if (s2) s2.seatId = seatData.id;
+                    }
+
+                    updateSeatUI(sourceSeat);
+                    updateSeatUI(seatData);
+                    updateStudentListUI();
+                });
+            }
+
+            // --- 3. 座席の見た目を更新 ---
+            function updateSeatUI(seatData) {
+                const el = seatData.element;
+                el.className = `seat ${seatData.type}`;
+
+                // 使わない席の場合はドラッグ無効、バツ印
+                if (seatData.type === 'none') {
+                    el.setAttribute('draggable', 'false');
+                    el.innerHTML = `<span class="text-gray-400 font-bold text-xl">×</span>`;
+                    return;
+                }
+
+                // 有効な席はドラッグ可能
+                el.setAttribute('draggable', 'true');
+
+                const rowNum = seatData.row + 1;
+                const colNum = seatData.col + 1;
+                let innerHTML = `<span class="seat-number">${rowNum}-${colNum}</span>`;
+
+                if (seatData.studentId) {
+                    const student = students.find(s => s.id === seatData.studentId);
+                    if (student) {
+                        innerHTML += `<span class="seat-name">${student.name}</span>`;
+                    }
+                } else if (seatData.type !== 'empty') {
+                    // 属性付きの空席
+                    let lbl = seatData.type === 'boy' ? '男子' : (seatData.type === 'girl' ? '女子' : '優先');
+                    let color = seatData.type === 'boy' ? 'text-blue-300' : (seatData.type === 'girl' ? 'text-pink-300' : 'text-emerald-300');
+                    innerHTML += `<span class="text-xs ${color} font-medium">${lbl}</span>`;
+                }
+                el.innerHTML = innerHTML;
+            }
+
+            // --- 4. タブの切り替え ---
+            function switchTab(mode) {
+                if (mode === 'single') {
+                    tabBtnSingle.className = "pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors";
+                    tabBtnBulk.className = "pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors";
+                    tabSingle.classList.remove('hidden');
+                    tabBulk.classList.add('hidden');
+                } else {
+                    tabBtnBulk.className = "pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors";
+                    tabBtnSingle.className = "pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors";
+                    tabBulk.classList.remove('hidden');
+                    tabSingle.classList.add('hidden');
+                }
+            }
+            tabBtnSingle.addEventListener('click', () => switchTab('single'));
+            tabBtnBulk.addEventListener('click', () => switchTab('bulk'));
+
+            // --- 5. 生徒の追加処理 ---
+
+            // 5.1 個別追加
+            addStudentBtn.addEventListener('click', () => {
+                const name = studentNameInput.value.trim();
+                if (!name) {
+                    alert('名前を入力してください。');
+                    studentNameInput.focus();
+                    return;
+                }
+
+                const genderInput = document.querySelector('input[name="gender"]:checked');
+                const gender = genderInput ? genderInput.value : 'boy';
+                const needsFront = studentNeedsFrontInput.checked;
+
+                students.push({
+                    id: 'student_' + Date.now() + Math.random(),
+                    name: name,
+                    gender: gender,
+                    needsFront: needsFront,
+                    seatId: null
+                });
+
+                updateStudentListUI();
+                studentNameInput.value = '';
+                studentNeedsFrontInput.checked = false;
+                studentNameInput.focus();
+            });
+
+            studentNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addStudentBtn.click();
+            });
+
+            // 5.2 一括追加
+            addBulkStudentBtn.addEventListener('click', () => {
+                const text = bulkInput.value.trim();
+                if (!text) {
+                    alert('追加するデータを入力してください。');
+                    return;
+                }
+
+                const lines = text.split('\n');
+                let addedCount = 0;
+
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+
+                    // タブ区切り優先、なければ空白区切り
+                    let parts = line.split('\t');
+                    if (parts.length === 1) parts = line.split(/\s+/);
+
+                    const name = parts[0];
+                    let gender = 'boy';
+                    let needsFront = false;
+
+                    if (parts.length > 1) {
+                        const gStr = parts[1].toLowerCase();
+                        if (gStr === '女' || gStr === '女子' || gStr === 'girl' || gStr === 'f') {
+                            gender = 'girl';
+                        }
+                    }
+
+                    if (parts.length > 2) {
+                        const fStr = parts[2];
+                        if (['〇', '○', '丸', '1', 'true', 'あり', '有', '前'].includes(fStr.toLowerCase())) {
+                            needsFront = true;
+                        }
+                    }
+
+                    students.push({
+                        id: 'student_' + Date.now() + Math.random(),
+                        name,
+                        gender,
+                        needsFront,
+                        seatId: null
+                    });
+                    addedCount++;
+                }
+
+                if (addedCount > 0) {
+                    updateStudentListUI();
+                    bulkInput.value = '';
+                    alert(`${addedCount}名の生徒を追加しました。`);
+                }
+            });
+
+            // --- 6. 生徒リストUIの更新 ---
+            function updateStudentListUI() {
+                studentListTbody.innerHTML = '';
+
+                const boyCount = students.filter(s => s.gender === 'boy').length;
+                const girlCount = students.filter(s => s.gender === 'girl').length;
+                totalCountEl.textContent = students.length;
+                boyCountEl.textContent = boyCount;
+                girlCountEl.textContent = girlCount;
+
+                if (students.length === 0) {
+                    studentListTbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
+                                生徒が登録されていません。<br>上のフォームから追加してください。
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                students.forEach(student => {
+                    const tr = document.createElement('tr');
+
+                    const genderBadge = student.gender === 'boy'
+                        ? '<span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-bold border border-blue-100">男子</span>'
+                        : '<span class="px-2 py-0.5 bg-pink-50 text-pink-600 rounded text-xs font-bold border border-pink-100">女子</span>';
+
+                    const needsFrontCheck = `
+                        <input type="checkbox" class="needs-front-toggle form-checkbox h-4 w-4 text-emerald-500 rounded border-gray-300" 
+                               data-id="${student.id}" ${student.needsFront ? 'checked' : ''}>
+                    `;
+
+                    let seatText = '<span class="text-gray-400 text-xs">未定</span>';
+                    if (student.seatId) {
+                        const seat = seats.find(s => s.id === student.seatId);
+                        if (seat) {
+                            seatText = `<span class="font-medium text-gray-700">${seat.row + 1}-${seat.col + 1}</span>`;
+                        }
+                    }
+
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-800">${student.name}</td>
+                        <td class="px-3 py-2 whitespace-nowrap">${genderBadge}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-center">${needsFrontCheck}</td>
+                        <td class="px-3 py-2 whitespace-nowrap">${seatText}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-center">
+                            <button class="text-gray-400 hover:text-red-500 transition-colors p-1 btn-delete" data-id="${student.id}" title="削除">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </td>
+                    `;
+
+                    studentListTbody.appendChild(tr);
+                });
+
+                // 視力チェックボックスのイベント
+                document.querySelectorAll('.needs-front-toggle').forEach(chk => {
+                    chk.addEventListener('change', (e) => {
+                        const st = students.find(s => s.id === e.target.dataset.id);
+                        if (st) st.needsFront = e.target.checked;
+                    });
+                });
+
+                // 削除ボタンのイベント
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const stId = e.currentTarget.dataset.id;
+                        const st = students.find(s => s.id === stId);
+                        if (st && st.seatId) {
+                            const seat = seats.find(s => s.id === st.seatId);
+                            if (seat) {
+                                seat.studentId = null;
+                                updateSeatUI(seat);
+                            }
+                        }
+                        students = students.filter(s => s.id !== stId);
+                        updateStudentListUI();
+                    });
+                });
+            }
+
+            // --- 7. ランダムに席替えアルゴリズム ---
+            assignSeatsBtn.addEventListener('click', () => {
+                if (students.length === 0) {
+                    alert('生徒を追加してから実行してください。');
+                    return;
+                }
+
+                // 1. 有効な席の数チェック
+                const activeSeats = seats.filter(s => s.type !== 'none');
+                if (students.length > activeSeats.length) {
+                    alert(`生徒の数（${students.length}人）が、有効な席の数（${activeSeats.length}席）を上回っています。列/行を増やすか、「使わない」席を減らしてください。`);
+                    return;
+                }
+
+                // 2. 現在の割り当てを全てクリア
+                seats.forEach(s => s.studentId = null);
+                students.forEach(s => s.seatId = null);
+
+                // 3. 配列シャッフル関数
+                const shuffle = (array) => {
+                    const arr = [...array];
+                    for (let i = arr.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [arr[i], arr[j]] = [arr[j], arr[i]];
+                    }
+                    return arr;
+                };
+
+                // 4. 生徒と席の分類＆シャッフル
+                let reqFront = shuffle(students.filter(s => s.needsFront));
+                let reqBoy = shuffle(students.filter(s => s.gender === 'boy' && !s.needsFront));
+                let reqGirl = shuffle(students.filter(s => s.gender === 'girl' && !s.needsFront));
+
+                let poolFront = shuffle(seats.filter(s => s.type === 'front'));
+                let poolBoy = shuffle(seats.filter(s => s.type === 'boy'));
+                let poolGirl = shuffle(seats.filter(s => s.type === 'girl'));
+                let poolEmpty = shuffle(seats.filter(s => s.type === 'empty'));
+
+                // 割り当て実行関数
+                const assign = (student, seat) => {
+                    student.seatId = seat.id;
+                    seat.studentId = student.id;
+                };
+
+                // 5. 視力優先生徒の割り当て
+                if (reqFront.length > poolFront.length) {
+                    alert(`目が悪い人の数（${reqFront.length}人）が、設定された「目が悪い人用」席の数（${poolFront.length}席）を上回っています。\nはみ出た人は通常の席にランダムで配置されます。`);
+                }
+
+                reqFront.forEach(student => {
+                    if (poolFront.length > 0) {
+                        assign(student, poolFront.pop());
+                    } else {
+                        // 優先席が足りない場合、通常プールへ合流
+                        if (student.gender === 'boy') reqBoy.push(student);
+                        else reqGirl.push(student);
+                    }
+                });
+
+                // 優先席が余った場合、誰でも座れる通常空席プールに合流
+                poolEmpty.push(...poolFront);
+                poolEmpty = shuffle(poolEmpty);
+
+                // 6. 男子の割り当て
+                if (reqBoy.length > (poolBoy.length + poolEmpty.length)) {
+                    alert('男子生徒の数が、座れる席（男子席＋空席）を上回っています。配置を見直してください。');
+                    // UIだけ更新して終了
+                    seats.forEach(seat => updateSeatUI(seat));
+                    updateStudentListUI();
+                    return;
+                }
+                reqBoy.forEach(student => {
+                    if (poolBoy.length > 0) {
+                        assign(student, poolBoy.pop());
+                    } else if (poolEmpty.length > 0) {
+                        assign(student, poolEmpty.pop());
+                    }
+                });
+
+                // 7. 女子の割り当て
+                if (reqGirl.length > (poolGirl.length + poolEmpty.length)) {
+                    alert('女子生徒の数が、座れる席（女子席＋空席）を上回っています。配置を見直してください。');
+                    seats.forEach(seat => updateSeatUI(seat));
+                    updateStudentListUI();
+                    return;
+                }
+                reqGirl.forEach(student => {
+                    if (poolGirl.length > 0) {
+                        assign(student, poolGirl.pop());
+                    } else if (poolEmpty.length > 0) {
+                        assign(student, poolEmpty.pop());
+                    }
+                });
+
+                // 8. UIの更新
+                seats.forEach(seat => updateSeatUI(seat));
+                updateStudentListUI();
+            });
+
+            // --- 8. すべてリセット ---
+            resetAllBtn.addEventListener('click', () => {
+                if (confirm('生徒リストと座席の配置をすべて初期化しますか？')) {
+                    students = [];
+                    initClassroom(false); // グリッドも完全に初期化
+                    updateStudentListUI();
+                }
+            });
+
+            // --- 初期化処理の実行 ---
+            initClassroom(false);
+            updateStudentListUI();
+        });
+    </script>
+</body>
+
+</html>

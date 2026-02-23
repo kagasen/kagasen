@@ -88,5 +88,15 @@ const appsData = [
         colorClass: "subject-purple",
         image: "images/rire-.jpg", // サムネイル画像
         link: "taiiku-relay/index.html"
+    },
+    {
+        title: "スポーツグループ分け",
+        description: "スキルレベルを考慮してバランスの良いグループを自動作成！ドラッグ＆ドロップで微調整も可能。",
+        category: "teacher",       // 先生用
+        tagName: "先生用",
+        date: "2026/02/23",
+        colorClass: "subject-gray",
+        image: "images/guru-puwake.jpg", // サムネイル画像
+        link: "group-maker/index.html"
     }
 ];

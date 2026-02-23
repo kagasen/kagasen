@@ -99,21 +99,18 @@
                 display: block !important;
             }
 
-            /* 1ページに収めるための結果エリアのレイアウト調整 */
+            /* 1ページに収めるための結果エリアのレイアウト調整：2列グリッド固定 */
             #results-area {
-                display: flex !important;
-                flex-wrap: wrap !important;
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
-                justify-content: flex-start !important;
-                align-items: flex-start !important;
+                align-items: start !important;
             }
 
-            /* チームカードを小さくして3列〜4列で敷き詰める */
+            /* チームカード：常にグリッド列幅に合わせる（最後のカードが伸びない） */
             .team-card {
-                flex: 1 1 calc(33.333% - 10px) !important;
-                min-width: 180px !important;
+                width: 100% !important;
                 page-break-inside: avoid !important;
-                /* 途中で切れないようにする */
                 break-inside: avoid !important;
                 box-shadow: none !important;
                 border: 1px solid #cbd5e1 !important;

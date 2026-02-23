@@ -86,7 +86,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/23",
         colorClass: "subject-purple",
-        image: "images/ri-gusen.jpg", // サムネイル画像（仮）
+        image: "images/rire-.jpg", // サムネイル画像
         link: "taiiku-relay/index.html"
     }
 ];

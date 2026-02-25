@@ -108,5 +108,15 @@ const appsData = [
         colorClass: "subject-gray",
         image: "images/sekigae.jpg", // サムネイル画像
         link: "sekigae/index.html"
+    },
+    {
+        title: "教室サポートボード",
+        description: "タイマーや時間割、お絵かきツールなど、授業をサポートする機能が一つになった電子黒板アプリです。",
+        category: "teacher",       // 先生用
+        tagName: "先生用",
+        date: "2026/02/25",
+        colorClass: "subject-gray",
+        image: "images/classbo-do.jpg", // サムネイル画像
+        link: "classroom-board/index.html"
     }
 ];

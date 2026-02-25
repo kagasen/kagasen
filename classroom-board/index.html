@@ -1,0 +1,3432 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>教室サポートボード</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            overflow: hidden;
+            background: #fff;
+            height: 100vh;
+            width: 100vw
+        }
+
+        #toolbar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 54px;
+            height: 100vh;
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 100;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, .15)
+        }
+
+        .cal-day {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            color: #334155
+        }
+
+        .cal-day-text {
+            font-size: 7px;
+            color: #475569;
+            font-weight: 500;
+            margin-top: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            width: 100%;
+            text-align: left;
+            line-height: 1.3;
+        }
+
+        .tb-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 19px;
+            cursor: pointer;
+            transition: all .2s;
+            margin: 2px 0;
+            position: relative
+        }
+
+        .tb-btn:hover {
+            background: #334155;
+            color: #e2e8f0
+        }
+
+        .tb-btn.active {
+            background: #3b82f6;
+            color: #fff
+        }
+
+        .tb-btn.widget-on {
+            background: #1d4ed8;
+            color: #fff
+        }
+
+        .tb-btn.action-btn:hover {
+            background: #475569;
+            color: #fff
+        }
+
+        .tb-btn::after {
+            content: attr(data-tip);
+            position: absolute;
+            left: calc(100% + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .15s;
+            z-index: 200
+        }
+
+        .tb-btn:hover::after {
+            opacity: 1
+        }
+
+        .tb-div {
+            width: 30px;
+            height: 1px;
+            background: #334155;
+            margin: 6px 0
+        }
+
+        #tool-options {
+            position: fixed;
+            left: 62px;
+            top: 8px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 6px 28px rgba(0, 0, 0, .13);
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            z-index: 99;
+            display: none
+        }
+
+        #tool-options.show {
+            display: block
+        }
+
+        .opt-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 6px
+        }
+
+        .color-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 12px
+        }
+
+        .color-dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .color-dot:hover {
+            transform: scale(1.15)
+        }
+
+        .color-dot.sel {
+            border-color: #1e293b;
+            transform: scale(1.1)
+        }
+
+        .size-row {
+            display: flex;
+            gap: 5px
+        }
+
+        .size-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .15s
+        }
+
+        .size-btn:hover {
+            border-color: #94a3b8
+        }
+
+        .size-btn.sel {
+            border-color: #3b82f6;
+            background: #eff6ff
+        }
+
+        .sz-dot {
+            border-radius: 50%;
+            background: #1e293b
+        }
+
+        #whiteboard {
+            position: fixed;
+            left: 54px;
+            top: 0;
+            width: calc(100vw - 54px);
+            height: 100vh;
+            touch-action: none;
+            background: #fff
+        }
+
+        #whiteboard.c-pen {
+            cursor: crosshair
+        }
+
+        #whiteboard.c-eraser {
+            cursor: crosshair
+        }
+
+        #whiteboard.c-text {
+            cursor: text
+        }
+
+        #whiteboard.c-move {
+            cursor: move
+        }
+
+        #whiteboard.c-default {
+            cursor: default
+        }
+
+        #eraser-cursor {
+            position: fixed;
+            border-radius: 50%;
+            border: 2px solid rgba(100, 116, 139, .6);
+            background: rgba(241, 245, 249, .3);
+            pointer-events: none;
+            display: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+
+        #text-input-wrap {
+            position: fixed;
+            z-index: 80;
+            display: none
+        }
+
+        #text-input {
+            border: 2px solid #3b82f6;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 20px;
+            outline: none;
+            min-width: 120px;
+            background: rgba(255, 255, 255, .95);
+            box-shadow: 0 2px 12px rgba(59, 130, 246, .2)
+        }
+
+        #confirm-bar {
+            position: fixed;
+            top: 0;
+            left: 54px;
+            right: 0;
+            z-index: 95;
+            display: none;
+            background: #fef3c7;
+            border-bottom: 2px solid #f59e0b;
+            padding: 14px 24px;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            animation: slideDown .2s ease
+        }
+
+        #confirm-bar.show {
+            display: flex
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%)
+            }
+
+            to {
+                transform: translateY(0)
+            }
+        }
+
+        .confirm-yes {
+            padding: 6px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #ef4444;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .confirm-no {
+            padding: 6px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #d1d5db;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .widget {
+            position: fixed;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 36px rgba(0, 0, 0, .12);
+            border: 1px solid #e2e8f0;
+            z-index: 50;
+            display: none;
+            overflow: hidden;
+            animation: wIn .25s ease;
+            transform: scale(var(--w-scale, 1));
+            transform-origin: top left
+        }
+
+        .widget.show {
+            display: block
+        }
+
+        @keyframes wIn {
+            from {
+                opacity: 0;
+                transform: scale(calc(var(--w-scale, 1) * 0.92))
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(var(--w-scale, 1))
+            }
+        }
+
+        .w-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: grab;
+            user-select: none
+        }
+
+        .w-header:active {
+            cursor: grabbing
+        }
+
+        .w-resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 24px;
+            height: 24px;
+            cursor: nwse-resize;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            color: #cbd5e1;
+            padding: 4px;
+            font-size: 10px;
+            user-select: none;
+            z-index: 10
+        }
+
+        .w-resize-handle:hover {
+            color: #94a3b8
+        }
+
+        .w-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .w-close {
+            width: 26px;
+            height: 26px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .15s
+        }
+
+        .w-close:hover {
+            background: #fee2e2;
+            color: #ef4444
+        }
+
+        .w-body {
+            padding: 16px
+        }
+
+        #timer-widget {
+            width: 320px
+        }
+
+        .timer-tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0
+        }
+
+        .timer-tab {
+            flex: 1;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all .2s;
+            font-family: 'Noto Sans JP', sans-serif;
+            white-space: nowrap;
+        }
+
+        .timer-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6
+        }
+
+        .timer-circle-wrap {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 8px auto
+        }
+
+        .timer-svg {
+            width: 100%;
+            height: 100%
+        }
+
+        .timer-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center
+        }
+
+        .timer-display {
+            font-size: 40px;
+            font-weight: 900;
+            color: #1e293b;
+            font-variant-numeric: tabular-nums;
+            line-height: 1
+        }
+
+        .timer-display.alert {
+            color: #ef4444;
+            animation: tFlash .5s infinite alternate
+        }
+
+        @keyframes tFlash {
+            from {
+                opacity: 1
+            }
+
+            to {
+                opacity: .4
+            }
+        }
+
+        .timer-presets {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px
+        }
+
+        .timer-preset {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all .15s
+        }
+
+        .timer-preset:hover {
+            background: #eff6ff;
+            border-color: #3b82f6
+        }
+
+        .timer-setup {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px
+        }
+
+        .timer-setup input {
+            width: 50px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .timer-setup input:focus {
+            outline: none;
+            border-color: #3b82f6
+        }
+
+        .timer-setup span {
+            font-size: 14px;
+            font-weight: 700;
+            color: #64748b
+        }
+
+        .timer-btns {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px
+        }
+
+        .t-btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .t-btn.pri {
+            background: #3b82f6;
+            color: #fff
+        }
+
+        .t-btn.pri:hover {
+            background: #2563eb
+        }
+
+        .t-btn.sec {
+            background: #f1f5f9;
+            color: #64748b
+        }
+
+        .t-btn.sec:hover {
+            background: #e2e8f0
+        }
+
+        .t-btn.dan {
+            background: #fef2f2;
+            color: #ef4444
+        }
+
+        .t-btn.dan:hover {
+            background: #fee2e2
+        }
+
+        .sw-display {
+            font-size: 48px;
+            font-weight: 900;
+            text-align: center;
+            padding: 24px 0;
+            color: #1e293b;
+            font-variant-numeric: tabular-nums
+        }
+
+        .pomo-status {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 8px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            display: inline-block;
+        }
+
+        .pomo-status.work {
+            color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .pomo-status.break {
+            color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        #picker-widget {
+            min-width: 300px
+        }
+
+        .picker-config {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px
+        }
+
+        .picker-config label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap
+        }
+
+        .picker-config input[type=number] {
+            width: 60px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 5px;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .picker-config input:focus {
+            outline: none;
+            border-color: #3b82f6
+        }
+
+        .picker-display-wrap {
+            background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+            border: 2px solid #e2e8f0
+        }
+
+        .picker-number {
+            font-size: 72px;
+            font-weight: 900;
+            color: #1e293b;
+            line-height: 1
+        }
+
+        .picker-number.pop {
+            animation: popIn .35s ease
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(.5);
+                opacity: .3
+            }
+
+            60% {
+                transform: scale(1.15)
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .picker-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px
+        }
+
+        .picker-go {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Noto Sans JP', sans-serif;
+            margin-bottom: 12px
+        }
+
+        .picker-go:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, .4)
+        }
+
+        .picker-go:active {
+            transform: scale(.97)
+        }
+
+        .picker-go:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none
+        }
+
+        .picker-opts {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px
+        }
+
+        .picker-opts label {
+            font-size: 13px;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer
+        }
+
+        .picker-opts input[type=checkbox] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3b82f6
+        }
+
+        .picker-history {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 10px 14px;
+            max-height: 80px;
+            overflow-y: auto
+        }
+
+        .picker-history-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 4px
+        }
+
+        .picker-history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px
+        }
+
+        .picker-history-item {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .picker-reset {
+            font-size: 12px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline
+        }
+
+        .picker-reset:hover {
+            color: #ef4444
+        }
+
+
+
+        /* アンケートウィジェット */
+        #poll-widget {
+            width: 340px
+        }
+
+        .poll-q {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px
+        }
+
+        .poll-q input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Noto Sans JP', sans-serif;
+            min-width: 0
+        }
+
+        .poll-q input:focus {
+            outline: none;
+            border-color: #3b82f6
+        }
+
+        .poll-add-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px
+        }
+
+        .poll-add-row input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif;
+            min-width: 0
+        }
+
+        .poll-add-row input:focus {
+            outline: none;
+            border-color: #3b82f6
+        }
+
+        .poll-add-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif;
+            white-space: nowrap
+        }
+
+        .poll-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+            max-height: 240px;
+            overflow-y: auto
+        }
+
+        .poll-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all .15s;
+            user-select: none
+        }
+
+        .poll-item:hover {
+            background: #eff6ff;
+            border-color: #93c5fd
+        }
+
+        .poll-item:active {
+            transform: scale(.98)
+        }
+
+        .poll-item-label {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155
+        }
+
+        .poll-item-bar-wrap {
+            flex: 2;
+            height: 22px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative
+        }
+
+        .poll-item-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #6366f1);
+            border-radius: 6px;
+            transition: width .3s ease;
+            min-width: 0
+        }
+
+        .poll-item-count {
+            font-size: 14px;
+            font-weight: 900;
+            color: #3b82f6;
+            min-width: 30px;
+            text-align: right
+        }
+
+        .poll-item-del {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0
+        }
+
+        .poll-item-del:hover {
+            background: #fee2e2;
+            color: #ef4444
+        }
+
+        .poll-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end
+        }
+
+        /* ToDoリスト */
+        #todo-widget {
+            width: 300px
+        }
+
+        .todo-add {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px
+        }
+
+        .todo-add input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif;
+            min-width: 0
+        }
+
+        .todo-add input:focus {
+            outline: none;
+            border-color: #3b82f6
+        }
+
+        .todo-add button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 300px;
+            overflow-y: auto
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all .15s
+        }
+
+        .todo-item.done {
+            opacity: .5
+        }
+
+        .todo-item.done .todo-text {
+            text-decoration: line-through;
+            color: #94a3b8
+        }
+
+        .todo-item input[type=checkbox] {
+            width: 18px;
+            height: 18px;
+            accent-color: #22c55e;
+            cursor: pointer;
+            flex-shrink: 0
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 14px;
+            color: #334155;
+            word-break: break-all
+        }
+
+        .todo-del {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            flex-shrink: 0
+        }
+
+        .todo-del:hover {
+            background: #fee2e2;
+            color: #ef4444
+        }
+
+        .todo-empty {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            padding: 20px 0
+        }
+
+        /* カレンダー */
+        #cal-widget {
+            width: 520px
+        }
+
+        .cal-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px
+        }
+
+        .cal-nav button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .cal-nav button:hover {
+            background: #e2e8f0
+        }
+
+        .cal-month {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center
+        }
+
+        .cal-dow {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            padding: 4px 0
+        }
+
+        .cal-day-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            margin-bottom: 2px;
+        }
+
+        .cal-day.today {
+            background: #eff6ff;
+            color: #1e293b;
+        }
+
+        .cal-day.today .cal-day-num {
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .cal-day.sun {
+            color: #ef4444
+        }
+
+        .cal-day.sat {
+            color: #3b82f6
+        }
+
+        .cal-day.other {
+            color: #d1d5db
+        }
+
+        /* カスタムプロンプト */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+            font-family: 'Noto Sans JP', sans-serif;
+            text-align: center;
+        }
+
+        .modal-box h3 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            color: #1e293b;
+        }
+
+        .modal-box textarea {
+            width: 100%;
+            height: 100px;
+            padding: 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+        }
+
+        .modal-box textarea:focus {
+            border-color: #3b82f6;
+        }
+
+        .modal-btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .modal-btn.ok {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .modal-btn.cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        /* 静かさチェック */
+        #noise-widget {
+            width: 280px
+        }
+
+        .noise-meter-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0
+        }
+
+        .noise-meter {
+            width: 100%;
+            height: 28px;
+            background: #e5e7eb;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative
+        }
+
+        .noise-bar {
+            height: 100%;
+            border-radius: 14px;
+            transition: width .15s ease, background .3s ease;
+            width: 0
+        }
+
+        .noise-level {
+            font-size: 48px;
+            font-weight: 900;
+            line-height: 1
+        }
+
+        .noise-label {
+            font-size: 16px;
+            font-weight: 700;
+            padding: 6px 20px;
+            border-radius: 20px
+        }
+
+        .noise-label.quiet {
+            background: #dcfce7;
+            color: #16a34a
+        }
+
+        .noise-label.normal {
+            background: #fef9c3;
+            color: #ca8a04
+        }
+
+        .noise-label.loud {
+            background: #fee2e2;
+            color: #ef4444
+        }
+
+        .noise-start {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: #3b82f6;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all .15s
+        }
+
+        .noise-start:hover {
+            background: #2563eb
+        }
+
+        .noise-start.active {
+            background: #ef4444
+        }
+
+        .noise-start.active:hover {
+            background: #dc2626
+        }
+
+        /* テキストサイズ選択 */
+        #text-size-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: absolute;
+            left: 0;
+            bottom: -32px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+            padding: 4px 8px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #475569
+        }
+
+        #text-size-wrap select {
+            padding: 2px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        /* アンケート円グラフ */
+        #poll-widget {
+            width: 380px
+        }
+
+        .poll-chart-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px
+        }
+
+        .poll-pie-wrap {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            flex-shrink: 0
+        }
+
+        .poll-pie-wrap svg {
+            width: 100%;
+            height: 100%
+        }
+
+        .poll-legend {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        .poll-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 6px;
+            transition: background .15s;
+            user-select: none
+        }
+
+        .poll-legend-item:hover {
+            background: #f1f5f9
+        }
+
+        .poll-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0
+        }
+
+        .poll-legend-label {
+            flex: 1;
+            font-weight: 600;
+            color: #334155
+        }
+
+        .poll-legend-pct {
+            font-weight: 900;
+            color: #3b82f6;
+            min-width: 36px;
+            text-align: right
+        }
+
+        .poll-legend-count {
+            font-size: 11px;
+            color: #94a3b8;
+            min-width: 24px;
+            text-align: right
+        }
+
+        .poll-legend-del {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #cbd5e1;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0
+        }
+
+        .poll-legend-del:hover {
+            background: #fee2e2;
+            color: #ef4444
+        }
+
+        .poll-total {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px
+        }
+
+        /* ミッション */
+        #mission-widget {
+            width: 360px
+        }
+
+        .mission-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Noto Sans JP', sans-serif;
+            resize: none;
+            min-height: 60px
+        }
+
+        .mission-input:focus {
+            outline: none;
+            border-color: #8b5cf6
+        }
+
+        .mission-btns {
+            display: flex;
+            gap: 10px;
+            margin: 12px 0
+        }
+
+        .mission-btn {
+            flex: 1;
+            padding: 14px 10px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all .15s;
+            color: #fff
+        }
+
+        .mission-btn.ok {
+            background: linear-gradient(135deg, #22c55e, #16a34a)
+        }
+
+        .mission-btn.ok:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            transform: scale(1.03)
+        }
+
+        .mission-btn.ng {
+            background: linear-gradient(135deg, #f87171, #ef4444)
+        }
+
+        .mission-btn.ng:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transform: scale(1.03)
+        }
+
+        .mission-btn:active {
+            transform: scale(.96)
+        }
+
+        .mission-result {
+            margin-top: 8px
+        }
+
+        .mission-result-bar-wrap {
+            height: 36px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            position: relative
+        }
+
+        .mission-result-ok {
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            height: 100%;
+            transition: width .4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 900;
+            color: #fff;
+            min-width: 0
+        }
+
+        .mission-result-ng {
+            background: linear-gradient(90deg, #f87171, #ef4444);
+            height: 100%;
+            transition: width .4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 900;
+            color: #fff;
+            min-width: 0
+        }
+
+        .mission-counts {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .mission-counts .ok-count {
+            color: #16a34a
+        }
+
+        .mission-counts .ng-count {
+            color: #ef4444
+        }
+
+        .mission-reset-btn {
+            margin-top: 8px;
+            padding: 6px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .mission-reset-btn:hover {
+            background: #e2e8f0;
+            color: #ef4444
+        }
+
+        /* 時間割（黒板風） */
+        #timetable-widget {
+            width: 420px;
+        }
+
+        #timetable-widget .w-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .tt-board {
+            background: linear-gradient(135deg, #166534, #15803d, #14532d);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, .3), 0 4px 12px rgba(0, 0, 0, .15);
+            border: 6px solid #92400e;
+            position: relative
+        }
+
+        .tt-board::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 6px;
+            pointer-events: none
+        }
+
+        .tt-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: #fef9c3;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, .4);
+            margin-bottom: 5px;
+            letter-spacing: 4px
+        }
+
+        .tt-date-row {
+            text-align: center;
+            font-size: 14px;
+            color: #d1d5db;
+            margin-bottom: 15px;
+        }
+
+        .tt-date-input {
+            width: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #fff;
+            text-align: center;
+            font-size: 14px;
+            padding: 2px;
+            margin: 0 4px;
+        }
+
+        .tt-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 3px
+        }
+
+        .tt-table th {
+            font-size: 12px;
+            font-weight: 700;
+            color: #a7f3d0;
+            padding: 4px 6px;
+            text-align: left;
+            white-space: nowrap
+        }
+
+        .tt-table td {
+            padding: 2px 4px
+        }
+
+        .tt-table input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px dashed rgba(255, 255, 255, .3);
+            color: #f0fdf4;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif;
+            padding: 4px 2px;
+            outline: none
+        }
+
+        .tt-table input:focus {
+            border-bottom-color: #fef08a
+        }
+
+        .tt-table input::placeholder {
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .tt-period {
+            font-size: 14px;
+            font-weight: 900;
+            color: #fef08a;
+            text-align: center;
+            width: 28px
+        }
+
+        .tt-divider {
+            height: 2px;
+            background: rgba(255, 255, 255, .15);
+            margin: 8px 0;
+            border-radius: 1px
+        }
+
+        .tt-notes {
+            margin-top: 6px
+        }
+
+        .tt-note-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            margin-bottom: 3px
+        }
+
+        .tt-note-label {
+            font-size: 11px;
+            font-weight: 900;
+            color: #fde68a;
+            min-width: 48px;
+            text-align: right
+        }
+
+        .tt-note-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 1px dashed rgba(255, 255, 255, .3);
+            color: #f0fdf4;
+            font-size: 12px;
+            font-family: 'Noto Sans JP', sans-serif;
+            padding: 3px 2px;
+            outline: none;
+            min-width: 0
+        }
+
+        .tt-note-input:focus {
+            border-bottom-color: #fef08a
+        }
+
+        .tt-note-input::placeholder {
+            color: rgba(255, 255, 255, .3)
+        }
+
+        /* 今何する時 */
+        #status-widget {
+            width: 320px
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 8px
+        }
+
+        .status-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            cursor: pointer;
+            transition: all .2s;
+            font-weight: 700;
+            font-size: 13px;
+            color: #475569;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .status-btn:hover {
+            border-color: #94a3b8;
+            background: #f8fafc
+        }
+
+        .status-btn.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8
+        }
+
+        .status-icon {
+            font-size: 20px
+        }
+
+        .status-custom {
+            padding: 8px 8px 20px 8px;
+            /* padding-bottom to avoid resize handle */
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .status-custom-input {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif;
+            outline: none;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .status-custom-input:focus {
+            border-color: #3b82f6;
+        }
+
+        .status-custom-add-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Noto Sans JP', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .status-custom-list {
+            padding: 0 8px 8px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .status-custom-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            cursor: pointer;
+            transition: all .2s;
+            font-weight: 700;
+            font-size: 13px;
+            color: #475569;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .status-custom-item.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .status-custom-del {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .status-custom-del:hover {
+            color: #ef4444;
+        }
+
+        /* めあて・課題 */
+        #goal-widget {
+            width: 480px
+        }
+
+        .goal-board {
+            background: linear-gradient(135deg, #064e3b, #065f46);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, .4);
+            border: 6px solid #b45309;
+            color: #f8fafc;
+            min-height: 200px
+        }
+
+        .goal-title-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed rgba(255, 255, 255, .3);
+            color: #fef08a;
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+            padding: 8px 0;
+            margin-bottom: 16px;
+            font-family: 'Noto Sans JP', sans-serif;
+            outline: none;
+            min-width: 0
+        }
+
+        .goal-title-input:focus {
+            border-bottom-color: #fef08a
+        }
+
+        .goal-title-input::placeholder {
+            color: rgba(255, 255, 255, .4)
+        }
+
+        .rubric-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px
+        }
+
+        .rubric-table th,
+        .rubric-table td {
+            border: 1px solid rgba(255, 255, 255, .2);
+            padding: 6px 4px;
+            font-size: 11px
+        }
+
+        .rubric-table th {
+            background: rgba(255, 255, 255, .1);
+            color: #a7f3d0;
+            font-weight: 700;
+            text-align: center
+        }
+
+        .rubric-table td input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #f8fafc;
+            font-size: 12px;
+            outline: none;
+            font-family: 'Noto Sans JP', sans-serif;
+            min-width: 0
+        }
+
+        .rubric-table td input::placeholder {
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .rubric-add-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 12px;
+            background: rgba(255, 255, 255, .1);
+            border: 1px dashed rgba(255, 255, 255, .3);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all .2s
+        }
+
+        .rubric-add-btn:hover {
+            background: rgba(255, 255, 255, .2);
+            border-color: #fff
+        }
+
+        .rubric-del {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, .5);
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%
+        }
+
+        .rubric-del:hover {
+            color: #ef4444
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolbar">
+        <button class="tb-btn active" data-tool="pen" data-tip="ペン">✏️</button>
+        <button class="tb-btn" data-tool="text" data-tip="テキスト">T</button>
+        <button class="tb-btn" data-tool="eraser" data-tip="消しゴム">🧹</button>
+        <div id="confirm-bar" class="confirm-bar">
+            <span>本当に全て消去しますか？</span>
+            <button id="confirm-yes" class="tb-btn"
+                style="background:#ef4444;color:#fff;font-size:14px;line-height:36px;text-align:center;width:max-content;padding:0 12px;white-space:nowrap;">はい</button>
+            <button id="confirm-no" class="tb-btn"
+                style="background:#64748b;color:#fff;font-size:14px;line-height:36px;text-align:center;width:max-content;padding:0 12px;white-space:nowrap;">いいえ</button>
+        </div>
+
+        <!-- カスタムプロンプト -->
+        <div id="custom-prompt" class="modal-overlay">
+            <div class="modal-box">
+                <h3 id="prompt-title">予定を入力</h3>
+                <textarea id="prompt-input" placeholder="予定やメモ（空欄で削除）..."></textarea>
+                <div class="modal-btn-row">
+                    <button id="prompt-cancel" class="modal-btn cancel">キャンセル</button>
+                    <button id="prompt-ok" class="modal-btn ok">保存</button>
+                </div>
+            </div>
+        </div>
+        <div class="tb-div"></div>
+        <button class="tb-btn action-btn" id="btn-undo" data-tip="戻る（Ctrl+Z）">↩️</button>
+        <button class="tb-btn action-btn" id="btn-clear" data-tip="全消去">🗑️</button>
+        <div class="tb-div"></div>
+        <button class="tb-btn" data-widget="timer" data-tip="タイマー">⏱️</button>
+        <button class="tb-btn" data-widget="picker" data-tip="ネームピッカー">🎯</button>
+        <button class="tb-btn" data-widget="status" data-tip="今何する時">🚦</button>
+        <button class="tb-btn" data-widget="goal" data-tip="めあて・課題">📝</button>
+        <button class="tb-btn" data-widget="poll" data-tip="アンケート">📊</button>
+        <button class="tb-btn" data-widget="mission" data-tip="ミッション">🚀</button>
+        <button class="tb-btn" data-widget="topic" data-tip="話題提供">💬</button>
+        <button class="tb-btn" data-widget="timetable" data-tip="時間割">📋</button>
+        <button class="tb-btn" data-widget="todo" data-tip="ToDoリスト">✅</button>
+        <button class="tb-btn" data-widget="cal" data-tip="カレンダー">📅</button>
+        <button class="tb-btn" data-widget="noise" data-tip="静かさチェック">🔇</button>
+        <button class="tb-btn" data-widget="kyushoku" data-tip="給食くじ">🍛</button>
+        <div class="tb-div"></div>
+        <button class="tb-btn action-btn" id="btn-fs" data-tip="全画面">⛶</button>
+    </div>
+
+    <div id="tool-options">
+        <div id="pen-opts">
+            <div class="opt-label">色</div>
+            <div class="color-row">
+                <div class="color-dot sel" data-color="#1e293b" style="background:#1e293b"></div>
+                <div class="color-dot" data-color="#ef4444" style="background:#ef4444"></div>
+                <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></div>
+                <div class="color-dot" data-color="#22c55e" style="background:#22c55e"></div>
+                <div class="color-dot" data-color="#f97316" style="background:#f97316"></div>
+            </div>
+            <div class="opt-label" style="font-size:11px; margin-top:8px;" id="marker-lbl">マーカー</div>
+            <div class="color-row" id="hl-colors">
+                <div class="color-dot" data-color="#fef08a" data-hl="true"
+                    style="background:#fef08a; border-radius:4px;"></div>
+                <div class="color-dot" data-color="#bbf7d0" data-hl="true"
+                    style="background:#bbf7d0; border-radius:4px;"></div>
+                <div class="color-dot" data-color="#bfdbfe" data-hl="true"
+                    style="background:#bfdbfe; border-radius:4px;"></div>
+                <div class="color-dot" data-color="#fbcfe8" data-hl="true"
+                    style="background:#fbcfe8; border-radius:4px;"></div>
+            </div>
+
+            <div class="opt-label">太さ</div>
+            <div class="size-row" id="pen-sizes">
+                <div class="size-btn" data-size="2">
+                    <div class="sz-dot" style="width:4px;height:4px"></div>
+                </div>
+                <div class="size-btn sel" data-size="4">
+                    <div class="sz-dot" style="width:8px;height:8px"></div>
+                </div>
+                <div class="size-btn" data-size="8">
+                    <div class="sz-dot" style="width:14px;height:14px"></div>
+                </div>
+            </div>
+            <div class="opt-label" style="font-size:11px; margin-top:8px;" id="shapes-lbl">図形（選んでドラッグ）</div>
+            <div style="display:flex; gap:8px;" id="shapes-row">
+                <button class="tb-btn" data-tool="rect" data-tip="長"
+                    style="width:36px;height:36px;font-size:18px;padding:0;margin:0;">⬜</button>
+                <button class="tb-btn" data-tool="triangle" data-tip="三"
+                    style="width:36px;height:36px;font-size:18px;padding:0;margin:0;">🔺</button>
+                <button class="tb-btn" data-tool="ellipse" data-tip="円"
+                    style="width:36px;height:36px;font-size:18px;padding:0;margin:0;">⭕</button>
+                <button class="tb-btn" data-tool="line" data-tip="線"
+                    style="width:36px;height:36px;font-size:18px;padding:0;margin:0;">➖</button>
+            </div>
+        </div>
+        <div id="eraser-opts" style="display:none">
+            <div class="opt-label">消しゴムサイズ</div>
+            <div class="size-row" id="eraser-sizes">
+                <div class="size-btn" data-esize="15">
+                    <div class="sz-dot" style="width:8px;height:8px;background:#94a3b8"></div>
+                </div>
+                <div class="size-btn sel" data-esize="30">
+                    <div class="sz-dot" style="width:14px;height:14px;background:#94a3b8"></div>
+                </div>
+                <div class="size-btn" data-esize="50">
+                    <div class="sz-dot" style="width:20px;height:20px;background:#94a3b8"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="whiteboard" class="c-pen"></canvas>
+    <div id="eraser-cursor"></div>
+    <div id="text-input-wrap"><input type="text" id="text-input" placeholder="テキストを入力…"></div>
+
+    <div id="confirm-bar">
+        <span style="font-weight:700;color:#92400e">⚠️ ホワイトボードを全消去しますか？</span>
+        <button class="confirm-yes" id="confirm-yes">消去する</button>
+        <button class="confirm-no" id="confirm-no">キャンセル</button>
+    </div>
+
+    <div id="timer-widget" class="widget" style="top:80px;left:300px">
+        <div class="w-header">
+            <div class="w-title">⏱️ タイマー</div><button class="w-close" data-close="timer">×</button>
+        </div>
+        <div class="timer-tabs">
+            <button class="timer-tab active" data-tmode="countdown">タイマー</button>
+            <button class="timer-tab" data-tmode="stopwatch">ストップウォッチ</button>
+            <button class="timer-tab" data-tmode="pomodoro">ポモドーロ</button>
+        </div>
+        <div class="w-body">
+            <div id="cd-panel">
+                <div class="timer-circle-wrap">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" fill="none" stroke="#e5e7eb" stroke-width="10" />
+                        <circle id="timer-ring" cx="100" cy="100" r="85" fill="none" stroke="#3b82f6" stroke-width="10"
+                            stroke-dasharray="534.07" stroke-dashoffset="0" stroke-linecap="round"
+                            transform="rotate(-90 100 100)"
+                            style="transition:stroke-dashoffset .3s linear,stroke .5s ease" />
+                    </svg>
+                    <div class="timer-center">
+                        <div class="timer-display" id="timer-display">05:00</div>
+                    </div>
+                </div>
+                <div class="timer-presets" id="timer-presets">
+                    <button class="timer-preset" data-pre="60">1分</button>
+                    <button class="timer-preset" data-pre="180">3分</button>
+                    <button class="timer-preset" data-pre="300">5分</button>
+                    <button class="timer-preset" data-pre="600">10分</button>
+                </div>
+                <div class="timer-setup" id="timer-setup">
+                    <input type="number" id="t-min" value="5" min="0" max="99">
+                    <span>分</span>
+                    <input type="number" id="t-sec" value="0" min="0" max="59">
+                    <span>秒</span>
+                </div>
+                <div class="timer-btns">
+                    <button class="t-btn pri" id="t-start">▶ スタート</button>
+                    <button class="t-btn sec" id="t-pause" style="display:none">⏸ 一時停止</button>
+                    <button class="t-btn dan" id="t-reset" style="display:none">↺ リセット</button>
+                </div>
+            </div>
+            <div id="sw-panel" style="display:none">
+                <div class="sw-display" id="sw-display">00:00.0</div>
+                <div class="timer-btns">
+                    <button class="t-btn pri" id="sw-start">▶ スタート</button>
+                    <button class="t-btn sec" id="sw-pause" style="display:none">⏸ 一時停止</button>
+                    <button class="t-btn dan" id="sw-reset" style="display:none">↺ リセット</button>
+                </div>
+            </div>
+            <div id="pomo-panel" style="display:none; text-align: center;">
+                <div class="pomo-status work" id="pomo-status-label">📚 作業中 (25分)</div>
+                <div class="timer-circle-wrap">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" fill="none" stroke="#e5e7eb" stroke-width="10" />
+                        <circle id="pomo-ring" cx="100" cy="100" r="85" fill="none" stroke="#ef4444" stroke-width="10"
+                            stroke-dasharray="534.07" stroke-dashoffset="0" stroke-linecap="round"
+                            transform="rotate(-90 100 100)"
+                            style="transition:stroke-dashoffset .3s linear,stroke .5s ease" />
+                    </svg>
+                    <div class="timer-center">
+                        <div class="timer-display" id="pomo-display">25:00</div>
+                    </div>
+                </div>
+                <div class="timer-btns">
+                    <button class="t-btn pri" id="pomo-start">▶ スタート</button>
+                    <button class="t-btn sec" id="pomo-pause" style="display:none">⏸ 一時停止</button>
+                    <button class="t-btn" id="pomo-skip" style="background:#f59e0b; color:white; display:none;">⏭
+                        スキップ</button>
+                    <button class="t-btn dan" id="pomo-reset" style="display:none">↺ リセット</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="picker-widget" class="widget" style="top:80px;left:650px">
+        <div class="w-header">
+            <div class="w-title">🎯 ネームピッカー</div><button class="w-close" data-close="picker">×</button>
+        </div>
+        <div class="w-body">
+            <div class="picker-config"><label>クラスの人数:</label><input type="number" id="pk-max" value="30" min="1"
+                    max="99"><label>人</label></div>
+            <div class="picker-display-wrap">
+                <div class="picker-number" id="pk-num">?</div>
+                <div class="picker-sub" id="pk-sub">ボタンを押してね</div>
+            </div>
+            <button class="picker-go" id="pk-go">引く！</button>
+            <div class="picker-opts"><label><input type="checkbox" id="pk-norep" checked>重複なし</label><button
+                    class="picker-reset" id="pk-rst">履歴リセット</button></div>
+            <div class="picker-history">
+                <div class="picker-history-label">履歴</div>
+                <div class="picker-history-list" id="pk-hist"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- アンケートウィジェット -->
+    <div id="poll-widget" class="widget" style="top:80px;left:400px">
+        <div class="w-header">
+            <div class="w-title">📊 アンケート</div><button class="w-close" data-close="poll">×</button>
+        </div>
+        <div class="w-body">
+            <div class="poll-q"><input type="text" id="poll-q-input" placeholder="質問を入力…" maxlength="40"></div>
+            <div class="poll-add-row"><input type="text" id="poll-opt-input" placeholder="選択肢を追加…"
+                    maxlength="20"><button class="poll-add-btn" id="poll-add-btn">＋追加</button></div>
+            <div class="poll-chart-wrap">
+                <div class="poll-pie-wrap"><svg id="poll-pie" viewBox="0 0 200 200"></svg></div>
+                <div class="poll-legend" id="poll-legend"></div>
+            </div>
+            <div class="poll-total" id="poll-total"></div>
+            <div class="poll-btns"><button class="t-btn dan" id="poll-reset">リセット</button></div>
+        </div>
+    </div>
+
+    <!-- ミッション -->
+    <div id="mission-widget" class="widget" style="top:80px;left:350px">
+        <div class="w-header">
+            <div class="w-title">🚀 ミッション</div><button class="w-close" data-close="mission">×</button>
+        </div>
+        <div class="w-body">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
+                <button id="mission-random-btn"
+                    style="width: auto; padding: 0 12px; margin: 0; font-size: 13px; height: 28px; background: #FFAB91; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; white-space: nowrap; transition: opacity 0.2s;"
+                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">🎲 ランダム</button>
+            </div>
+            <textarea class="mission-input" id="mission-text" placeholder="今日のミッションを書こう…"></textarea>
+            <div class="mission-btns">
+                <button class="mission-btn ok" id="mission-ok">⭕ できた！</button>
+                <button class="mission-btn ng" id="mission-ng">❌ できなかった</button>
+            </div>
+            <div class="mission-result">
+                <div class="mission-result-bar-wrap">
+                    <div class="mission-result-ok" id="mission-bar-ok"></div>
+                    <div class="mission-result-ng" id="mission-bar-ng"></div>
+                </div>
+                <div class="mission-counts"><span class="ok-count" id="mission-ok-count">⭕ 0人</span><span
+                        class="ng-count" id="mission-ng-count">❌ 0人</span></div>
+            </div>
+            <button class="mission-reset-btn" id="mission-reset">集計リセット</button>
+        </div>
+    </div>
+
+    <!-- 時間割 -->
+    <div id="timetable-widget" class="widget" style="top:60px;left:500px">
+        <div class="w-header">
+            <div class="w-title">📋 時間割</div><button class="w-close" data-close="timetable">×</button>
+        </div>
+        <div class="w-body" style="padding:0">
+            <div class="tt-board">
+                <div class="tt-title">時 間 割</div>
+                <div class="tt-date-row">
+                    <input type="text" id="tt-month" class="tt-date-input" maxlength="2"> 月
+                    <input type="text" id="tt-day" class="tt-date-input" maxlength="2"> 日
+                    ( <input type="text" id="tt-dow" class="tt-date-input" maxlength="1"> ) 曜日
+                </div>
+                <table class="tt-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>教科</th>
+                            <th>内容・ページ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tt-body"></tbody>
+                </table>
+                <div class="tt-divider"></div>
+                <div class="tt-notes" id="tt-notes">
+                    <div class="tt-note-row"><span class="tt-note-label">宿題</span><input class="tt-note-input"
+                            data-note="homework" placeholder="宿題を入力…"></div>
+                    <div class="tt-note-row"><span class="tt-note-label">持ち物</span><input class="tt-note-input"
+                            data-note="belongings" placeholder="持ち物を入力…"></div>
+                    <div class="tt-note-row"><span class="tt-note-label">手紙</span><input class="tt-note-input"
+                            data-note="letters" placeholder="配布物を入力…"></div>
+                    <div class="tt-note-row"><span class="tt-note-label">連絡</span><input class="tt-note-input"
+                            data-note="notices" placeholder="連絡事項を入力…"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ToDoリスト -->
+    <div id="todo-widget" class="widget" style="top:120px;left:500px">
+        <div class="w-header">
+            <div class="w-title">✅ ToDoリスト</div><button class="w-close" data-close="todo">×</button>
+        </div>
+        <div class="w-body">
+            <div class="todo-add"><input type="text" id="todo-input" placeholder="やることを入力…" maxlength="50"><button
+                    id="todo-add-btn">追加</button></div>
+            <div class="todo-list" id="todo-list"></div>
+        </div>
+    </div>
+
+    <!-- カレンダー -->
+    <div id="cal-widget" class="widget" style="top:120px;left:200px">
+        <div class="w-header">
+            <div class="w-title">📅 カレンダー</div><button class="w-close" data-close="cal">×</button>
+        </div>
+        <div class="w-body">
+            <div class="cal-nav"><button id="cal-prev">◀</button>
+                <div class="cal-month" id="cal-month"></div><button id="cal-next">▶</button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+        </div>
+    </div>
+
+    <!-- 静かさチェック -->
+    <div id="noise-widget" class="widget" style="top:120px;left:700px">
+        <div class="w-header">
+            <div class="w-title">🔇 静かさチェック</div><button class="w-close" data-close="noise">×</button>
+        </div>
+        <div class="w-body">
+            <div class="noise-meter-wrap">
+                <div class="noise-level" id="noise-level">--</div>
+                <div class="noise-label quiet" id="noise-label">待機中</div>
+                <div class="noise-meter">
+                    <div class="noise-bar" id="noise-bar"></div>
+                </div>
+            </div>
+            <button class="noise-start" id="noise-start">🎤 スタート</button>
+        </div>
+    </div>
+
+    <!-- 話題提供ウィジェット -->
+    <div id="topic-widget" class="widget" style="top:100px;left:400px;width:340px">
+        <div class="w-header">
+            <div class="w-title">💬 話題ルーレット</div><button class="w-close" data-close="topic">×</button>
+        </div>
+        <div class="w-body">
+            <div class="picker-display-wrap"
+                style="min-height:120px;display:flex;align-items:center;justify-content:center;padding:16px;">
+                <div class="topic-text" id="topic-text"
+                    style="font-size:22px;font-weight:900;color:#1e293b;line-height:1.4;word-break:auto-phrase">ボタンを押してね
+                </div>
+            </div>
+            <button class="picker-go" id="topic-go"
+                style="background:linear-gradient(135deg, #f59e0b, #d97706);margin-bottom:0">話題を引く！</button>
+        </div>
+    </div>
+
+    <!-- 今何する時 -->
+    <div id="status-widget" class="widget" style="top:120px;left:300px">
+        <div class="w-header">
+            <div class="w-title">🚦 今何する時</div><button class="w-close" data-close="status">×</button>
+        </div>
+        <div class="w-body" style="padding:0">
+            <div class="status-grid">
+                <button class="status-btn" data-st="alone"><span class="status-icon">👤</span>一人で集中</button>
+                <button class="status-btn" data-st="pair"><span class="status-icon">👥</span>ペアで</button>
+                <button class="status-btn" data-st="group"><span class="status-icon">👨‍👩‍👧‍👦</span>グループで</button>
+                <button class="status-btn" data-st="walk"><span class="status-icon">🚶</span>立ち歩いてOK</button>
+                <button class="status-btn" data-st="move"><span class="status-icon">🪑</span>席ごと移動OK</button>
+                <button class="status-btn" data-st="talk"><span class="status-icon">🗣️</span>話す</button>
+                <button class="status-btn" data-st="listen"><span class="status-icon">👂</span>聞く</button>
+                <button class="status-btn" data-st="quiet"><span class="status-icon">🤫</span>静かに</button>
+            </div>
+            <div id="status-custom-list" class="status-custom-list"></div>
+            <div class="status-custom">
+                <input type="text" id="status-custom-input" class="status-custom-input" placeholder="自由に記入できます...">
+                <button id="status-custom-add-btn" class="status-custom-add-btn">追加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 今日のめあて・課題 -->
+    <div id="goal-widget" class="widget" style="top:80px;left:500px">
+        <div class="w-header">
+            <div class="w-title">📝 今日のめあて・課題</div><button class="w-close" data-close="goal">×</button>
+        </div>
+        <div class="w-body" style="padding:10px">
+            <div class="goal-board">
+                <input type="text" id="goal-title" class="goal-title-input" placeholder="今日のめあてを入力…"
+                    style="margin-bottom: 8px;">
+                <table class="rubric-table">
+                    <thead>
+                        <tr>
+                            <th style="width:28px"></th>
+                            <th style="width:20%">観点</th>
+                            <th style="width:25%">A（十分に）</th>
+                            <th style="width:25%">B（おおむね）</th>
+                            <th style="width:25%">C（もう少し）</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rubric-body"></tbody>
+                </table>
+                <button class="rubric-add-btn" id="rubric-add">＋ ルーブリックを追加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 給食くじ連携 -->
+    <div id="kyushoku-widget" class="widget" style="top:50px;left:150px;width:950px;height:700px">
+        <div class="w-header">
+            <div class="w-title">🍛 給食おかわりくじ</div><button class="w-close" data-close="kyushoku">×</button>
+        </div>
+        <div class="w-body" style="padding:0; height:calc(100% - 41px)">
+            <iframe src="../kyushoku-kuji/index.html" style="width:100%;height:100%;border:none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const TW = 54, KEY = 'cb-v2', CIRC = 2 * Math.PI * 85, MAX_UNDO = 50;
+            const canvas = document.getElementById('whiteboard'), ctx = canvas.getContext('2d');
+            const toolOpts = document.getElementById('tool-options'), penOptsEl = document.getElementById('pen-opts'), eraserOptsEl = document.getElementById('eraser-opts');
+            const eraserCur = document.getElementById('eraser-cursor');
+            const textWrap = document.getElementById('text-input-wrap'), textInput = document.getElementById('text-input');
+            const confirmBar = document.getElementById('confirm-bar');
+            const timerRing = document.getElementById('timer-ring'), timerDisp = document.getElementById('timer-display');
+            const tMinIn = document.getElementById('t-min'), tSecIn = document.getElementById('t-sec'), tSetup = document.getElementById('timer-setup'), tPresets = document.getElementById('timer-presets');
+            const tStart = document.getElementById('t-start'), tPause = document.getElementById('t-pause'), tReset = document.getElementById('t-reset');
+            const swDisp = document.getElementById('sw-display'), swStart = document.getElementById('sw-start'), swPause = document.getElementById('sw-pause'), swReset = document.getElementById('sw-reset');
+            const pomoRing = document.getElementById('pomo-ring'), pomoDisp = document.getElementById('pomo-display'), pomoStatusLabel = document.getElementById('pomo-status-label');
+            const pomoStart = document.getElementById('pomo-start'), pomoPause = document.getElementById('pomo-pause'), pomoSkip = document.getElementById('pomo-skip'), pomoReset = document.getElementById('pomo-reset');
+            const pkNum = document.getElementById('pk-num'), pkSub = document.getElementById('pk-sub'), pkGo = document.getElementById('pk-go');
+            const pkMaxIn = document.getElementById('pk-max'), pkNoRep = document.getElementById('pk-norep'), pkHist = document.getElementById('pk-hist'), pkRst = document.getElementById('pk-rst');
+
+            /* 状態管理 */
+            let drawHistory = [], undoStack = [];
+            const S = {
+                tool: 'pointer', penColor: '#1e293b', penSize: 4, eraserSize: 30, isPenHL: false,
+                isDrawing: false, currentStroke: null,
+                isErasing: false, eraserSnapshot: null, erasedAny: false,
+                selectedItemIdx: -1, itemDragging: false, dragItemIdx: -1, dragOX: 0, dragOY: 0,
+                cdRunning: false, cdPaused: false, cdEnd: 0, cdRem: 0, cdTotal: 0, cdInt: null,
+                swRunning: false, swPaused: false, swStart: 0, swElapsed: 0, swInt: null,
+                pomoRunning: false, pomoPaused: false, pomoMode: 'work', pomoEnd: 0, pomoRem: 0, pomoTotal: 1500, pomoInt: null,
+                pkMax: 30, pkHistory: [], pkAnim: false
+            };
+
+            /* 定義済みミッションリスト (100個) */
+            const MISSIONS = [
+                "違うクラスの人に挨拶をする", "先生の名前を呼んでから「おはようございます」と言う", "友達のいいところを1つ見つけて、直接伝える", "友達のいいところを3つ見つけて、こっそりメモする", "1日に「ありがとう」を5回言う",
+                "1日に「ありがとう」を10回言う", "誰かの発言に「なるほど」「いいね」と声に出して反応する", "班の話し合いで、全員が1回は必ず発言できるようにする", "友達の話を、最後までうなずきながら聞く", "使ったことがない新しい言葉（語彙）を1つ、今日の会話で使ってみる",
+                "自分から「一緒に遊ぼう」と誰かを誘う", "クラス全員と1日1回は目を合わせる", "今日の授業で習った新しい言葉を使って、友達と短い会話をする", "朝、教室に入るときに誰よりも元気な声で「おはよう！」と言う", "下校のとき、友達に「また明日ね！」と笑顔で手を振る",
+                "プリントを後ろの人に回すとき、相手の目を見て「はい」と渡す", "落とし物を1つ見つけて、先生や持ち主に届ける", "困っている友達を1回助ける（勉強でも、それ以外でも）", "配り係や日直の手伝いを自分から進んでやる", "誰も見ていないところで、1つ良いことをする",
+                "友達が失敗したときに「どんまい！」「大丈夫だよ」と声をかける", "次に使う人のために、手洗い場をサッと拭いてきれいにする", "廊下を走っている人がいたら、優しく「歩こうね」と伝える", "給食の準備中、一言も喋らずに静かに待つ", "給食のおかわりを「どうぞ」と誰かに譲る",
+                "誰かの水筒が倒れていたら、サッと直してあげる", "掃除の時間、自分の担当場所だけでなく、隣の場所も少しだけ手伝う", "給食の配膳中、お盆やお皿の向きをきれいに揃える", "友達が落とした消しゴムを拾って「はい、どうぞ」と渡す", "友達のいいところを見つけたら、先生にも「〇〇さんがこんなことしてました！」と報告する",
+                "授業中、間違えてもいいから1回は手を挙げて発言する", "授業中、誰かの意見に「〇〇さんの意見に付け足して…」と発言する", "わからないことを「ここがわからない」と先生や友達に質問する", "授業の振り返り（まとめ）を、いつもより1行多く書く", "ノートの字を1ページだけ、とびきり丁寧に書く",
+                "授業の準備を、チャイムが鳴る前に完璧に終わらせる", "辞書を1日1回、自分から引いてみる", "本や教科書で新しく知った言葉をノートの端にメモする", "姿勢をピンと伸ばして、最初の5分間授業を受ける", "姿勢をピンと伸ばして、15分間授業を受ける",
+                "宿題をいつもより10分早く終わらせてみる", "友達の意見を聞いて「つまり〇〇ということだね」と自分の言葉で言い換えてみる", "授業中、自分の考えを理由（「なぜなら〜」）をつけて発表する", "休み時間が終わる３分前に、次の授業の準備を机の上にセットする", "鉛筆の持ち方を、１回の授業中ずっと正しくキープする",
+                "授業中、先生が黒板に字を書いている間も、姿勢を崩さず静かに待つ", "今日１日、背もたれに寄りかからずにピンと良い姿勢で座る時間を５分作る", "図書室で本を1冊借りる", "いつもは読まないジャンルの本を、図書室で1ページだけ読んでみる", "友達に「これ面白いよ」と自分のおすすめの本を1冊紹介する",
+                "本の中で見つけた「かっこいい言葉」「素敵な言葉」を1つ見つける", "図書室の本を、背表紙を揃えてきれいに棚に戻す", "朝の読書の時間、開始1分で全集中モードに入る", "読んだ本の感想を、友達と1分間語り合う", "１日の中で「フワフワ言葉（相手が嬉しくなる言葉）」を５回以上使う",
+                "図書室で借りた本の内容を、３つの短いキーワードで友達に紹介する", "図書室のカウンターで、本を借りるときや返すときに元気よく挨拶する", "読んだ本の中で一番心に残った１文をノートに書き写す", "休み時間に図書室へ行き、今まで行ったことのない棚の本をパラパラめくってみる", "お道具箱の中のゴミや不要な紙を全部捨てる",
+                "ロッカーの中の荷物を、教科書やランドセルの向きを揃えて直す", "えんぴつを3本以上、ピンピンに削ってから学校に来る", "消しゴムのカスを、1日中1つも床に落とさずに捨てる", "休み時間の終わりに、チャイムと同時に自分の席に着く", "自分の靴箱の靴を、かかとをぴったり揃えて入れる",
+                "帰りの会の前までに、机の上や中を何もない状態にする", "ハンカチ・ティッシュを必ずポケットに入れて持ってくる", "食後、自分の机をいつもより丁寧に水拭きする", "教室に落ちている小さなゴミを３つ見つけて拾う", "休み時間に外で全力で汗をかくまで遊ぶ",
+                "休み時間に、普段あまり話さないクラスメイトを遊びに誘う", "昼休みに、クラスのみんなで遊べる新しい遊びを1つ提案する", "1日の中で「楽しい！」と3回声に出して言う", "誰かを笑わせる", "遊ぶとき、負けても絶対に怒らない",
+                "新しいゲームや遊びのルールを、わかりやすく友達に説明する", "クイズを1問自分で作って、友達に出題する", "1日中、ネガティブな言葉（「疲れた」「無理」「めんどくさい」など）を言わない", "ボードゲームやカードゲームの準備や片付けを、自分から進んでやる", "ゲームで負けたときに「もう一回やろう！」「次は勝つぞ」と気持ちをスパッと切り替える",
+                "遊びの中で、友達がルールを間違えても怒らずに優しく教えてあげる", "自分が得意な遊びやゲームのコツを、苦手な友達に１つ教えてあげる", "友達と意見が違ったとき、「〇〇さんはそう思うんだね」と一度相手の考えを受け止める", "先生を1回笑わせる", "背筋を伸ばして「忍者」のように足音を立てずに廊下を歩く",
+                "今日の「クラスのMVP」を心の中で1人決めて、帰る前に本人に伝える", "家に帰ったら、家族に今日学校であった良いことを1つ話す", "「昨日の自分」よりも、何か1つだけ成長したことを見つける", "帰る前に「今日も1日頑張った！」と自分の肩をポンポンと叩いて褒める", "自分のノートに、今日頑張ったことを１行だけ日記として書く",
+                "授業の始まりと終わりの挨拶で、クラスで一番深く綺麗なお辞儀をする", "１日１回、空や外の景色を見て深呼吸を３回する", "クラスのみんなが笑顔になるような、ちょっとした冗談や面白いことを１つ言う", "5人とハイタッチしてあいさつ", "7人とハイタッチしてあいさつ",
+                "10人とハイタッチしてあいさつ", "15人とハイタッチしてあいさつ", "クラス全員とハイタッチしてあいさつ", "席を離れた時にイスを入れる", "一日誰かにありがとうを3回言う"
+            ];
+
+            /* キャンバスリサイズ */
+            function resize() { canvas.width = innerWidth - TW; canvas.height = innerHeight; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; redraw() }
+            resize(); addEventListener('resize', resize);
+
+            /* 描画システム */
+            function drawStroke(s) {
+                if (s.type === 'pen' || s.type === 'hl') {
+                    if (!s.points.length) return;
+                    ctx.globalCompositeOperation = s.type === 'hl' ? 'darken' : 'source-over';
+                    ctx.globalAlpha = s.type === 'hl' ? 0.8 : 1.0;
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = s.type === 'hl' ? s.size * 3 : s.size;
+                    ctx.lineCap = s.type === 'hl' ? 'square' : 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath(); ctx.moveTo(s.points[0].x, s.points[0].y); if (s.points.length === 1) ctx.lineTo(s.points[0].x + .1, s.points[0].y + .1);
+                    else { for (let i = 1; i < s.points.length; i++) ctx.lineTo(s.points[i].x, s.points[i].y) }
+                    ctx.stroke();
+                    ctx.globalAlpha = 1.0; // reset
+                } else if (['rect', 'triangle', 'ellipse', 'line'].includes(s.type)) {
+                    if (!s.w && !s.h) return;
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = s.color; ctx.lineWidth = s.size; ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    if (s.type === 'rect') {
+                        ctx.rect(s.x, s.y, s.w, s.h);
+                    } else if (s.type === 'triangle') {
+                        ctx.moveTo(s.x + s.w / 2, s.y);
+                        ctx.lineTo(s.x + s.w, s.y + s.h);
+                        ctx.lineTo(s.x, s.y + s.h);
+                        ctx.closePath();
+                    } else if (s.type === 'ellipse') {
+                        ctx.ellipse(s.x + s.w / 2, s.y + s.h / 2, Math.abs(s.w / 2), Math.abs(s.h / 2), 0, 0, Math.PI * 2);
+                    } else if (s.type === 'line') {
+                        ctx.moveTo(s.x, s.y);
+                        ctx.lineTo(s.x + s.w, s.y + s.h);
+                    }
+                    ctx.stroke();
+                } else if (s.type === 'text') {
+                    ctx.globalCompositeOperation = 'source-over'; ctx.font = s.fontSize + 'px "Noto Sans JP"';
+                    ctx.fillStyle = s.color;
+                    ctx.fillText(s.text, s.x, s.y)
+                }
+            }
+            function redraw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawHistory.forEach(s => drawStroke(s));
+                if (S.selectedItemIdx >= 0 && S.selectedItemIdx < drawHistory.length) drawItemHL(drawHistory[S.selectedItemIdx]);
+            }
+            function pushUndo() { undoStack.push(JSON.parse(JSON.stringify(drawHistory))); if (undoStack.length > MAX_UNDO) undoStack.shift() }
+            function undo() { if (!undoStack.length) return; drawHistory = undoStack.pop(); redraw(); saveData() }
+
+            /* アイテムヒットテスト */
+            function getItemBounds(s) {
+                if (s.type === 'text') {
+                    ctx.font = s.fontSize + 'px "Noto Sans JP"'; const w = ctx.measureText(s.text).width;
+                    return { bx: s.x - 4, by: s.y - s.fontSize, bw: w + 8, bh: s.fontSize + 8 };
+                } else if (['rect', 'ellipse', 'triangle', 'line'].includes(s.type)) {
+                    const minX = Math.min(s.x, s.x + s.w);
+                    const maxX = Math.max(s.x, s.x + s.w);
+                    const minY = Math.min(s.y, s.y + s.h);
+                    const maxY = Math.max(s.y, s.y + s.h);
+                    return { bx: minX - 4, by: minY - 4, bw: (maxX - minX) + 8, bh: (maxY - minY) + 8 };
+                }
+                return null;
+            }
+
+            function findItemAt(cx, cy) {
+                for (let i = drawHistory.length - 1; i >= 0; i--) {
+                    const s = drawHistory[i];
+                    const bounds = getItemBounds(s);
+                    if (!bounds) continue;
+
+                    const { bx, by, bw, bh } = bounds;
+                    const isCloseHit = (i === S.selectedItemIdx) && (Math.hypot(cx - (bx + bw), cy - by) <= 14);
+                    const isResizeHit = (i === S.selectedItemIdx) && (Math.hypot(cx - (bx + bw), cy - (by + bh)) <= 14);
+
+                    if ((cx >= bx && cx <= bx + bw && cy >= by && cy <= by + bh) || isCloseHit || isResizeHit) {
+                        return { idx: i, action: isCloseHit ? 'delete' : isResizeHit ? 'resize' : 'body' };
+                    }
+                } return { idx: -1, action: 'none' }
+            }
+
+            function drawItemHL(s) {
+                const bounds = getItemBounds(s);
+                if (!bounds) return;
+                const { bx, by, bw, bh } = bounds;
+
+                ctx.save();
+
+                // 選択枠（オプションで描画する場合はここに strokeRect などを追加）
+                // ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); 
+                // ctx.strokeRect(bx, by, bw, bh);
+
+                // 削除ボタン
+                ctx.setLineDash([]); ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(bx + bw, by, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('×', bx + bw, by + 1);
+
+                // リサイズボタン
+                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(bx + bw, by + bh, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(bx + bw - 4, by + bh - 4); ctx.lineTo(bx + bw + 4, by + bh + 4); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(bx + bw, by + bh + 4); ctx.lineTo(bx + bw + 4, by + bh + 4); ctx.lineTo(bx + bw + 4, by + bh); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(bx + bw - 4, by + bh); ctx.lineTo(bx + bw - 4, by + bh - 4); ctx.lineTo(bx + bw, by + bh - 4); ctx.stroke();
+
+                ctx.restore();
+            }
+
+            /* ストローク当たり判定（消しゴム用） */
+            function isHit(s, x, y, r) {
+                let hit = false;
+                if (s.type === 'pen' || s.type === 'hl') {
+                    for (const p of s.points) { if ((p.x - x) ** 2 + (p.y - y) ** 2 <= r * r) { hit = true; break; } }
+                }
+                else if (s.type === 'text') {
+                    ctx.font = s.fontSize + 'px "Noto Sans JP"'; const w = ctx.measureText(s.text).width;
+                    hit = x >= s.x - r && x <= s.x + w + r && y >= s.y - s.fontSize - r && y <= s.y + r;
+                }
+                else if (['rect', 'ellipse', 'triangle', 'line'].includes(s.type)) {
+                    // 始点と終点の幅・高さがマイナスになる場合を考慮したバウンディングボックス拡張
+                    const minX = Math.min(s.x, s.x + s.w) - r;
+                    const maxX = Math.max(s.x, s.x + s.w) + r;
+                    const minY = Math.min(s.y, s.y + s.h) - r;
+                    const maxY = Math.max(s.y, s.y + s.h) + r;
+                    hit = x >= minX && x <= maxX && y >= minY && y <= maxY;
+                }
+                if (hit) console.log('ERASE HIT DETECTED', s.type, 'dist:', x, y);
+                return hit;
+            }
+
+            /* ===== ツールバー ===== */
+            const toolBtns = document.querySelectorAll('.tb-btn[data-tool]');
+            toolBtns.forEach(b => b.addEventListener('click', () => {
+                if (b.classList.contains('active') && b.dataset.tool) {
+                    S.tool = 'pointer'; commitText();
+                    b.classList.remove('active');
+                    canvas.className = 'c-default';
+                    toolOpts.classList.remove('show');
+                    eraserCur.style.display = 'none'; S.selectedItemIdx = -1; redraw();
+                    return;
+                }
+                S.tool = b.dataset.tool; commitText();
+                toolBtns.forEach(t => t.classList.remove('active')); b.classList.add('active');
+
+                const isShape = ['rect', 'triangle', 'ellipse', 'line'].includes(S.tool);
+                canvas.className = S.tool === 'pen' ? 'c-pen' : S.tool === 'eraser' ? 'c-eraser' : isShape ? 'c-default' : S.tool === 'text' ? 'c-text' : 'c-default';
+
+                if (S.tool === 'pen' || isShape) {
+                    toolOpts.classList.add('show'); penOptsEl.style.display = ''; eraserOptsEl.style.display = 'none';
+                    document.getElementById('pen-sizes').previousElementSibling.style.display = '';
+                    document.getElementById('pen-sizes').style.display = 'flex';
+                    document.getElementById('marker-lbl').style.display = '';
+                    document.getElementById('hl-colors').style.display = 'flex';
+                    document.getElementById('shapes-lbl').style.display = '';
+                    document.getElementById('shapes-row').style.display = 'flex';
+                }
+                else if (S.tool === 'text') {
+                    toolOpts.classList.add('show'); penOptsEl.style.display = ''; eraserOptsEl.style.display = 'none';
+                    document.getElementById('pen-sizes').previousElementSibling.style.display = 'none';
+                    document.getElementById('pen-sizes').style.display = 'none';
+                    document.getElementById('marker-lbl').style.display = 'none';
+                    document.getElementById('hl-colors').style.display = 'none';
+                    document.getElementById('shapes-lbl').style.display = 'none';
+                    document.getElementById('shapes-row').style.display = 'none';
+                }
+                else if (S.tool === 'eraser') { toolOpts.classList.add('show'); penOptsEl.style.display = 'none'; eraserOptsEl.style.display = '' }
+                else { toolOpts.classList.remove('show') }
+                eraserCur.style.display = 'none'; S.selectedItemIdx = -1; redraw()
+            }));
+
+            /* 色・サイズ */
+            document.querySelectorAll('.color-dot').forEach(d => d.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(c => c.classList.remove('sel')); d.classList.add('sel');
+                S.penColor = d.dataset.color;
+                S.isPenHL = d.dataset.hl === 'true';
+
+                if (S.selectedItemIdx >= 0 && drawHistory[S.selectedItemIdx]) {
+                    drawHistory[S.selectedItemIdx].color = S.penColor;
+                    redraw(); saveData();
+                }
+            }));
+
+            document.querySelectorAll('#pen-sizes .size-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('#pen-sizes .size-btn').forEach(c => c.classList.remove('sel')); b.classList.add('sel'); S.penSize = +b.dataset.size }));
+            document.querySelectorAll('#eraser-sizes .size-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('#eraser-sizes .size-btn').forEach(c => c.classList.remove('sel')); b.classList.add('sel'); S.eraserSize = +b.dataset.esize; eraserCur.style.width = S.eraserSize * 2 + 'px'; eraserCur.style.height = S.eraserSize * 2 + 'px' }));
+
+            /* 戻るボタン */
+            document.getElementById('btn-undo').addEventListener('click', undo);
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo() } });
+
+            /* 全消去 */
+            document.getElementById('btn-clear').addEventListener('click', () => { confirmBar.classList.add('show') });
+            document.getElementById('confirm-yes').addEventListener('click', () => { pushUndo(); drawHistory = []; redraw(); saveData(); confirmBar.classList.remove('show') });
+            document.getElementById('confirm-no').addEventListener('click', () => { confirmBar.classList.remove('show') });
+
+            /* ウィジェット */
+            document.querySelectorAll('.tb-btn[data-widget]').forEach(b => b.addEventListener('click', () => { const w = document.getElementById(b.dataset.widget + '-widget'); const on = w.classList.toggle('show'); b.classList.toggle('widget-on', on); saveData() }));
+            document.querySelectorAll('.w-close').forEach(b => b.addEventListener('click', () => { const n = b.dataset.close; document.getElementById(n + '-widget').classList.remove('show'); document.querySelector(`[data-widget="${n}"]`).classList.remove('widget-on'); saveData() }));
+            document.getElementById('btn-fs').addEventListener('click', () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() });
+
+            /* ===== キャンバスイベント ===== */
+            canvas.addEventListener('pointerdown', e => {
+                const cx = e.clientX - TW, cy = e.clientY;
+
+                if (S.tool === 'pointer' || S.tool === 'text') {
+                    const hit = findItemAt(cx, cy);
+                    const idx = hit.idx;
+                    if (idx >= 0) {
+                        const s = drawHistory[idx];
+                        if (S.selectedItemIdx === idx && hit.action === 'delete') {
+                            pushUndo(); drawHistory.splice(idx, 1); S.selectedItemIdx = -1; redraw(); saveData(); return;
+                        }
+                        if (S.selectedItemIdx === idx && hit.action === 'resize') {
+                            pushUndo();
+                            S.itemResizing = true;
+                            S.dragItemIdx = idx;
+                            const bounds = getItemBounds(s);
+                            S.dragStartCX = cx; S.dragStartCY = cy;
+                            S.dragOItem = {
+                                w: s.w, h: s.h, x: s.x, y: s.y, fontSize: s.fontSize,
+                                rawBW: bounds.bw - 8, rawBH: bounds.bh - 8,
+                                minX: bounds.bx + 4, minY: bounds.by + 4
+                            };
+                            canvas.setPointerCapture(e.pointerId);
+                            canvas.className = 'c-resize';
+                            return;
+                        }
+                        pushUndo(); S.itemDragging = true; S.dragItemIdx = idx; S.selectedItemIdx = idx; S.dragOX = cx - s.x; S.dragOY = cy - s.y; canvas.setPointerCapture(e.pointerId); canvas.className = 'c-move';
+                        redraw();
+                        return;
+                    } else {
+                        S.selectedItemIdx = -1;
+                        redraw();
+                        if (S.tool === 'text') { commitText(); /* Moved focus logic to pointerup/click for mobile keyboards */ return; }
+                        else if (S.tool === 'pointer') return;
+                    }
+                }
+
+                if (S.tool === 'pen') {
+                    pushUndo(); S.isDrawing = true; S.currentStroke = { type: S.isPenHL ? 'hl' : 'pen', points: [{ x: cx, y: cy }], color: S.penColor, size: S.penSize }; canvas.setPointerCapture(e.pointerId);
+                    ctx.globalCompositeOperation = S.isPenHL ? 'darken' : 'source-over';
+                    ctx.globalAlpha = S.isPenHL ? 0.8 : 1.0;
+                    ctx.strokeStyle = S.penColor; ctx.lineWidth = S.isPenHL ? S.penSize * 3 : S.penSize; ctx.lineCap = S.isPenHL ? 'square' : 'round'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + .1, cy + .1); ctx.stroke();
+                    ctx.globalAlpha = 1.0;
+                }
+                else if (['rect', 'triangle', 'ellipse', 'line'].includes(S.tool)) {
+                    pushUndo(); S.isDrawing = true;
+                    S.currentStroke = { type: S.tool, x: cx, y: cy, w: 0, h: 0, color: S.penColor, size: S.penSize };
+                    canvas.setPointerCapture(e.pointerId);
+                }
+                else if (S.tool === 'eraser') {
+                    S.eraserSnapshot = JSON.parse(JSON.stringify(drawHistory)); S.isErasing = true; S.erasedAny = false; canvas.setPointerCapture(e.pointerId); tryErase(cx, cy);
+                    eraserCur.style.display = 'block'; eraserCur.style.left = e.clientX + 'px'; eraserCur.style.top = e.clientY + 'px'; eraserCur.style.width = S.eraserSize * 2 + 'px'; eraserCur.style.height = S.eraserSize * 2 + 'px';
+                }
+            });
+
+            canvas.addEventListener('pointermove', e => {
+                const cx = e.clientX - TW, cy = e.clientY;
+                if (S.tool === 'eraser') {
+                    eraserCur.style.display = 'block'; eraserCur.style.left = e.clientX + 'px'; eraserCur.style.top = e.clientY + 'px'; eraserCur.style.width = S.eraserSize * 2 + 'px'; eraserCur.style.height = S.eraserSize * 2 + 'px';
+                } else {
+                    eraserCur.style.display = 'none';
+                }
+
+                if (!S.isDrawing && !S.isErasing && !S.itemResizing && !S.itemDragging && S.tool !== 'pointer' && S.tool !== 'text') return;
+
+                if (S.tool === 'pen' && S.isDrawing) {
+                    S.currentStroke.points.push({ x: cx, y: cy });
+                    redraw();
+                    drawStroke(S.currentStroke);
+                }
+                else if (['rect', 'triangle', 'ellipse', 'line'].includes(S.tool) && S.isDrawing) {
+                    S.currentStroke.w = cx - S.currentStroke.x;
+                    S.currentStroke.h = cy - S.currentStroke.y;
+                    redraw();
+                    drawStroke(S.currentStroke);
+                }
+                else if (S.tool === 'eraser') {
+                    if (S.isErasing) tryErase(cx, cy)
+                }
+                else if ((S.tool === 'text' || S.tool === 'pointer') && S.itemResizing) {
+                    const dx = cx - S.dragStartCX;
+                    const dy = cy - S.dragStartCY;
+                    const s = drawHistory[S.dragItemIdx];
+                    if (s.type === 'text') {
+                        s.fontSize = Math.max(12, Math.floor(S.dragOItem.fontSize + dy));
+                    } else {
+                        const scaleX = S.dragOItem.rawBW ? Math.max(5, S.dragOItem.rawBW + dx) / S.dragOItem.rawBW : 1;
+                        const scaleY = S.dragOItem.rawBH ? Math.max(5, S.dragOItem.rawBH + dy) / S.dragOItem.rawBH : 1;
+                        s.w = S.dragOItem.w * scaleX;
+                        s.h = S.dragOItem.h * scaleY;
+                        s.x = S.dragOItem.minX - Math.min(0, s.w);
+                        s.y = S.dragOItem.minY - Math.min(0, s.h);
+                    }
+                    redraw();
+                }
+                else if ((S.tool === 'text' || S.tool === 'pointer') && S.itemDragging) { drawHistory[S.dragItemIdx].x = cx - S.dragOX; drawHistory[S.dragItemIdx].y = cy - S.dragOY; redraw() }
+                else if ((S.tool === 'text' || S.tool === 'pointer') && !S.itemDragging && !S.itemResizing) {
+                    const hit = findItemAt(cx, cy);
+                    if (hit.idx === S.selectedItemIdx && hit.idx >= 0) {
+                        canvas.className = hit.action === 'resize' ? 'c-resize' : 'c-move';
+                    } else {
+                        canvas.className = S.tool === 'text' ? 'c-text' : 'c-default';
+                    }
+                }
+            });
+
+            canvas.addEventListener('pointerup', e => {
+                let wasAction = false;
+                if ((S.tool === 'pen' || ['rect', 'triangle', 'ellipse', 'line'].includes(S.tool)) && S.isDrawing) { S.isDrawing = false; drawHistory.push(S.currentStroke); S.currentStroke = null; saveData(); wasAction = true; }
+                if (S.tool === 'eraser' && S.isErasing) { S.isErasing = false; if (S.erasedAny) { undoStack.push(S.eraserSnapshot); if (undoStack.length > MAX_UNDO) undoStack.shift() } saveData(); wasAction = true; }
+                if (S.itemDragging) { S.itemDragging = false; S.dragItemIdx = -1; saveData(); wasAction = true; }
+                if (S.itemResizing) { S.itemResizing = false; S.dragItemIdx = -1; saveData(); wasAction = true; }
+
+                if (S.tool === 'text' && !wasAction) {
+                    const cx = e.clientX - TW, cy = e.clientY;
+                    const hit = findItemAt(cx, cy);
+                    if (hit.idx < 0) {
+                        commitText();
+                        showTextInput(e.clientX, e.clientY);
+                    }
+                }
+
+                if (S.tool === 'text' || S.tool === 'pointer') canvas.className = S.tool === 'text' ? 'c-text' : 'c-default';
+            });
+            canvas.addEventListener('pointerleave', () => { eraserCur.style.display = 'none'; if (S.isDrawing) { S.isDrawing = false; if (S.currentStroke) { drawHistory.push(S.currentStroke); S.currentStroke = null; saveData() } } });
+
+            function tryErase(x, y) {
+                let del = false;
+                for (let i = drawHistory.length - 1; i >= 0; i--) {
+                    if (isHit(drawHistory[i], x, y, S.eraserSize)) {
+                        drawHistory.splice(i, 1); del = true;
+                    }
+                }
+                if (del) { S.erasedAny = true; redraw(); saveData(); }
+            }
+
+            /* ===== テキストツール ===== */
+            function showTextInput(sx, sy) { textWrap.style.left = sx + 'px'; textWrap.style.top = sy + 'px'; textWrap.style.display = 'block'; textInput.value = ''; textInput.style.color = S.penColor; textInput.style.fontSize = '40px'; textInput.focus() }
+            function commitText() {
+                if (textWrap.style.display === 'none' || !textInput.value.trim()) { textWrap.style.display = 'none'; return }
+                const fs = 40;
+                pushUndo(); const t = textInput.value, x = parseInt(textWrap.style.left) - TW, y = parseInt(textWrap.style.top);
+                drawHistory.push({ type: 'text', text: t, x, y: y + fs, color: S.penColor, fontSize: fs }); textWrap.style.display = 'none'; textInput.value = ''; redraw(); saveData()
+            }
+            textInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitText() } if (e.key === 'Escape') { textWrap.style.display = 'none'; textInput.value = '' } });
+            document.addEventListener('pointerdown', e => { if (textWrap.style.display !== 'none' && !textWrap.contains(e.target)) commitText() }, true);
+
+            /* ===== タイマー ===== */
+            document.querySelectorAll('.timer-tab').forEach(t => t.addEventListener('click', () => {
+                document.querySelectorAll('.timer-tab').forEach(x => x.classList.remove('active')); t.classList.add('active');
+                document.getElementById('cd-panel').style.display = t.dataset.tmode === 'countdown' ? '' : 'none';
+                document.getElementById('sw-panel').style.display = t.dataset.tmode === 'stopwatch' ? '' : 'none';
+                document.getElementById('pomo-panel').style.display = t.dataset.tmode === 'pomodoro' ? '' : 'none';
+                stopAllTimers();
+            }));
+            /* ===== タイマー共通 ===== */
+            const timerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            function stopAllTimers() {
+                clearInterval(S.cdInt); S.cdRunning = S.cdPaused = false;
+                clearInterval(S.swInt); S.swRunning = S.swPaused = false;
+                clearInterval(S.pomoInt); S.pomoRunning = S.pomoPaused = false;
+
+                // タイマーリセット
+                timerRing.style.strokeDashoffset = 0; timerDisp.classList.remove('alert');
+                tStart.style.display = 'block'; tPause.style.display = tReset.style.display = 'none'; tSetup.style.display = tPresets.style.display = 'flex';
+                let m = parseInt(tMinIn.value) || 0, s = parseInt(tSecIn.value) || 0;
+                timerDisp.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+                // ストップウォッチリセット
+                S.swElapsed = 0; swDisp.textContent = '00:00.0';
+                swStart.style.display = 'block'; swPause.style.display = swReset.style.display = 'none';
+
+                // ポモドーロリセット
+                S.pomoMode = 'work';
+                S.pomoTotal = 1500;
+                pomoRing.style.strokeDashoffset = 0;
+                pomoRing.style.stroke = '#ef4444';
+                pomoStatusLabel.className = 'pomo-status work';
+                pomoStatusLabel.textContent = '📚 作業中 (25分)';
+                pomoDisp.textContent = '25:00';
+                pomoDisp.classList.remove('alert');
+                pomoStart.style.display = 'block'; pomoPause.style.display = pomoSkip.style.display = pomoReset.style.display = 'none';
+            }
+            const fmtT = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+            function updRing(prog) { const off = CIRC * (1 - prog); timerRing.style.strokeDashoffset = off; timerRing.setAttribute('stroke', prog > .5 ? '#3b82f6' : prog > .2 ? '#f59e0b' : '#ef4444') }
+
+            function cdTick() {
+                const rem = Math.max(0, Math.ceil((S.cdEnd - Date.now()) / 1000)); timerDisp.textContent = fmtT(rem); updRing(S.cdTotal ? rem / S.cdTotal : 0);
+                if (rem <= 0) { clearInterval(S.cdInt); S.cdRunning = false; timerDisp.classList.add('alert'); playChime(); tStart.textContent = '▶ スタート'; tStart.style.display = ''; tPause.style.display = 'none'; tReset.style.display = ''; tSetup.style.display = ''; tPresets.style.display = '' }
+            }
+
+            document.querySelectorAll('.timer-preset').forEach(b => b.addEventListener('click', () => { const s = +b.dataset.pre; tMinIn.value = Math.floor(s / 60); tSecIn.value = s % 60; timerDisp.textContent = fmtT(s); updRing(1) }));
+            [tMinIn, tSecIn].forEach(i => i.addEventListener('input', () => { if (!S.cdRunning && !S.cdPaused) { const t = (+tMinIn.value || 0) * 60 + (+tSecIn.value || 0); timerDisp.textContent = fmtT(t); updRing(1) } }));
+
+            tStart.addEventListener('click', () => {
+                if (S.cdPaused) { S.cdEnd = Date.now() + S.cdRem; S.cdInt = setInterval(cdTick, 100); S.cdRunning = true; S.cdPaused = false; tStart.style.display = 'none'; tPause.style.display = ''; return }
+                const tot = (+tMinIn.value || 0) * 60 + (+tSecIn.value || 0); if (tot <= 0) return;
+                timerDisp.classList.remove('alert'); S.cdTotal = tot; S.cdEnd = Date.now() + tot * 1000; S.cdRunning = true; S.cdInt = setInterval(cdTick, 100);
+                tStart.style.display = 'none'; tPause.style.display = ''; tReset.style.display = ''; tSetup.style.display = 'none'; tPresets.style.display = 'none'
+            });
+            tPause.addEventListener('click', () => { clearInterval(S.cdInt); S.cdRem = S.cdEnd - Date.now(); S.cdRunning = false; S.cdPaused = true; tStart.textContent = '▶ 再開'; tStart.style.display = ''; tPause.style.display = 'none' });
+            tReset.addEventListener('click', () => { clearInterval(S.cdInt); S.cdRunning = false; S.cdPaused = false; timerDisp.classList.remove('alert'); const t = (+tMinIn.value || 0) * 60 + (+tSecIn.value || 0); timerDisp.textContent = fmtT(t); updRing(1); tStart.textContent = '▶ スタート'; tStart.style.display = ''; tPause.style.display = 'none'; tReset.style.display = 'none'; tSetup.style.display = ''; tPresets.style.display = '' });
+
+            /* ストップウォッチ */
+            const fmtSW = ms => { const t = Math.floor(ms / 1000); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0') + '.' + Math.floor(ms % 1000 / 100) };
+            function swTick() { swDisp.textContent = fmtSW(Date.now() - S.swStart) }
+            swStart.addEventListener('click', () => {
+                if (!S.swPaused) S.swStart = Date.now(); else S.swStart = Date.now() - S.swElapsed;
+                S.swRunning = true; S.swPaused = false;
+                swStart.style.display = 'none'; swPause.style.display = swReset.style.display = 'block';
+                S.swInt = setInterval(swTick, 50);
+            });
+            swPause.addEventListener('click', () => { S.swPaused = true; S.swRunning = false; clearInterval(S.swInt); swStart.style.display = 'block'; swPause.style.display = 'none'; swStart.textContent = '▶ 再開' });
+            swReset.addEventListener('click', stopAllTimers);
+
+            /* ===== ポモドーロ ===== */
+            function setPomoMode(mode) {
+                S.pomoMode = mode;
+                if (mode === 'work') {
+                    S.pomoTotal = 1500; // 25 min
+                    pomoStatusLabel.textContent = '📚 作業中 (25分)';
+                    pomoStatusLabel.className = 'pomo-status work';
+                    pomoRing.style.stroke = '#ef4444';
+                } else {
+                    S.pomoTotal = 300; // 5 min
+                    pomoStatusLabel.textContent = '☕ 休憩中 (5分)';
+                    pomoStatusLabel.className = 'pomo-status break';
+                    pomoRing.style.stroke = '#22c55e';
+                }
+                S.pomoRem = S.pomoTotal;
+                updatePomoDisplay();
+            }
+
+            function updatePomoDisplay() {
+                let m = Math.floor(S.pomoRem / 60), s = S.pomoRem % 60;
+                pomoDisp.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                let pct = (S.pomoRem / S.pomoTotal) * CIRC;
+                pomoRing.style.strokeDashoffset = CIRC - pct;
+                if (S.pomoRem <= 10 && S.pomoRem > 0) pomoDisp.classList.add('alert');
+                else pomoDisp.classList.remove('alert');
+            }
+
+            function updatePomo() {
+                let now = Date.now();
+                S.pomoRem = Math.ceil((S.pomoEnd - now) / 1000);
+                if (S.pomoRem <= 0) {
+                    S.pomoRem = 0; updatePomoDisplay(); clearInterval(S.pomoInt); timerAudio.play();
+                    // Auto switch mode
+                    setTimeout(() => {
+                        setPomoMode(S.pomoMode === 'work' ? 'break' : 'work');
+                        pomoStart.click(); // auto start next phase
+                    }, 3000);
+                } else {
+                    updatePomoDisplay();
+                }
+            }
+
+            pomoStart.addEventListener('click', () => {
+                if (!S.pomoRunning && !S.pomoPaused) { S.pomoRem = S.pomoTotal; updatePomoDisplay(); }
+                S.pomoEnd = Date.now() + S.pomoRem * 1000;
+                S.pomoRunning = true; S.pomoPaused = false;
+                pomoStart.style.display = 'none';
+                pomoPause.style.display = pomoSkip.style.display = pomoReset.style.display = 'block';
+                S.pomoInt = setInterval(updatePomo, 250);
+            });
+
+            pomoPause.addEventListener('click', () => {
+                S.pomoPaused = true; S.pomoRunning = false; clearInterval(S.pomoInt);
+                pomoStart.style.display = 'block'; pomoPause.style.display = 'none';
+                pomoStart.textContent = '▶ 再開';
+            });
+
+            pomoSkip.addEventListener('click', () => {
+                clearInterval(S.pomoInt);
+                setPomoMode(S.pomoMode === 'work' ? 'break' : 'work');
+                S.pomoRunning = false; S.pomoPaused = false;
+                pomoStart.textContent = '▶ スタート';
+                pomoStart.style.display = 'block';
+                pomoPause.style.display = pomoSkip.style.display = pomoReset.style.display = 'none';
+            });
+
+            pomoReset.addEventListener('click', stopAllTimers);
+
+            /* ===== ネームピッカー ===== */
+            pkMaxIn.addEventListener('input', () => { S.pkMax = +pkMaxIn.value || 1; saveData() });
+            pkGo.addEventListener('click', () => {
+                if (S.pkAnim) return; const max = +pkMaxIn.value || 1; const noR = pkNoRep.checked;
+                if (noR && S.pkHistory.length >= max) { pkSub.textContent = '全員選ばれました！'; pkGo.disabled = true; return }
+                let fin; if (noR) { const a = []; for (let i = 1; i <= max; i++)if (!S.pkHistory.includes(i)) a.push(i); fin = a[Math.floor(Math.random() * a.length)] } else { fin = Math.floor(Math.random() * max) + 1 }
+                S.pkAnim = true; pkGo.disabled = true; pkNum.classList.remove('pop');
+                const delays = [40, 50, 60, 75, 90, 110, 130, 160, 190, 230]; let step = 0;
+                function tick() {
+                    pkNum.textContent = Math.floor(Math.random() * max) + 1; step++;
+                    if (step < delays.length) setTimeout(tick, delays[step]);
+                    else {
+                        pkNum.textContent = fin; pkNum.classList.add('pop'); playDing(); S.pkHistory.push(fin); updHist(); S.pkAnim = false; pkGo.disabled = false;
+                        if (noR) { const r = max - S.pkHistory.length; pkSub.textContent = r ? `残り ${r} 人` : '全員選ばれました！'; if (!r) pkGo.disabled = true } else pkSub.textContent = ''; saveData()
+                    }
+                }
+                tick()
+            });
+            function updHist() { pkHist.innerHTML = ''; S.pkHistory.forEach(n => { const s = document.createElement('span'); s.className = 'picker-history-item'; s.textContent = n; pkHist.appendChild(s) }) }
+            pkRst.addEventListener('click', () => { S.pkHistory = []; updHist(); pkNum.textContent = '?'; pkSub.textContent = 'ボタンを押してね'; pkGo.disabled = false; saveData() });
+
+            /* ===== 話題提供 ===== */
+            const topicText = document.getElementById('topic-text'), topicGo = document.getElementById('topic-go');
+            const TOPICS = [
+                "犬と猫、飼うならどっちが好き？", "ラーメンは何味が一番好き？", "無人島に一つだけ持っていくなら何？",
+                "タイムマシンで過去か未来、どっちに行きたい？", "透明人間になれたら、まず何をする？", "一生同じものしか食べられないとしたら何を選ぶ？",
+                "ドラえもんの道具で一つだけもらえるなら何を選ぶ？", "空を飛べるのと透明になれるの、どっちの能力がほしい？", "魔法が一つだけ使えるならどんな魔法？",
+                "もしも100万円をもらったら、何に使う？", "生まれ変わるなら、どんな動物になりたい？", "一番好きな給食のメニューは何？",
+                "逆に一番苦手な給食のメニューは？", "カレーライスに一つだけ変わった具を入れるなら？", "宇宙旅行に行けたら、何をしたい？",
+                "好きな季節はどれ？その理由は？", "もしも校長先生になったら、どんな学校にしたい？", "好きなYouTuberや動画チャンネルは？",
+                "今までで一番笑った出来事は何？", "もしも恐竜が現代に生きていたらどうする？", "無人島でサバイバルするなら、一番役立つと思う性格は？",
+                "一番好きなスポーツとその理由は？", "夏休みと冬休み、どっちが好き？", "1日だけ先生になれるなら、何の授業をしたい？",
+                "一番好きな映画やアニメのキャラクターは誰？", "好きなお菓子の種類はどれ？", "大人になったらどんな仕事をしてみたい？",
+                "もしも動物と話せるようになったら、最初にどの動物と話す？", "宝くじで大金が当たったら、誰に教える？", "今までに行った場所で一番楽しかったところは？",
+                "無敵になれるとしたら、一番何に挑戦したい？", "海と山、遊びに行くならどっちが好き？", "毎日が日曜日になったら、何をして過ごす？",
+                "過去の自分に一つだけアドバイスできるとしたら何と言う？", "自分を動物に例えると何だと思う？", "好きな色は？その色の好きなところは？",
+                "もしも宇宙人に会ったら、何て声をかける？", "一番得意な教科は？その理由は？", "一番ニガテな教科は？その理由は？",
+                "一日だけ有名人になれるなら、誰になりたい？", "朝起きて一番にすることは何？", "もしもロボットを一台もらえるなら、どんな機能をつけたい？",
+                "一番好きなおにぎりの具は何？", "自分の性格で一番好きなところはどこ？", "もしも一つだけ願いが叶うとしたら、何をお願いする？",
+                "雨の日と晴れの日、どっちが好き？", "一番好きな本やマンガは何？", "生まれ変わるなら男の子、女の子、どっちがいい？",
+                "お弁当に入っていたら一番テンションが上がるおかずは？", "好きなアイスの味は何？", "もしも一週間だけ誰かと入れ替われるなら、誰になりたい？",
+                "宇宙人っていると思う？いないと思う？", "お化けや幽霊って信じる？", "一番好きなゲームのタイトルは何？",
+                "もしも世界中を旅行できるなら、どの国に行きたい？", "無人島生活、誰と一緒に行きたい？", "自分だけのオリジナルのことわざを作るなら？",
+                "好きなお寿司のネタは何？", "一番好きな昆虫や虫っている？", "一番怖いと思うものは何？", "もしもタイムスリップできるなら、何歳の自分に会いたい？",
+                "もしも魔法のじゅうたんがあったら、どこに飛んで行く？", "もし自分がユーチューバーになるとしたら、どんな動画を上げる？", "一番好きなテレビ番組は？",
+                "休みの日はいつも何をして過ごしてる？", "好きなお祭りの屋台の食べ物は何？", "一番好きな休日の過ごし方は？",
+                "もしも一日だけペットになれるなら、何のペットがいい？", "一番記憶に残っている夢はどんな夢？", "もしも1億円が手に入ったらどうする？",
+                "もしも世界が明日終わるとしたら、今日何をする？", "一番好きな果物は何？", "自分が作った料理で一番自信があるのは？",
+                "好きな動物園の動物は何？", "水族館で一番好きな生き物は？", "もしもオリンピックに出られるなら、何の競技を選ぶ？",
+                "得意なスポーツや運動は何？", "一番好きな曲や音楽のジャンルは？", "もしも宇宙に家を建てられるなら、どんな家にする？",
+                "一番好きな野菜は何？", "自分が社長になったら、どんな会社にする？", "もしも一ヶ月間、ゲームやスマホが禁止されたらどうする？",
+                "好きな遊び（鬼ごっこなど）は何？", "一番好きな飲み物は何？", "もしも空に浮かぶ島があったら、行ってみたくない？",
+                "お休みの日に一番行きたい場所は？", "好きな乗り物は？", "もしも時間を止められる能力があったら、何をする？",
+                "一番好きな昔話や童話は何？", "自分が持っている一番の宝物は何？", "もしも魔法の手帳があったら、最初に何を書く？",
+                "好きな遊園地のアトラクションは何？", "一番好きな曜日は何曜日？", "一番好きな給食のパンは何パン？",
+                "もしも猫になれたら、どんなふうに過ごす？", "もしも犬になれたら、どんなふうに過ごす？", "一番好きな歴史上の人物は誰？",
+                "自分が作った一番の傑作（絵や工作）は何？", "好きな花や植物はある？", "一番好きな教科書の話は何？",
+                "もしも空気が読める能力と、心が読める能力、どっちが欲しい？", "一番好きなサンドイッチの具は？", "もしも一日だけ大人になれたら、何をする？",
+                "一番好きなレストランのメニューは？", "もしも自分の島を持てたら、どんな名前をつける？", "一番好きな果物のジュースは何？",
+                "もしも月に行けたら、何をして遊ぶ？", "一番好きなパンの形は？", "もしもスーパーヒーローになれたら、どんな名前がいい？",
+                "一番好きな公園の遊具は何？", "もしも一つだけ新しい法律を作るなら、どんな法律？", "一番好きなハンバーガーのメニューは？",
+                "もしも一日中ゲームができるとしたら、何のゲームをする？", "一番好きな洋服の色は何色？", "もしも鳥になれたら、どこまで飛んでいく？",
+                "一番好きなお茶の種類は？", "もしも学校に新しいルールを作るなら、どんなルール？", "一番好きな靴の種類は？",
+                "もしも一日中テレビが見られるとしたら、何を見る？", "一番好きな文房具は？", "もしも一日中本が読めるとしたら、どんな読む？",
+                "一番好きな天気は何？", "もしも一日中寝ていられるとしたら、何時間寝る？", "一番好きな季節の行事は？",
+                "もしも一日中外で遊べるとしたら、何をして遊ぶ？", "一番好きな楽器は何？", "もしも一日中お菓子が食べ放題だったら、何から食べる？",
+                "一番好きな星座は何？", "もしも一日中音楽が聴けるとしたら、どんな音楽を聴く？", "一番好きな星について教えて！",
+                "もしも一日中絵が描けるとしたら、何を描く？", "一番好きな絵の具の色は何色？", "もしも一日中工作ができるとしたら、何を作る？",
+                "一番好きな工作の材料は？", "一日中歌が歌えるとしたら、何を歌う？", "一番好きな歌のジャンルは？",
+                "もしも一日中ダンスができるとしたら、どんなダンス？", "一番好きなダンスの曲は？", "一番好きなおもちゃは何？",
+                "もしも忍者になれたら、どんな修行をする？", "一番好きな忍者道具は？", "もしも探偵になれたら、どんな事件を解決する？",
+                "一番好きな探偵の道具は？", "もしも魔法使いになれたら、どんな魔法の杖が欲しい？", "一番好きな魔法の呪文は？",
+                "もしもお城に住めるとしたら、どんな部屋がいい？", "もしも海賊になれたら、どんな宝物を探す？", "一番好きな海賊船の名前は？",
+                "もしも宇宙飛行士になれたら、どの星に行く？", "一番好きな宇宙船の形は？", "もしも一日だけタイムトラベラーになれたら、どの時代に行く？",
+                "一番好きな歴史上の出来事は？", "最近一番驚いたことは何？", "最近一番嬉しかったことは何？",
+                "最近一番悲しかったことは何？", "最近一番怒ったことは何？", "最近一番楽しかったことは何？",
+                "今までで一番大きな声を出した時は？", "今までで一番遠くまで行った場所は？", "今までで一番高いところに登ったのはどこ？",
+                "今までで一番深く潜ったのはどこ？", "今までで一番速く走ったのはいつ？", "今までで一番長く起きていたのはいつ？",
+                "今までで一番長く寝ていたのはいつ？", "一番好きな髪型は？", "帽子をかぶるならどんな帽子がいい？",
+                "一番好きなアクセサリーは？", "もしも雲に乗れたら、何をする？", "もしも虹を触れたら、どんな感触だと思う？",
+                "もしも星をつかめたら、どうする？", "もしも太陽に近づけたら、どうする？", "月を歩けたら、どうする？",
+                "もしも彗星に乗れたら、どうする？", "もしもブラックホールに入れたら、どうなると思う？", "異次元に行けたら、どうする？",
+                "もしも妖精に会えたら、何て言う？", "もしもドラゴンに乗れたら、どこに行く？", "もしもユニコーンに会えたら、何をする？",
+                "もしもペガサスに乗れたら、どうする？", "もしも人魚に会えたら、何を話す？", "もしもケンタウロスに会えたら、どうする？",
+                "もしもグリフォンに乗れたら、どうする？", "もしも100年後の未来に行けたら、何を見る？", "一番好きなロボットアニメは？",
+                "もしも一日だけ猫と話せたら、何を聞く？", "一番好きな猫の種類は？", "もしも一日だけ犬と話せたら、何を聞く？"
+            ];
+            let topAnim = false;
+            topicGo.addEventListener('click', () => {
+                if (topAnim) return; topAnim = true; topicGo.disabled = true;
+                topicText.classList.remove('pop');
+                const delays = [40, 50, 60, 75, 90, 110, 130, 160, 200, 250]; let step = 0;
+                const fin = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                function tick() {
+                    topicText.textContent = TOPICS[Math.floor(Math.random() * TOPICS.length)]; step++;
+                    if (step < delays.length) setTimeout(tick, delays[step]);
+                    else {
+                        topicText.textContent = fin; topicText.classList.add('pop'); playDing(); topAnim = false; topicGo.disabled = false;
+                        saveData();
+                    }
+                }
+                tick();
+            });
+
+            /* ===== アンケート（円グラフ） ===== */
+            const pollPie = document.getElementById('poll-pie'), pollLegend = document.getElementById('poll-legend'), pollTotal = document.getElementById('poll-total');
+            const pollQIn = document.getElementById('poll-q-input'), pollOptIn = document.getElementById('poll-opt-input');
+            const PIE_COLORS = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#06b6d4'];
+            let pollData = { q: '', opts: [] }; /* opts: [{label,count}] */
+            function renderPoll() {
+                /* 円グラフSVG描画 */
+                const total = pollData.opts.reduce((s, o) => s + o.count, 0);
+                pollPie.innerHTML = '';
+                if (total === 0 && pollData.opts.length > 0) {
+                    /* 投票なし — 等分の灰色円 */
+                    pollPie.innerHTML = '<circle cx="100" cy="100" r="80" fill="#e5e7eb"/><text x="100" y="106" text-anchor="middle" font-size="14" fill="#94a3b8" font-family="Noto Sans JP">投票待ち</text>';
+                } else if (total > 0) {
+                    let angle = -90;
+                    pollData.opts.forEach((o, i) => {
+                        if (o.count === 0) return;
+                        const pct = o.count / total;
+                        const largeArc = pct > 0.5 ? 1 : 0;
+                        const startRad = angle * Math.PI / 180;
+                        const endAngle = angle + pct * 360;
+                        const endRad = endAngle * Math.PI / 180;
+                        const x1 = 100 + 80 * Math.cos(startRad), y1 = 100 + 80 * Math.sin(startRad);
+                        const x2 = 100 + 80 * Math.cos(endRad), y2 = 100 + 80 * Math.sin(endRad);
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        if (pct >= 0.999) { path.setAttribute('d', `M100,20A80,80,0,1,1,99.99,20Z`); }
+                        else { path.setAttribute('d', `M100,100L${x1},${y1}A80,80,0,${largeArc},1,${x2},${y2}Z`); }
+                        path.setAttribute('fill', PIE_COLORS[i % PIE_COLORS.length]);
+                        path.style.cursor = 'pointer';
+                        path.addEventListener('click', () => { o.count++; renderPoll(); saveData() });
+                        pollPie.appendChild(path);
+                        angle = endAngle;
+                    });
+                } else {
+                    pollPie.innerHTML = '<circle cx="100" cy="100" r="80" fill="#f1f5f9"/><text x="100" y="106" text-anchor="middle" font-size="13" fill="#94a3b8" font-family="Noto Sans JP">選択肢を追加</text>';
+                }
+                /* 凡例 */
+                pollLegend.innerHTML = '';
+                pollData.opts.forEach((o, i) => {
+                    const pct = total > 0 ? Math.round(o.count / total * 100) : 0;
+                    const item = document.createElement('div'); item.className = 'poll-legend-item';
+                    item.innerHTML = `<div class="poll-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div><span class="poll-legend-label">${o.label}</span><span class="poll-legend-pct">${pct}%</span><span class="poll-legend-count">${o.count}票</span><button class="poll-legend-del" data-pi="${i}">×</button>`;
+                    item.addEventListener('click', e => {
+                        if (e.target.classList.contains('poll-legend-del')) { pollData.opts.splice(+e.target.dataset.pi, 1); renderPoll(); saveData(); return }
+                        o.count++; renderPoll(); saveData();
+                    });
+                    pollLegend.appendChild(item);
+                });
+                pollTotal.textContent = total > 0 ? `合計: ${total}票` : '';
+            }
+            document.getElementById('poll-add-btn').addEventListener('click', () => { const v = pollOptIn.value.trim(); if (!v) return; pollData.opts.push({ label: v, count: 0 }); pollOptIn.value = ''; renderPoll(); saveData() });
+            pollOptIn.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('poll-add-btn').click() });
+            pollQIn.addEventListener('input', () => { pollData.q = pollQIn.value; saveData() });
+            document.getElementById('poll-reset').addEventListener('click', () => { pollData.opts.forEach(o => o.count = 0); renderPoll(); saveData() });
+
+            /* ===== ToDoリスト ===== */
+            const todoList = document.getElementById('todo-list'), todoInput = document.getElementById('todo-input');
+            let todos = []; /* [{text,done}] */
+            function renderTodos() {
+                todoList.innerHTML = '';
+                if (!todos.length) { todoList.innerHTML = '<div class="todo-empty">やることを追加しよう！</div>'; return }
+                todos.forEach((t, i) => {
+                    const d = document.createElement('div'); d.className = 'todo-item' + (t.done ? ' done' : '');
+                    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = t.done;
+                    cb.addEventListener('change', () => { t.done = cb.checked; renderTodos(); saveData() });
+                    const sp = document.createElement('span'); sp.className = 'todo-text'; sp.textContent = t.text;
+                    const del = document.createElement('button'); del.className = 'todo-del'; del.textContent = '×';
+                    del.addEventListener('click', () => { todos.splice(i, 1); renderTodos(); saveData() });
+                    d.appendChild(cb); d.appendChild(sp); d.appendChild(del); todoList.appendChild(d);
+                });
+            }
+            document.getElementById('todo-add-btn').addEventListener('click', () => { const v = todoInput.value.trim(); if (!v) return; todos.push({ text: v, done: false }); todoInput.value = ''; renderTodos(); saveData() });
+            todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('todo-add-btn').click() });
+            renderTodos();
+
+            /* ===== カレンダー ===== */
+            const calGrid = document.getElementById('cal-grid'), calMonth = document.getElementById('cal-month');
+            let calDate = new Date();
+            let calEvents = {}; /* "YYYY-M-D": "event text" */
+            const DOW = ['日', '月', '火', '水', '木', '金', '土'];
+            function renderCal() {
+                const y = calDate.getFullYear(), m = calDate.getMonth(), dDate = calDate.getDate(), dow = calDate.getDay();
+                const startOfWeek = new Date(y, m, dDate - dow);
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+                let title = `${startOfWeek.getFullYear()}年 ${startOfWeek.getMonth() + 1}月`;
+                if (startOfWeek.getMonth() !== endOfWeek.getMonth()) {
+                    title += ` 〜 ${endOfWeek.getMonth() + 1}月`;
+                }
+                calMonth.textContent = title;
+
+                calGrid.innerHTML = '';
+                DOW.forEach((d, i) => { const h = document.createElement('div'); h.className = 'cal-dow' + (i === 0 ? ' sun' : i === 6 ? ' sat' : ''); h.textContent = d; calGrid.appendChild(h) });
+
+                const now = new Date();
+                for (let i = 0; i < 7; i++) {
+                    const cur = new Date(startOfWeek);
+                    cur.setDate(startOfWeek.getDate() + i);
+                    const cy = cur.getFullYear(), cm = cur.getMonth(), cd = cur.getDate(), cdow = cur.getDay();
+
+                    let cls = 'cal-day';
+                    if (cd === now.getDate() && cm === now.getMonth() && cy === now.getFullYear()) cls += ' today';
+                    else if (cdow === 0) cls += ' sun'; else if (cdow === 6) cls += ' sat';
+
+                    const d = document.createElement('div'); d.className = cls;
+                    d.style.minHeight = '120px';
+                    d.style.height = 'auto'; // allow it to grow
+
+                    const num = document.createElement('div'); num.className = 'cal-day-num'; num.textContent = cd;
+                    d.appendChild(num);
+
+                    const key = `${cy}-${cm + 1}-${cd}`;
+                    const evText = calEvents[key] || '';
+                    if (evText) {
+                        const ev = document.createElement('div'); ev.className = 'cal-day-text'; ev.textContent = evText;
+                        d.appendChild(ev);
+                    }
+
+                    d.addEventListener('click', () => {
+                        const curEv = calEvents[key] || '';
+
+                        document.getElementById('prompt-title').textContent = `${cm + 1}月${cd}日の予定`;
+                        const inp = document.getElementById('prompt-input');
+                        inp.value = curEv;
+
+                        const modal = document.getElementById('custom-prompt');
+                        modal.classList.add('show');
+                        inp.focus();
+
+                        const handleOk = () => {
+                            cleanup();
+                            const res = inp.value;
+                            if (res.trim()) calEvents[key] = res.trim();
+                            else delete calEvents[key];
+                            renderCal();
+                            saveData();
+                        };
+
+                        const handleCancel = () => {
+                            cleanup();
+                        };
+
+                        const cleanup = () => {
+                            modal.classList.remove('show');
+                            document.getElementById('prompt-ok').removeEventListener('click', handleOk);
+                            document.getElementById('prompt-cancel').removeEventListener('click', handleCancel);
+                        };
+
+                        document.getElementById('prompt-ok').addEventListener('click', handleOk);
+                        document.getElementById('prompt-cancel').addEventListener('click', handleCancel);
+                    });
+
+                    calGrid.appendChild(d);
+                }
+            }
+            document.getElementById('cal-prev').addEventListener('click', () => { calDate.setDate(calDate.getDate() - 7); renderCal() });
+            document.getElementById('cal-next').addEventListener('click', () => { calDate.setDate(calDate.getDate() + 7); renderCal() });
+            renderCal();
+
+            /* ===== 静かさチェック ===== */
+            const noiseLevel = document.getElementById('noise-level'), noiseLabel = document.getElementById('noise-label'), noiseBar = document.getElementById('noise-bar'), noiseStartBtn = document.getElementById('noise-start');
+            let noiseCtx = null, noiseAnalyser = null, noiseStream = null, noiseRaf = null, noiseActive = false;
+            function startNoise() {
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    noiseStream = stream;
+                    noiseCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const src = noiseCtx.createMediaStreamSource(stream);
+                    noiseAnalyser = noiseCtx.createAnalyser(); noiseAnalyser.fftSize = 512;
+                    src.connect(noiseAnalyser);
+                    noiseActive = true; noiseStartBtn.textContent = '⏹ 停止'; noiseStartBtn.classList.add('active');
+                    const buf = new Uint8Array(noiseAnalyser.frequencyBinCount);
+                    function loop() {
+                        if (!noiseActive) return;
+                        noiseAnalyser.getByteFrequencyData(buf);
+                        let sum = 0; for (let i = 0; i < buf.length; i++) sum += buf[i];
+                        const avg = sum / buf.length;
+                        const db = Math.round(avg * 100 / 255);
+                        noiseLevel.textContent = db;
+                        noiseBar.style.width = db + '%';
+                        if (db < 30) { noiseBar.style.background = '#22c55e'; noiseLabel.textContent = '😊 静か'; noiseLabel.className = 'noise-label quiet' }
+                        else if (db < 60) { noiseBar.style.background = '#eab308'; noiseLabel.textContent = '😐 普通'; noiseLabel.className = 'noise-label normal' }
+                        else { noiseBar.style.background = '#ef4444'; noiseLabel.textContent = '😨 うるさい！'; noiseLabel.className = 'noise-label loud' }
+                        noiseRaf = requestAnimationFrame(loop);
+                    }
+                    loop();
+                }).catch(() => { alert('マイクの使用を許可してください') });
+            }
+            function stopNoise() {
+                noiseActive = false; if (noiseRaf) cancelAnimationFrame(noiseRaf);
+                if (noiseStream) noiseStream.getTracks().forEach(t => t.stop());
+                if (noiseCtx) noiseCtx.close();
+                noiseStartBtn.textContent = '🎤 スタート'; noiseStartBtn.classList.remove('active');
+                noiseLevel.textContent = '--'; noiseBar.style.width = '0'; noiseLabel.textContent = '待機中'; noiseLabel.className = 'noise-label quiet';
+            }
+            noiseStartBtn.addEventListener('click', () => { noiseActive ? stopNoise() : startNoise() });
+
+            /* ===== ミッション ===== */
+            const missionText = document.getElementById('mission-text');
+            const missionRandomBtn = document.getElementById('mission-random-btn');
+            if (missionRandomBtn) {
+                missionRandomBtn.addEventListener('click', () => {
+                    const randIndex = Math.floor(Math.random() * MISSIONS.length);
+                    missionText.value = MISSIONS[randIndex];
+                    missionData.text = missionText.value;
+                    saveData();
+                    missionRandomBtn.style.transform = 'scale(0.95)';
+                    setTimeout(() => { missionRandomBtn.style.transform = 'scale(1)'; }, 150);
+                });
+            }
+            const missionBarOk = document.getElementById('mission-bar-ok'), missionBarNg = document.getElementById('mission-bar-ng');
+            const missionOkCount = document.getElementById('mission-ok-count'), missionNgCount = document.getElementById('mission-ng-count');
+            let missionData = { text: '', ok: 0, ng: 0 };
+            function renderMission() {
+                const total = missionData.ok + missionData.ng;
+                const okPct = total > 0 ? missionData.ok / total * 100 : 0;
+                const ngPct = total > 0 ? missionData.ng / total * 100 : 0;
+                missionBarOk.style.width = okPct + '%';
+                missionBarNg.style.width = ngPct + '%';
+                missionBarOk.textContent = total > 0 && okPct >= 15 ? Math.round(okPct) + '%' : '';
+                missionBarNg.textContent = total > 0 && ngPct >= 15 ? Math.round(ngPct) + '%' : '';
+                missionOkCount.textContent = `⭕ ${missionData.ok}人`;
+                missionNgCount.textContent = `❌ ${missionData.ng}人`;
+            }
+            document.getElementById('mission-ok').addEventListener('click', () => { missionData.ok++; renderMission(); saveData() });
+            document.getElementById('mission-ng').addEventListener('click', () => { missionData.ng++; renderMission(); saveData() });
+            missionText.addEventListener('input', () => { missionData.text = missionText.value; saveData() });
+            document.getElementById('mission-reset').addEventListener('click', () => { missionData.ok = 0; missionData.ng = 0; renderMission(); saveData() });
+            renderMission();
+
+            /* ===== 時間割 ===== */
+            const ttBody = document.getElementById('tt-body');
+            let ttData = { date: { m: '', d: '', dow: '' }, rows: Array.from({ length: 7 }, () => ({ subject: '', content: '' })), notes: { homework: '', belongings: '', letters: '', notices: '' } };
+            function renderTimetable() {
+                if (!ttData.date) ttData.date = { m: '', d: '', dow: '' };
+                const mInp = document.getElementById('tt-month');
+                const dInp = document.getElementById('tt-day');
+                const dowInp = document.getElementById('tt-dow');
+                mInp.value = ttData.date.m || '';
+                dInp.value = ttData.date.d || '';
+                dowInp.value = ttData.date.dow || '';
+                mInp.oninput = () => { ttData.date.m = mInp.value; saveData() };
+                dInp.oninput = () => { ttData.date.d = dInp.value; saveData() };
+                dowInp.oninput = () => { ttData.date.dow = dowInp.value; saveData() };
+
+                ttBody.innerHTML = '';
+                for (let i = 0; i < 7; i++) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td class="tt-period">${i + 1}</td><td><input type="text" data-tt-r="${i}" data-tt-f="subject" placeholder="教科名" value="${ttData.rows[i].subject}"></td><td><input type="text" data-tt-r="${i}" data-tt-f="content" placeholder="内容を入力…" value="${ttData.rows[i].content}"></td>`;
+                    tr.querySelectorAll('input').forEach(inp => {
+                        inp.oninput = () => { ttData.rows[+inp.dataset.ttR][inp.dataset.ttF] = inp.value; saveData() };
+                    });
+                    ttBody.appendChild(tr);
+                }
+                /* ノート欄の値を復元 */
+                document.querySelectorAll('.tt-note-input').forEach(inp => {
+                    const key = inp.dataset.note;
+                    inp.value = ttData.notes[key] || '';
+                    inp.oninput = () => { ttData.notes[key] = inp.value; saveData() };
+                });
+            }
+            renderTimetable();
+
+            /* ===== 今何する時 ===== */
+            const statusBtns = document.querySelectorAll('.status-btn');
+            const statusCustomInp = document.getElementById('status-custom-input');
+            const statusCustomAdd = document.getElementById('status-custom-add-btn');
+            const statusCustomList = document.getElementById('status-custom-list');
+            let statusCustomData = []; /* [{text: '...', active: false}] */
+
+            statusBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    saveData();
+                });
+            });
+
+            function renderStatusCustom() {
+                statusCustomList.innerHTML = '';
+                statusCustomData.forEach((item, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'status-custom-item' + (item.active ? ' active' : '');
+                    div.innerHTML = `<span style="flex:1;text-align:left;">${item.text}</span><button class="status-custom-del">×</button>`;
+                    div.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('status-custom-del')) {
+                            statusCustomData.splice(i, 1);
+                        } else {
+                            item.active = !item.active;
+                        }
+                        renderStatusCustom();
+                        saveData();
+                    });
+                    statusCustomList.appendChild(div);
+                });
+            }
+
+            statusCustomAdd.addEventListener('click', () => {
+                const val = statusCustomInp.value.trim();
+                if (val) {
+                    statusCustomData.push({ text: val, active: false });
+                    statusCustomInp.value = '';
+                    renderStatusCustom();
+                    saveData();
+                }
+            });
+            statusCustomInp.addEventListener('keydown', e => { if (e.key === 'Enter') statusCustomAdd.click() });
+
+            /* ===== 今日のめあて・課題 ===== */
+            const goalTitle = document.getElementById('goal-title');
+            const rubricBody = document.getElementById('rubric-body');
+            const rubricAdd = document.getElementById('rubric-add');
+            let rubricData = [];
+            function renderRubric() {
+                rubricBody.innerHTML = '';
+                rubricData.forEach((row, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align:center"><button class="rubric-del" data-idx="${i}">×</button></td>
+                        <td><input type="text" value="${row.point}" placeholder="観点..." data-r="${i}" data-f="point"></td>
+                        <td><input type="text" value="${row.a}" placeholder="A..." data-r="${i}" data-f="a"></td>
+                        <td><input type="text" value="${row.b}" placeholder="B..." data-r="${i}" data-f="b"></td>
+                        <td><input type="text" value="${row.c}" placeholder="C..." data-r="${i}" data-f="c"></td>
+                    `;
+                    tr.querySelectorAll('input').forEach(inp => {
+                        inp.addEventListener('input', () => {
+                            rubricData[inp.dataset.r][inp.dataset.f] = inp.value;
+                            saveData();
+                        });
+                    });
+                    tr.querySelector('.rubric-del').addEventListener('click', () => {
+                        rubricData.splice(i, 1);
+                        renderRubric();
+                        saveData();
+                    });
+                    rubricBody.appendChild(tr);
+                });
+            }
+            goalTitle.addEventListener('input', saveData);
+            rubricAdd.addEventListener('click', () => {
+                rubricData.push({ point: '', c: '', b: '', a: '' });
+                renderRubric();
+                saveData();
+            });
+
+            /* ===== ウィジェットドラッグ ===== */
+            document.querySelectorAll('.w-header').forEach(h => {
+                let drag = false, ox, oy; const w = h.parentElement;
+                h.addEventListener('pointerdown', e => { if (e.target.classList.contains('w-close')) return; drag = true; const rect = w.getBoundingClientRect(); ox = e.clientX - rect.left; oy = e.clientY - rect.top; h.setPointerCapture(e.pointerId); w.style.zIndex = 60 });
+                h.addEventListener('pointermove', e => { if (!drag) return; w.style.left = Math.max(TW, Math.min(e.clientX - ox, innerWidth - 50)) + 'px'; w.style.top = Math.max(0, Math.min(e.clientY - oy, innerHeight - 50)) + 'px' });
+                h.addEventListener('pointerup', () => { drag = false; saveData() });
+                h.addEventListener('dblclick', e => {
+                    // ダブルクリックでサイズと位置をリセット
+                    w.style.left = '500px';
+                    w.style.top = '60px';
+                    w.style.setProperty('--w-scale', 1);
+                    saveData();
+                });
+            });
+
+            document.querySelectorAll('.widget').forEach(w => {
+                const handle = document.createElement('div'); handle.className = 'w-resize-handle'; handle.innerHTML = '◢'; w.appendChild(handle);
+                let resDrag = false;
+                handle.addEventListener('pointerdown', e => { e.stopPropagation(); resDrag = true; handle.setPointerCapture(e.pointerId); w.style.zIndex = 60; });
+                handle.addEventListener('pointermove', e => {
+                    if (!resDrag) return;
+                    const rect = w.getBoundingClientRect();
+                    const baseWidth = w.offsetWidth;
+                    let newScale = (e.clientX - rect.left) / baseWidth;
+                    newScale = Math.max(0.4, Math.min(newScale, 4));
+                    w.style.setProperty('--w-scale', newScale);
+                });
+                handle.addEventListener('pointerup', () => { resDrag = false; saveData(); });
+            });
+
+            /* ===== サウンド ===== */
+            function playChime() { try { const a = new (window.AudioContext || window.webkitAudioContext);[523.25, 659.25, 783.99].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value = f; o.type = 'sine'; const t = a.currentTime + i * .25; g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.01, t + .8); o.start(t); o.stop(t + .8) }) } catch (e) { } }
+            function playDing() { try { const a = new (window.AudioContext || window.webkitAudioContext); const o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value = 880; o.type = 'sine'; g.gain.setValueAtTime(.3, a.currentTime); g.gain.exponentialRampToValueAtTime(.01, a.currentTime + .4); o.start(); o.stop(a.currentTime + .4) } catch (e) { } }
+
+            /* ===== localStorage ===== */
+            function saveData() {
+                try {
+                    localStorage.setItem(KEY + '-h', JSON.stringify(drawHistory));
+                    const wids = ['timer', 'picker', 'poll', 'todo', 'cal', 'noise', 'mission', 'timetable', 'topic', 'status', 'goal', 'kyushoku'];
+                    const wState = {};
+                    wids.forEach(n => { const el = document.getElementById(n + '-widget'); wState[n + 'V'] = el.classList.contains('show'); wState[n + 'P'] = { l: el.style.left, t: el.style.top, s: el.style.getPropertyValue('--w-scale') } });
+
+                    const stModes = {};
+                    statusBtns.forEach(b => { stModes[b.dataset.st] = b.classList.contains('active'); });
+
+                    Object.assign(wState, {
+                        pm: S.pkMax, ph: S.pkHistory, tm: tMinIn.value, ts: tSecIn.value, poll: pollData, todos: todos, mission: missionData, timetable: ttData,
+                        goalTitle: goalTitle.value, rubricData: rubricData, statusModes: stModes, statusCustomData: statusCustomData, calEvents: calEvents
+                    });
+                    localStorage.setItem(KEY + '-s', JSON.stringify(wState));
+                } catch (e) { }
+            }
+            function loadData() {
+                try {
+                    const h = localStorage.getItem(KEY + '-h'); if (h) { drawHistory = JSON.parse(h); redraw() }
+                    const r = localStorage.getItem(KEY + '-s'); if (!r) return; const d = JSON.parse(r);
+                    const wids = ['timer', 'picker', 'poll', 'todo', 'cal', 'noise', 'mission', 'timetable', 'topic', 'status', 'goal', 'kyushoku'];
+                    wids.forEach(n => {
+                        const el = document.getElementById(n + '-widget');
+                        if (d[n + 'V']) { el.classList.add('show'); const btn = document.querySelector(`[data-widget="${n}"]`); if (btn) btn.classList.add('widget-on') }
+                        if (d[n + 'P']) { el.style.left = d[n + 'P'].l; el.style.top = d[n + 'P'].t; if (d[n + 'P'].s) el.style.setProperty('--w-scale', d[n + 'P'].s); }
+                    });
+                    if (d.pm) { S.pkMax = d.pm; pkMaxIn.value = d.pm }
+                    if (d.ph) { S.pkHistory = d.ph; updHist() }
+                    if (d.tm) tMinIn.value = d.tm; if (d.ts) tSecIn.value = d.ts;
+                    const t = (+tMinIn.value || 0) * 60 + (+tSecIn.value || 0); timerDisp.textContent = fmtT(t); updRing(1);
+                    if (d.poll) { pollData = d.poll; pollQIn.value = pollData.q || ''; renderPoll() }
+                    if (d.todos) { todos = d.todos; renderTodos() }
+                    if (d.mission) { missionData = d.mission; missionText.value = missionData.text || ''; renderMission() }
+                    if (d.timetable) { ttData = d.timetable; renderTimetable() }
+                    if (d.goalTitle !== undefined) { goalTitle.value = d.goalTitle; }
+                    if (d.rubricData) { rubricData = d.rubricData; renderRubric(); }
+                    if (d.statusModes) {
+                        statusBtns.forEach(b => { if (d.statusModes[b.dataset.st]) b.classList.add('active'); else b.classList.remove('active'); });
+                    }
+                    if (d.statusCustomData) { statusCustomData = d.statusCustomData; renderStatusCustom(); }
+                    else if (d.statusCustom !== undefined && d.statusCustom.trim()) {
+                        statusCustomData.push({ text: d.statusCustom, active: false });
+                        renderStatusCustom();
+                    }
+                    if (d.calEvents) { calEvents = d.calEvents; renderCal(); }
+                } catch (e) { }
+            }
+            loadData()
+        });
+    </script>
+</body>
+
+</html>

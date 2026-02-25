@@ -155,6 +155,10 @@
                 data-category="others"><i data-lucide="star"
                     class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>その他</button>
             <button
+                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider text-yellow-500 hover:text-yellow-600"
+                data-category="favorites"><i data-lucide="star"
+                    class="inline-block w-3 h-3 mr-1 mb-0.5 fill-current"></i>お気に入り</button>
+            <button
                 class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
                 data-category="teacher"><i data-lucide="user-cog"
                     class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>先生用</button>
@@ -241,18 +245,38 @@
             inactive.classList.add('text-gray-400', 'hover:bg-orange-50');
         }
 
+        // お気に入りデータ管理
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem('kagasen_favorites')) || []; } catch (e) { return []; }
+        }
+        function toggleFavorite(title) {
+            let favs = getFavorites();
+            if (favs.includes(title)) favs = favs.filter(t => t !== title);
+            else favs.push(title);
+            localStorage.setItem('kagasen_favorites', JSON.stringify(favs));
+        }
+
         function renderApps() {
             // appsData が存在しない場合のエラー回避
             if (typeof appsData === 'undefined') return;
 
+            const favs = getFavorites();
+
             let filtered = appsData.filter(app => {
-                const matchCategory = currentCategory === 'all' || app.category === currentCategory;
+                const matchCategory = currentCategory === 'all' ||
+                    (currentCategory === 'favorites' && favs.includes(app.title)) ||
+                    app.category === currentCategory;
                 const matchSearch = app.title.toLowerCase().includes(searchQuery) ||
                     app.description.toLowerCase().includes(searchQuery);
                 return matchCategory && matchSearch;
             });
 
             filtered.sort((a, b) => {
+                const isFavA = favs.includes(a.title);
+                const isFavB = favs.includes(b.title);
+                if (isFavA && !isFavB) return -1;
+                if (!isFavA && isFavB) return 1;
+
                 if (currentSort === 'new') {
                     return new Date(b.date) - new Date(a.date);
                 } else {
@@ -285,8 +309,14 @@
                     if (app.colorClass === 'subject-orange') tagColorClass = "text-orange-700 bg-orange-50";
                     if (app.colorClass === 'subject-purple') tagColorClass = "text-purple-700 bg-purple-50";
 
+                    const isFav = favs.includes(app.title);
+                    const starColor = isFav ? "text-yellow-400 fill-current" : "text-gray-300";
+
                     card.innerHTML = `
                         ${newBadge}
+                        <button class="absolute top-2 left-2 z-10 p-1.5 bg-white/80 rounded-full shadow-sm hover:scale-110 transition-transform fav-btn" data-title="${app.title}">
+                            <i data-lucide="star" class="w-5 h-5 ${starColor}"></i>
+                        </button>
                         <div class="card-thumbnail">
                             <img src="${app.image}" alt="${app.title}のサムネイル">
                         </div>
@@ -302,6 +332,18 @@
                     `;
                     appGrid.appendChild(card);
                 });
+
+                // ★ボタンのクリックイベント
+                document.querySelectorAll('.fav-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault(); // リンク遷移を防ぐ
+                        toggleFavorite(btn.dataset.title);
+                        renderApps();
+                    });
+                });
+
+                // lucide アイコンの再描画
+                lucide.createIcons();
             }
         }
     </script>

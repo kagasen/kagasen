@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const textEditor = document.getElementById('text-editor');
     const popover = document.getElementById('popover');
     const btnDelete = document.getElementById('btn-delete-item');
+    const btnConnect = document.getElementById('btn-connect-item');
     const colorBtns = document.querySelectorAll('.color-btn');
 
     let mode = 'pointer'; // 'pointer' | 'lasso'
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const selectionRectangle = new Konva.Rect({
         fill: 'rgba(59, 130, 246, 0.2)',
-        stroke: 'rgba(59, 130, 246, 0.8)',
+        stroke: "#475569",
         strokeWidth: 1,
         visible: false,
         listening: false,
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let x1, y1, x2, y2;
     let isSelecting = false;
     let selectedNodes = [];
+    const connections = []; // Store lines for sticky connections
 
     // Mode UI Update
     function updateModeUI() {
@@ -178,21 +180,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Delete Button Logic
+    // Delete & Connect Button Logic
     function updateDeleteButton() {
         if (selectedNodes.length > 0) {
-            // Place delete button near the top right of the transformer bounding box
             const box = tr.getClientRect();
+            // Delete button at top-left outside
             btnDelete.style.display = 'flex';
-            btnDelete.style.left = (box.x + box.width + 10) + 'px';
-            btnDelete.style.top = (box.y - 10) + 'px';
+            btnDelete.style.left = (box.x - 15) + 'px';
+            btnDelete.style.top = (box.y - 15) + 'px';
+
+            // Connect button (only if single sticky note is selected)
+            if (selectedNodes.length === 1 && selectedNodes[0].name() === 'sticky') {
+                btnConnect.style.display = 'flex';
+                btnConnect.style.left = (box.x + box.width + 15) + 'px';
+                btnConnect.style.top = (box.y + box.height / 2) + 'px';
+            } else {
+                btnConnect.style.display = 'none';
+            }
         } else {
             btnDelete.style.display = 'none';
+            btnConnect.style.display = 'none';
         }
     }
 
     btnDelete.addEventListener('click', () => {
-        selectedNodes.forEach(node => node.destroy());
+        selectedNodes.forEach(node => {
+            node.destroy();
+            // Remove associated connecting lines
+            for (let i = connections.length - 1; i >= 0; i--) {
+                const conn = connections[i];
+                if (conn.node1 === node || conn.node2 === node) {
+                    conn.line.destroy();
+                    connections.splice(i, 1);
+                }
+            }
+        });
         tr.nodes([]);
         selectedNodes = [];
         updateDeleteButton();
@@ -204,14 +226,20 @@ document.addEventListener('DOMContentLoaded', () => {
     tr.on('dragmove', updateDeleteButton);
     tr.on('transformend dragend', saveData);
 
+    function updateConnections() {
+        connections.forEach(conn => {
+            const b1 = conn.node1.getClientRect();
+            const b2 = conn.node2.getClientRect();
+            conn.line.points([
+                b1.x + b1.width / 2, b1.y + b1.height / 2,
+                b2.x + b2.width / 2, b2.y + b2.height / 2
+            ]);
+        });
+    }
+
     // Group Drag handling to match React refactored version (fix disappearance)
     layer.on('dragmove', (e) => {
-        const target = e.target;
-        if (selectedNodes.length > 1 && selectedNodes.includes(target)) {
-            // Dragging a group of items is automatically handled by Konva Transformer? 
-            // Actually, if we use Transformer, we don't need custom delta math if they are in nodes array.
-            // Konva nodes in a Transformer move together natively.
-        }
+        updateConnections();
         updateDeleteButton();
     });
 
@@ -247,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: 'bg',
             width: 150, height: 150,
             fill: '#fef08a',
-            stroke: '#e2e8f0', strokeWidth: 1,
+            stroke: "#475569",
             shadowColor: 'black', shadowBlur: 10, shadowOpacity: 0.1, shadowOffset: { x: 2, y: 2 }
         });
 
@@ -273,6 +301,69 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.evt.button === 2 || e.evt.shiftKey) return; // ignore right click
             showPopover(g, rect);
         });
+    });
+
+    // 1.5 Connect Button Engine
+    btnConnect.addEventListener('click', () => {
+        if (selectedNodes.length === 1 && selectedNodes[0].name() === 'sticky') {
+            const parentNode = selectedNodes[0];
+            const pBox = parentNode.getClientRect();
+
+            // Create a new connected sticky
+            const g = makeDraggableGroup({
+                x: pBox.x + pBox.width + 50, // Spaced 50px to the right
+                y: parentNode.y(),
+                name: 'sticky'
+            });
+
+            const rect = new Konva.Rect({
+                name: 'bg',
+                width: 150, height: 150,
+                fill: '#fef08a',
+                stroke: "#475569",
+                shadowColor: 'black', shadowBlur: 10, shadowOpacity: 0.1, shadowOffset: { x: 2, y: 2 }
+            });
+            const text = new Konva.Text({
+                name: 'content',
+                text: '入力',
+                fontSize: 16, fontFamily: 'Noto Sans JP', fill: '#334155',
+                width: 130, height: 130,
+                x: 10, y: 10,
+                align: 'center', verticalAlign: 'middle'
+            });
+
+            g.add(rect, text);
+            layer.add(g);
+
+            // Add connecting line
+            const line = new Konva.Line({
+                stroke: "#475569",
+                strokeWidth: 4,
+                lineCap: 'round',
+                lineJoin: 'round',
+                points: [0, 0, 0, 0]
+            });
+            layer.add(line);
+            line.moveToBottom();
+
+            connections.push({ node1: parentNode, node2: g, line: line });
+            updateConnections();
+
+            // Auto-select the new sticky
+            tr.nodes([g]);
+            selectedNodes = [g];
+            updateDeleteButton();
+            saveData();
+
+            g.on('dblclick dbltap', () => { showTextEditor(g, text); });
+            g.on('click tap', (e) => {
+                if (e.evt.button === 2 || e.evt.shiftKey) return;
+                showPopover(g, rect);
+            });
+
+            // Immediately start input
+            setTimeout(() => { showTextEditor(g, text); }, 50);
+        }
     });
 
     // 2. Text Note
@@ -359,60 +450,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const fillColor = 'rgba(203, 213, 225, 0.05)';
 
         if (type === 'x') {
-            g.add(new Konva.Rect({ width, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor }));
-            g.add(new Konva.Line({ points: [0, 0, width, height], stroke: strokeColor, strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width, 0, 0, height], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Rect({ width, height, stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [0, 0, width, height], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width, 0, 0, height], stroke: "#cbd5e1",
         } else if (type === 'y') {
-            g.add(new Konva.Rect({ width, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor }));
-            g.add(new Konva.Line({ points: [0, 0, width / 2, height / 2], stroke: strokeColor, strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width, 0, width / 2, height / 2], stroke: strokeColor, strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width / 2, height / 2, width / 2, height], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Rect({ width, height, stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [0, 0, width / 2, height / 2], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width, 0, width / 2, height / 2], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width / 2, height / 2, width / 2, height], stroke: "#cbd5e1",
         } else if (type === 'axis') {
-            g.add(new Konva.Line({ points: [width / 2, 0, width / 2, height], stroke: strokeColor, strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [0, height / 2, width, height / 2], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width / 2, 0, width / 2, height], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [0, height / 2, width, height / 2], stroke: "#cbd5e1",
         } else if (type === 'venn') {
-            g.add(new Konva.Circle({ x: width / 3, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
-            g.add(new Konva.Circle({ x: (width / 3) * 2, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Circle({ x: width / 3, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: "#cbd5e1",
+            g.add(new Konva.Circle({ x: (width / 3) * 2, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: "#cbd5e1",
         } else if (type === 'pmi') {
-            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor })));
+            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: "#cbd5e1",
             g.add(new Konva.Text({ x: 0, y: 20, width: width / 3, text: 'Plus (良い点)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: width / 3, y: 20, width: width / 3, text: 'Minus (悪い点)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: (width / 3) * 2, y: 20, width: width / 3, text: 'Interesting', fontSize: 16, fill: '#64748b', align: 'center' }));
         } else if (type === 'kwl') {
-            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor })));
+            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: "#cbd5e1",
             g.add(new Konva.Text({ x: 0, y: 20, width: width / 3, text: 'K (知っていること)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: width / 3, y: 20, width: width / 3, text: 'W (知りたいこと)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: (width / 3) * 2, y: 20, width: width / 3, text: 'L (わかったこと)', fontSize: 16, fill: '#64748b', align: 'center' }));
         } else if (type === 'jellyfish') {
-            g.add(new Konva.Rect({ x: width * 0.25, y: height * 0.05, width: width * 0.5, height: width * 0.25 + height * 0.05, cornerRadius: [width / 4, width / 4, 0, 0], stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Rect({ x: width * 0.25, y: height * 0.05, width: width * 0.5, height: width * 0.25 + height * 0.05, cornerRadius: [width / 4, width / 4, 0, 0], stroke: "#cbd5e1",
             [0, 1, 2, 3, 4].forEach(i => {
                 const x1 = width * (0.25 + 0.125 * i), y1 = height * 0.05 + width * 0.25 + height * 0.05;
                 const x2 = width * (0.1 + 0.2 * i), y2 = height * 0.85;
-                g.add(new Konva.Line({ points: [x1, y1, x2, y2], stroke: '#cbd5e1', strokeWidth: 4 }));
-                g.add(new Konva.Circle({ x: x2, y: y2, radius: width * 0.08, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+                g.add(new Konva.Line({ points: [x1, y1, x2, y2], stroke: "#cbd5e1",
+                g.add(new Konva.Circle({ x: x2, y: y2, radius: width * 0.08, stroke: "#cbd5e1",
             });
         }
         else if (type === 'fishbone') {
-            g.add(new Konva.Line({ points: [0, height / 2, width * 0.75, height / 2], stroke: '#cbd5e1', strokeWidth: 4 }));
-            g.add(new Konva.Rect({ x: width * 0.75, y: height * 0.25, width: width * 0.25, height: height * 0.5, cornerRadius: [0, height / 4, height / 4, 0], stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Line({ points: [0, height / 2, width * 0.75, height / 2], stroke: "#cbd5e1",
+            g.add(new Konva.Rect({ x: width * 0.75, y: height * 0.25, width: width * 0.25, height: height * 0.5, cornerRadius: [0, height / 4, height / 4, 0], stroke: "#cbd5e1",
             // Bones
-            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.1, 0, height * 0.1], stroke: '#cbd5e1', strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.9, 0, height * 0.9], stroke: '#cbd5e1', strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.1, width * 0.35, height * 0.1], stroke: '#cbd5e1', strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.9, width * 0.35, height * 0.9], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.1, 0, height * 0.1], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.9, 0, height * 0.9], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.1, width * 0.35, height * 0.1], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.9, width * 0.35, height * 0.9], stroke: "#cbd5e1",
         }
         else if (type === 'candy') {
-            g.add(new Konva.Circle({ x: width / 2, y: height / 2, radius: Math.min(width, height) * 0.3, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
-            g.add(new Konva.Line({ points: [width / 2 - Math.min(width, height) * 0.3, height / 2, 0, height * 0.2, 0, height * 0.8], closed: true, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
-            g.add(new Konva.Line({ points: [width / 2 + Math.min(width, height) * 0.3, height / 2, width, height * 0.2, width, height * 0.8], closed: true, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Circle({ x: width / 2, y: height / 2, radius: Math.min(width, height) * 0.3, stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width / 2 - Math.min(width, height) * 0.3, height / 2, 0, height * 0.2, 0, height * 0.8], closed: true, stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width / 2 + Math.min(width, height) * 0.3, height / 2, width, height * 0.2, width, height * 0.8], closed: true, stroke: "#cbd5e1",
         }
         else if (type === 'pyramid') {
-            g.add(new Konva.Line({ points: [width / 2, 0, width, height, 0, height], closed: true, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
-            g.add(new Konva.Line({ points: [width * 0.33, height * 0.33, width * 0.67, height * 0.33], stroke: '#cbd5e1', strokeWidth: 4 }));
-            g.add(new Konva.Line({ points: [width * 0.16, height * 0.66, width * 0.84, height * 0.66], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width / 2, 0, width, height, 0, height], closed: true, stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width * 0.33, height * 0.33, width * 0.67, height * 0.33], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width * 0.16, height * 0.66, width * 0.84, height * 0.66], stroke: "#cbd5e1",
         }
         else {
-            g.add(new Konva.Rect({ width, height, stroke: '#cbd5e1', strokeWidth: 2, dash: [10, 5] }));
+            g.add(new Konva.Rect({ width, height, stroke: "#cbd5e1",
         }
 
         // Send to bottom so it doesn't cover stickies
@@ -444,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             children.forEach(c => {
                 if (c !== tr && c !== selectionRectangle) c.destroy();
             });
+            connections.splice(0, connections.length);
             tr.nodes([]); selectedNodes = []; updateDeleteButton();
             saveData();
         }
@@ -459,27 +551,36 @@ document.addEventListener('DOMContentLoaded', () => {
         textNode.hide();
         tr.hide();
         btnDelete.style.display = 'none';
+        btnConnect.style.display = 'none';
 
         const textPosition = textNode.absolutePosition();
-        const areaPosition = {
-            x: textPosition.x,
-            y: textPosition.y,
-        };
-
-        const scale = stage.scaleX();
-        const gScale = group.scaleX();
+        const absScale = textNode.getAbsoluteScale();
 
         textEditor.value = textNode.text();
         textEditor.style.display = 'block';
-        textEditor.style.top = areaPosition.y + 'px';
-        textEditor.style.left = areaPosition.x + 'px';
-        textEditor.style.width = textNode.width() * gScale * scale + 'px';
-        textEditor.style.height = textNode.height() * gScale * scale + 10 + 'px';
-        textEditor.style.fontSize = textNode.fontSize() * gScale * scale + 'px';
+        textEditor.style.top = textPosition.y + 'px';
+        textEditor.style.left = textPosition.x + 'px';
+
+        // Exact pixel alignment and zoom scaling matching
+        textEditor.style.width = textNode.width() * absScale.x + 'px';
+        textEditor.style.height = (textNode.height() * absScale.y + 10) + 'px';
+        textEditor.style.fontSize = textNode.fontSize() * absScale.y + 'px';
         textEditor.style.color = textNode.fill();
         textEditor.style.transform = `rotateZ(${group.rotation()}deg)`;
 
+        // Seamless UI Overrides
+        textEditor.style.border = 'none';
+        textEditor.style.outline = 'none';
+        textEditor.style.backgroundColor = 'transparent';
+        textEditor.style.padding = '0';
+        textEditor.style.margin = '0';
+        textEditor.style.textAlign = textNode.align();
+
         textEditor.focus();
+
+        // Move caret to end
+        const length = textEditor.value.length;
+        textEditor.setSelectionRange(length, length);
     }
 
     function hideTextEditor() {
@@ -510,10 +611,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPopover(group, rect) {
         activeGroupForColor = group;
         activeRectForColor = rect;
-        const pos = group.absolutePosition();
+        const box = group.getClientRect();
         popover.style.display = 'flex';
-        popover.style.left = pos.x + 'px';
-        popover.style.top = (pos.y + group.height() * group.scaleY() + 10) + 'px';
+        popover.style.left = box.x + 'px';
+        popover.style.top = (box.y + box.height + 10) + 'px';
 
         // Update active class
         const currentFill = rect.fill();

@@ -69,27 +69,40 @@
             transform: scale(1.1);
         }
 
-        #btn-delete-item {
+        .overlay-btn {
             position: absolute;
             display: none;
-            width: 48px;
-            height: 48px;
-            background-color: #ef4444;
+            width: 36px;
+            height: 36px;
             color: white;
             border-radius: 50%;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             cursor: pointer;
-            font-size: 24px;
             z-index: 50;
             transition: background-color 0.2s, transform 0.2s;
             border: none;
             transform: translate(-50%, -50%);
         }
 
+        #btn-delete-item {
+            background-color: #ef4444;
+            font-size: 20px;
+        }
+
         #btn-delete-item:hover {
             background-color: #dc2626;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        #btn-connect-item {
+            background-color: #3b82f6;
+            font-size: 16px;
+        }
+
+        #btn-connect-item:hover {
+            background-color: #2563eb;
             transform: translate(-50%, -50%) scale(1.1);
         }
 
@@ -267,22 +280,28 @@
         </div>
     </div>
 
-    <!-- Canvas Area -->
-    <div id="canvas-container" class="flex-1 h-full w-full relative bg-slate-50 cursor-default"></div>
+    <!-- Canvas Area with Overlays -->
+    <div id="canvas-container" class="flex-1 h-full w-full relative bg-slate-50 cursor-default">
+        <!-- DOM Overlays -->
+        <textarea id="text-editor" placeholder="入力を始めましょう"></textarea>
 
-    <!-- DOM Overlays -->
-    <textarea id="text-editor" placeholder="ダブルクリックで入力"></textarea>
+        <div id="popover" style="display: none;">
+            <button class="color-btn" style="background-color: #fef08a; border-color: #1e293b;"
+                data-color="#fef08a"></button>
+            <button class="color-btn" style="background-color: #bfdbfe;" data-color="#bfdbfe"></button>
+            <button class="color-btn" style="background-color: #bbf7d0;" data-color="#bbf7d0"></button>
+            <button class="color-btn" style="background-color: #fbcfe8;" data-color="#fbcfe8"></button>
+            <button class="color-btn" style="background-color: #e9d5ff;" data-color="#e9d5ff"></button>
+        </div>
 
-    <div id="popover" style="display: none;">
-        <button class="color-btn" style="background-color: #fef08a; border-color: #1e293b;"
-            data-color="#fef08a"></button>
-        <button class="color-btn" style="background-color: #bfdbfe;" data-color="#bfdbfe"></button>
-        <button class="color-btn" style="background-color: #bbf7d0;" data-color="#bbf7d0"></button>
-        <button class="color-btn" style="background-color: #fbcfe8;" data-color="#fbcfe8"></button>
-        <button class="color-btn" style="background-color: #e9d5ff;" data-color="#e9d5ff"></button>
+        <button id="btn-delete-item" class="overlay-btn" title="削除">&times;</button>
+        <button id="btn-connect-item" class="overlay-btn" title="繋ぐ"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg></button>
     </div>
-
-    <button id="btn-delete-item" title="削除">&times;</button>
 
     <script src="main.js"></script>
 </body>

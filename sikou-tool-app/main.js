@@ -450,60 +450,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const fillColor = 'rgba(203, 213, 225, 0.05)';
 
         if (type === 'x') {
-            g.add(new Konva.Rect({ width, height, stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [0, 0, width, height], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width, 0, 0, height], stroke: "#cbd5e1",
+            g.add(new Konva.Rect({ width, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor }));
+            g.add(new Konva.Line({ points: [0, 0, width, height], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width, 0, 0, height], stroke: strokeColor, strokeWidth: 4 }));
         } else if (type === 'y') {
-            g.add(new Konva.Rect({ width, height, stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [0, 0, width / 2, height / 2], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width, 0, width / 2, height / 2], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width / 2, height / 2, width / 2, height], stroke: "#cbd5e1",
+            g.add(new Konva.Rect({ width, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor }));
+            g.add(new Konva.Line({ points: [0, 0, width / 2, height / 2], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width, 0, width / 2, height / 2], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width / 2, height / 2, width / 2, height], stroke: strokeColor, strokeWidth: 4 }));
         } else if (type === 'axis') {
-            g.add(new Konva.Line({ points: [width / 2, 0, width / 2, height], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [0, height / 2, width, height / 2], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width / 2, 0, width / 2, height], stroke: strokeColor, strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [0, height / 2, width, height / 2], stroke: strokeColor, strokeWidth: 4 }));
         } else if (type === 'venn') {
-            g.add(new Konva.Circle({ x: width / 3, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: "#cbd5e1",
-            g.add(new Konva.Circle({ x: (width / 3) * 2, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: "#cbd5e1",
+            g.add(new Konva.Circle({ x: width / 3, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Circle({ x: (width / 3) * 2, y: height / 2, radius: Math.min(width, height) / 2.5, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
         } else if (type === 'pmi') {
-            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: "#cbd5e1",
+            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor })));
             g.add(new Konva.Text({ x: 0, y: 20, width: width / 3, text: 'Plus (良い点)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: width / 3, y: 20, width: width / 3, text: 'Minus (悪い点)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: (width / 3) * 2, y: 20, width: width / 3, text: 'Interesting', fontSize: 16, fill: '#64748b', align: 'center' }));
         } else if (type === 'kwl') {
-            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: "#cbd5e1",
+            [0, 1, 2].forEach(i => g.add(new Konva.Rect({ x: (width / 3) * i, y: 0, width: width / 3, height, stroke: '#cbd5e1', strokeWidth: 2, fill: fillColor })));
             g.add(new Konva.Text({ x: 0, y: 20, width: width / 3, text: 'K (知っていること)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: width / 3, y: 20, width: width / 3, text: 'W (知りたいこと)', fontSize: 16, fill: '#64748b', align: 'center' }));
             g.add(new Konva.Text({ x: (width / 3) * 2, y: 20, width: width / 3, text: 'L (わかったこと)', fontSize: 16, fill: '#64748b', align: 'center' }));
         } else if (type === 'jellyfish') {
-            g.add(new Konva.Rect({ x: width * 0.25, y: height * 0.05, width: width * 0.5, height: width * 0.25 + height * 0.05, cornerRadius: [width / 4, width / 4, 0, 0], stroke: "#cbd5e1",
+            g.add(new Konva.Rect({ x: width * 0.25, y: height * 0.05, width: width * 0.5, height: width * 0.25 + height * 0.05, cornerRadius: [width / 4, width / 4, 0, 0], stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
             [0, 1, 2, 3, 4].forEach(i => {
                 const x1 = width * (0.25 + 0.125 * i), y1 = height * 0.05 + width * 0.25 + height * 0.05;
                 const x2 = width * (0.1 + 0.2 * i), y2 = height * 0.85;
-                g.add(new Konva.Line({ points: [x1, y1, x2, y2], stroke: "#cbd5e1",
-                g.add(new Konva.Circle({ x: x2, y: y2, radius: width * 0.08, stroke: "#cbd5e1",
+                g.add(new Konva.Line({ points: [x1, y1, x2, y2], stroke: '#cbd5e1', strokeWidth: 4 }));
+                g.add(new Konva.Circle({ x: x2, y: y2, radius: width * 0.08, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
             });
         }
         else if (type === 'fishbone') {
-            g.add(new Konva.Line({ points: [0, height / 2, width * 0.75, height / 2], stroke: "#cbd5e1",
-            g.add(new Konva.Rect({ x: width * 0.75, y: height * 0.25, width: width * 0.25, height: height * 0.5, cornerRadius: [0, height / 4, height / 4, 0], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [0, height / 2, width * 0.75, height / 2], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Rect({ x: width * 0.75, y: height * 0.25, width: width * 0.25, height: height * 0.5, cornerRadius: [0, height / 4, height / 4, 0], stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
             // Bones
-            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.1, 0, height * 0.1], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.9, 0, height * 0.9], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.1, width * 0.35, height * 0.1], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.9, width * 0.35, height * 0.9], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.1, 0, height * 0.1], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width * 0.35, height / 2, width * 0.2, height * 0.9, 0, height * 0.9], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.1, width * 0.35, height * 0.1], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width * 0.7, height / 2, width * 0.55, height * 0.9, width * 0.35, height * 0.9], stroke: '#cbd5e1', strokeWidth: 4 }));
         }
         else if (type === 'candy') {
-            g.add(new Konva.Circle({ x: width / 2, y: height / 2, radius: Math.min(width, height) * 0.3, stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width / 2 - Math.min(width, height) * 0.3, height / 2, 0, height * 0.2, 0, height * 0.8], closed: true, stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width / 2 + Math.min(width, height) * 0.3, height / 2, width, height * 0.2, width, height * 0.8], closed: true, stroke: "#cbd5e1",
+            g.add(new Konva.Circle({ x: width / 2, y: height / 2, radius: Math.min(width, height) * 0.3, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Line({ points: [width / 2 - Math.min(width, height) * 0.3, height / 2, 0, height * 0.2, 0, height * 0.8], closed: true, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Line({ points: [width / 2 + Math.min(width, height) * 0.3, height / 2, width, height * 0.2, width, height * 0.8], closed: true, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
         }
         else if (type === 'pyramid') {
-            g.add(new Konva.Line({ points: [width / 2, 0, width, height, 0, height], closed: true, stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width * 0.33, height * 0.33, width * 0.67, height * 0.33], stroke: "#cbd5e1",
-            g.add(new Konva.Line({ points: [width * 0.16, height * 0.66, width * 0.84, height * 0.66], stroke: "#cbd5e1",
+            g.add(new Konva.Line({ points: [width / 2, 0, width, height, 0, height], closed: true, stroke: '#cbd5e1', strokeWidth: 4, fill: fillColor }));
+            g.add(new Konva.Line({ points: [width * 0.33, height * 0.33, width * 0.67, height * 0.33], stroke: '#cbd5e1', strokeWidth: 4 }));
+            g.add(new Konva.Line({ points: [width * 0.16, height * 0.66, width * 0.84, height * 0.66], stroke: '#cbd5e1', strokeWidth: 4 }));
         }
         else {
-            g.add(new Konva.Rect({ width, height, stroke: "#cbd5e1",
+            g.add(new Konva.Rect({ width, height, stroke: '#cbd5e1', strokeWidth: 2, dash: [10, 5] }));
         }
 
         // Send to bottom so it doesn't cover stickies

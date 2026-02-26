@@ -1,5 +1,15 @@
 const appsData = [
     {
+        title: "〇〇な最適解",
+        description: "みんなの答えを予想してお題に一番合う「最適解」を見つけるゲーム！",
+        category: "management",
+        tagName: "学級経営",
+        date: "2026/02/26",
+        colorClass: "subject-yellow",
+        image: "images/marumarunasaitekikai.jpg",
+        link: "marumarusaitekikai/index.html"
+    },
+    {
         title: "宿題提出ポスト",
         description: "先生の仕事を減らす!? QRコードで提出状況が一瞬でわかるよ。",
         category: "teacher",       // 先生用

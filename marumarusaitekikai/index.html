@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>〇〇な最適解</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .animate-pop-in {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .bg-stripes {
+            background-image: linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.15) 25%,
+                    transparent 25%,
+                    transparent 50%,
+                    rgba(255, 255, 255, 0.15) 50%,
+                    rgba(255, 255, 255, 0.15) 75%,
+                    transparent 75%,
+                    transparent);
+            background-size: 1rem 1rem;
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-screen bg-yellow-50 font-sans text-gray-800 flex flex-col items-center justify-center p-4 select-none touch-manipulation overscroll-none">
+
+    <!-- メインコンテナ -->
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-yellow-400 min-h-[500px] relative flex flex-col"
+        id="app-container">
+
+        <!-- ======================= -->
+        <!-- ホーム画面                -->
+        <!-- ======================= -->
+        <div id="screen-home"
+            class="flex flex-col items-center justify-center h-full p-8 space-y-12 animate-fade-in flex-1">
+            <div class="text-center space-y-4">
+                <div class="bg-yellow-100 text-yellow-800 text-sm font-bold py-1 px-4 rounded-full inline-block mb-2">
+                    みんなの答えをあてよう！
+                </div>
+                <h1 class="text-4xl font-black text-indigo-600 tracking-tighter leading-tight drop-shadow-sm">
+                    <span class="text-6xl block text-pink-500 mb-2">〇〇の</span>
+                    最適解
+                </h1>
+            </div>
+
+            <div class="w-full space-y-4">
+                <button onclick="navigate('topic')"
+                    class="w-full group relative bg-blue-500 hover:bg-blue-600 text-white rounded-3xl p-8 transition-all transform hover:scale-105 active:scale-95 shadow-xl border-b-8 border-blue-700">
+                    <div class="flex items-center justify-center">
+                        <span class="text-3xl font-bold flex items-center gap-4">
+                            <i data-lucide="play" class="w-10 h-10 fill-current"></i>
+                            お題をひく
+                        </span>
+                    </div>
+                    <div class="absolute top-3 right-3 w-4 h-4 bg-yellow-300 rounded-full animate-ping"></div>
+                </button>
+
+                <button onclick="navigate('rule')"
+                    class="w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl p-4 transition-all transform hover:scale-105 active:scale-95 shadow-lg border-b-4 border-green-700 flex items-center justify-center gap-3">
+                    <i data-lucide="book-open" class="w-6 h-6"></i>
+                    <span class="text-xl font-bold">ルールをみる</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- ルール画面                -->
+        <!-- ======================= -->
+        <div id="screen-rule" class="hidden flex-col h-full bg-green-50 flex-1">
+            <!-- ヘッダー -->
+            <div class="p-4 flex items-center bg-white shadow-sm z-10">
+                <button onclick="navigate('home')"
+                    class="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <span class="ml-4 font-bold text-green-800 text-xl">ルール</span>
+            </div>
+
+            <!-- メインコンテンツ -->
+            <div class="flex-1 p-6 overflow-y-auto">
+                <div
+                    class="bg-white rounded-2xl p-6 shadow-md border-2 border-green-200 text-left space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
+                    <ul class="list-disc list-outside ml-5 space-y-3 font-medium">
+                        <li>4〜8人で遊びます。</li>
+                        <li>ジャンケンをして勝った一人は<span class="text-pink-600 font-bold">最適解を選ぶ人</span>です。</li>
+                        <li>他の人はお題に沿って勝った人が思う最適解を紙に書き裏向きで真ん中に紙を置きます。その時は最適解を選ぶ人は目を瞑っていてください。</li>
+                        <li>全員が書き終えたら選ぶ人は目を開け、紙の中からお題の答えとして最も良いと思ったものを選びます。</li>
+                        <li>選ばれた人は<span class="text-blue-600 font-bold">１ポイント</span>。</li>
+                        <li>全員これらのことを行い、最もポイントの多い人が勝ちです。</li>
+                    </ul>
+
+                    <div class="bg-yellow-50 p-5 rounded-xl border-2 border-yellow-300 mt-6 shadow-inner">
+                        <h4 class="font-bold text-yellow-800 mb-2 flex items-center gap-2">
+                            <span class="text-xl">💡</span> アレンジルール
+                        </h4>
+                        <p class="text-sm font-medium text-gray-700">
+                            1人を選ぶのではなくランキング形式にしたり、最適解と最も違うと思ったものを選んだり、いろいろな遊び方もできます。<br />
+                            <span class="block mt-2 font-bold text-pink-600">その人のことを知る機会にもってこいです！</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- お題画面                  -->
+        <!-- ======================= -->
+        <div id="screen-topic" class="hidden flex-col h-full bg-blue-50 flex-1">
+            <!-- ヘッダー -->
+            <div class="p-4 flex items-center bg-white shadow-sm z-10">
+                <button onclick="navigate('home')" id="btn-back-from-topic"
+                    class="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <span class="ml-4 font-bold text-blue-800 text-lg">お題カード</span>
+            </div>
+
+            <!-- メインエリア -->
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div id="topic-card"
+                    class="w-full bg-white rounded-3xl p-8 shadow-2xl border-4 border-indigo-200 flex items-center justify-center min-h-[300px] relative overflow-hidden transition-opacity duration-200">
+                    <!-- 背景の装飾 -->
+                    <div class="absolute top-0 left-0 w-full h-4 bg-stripes opacity-10"></div>
+
+                    <h2 id="topic-text" class="text-3xl md:text-4xl font-black text-gray-800 leading-relaxed">
+                        スタート！
+                    </h2>
+
+                    <!-- キラキラエフェクト -->
+                    <div id="sparkles" class="hidden">
+                        <div class="absolute top-4 left-4 text-4xl animate-bounce" style="animation-delay: 100ms;">✨
+                        </div>
+                        <div class="absolute bottom-4 right-4 text-4xl animate-bounce" style="animation-delay: 300ms;">✨
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-draw-topic" onclick="startRoulette()"
+                    class="mt-8 px-8 py-4 rounded-full font-bold text-xl shadow-lg transition-all flex items-center gap-2 bg-pink-500 text-white hover:bg-pink-600 hover:scale-105 border-b-4 border-pink-700">
+                    <i data-lucide="refresh-cw" id="icon-refresh" class="w-6 h-6"></i>
+                    もう一回ひく
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- フッター -->
+    <div class="mt-4 text-xs text-gray-400">
+        みんなで遊ぼう！ベストアンサーさがし
+    </div>
+
+    <!-- ホームへ戻るボタン -->
+    <div class="fixed top-4 left-4 z-50">
+        <a href="../index.html"
+            class="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-lg border-2 border-indigo-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:scale-110 active:scale-95 transition-all">
+            <i data-lucide="home" class="w-6 h-6"></i>
+        </a>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

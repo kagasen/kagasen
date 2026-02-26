@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キッズタイピングマスター 🚀 学年を選んでね！</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS カスタマイズ -->
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', 'Mochiy Pop One', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 50%, #bfdbfe 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: 'Mochiy Pop One', sans-serif;
+        }
+
+        .grade-card {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+        }
+
+        .grade-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* アニメーション */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* 学年ごとのテーマカラー定義 */
+        .theme-2nen {
+            --bg: #ff9800;
+            --hover: #f57c00;
+            --light: #ffe0b2;
+        }
+
+        .theme-3nen {
+            --bg: #4caf50;
+            --hover: #388e3c;
+            --light: #c8e6c9;
+        }
+
+        .theme-4nen {
+            --bg: #2196f3;
+            --hover: #1976d2;
+            --light: #bbdefb;
+        }
+
+        .theme-5nen {
+            --bg: #9c27b0;
+            --hover: #7b1fa2;
+            --light: #e1bee7;
+        }
+
+        .theme-6nen {
+            --bg: #e91e63;
+            --hover: #c2185b;
+            --light: #f8bbd0;
+        }
+
+        .btn-word {
+            background-color: #4ade80;
+            /* green-400 */
+        }
+
+        .btn-word:hover {
+            background-color: #22c55e;
+            /* green-500 */
+        }
+
+        .btn-sentence {
+            background-color: #fb923c;
+            /* orange-400 */
+        }
+
+        .btn-sentence:hover {
+            background-color: #f97316;
+            /* orange-500 */
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8 flex items-center justify-center">
+
+    <div
+        class="max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border-4 border-blue-200">
+
+        <!-- ヘッダー -->
+        <header class="text-center mb-10">
+            <div class="text-5xl animate-float mb-4 inline-block">⌨️</div>
+            <h1 class="title-font text-3xl md:text-5xl text-blue-600 drop-shadow-sm mb-4">
+                キッズタイピングマスター
+            </h1>
+            <p class="text-blue-800 font-bold text-lg md:text-xl">きみは何年生？ モードをえらんでね！</p>
+        </header>
+
+        <!-- 注意書き -->
+        <div
+            class="bg-red-50 border-2 border-red-200 text-red-600 font-bold rounded-xl p-4 mb-10 text-center max-w-2xl mx-auto shadow-sm">
+            <span class="text-xl mr-2">⚠️</span>
+            あそぶときは、キーボードを「半角英数（はんかくえいすう）」にしてね！<br>
+            <span class="text-sm">（日本語入力がオンだと、うまくあそべません）</span>
+        </div>
+
+        <!-- 学年グリッド -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- 2年生 -->
+            <div
+                class="grade-card bg-orange-50 border-[3px] border-orange-300 rounded-2xl p-5 flex flex-col items-center">
+                <div class="text-4xl mb-2">🌻</div>
+                <h2 class="title-font text-3xl text-orange-600 mb-4">2年</h2>
+                <div class="w-full space-y-3">
+                    <a href="2nen/index.html?mode=low"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-word shadow-md transition-all hover:scale-[1.02]">
+                        単語（たんご）
+                    </a>
+                    <a href="2nen/index.html?mode=high"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-sentence shadow-md transition-all hover:scale-[1.02]">
+                        文章（ぶんしょう）
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3年生 -->
+            <div
+                class="grade-card bg-green-50 border-[3px] border-green-300 rounded-2xl p-5 flex flex-col items-center">
+                <div class="text-4xl mb-2">🍀</div>
+                <h2 class="title-font text-3xl text-green-600 mb-4">3年</h2>
+                <div class="w-full space-y-3">
+                    <a href="3nen/index.html?mode=low"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-word shadow-md transition-all hover:scale-[1.02]">
+                        単語（たんご）
+                    </a>
+                    <a href="3nen/index.html?mode=high"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-sentence shadow-md transition-all hover:scale-[1.02]">
+                        文章（ぶんしょう）
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4年生 -->
+            <div class="grade-card bg-blue-50 border-[3px] border-blue-300 rounded-2xl p-5 flex flex-col items-center">
+                <div class="text-4xl mb-2">🌈</div>
+                <h2 class="title-font text-3xl text-blue-600 mb-4">4年</h2>
+                <div class="w-full space-y-3">
+                    <a href="4nen/index.html?mode=low"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-word shadow-md transition-all hover:scale-[1.02]">
+                        単語（たんご）
+                    </a>
+                    <a href="4nen/index.html?mode=high"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-sentence shadow-md transition-all hover:scale-[1.02]">
+                        文章（ぶんしょう）
+                    </a>
+                </div>
+            </div>
+
+            <!-- 5年生 -->
+            <div
+                class="grade-card bg-purple-50 border-[3px] border-purple-300 rounded-2xl p-5 flex flex-col items-center">
+                <div class="text-4xl mb-2">🚀</div>
+                <h2 class="title-font text-3xl text-purple-600 mb-4">5年</h2>
+                <div class="w-full space-y-3">
+                    <a href="5nen/index.html?mode=low"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-word shadow-md transition-all hover:scale-[1.02]">
+                        単語（たんご）
+                    </a>
+                    <a href="5nen/index.html?mode=high"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-sentence shadow-md transition-all hover:scale-[1.02]">
+                        文章（ぶんしょう）
+                    </a>
+                </div>
+            </div>
+
+            <!-- 6年生 -->
+            <div class="grade-card bg-pink-50 border-[3px] border-pink-300 rounded-2xl p-5 flex flex-col items-center">
+                <div class="text-4xl mb-2">👑</div>
+                <h2 class="title-font text-3xl text-pink-600 mb-4">6年</h2>
+                <div class="w-full space-y-3">
+                    <a href="6nen/index.html?mode=low"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-word shadow-md transition-all hover:scale-[1.02]">
+                        単語（たんご）
+                    </a>
+                    <a href="6nen/index.html?mode=high"
+                        class="block w-full text-center py-3 rounded-xl text-white font-bold text-lg btn-sentence shadow-md transition-all hover:scale-[1.02]">
+                        文章（ぶんしょう）
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- アプリのホームへ戻る -->
+        <div class="mt-12 text-center">
+            <a href="../index.html"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-full transition-colors">
+                <span>◀ ホームにもどる</span>
+            </a>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

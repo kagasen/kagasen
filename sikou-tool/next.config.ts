@@ -21,8 +21,8 @@ const nextConfig: NextConfig = {
     ],
   },
   output: 'export',
-  basePath: '/sikou-tool-app',
-  assetPrefix: '/sikou-tool-app/',
+  basePath: '/kagasen/sikou-tool-app',
+  assetPrefix: '/kagasen/sikou-tool-app/',
   transpilePackages: ['motion'],
   webpack: (config, { dev }) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.

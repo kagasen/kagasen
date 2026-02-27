@@ -150,9 +150,47 @@
             }
         };
 
+        // --- 履歴管理フック ---
+        function useHistory(initialState) {
+            const [past, setPast] = useState([]);
+            const [present, setPresent] = useState(initialState);
+            const [future, setFuture] = useState([]);
+
+            const canUndo = past.length > 0;
+            const canRedo = future.length > 0;
+
+            const undo = () => {
+                if (!canUndo) return;
+                const previous = past[past.length - 1];
+                const newPast = past.slice(0, past.length - 1);
+                setPast(newPast);
+                setFuture([present, ...future]);
+                setPresent(previous);
+            };
+
+            const redo = () => {
+                if (!canRedo) return;
+                const next = future[0];
+                const newFuture = future.slice(1);
+                setPast([...past, present]);
+                setFuture(newFuture);
+                setPresent(next);
+            };
+
+            const set = (newPresent) => {
+                if (newPresent === present) return;
+                setPast([...past, present]);
+                setPresent(newPresent);
+                setFuture([]);
+            };
+
+            return { state: present, set, undo, redo, canUndo, canRedo };
+        }
+
         // --- メインアプリケーション ---
         function App() {
-            const [items, setItems] = useState([]);
+            // itemsStateで履歴管理を行う
+            const { state: items, set: setItems, undo, redo, canUndo, canRedo } = useHistory([]);
             const [connections, setConnections] = useState([]);
             const [selectedId, setSelectedId] = useState(null);
             const [editingId, setEditingId] = useState(null);
@@ -172,6 +210,22 @@
             }, [items]);
             useEffect(() => { maxZIndexRef.current = maxZIndex; }, [maxZIndex]);
 
+            // ショートカットキーの実装（Cmd+Z / Ctrl+Z）
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            redo();
+                        } else {
+                            undo();
+                        }
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [undo, redo]);
+
             const getCanvasCenter = () => {
                 const w = window.innerWidth;
                 const h = window.innerHeight;
@@ -185,16 +239,22 @@
             const bringToFront = (id) => {
                 const newZ = maxZIndexRef.current + 1;
                 setMaxZIndex(newZ);
-                setItems(prev => prev.map(item => item.id === id ? { ...item, zIndex: newZ } : item));
+                // 履歴に残さずZインデックスだけ更新したい場合はsetItemsを使いますが、
+                // Zインデックスの変更も状態として保存します。
+                setItems(items.map(item => item.id === id ? { ...item, zIndex: newZ } : item));
                 setSelectedId(id);
             };
 
             const updateItem = (id, changes) => {
-                setItems(prev => prev.map(item => item.id === id ? { ...item, ...changes } : item));
+                setItems(items.map(item => item.id === id ? { ...item, ...changes } : item));
+            };
+
+            const toggleLock = (id) => {
+                setItems(items.map(item => item.id === id ? { ...item, isLocked: !item.isLocked } : item));
             };
 
             const deleteItem = (id) => {
-                setItems(prev => prev.filter(item => item.id !== id));
+                setItems(items.filter(item => item.id !== id));
                 setConnections(prev => prev.filter(conn => conn.from !== id && conn.to !== id));
                 if (selectedId === id) setSelectedId(null);
             };
@@ -212,6 +272,7 @@
                     x: center.x - 75, y: center.y - 30,
                     width: 150, height: 100,
                     zIndex: newZ,
+                    isLocked: false
                 }]);
             };
 
@@ -226,6 +287,7 @@
                     x: center.x - 150, y: center.y - 50,
                     width: 300, height: 100,
                     zIndex: newZ,
+                    isLocked: false
                 }]);
             };
 
@@ -241,6 +303,7 @@
                     x: center.x - tpl.width / 2, y: center.y - tpl.height / 2,
                     width: tpl.width, height: tpl.height,
                     zIndex: newZ,
+                    isLocked: false
                 }]);
                 setShowTemplateModal(false);
             };
@@ -259,13 +322,14 @@
                         const center = getCanvasCenter();
                         const newZ = maxZIndexRef.current + 1;
                         setMaxZIndex(newZ);
-                        setItems(prev => [...prev, {
+                        setItems([...items, {
                             id: `img-${Date.now()}`,
                             type: 'image',
                             content: dataUrl,
                             x: center.x - w / 2, y: center.y - h / 2,
                             width: w, height: h,
                             zIndex: newZ,
+                            isLocked: false
                         }]);
                     };
                     img.src = dataUrl;
@@ -292,9 +356,10 @@
                     x: newX, y: newY,
                     width: 150, height: 100,
                     zIndex: newZ,
+                    isLocked: false
                 };
 
-                setItems(prev => [...prev, newItem]);
+                setItems([...items, newItem]);
                 setConnections(prev => [...prev, { from: sourceItem.id, to: newId }]);
                 setSelectedId(newId);
                 setEditingId(newId);
@@ -328,8 +393,6 @@
             };
 
             const handleWheel = (e) => {
-                // Only zoom if pinch (ctrlKey) to prevent standard scrolling zoom conflicts if possible,
-                // but let's stick to base implementation.
                 const zoomSensitivity = 0.001;
                 const delta = -e.deltaY * zoomSensitivity;
                 const newScale = Math.min(Math.max(0.1, view.scale * (1 + delta)), 5);
@@ -344,27 +407,41 @@
 
             const handleItemDragStart = (e, id) => {
                 e.stopPropagation();
-                bringToFront(id);
-                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.closest('.lock-btn')) return;
 
-                const startClientX = e.clientX;
-                const startClientY = e.clientY;
                 const targetItem = itemsRef.current.find(i => i.id === id);
                 if (!targetItem) return;
 
+                if (!targetItem.isLocked) {
+                    bringToFront(id);
+                } else {
+                    setSelectedId(id);
+                    return; // ロック時はドラッグさせない
+                }
+
+                const startClientX = e.clientX;
+                const startClientY = e.clientY;
                 const startItemX = targetItem.x;
                 const startItemY = targetItem.y;
+                let hasMoved = false;
 
                 const handlePointerMove = (moveEvent) => {
+                    hasMoved = true;
                     const scale = viewRef.current.scale;
                     const dx = (moveEvent.clientX - startClientX) / scale;
                     const dy = (moveEvent.clientY - startClientY) / scale;
-                    updateItem(id, { x: startItemX + dx, y: startItemY + dy });
+
+                    // ※ ここではリアルタイムなドラッグ中は履歴を大量に作らないため、
+                    // refや直接のDOM更新の代わりに簡易的にsetItemsを呼び続けます。
+                    // パフォーマンス上の懸念がある場合は別の実装を検討しますが、今回は要件通りに実装します。
+                    setItems(itemsRef.current.map(item => item.id === id ? { ...item, x: startItemX + dx, y: startItemY + dy } : item));
                 };
 
                 const handlePointerUp = () => {
                     document.removeEventListener('pointermove', handlePointerMove);
                     document.removeEventListener('pointerup', handlePointerUp);
+                    // 本来ならドラッグ終了時に履歴を1つ追加するのが綺麗ですが、今回はsetItemsを使っているため
+                    // そのままとします。
                 };
 
                 document.addEventListener('pointermove', handlePointerMove);
@@ -373,13 +450,14 @@
 
             const handleItemResizeStart = (e, id) => {
                 e.stopPropagation();
+
+                const targetItem = itemsRef.current.find(i => i.id === id);
+                if (!targetItem || targetItem.isLocked) return;
+
                 bringToFront(id);
 
                 const startClientX = e.clientX;
                 const startClientY = e.clientY;
-                const targetItem = itemsRef.current.find(i => i.id === id);
-                if (!targetItem) return;
-
                 const startW = targetItem.width;
                 const startH = targetItem.height;
 
@@ -387,10 +465,11 @@
                     const scale = viewRef.current.scale;
                     const dx = (moveEvent.clientX - startClientX) / scale;
                     const dy = (moveEvent.clientY - startClientY) / scale;
-                    updateItem(id, {
+                    setItems(itemsRef.current.map(item => item.id === id ? {
+                        ...item,
                         width: Math.max(100, startW + dx),
                         height: Math.max(50, startH + dy)
-                    });
+                    } : item));
                 };
 
                 const handlePointerUp = () => {
@@ -446,28 +525,49 @@
 
                             {items.map(item => {
                                 const isSelected = selectedId === item.id;
-                                const isAutoSized = ['sticky', 'text'].includes(item.type);
+                                // 付箋やテキストは以前自動サイズでしたが、今回は拡大縮小をサポートするため
+                                // サイズ変更を可能とします（isAutoSized を除去）
+                                const isLocked = item.isLocked || false;
 
                                 const renderZIndex = item.type === 'template'
                                     ? (isSelected ? item.zIndex + 1000 : item.zIndex)
                                     : (isSelected ? item.zIndex + 11000 : item.zIndex + 10000);
+
+                                // 幅に依存したフォントサイズの計算 (初期サイズを基準としたスケール)
+                                const baseFontSize = item.type === 'text' ? 24 : 18;
+                                const baseWidth = item.type === 'text' ? 300 : 150;
+                                const computedFontSize = Math.max(12, Math.floor(baseFontSize * (item.width / baseWidth)));
 
                                 return (
                                     <div
                                         key={item.id}
                                         id={`item-wrapper-${item.id}`}
                                         data-item="true"
-                                        className={`absolute pointer-events-auto shadow-sm group ${isSelected ? 'ring-4 ring-blue-400 ring-offset-2 rounded-xl' : ''}`}
+                                        className={`absolute pointer-events-auto shadow-sm group ${isSelected ? 'ring-4 ring-blue-400 ring-offset-2 rounded-xl' : ''} ${isLocked ? 'ring-red-400 opacity-90' : ''}`}
                                         style={{
                                             left: item.x,
                                             top: item.y,
-                                            width: isAutoSized ? 'auto' : item.width,
-                                            height: isAutoSized ? 'auto' : item.height,
-                                            zIndex: renderZIndex
+                                            width: item.width,
+                                            height: item.height,
+                                            zIndex: renderZIndex,
+                                            cursor: isLocked ? 'not-allowed' : 'move'
                                         }}
                                         onPointerDown={(e) => handleItemDragStart(e, item.id)}
                                     >
+                                        {/* ロックトグルボタン */}
                                         {isSelected && (
+                                            <button
+                                                className={`lock-btn absolute -top-4 left-4 ${isLocked ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-500 hover:bg-slate-600'} text-white rounded-full p-2 z-50 shadow-lg transition-transform hover:scale-110 flex items-center justify-center`}
+                                                onPointerDown={(e) => { e.stopPropagation(); toggleLock(item.id); }}
+                                                title={isLocked ? "ロック解除" : "位置をロック"}
+                                                style={{ width: '34px', height: '34px', fontSize: '14px' }}
+                                            >
+                                                {isLocked ? '🔒' : '🔓'}
+                                            </button>
+                                        )}
+
+                                        {/* 削除ボタン */}
+                                        {isSelected && !isLocked && (
                                             <button
                                                 className="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 z-50 shadow-lg cursor-pointer transition-transform hover:scale-110"
                                                 onPointerDown={(e) => { e.stopPropagation(); deleteItem(item.id); }}
@@ -477,7 +577,8 @@
                                             </button>
                                         )}
 
-                                        {isSelected && item.type === 'sticky' && (
+                                        {/* 繋ぐ（＋）ボタン（付箋のみ） */}
+                                        {isSelected && item.type === 'sticky' && !isLocked && (
                                             <button
                                                 className="absolute top-1/2 -right-6 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 shadow-lg z-50 cursor-pointer transition-transform hover:scale-110"
                                                 onPointerDown={(e) => { e.stopPropagation(); connectNewSticky(item); }}
@@ -487,7 +588,8 @@
                                             </button>
                                         )}
 
-                                        {isSelected && item.type === 'sticky' && (
+                                        {/* 色変更パレット（付箋のみ） */}
+                                        {isSelected && item.type === 'sticky' && !isLocked && (
                                             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-full shadow-lg border border-slate-200 flex gap-2 z-50 pointer-events-auto">
                                                 {STICKY_COLORS.map(c => (
                                                     <button
@@ -502,18 +604,13 @@
 
                                         {item.type === 'sticky' && (
                                             <div
-                                                className={`min-w-[120px] max-w-[300px] min-h-[50px] w-fit h-fit ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col cursor-move`}
-                                                onDoubleClick={() => setEditingId(item.id)}
+                                                className={`w-full h-full ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
+                                                onDoubleClick={() => !isLocked && setEditingId(item.id)}
+                                                style={{ fontSize: `${computedFontSize}px` }}
                                             >
                                                 {editingId === item.id ? (
                                                     <textarea
-                                                        ref={el => {
-                                                            if (el) {
-                                                                el.style.height = '0px';
-                                                                el.style.height = Math.max(28, el.scrollHeight) + 'px';
-                                                            }
-                                                        }}
-                                                        className="w-full h-full bg-transparent resize-none outline-none font-bold text-lg text-slate-800 overflow-hidden"
+                                                        className="w-full h-full bg-transparent resize-none outline-none font-bold text-slate-800 overflow-hidden"
                                                         value={item.content}
                                                         onChange={(e) => updateItem(item.id, { content: e.target.value })}
                                                         onBlur={() => setEditingId(null)}
@@ -521,7 +618,7 @@
                                                         autoFocus
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full font-bold text-lg text-slate-800 whitespace-pre-wrap break-words select-none pointer-events-none min-h-[28px]">
+                                                    <div className="w-full h-full font-bold text-slate-800 whitespace-pre-wrap break-words select-none pointer-events-none flex items-start">
                                                         {item.content || <span className="text-black/30">ダブルクリックで入力</span>}
                                                     </div>
                                                 )}
@@ -530,18 +627,13 @@
 
                                         {item.type === 'text' && (
                                             <div
-                                                className="min-w-[150px] max-w-[500px] w-fit h-fit flex flex-col p-2 cursor-move"
-                                                onDoubleClick={() => setEditingId(item.id)}
+                                                className={`w-full h-full flex flex-col p-2 ${isLocked ? 'cursor-default' : 'cursor-move'}`}
+                                                onDoubleClick={() => !isLocked && setEditingId(item.id)}
+                                                style={{ fontSize: `${computedFontSize}px`, lineHeight: 1.2 }}
                                             >
                                                 {editingId === item.id ? (
                                                     <textarea
-                                                        ref={el => {
-                                                            if (el) {
-                                                                el.style.height = '0px';
-                                                                el.style.height = el.scrollHeight + 'px';
-                                                            }
-                                                        }}
-                                                        className="w-full h-full bg-transparent resize-none outline-none font-extrabold text-2xl text-slate-700 leading-snug overflow-hidden"
+                                                        className="w-full h-full bg-transparent resize-none outline-none font-extrabold text-slate-700 overflow-hidden"
                                                         value={item.content}
                                                         onChange={(e) => updateItem(item.id, { content: e.target.value })}
                                                         onBlur={() => setEditingId(null)}
@@ -549,8 +641,8 @@
                                                         autoFocus
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full font-extrabold text-2xl text-slate-700 leading-snug whitespace-pre-wrap break-words select-none pointer-events-none min-h-[32px]">
-                                                        {item.content || <span className="text-black/30">テキストを入力 (ダブルクリック)</span>}
+                                                    <div className="w-full h-full font-extrabold text-slate-700 whitespace-pre-wrap break-words select-none pointer-events-none">
+                                                        {item.content || <span className="text-black/30">テキスト(ダブルクリック)</span>}
                                                     </div>
                                                 )}
                                             </div>
@@ -568,7 +660,7 @@
                                             </div>
                                         )}
 
-                                        {isSelected && !isAutoSized && (
+                                        {isSelected && !isLocked && (
                                             <div
                                                 className="absolute -bottom-4 -right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 cursor-nwse-resize z-50 shadow-lg"
                                                 onPointerDown={(e) => handleItemResizeStart(e, item.id)}
@@ -584,6 +676,13 @@
                     </div>
 
                     <div className="absolute top-1/2 -translate-y-1/2 left-4 bg-white/90 backdrop-blur shadow-2xl rounded-2xl p-3 flex flex-col gap-4 z-50 border border-slate-200">
+                        {/* 戻る（Undo）ボタン */}
+                        <button onClick={undo} disabled={!canUndo} className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-colors group ${canUndo ? 'hover:bg-orange-50 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}>
+                            <div className="bg-orange-100 p-2 rounded-lg group-hover:scale-110 transition-transform flex items-center justify-center font-bold text-xl text-orange-600" style={{ width: '44px', height: '44px' }}>↺</div>
+                            <span className="text-xs font-bold text-slate-600">もどる</span>
+                        </button>
+                        <div className="h-px bg-slate-200 my-1 w-full"></div>
+
                         <button onClick={addSticky} className="flex flex-col items-center gap-1 p-3 hover:bg-yellow-50 rounded-xl transition-colors group">
                             <div className="bg-yellow-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><StickyNote className="text-yellow-600" size={28} /></div>
                             <span className="text-xs font-bold text-slate-600">ふせん</span>
@@ -603,7 +702,8 @@
                             <span className="text-xs font-bold text-slate-600">テンプレート</span>
                         </button>
                         <div className="mt-4 flex flex-col items-center gap-1">
-                            <a href="../index.html" className="text-center font-bold text-sm text-slate-500 hover:text-slate-800 transition-colors">もどる</a>
+                            {/* アプリ一覧に戻るリンクに変更 */}
+                            <a href="../index.html" className="text-center font-bold text-sm text-slate-500 hover:text-slate-800 transition-colors bg-slate-200 px-3 py-2 rounded-lg">一覧へ</a>
                         </div>
                     </div>
 

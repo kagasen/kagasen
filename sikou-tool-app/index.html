@@ -18,7 +18,7 @@
     <script type="text/babel" data-type="module" data-plugins="transform-react-jsx">
         import React, { useState, useRef, useEffect } from 'https://esm.sh/react@18?dev';
         import { createRoot } from 'https://esm.sh/react-dom@18/client?dev';
-        import { StickyNote, Type, Image as ImageIcon, LayoutTemplate, Trash2, ArrowDownRight, ZoomIn, ZoomOut, Focus, Plus } from 'https://esm.sh/lucide-react@latest?deps=react@18';
+        import { StickyNote, Type, Image as ImageIcon, LayoutTemplate, Trash2, ArrowDownRight, ZoomIn, ZoomOut, Focus, Plus, MousePointer2, Hand } from 'https://esm.sh/lucide-react@latest?deps=react@18';
 
         // --- 定数とデータ ---
         const STICKY_COLORS = [
@@ -192,23 +192,27 @@
             // itemsStateで履歴管理を行う
             const { state: items, set: setItems, undo, redo, canUndo, canRedo } = useHistory([]);
             const [connections, setConnections] = useState([]);
-            const [selectedId, setSelectedId] = useState(null);
+            const [selectedIds, setSelectedIds] = useState([]);
             const [editingId, setEditingId] = useState(null);
             const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
             const [isPanning, setIsPanning] = useState(false);
             const [maxZIndex, setMaxZIndex] = useState(2);
             const [showTemplateModal, setShowTemplateModal] = useState(false);
+            const [isSelectionMode, setIsSelectionMode] = useState(true);
+            const [selectionBox, setSelectionBox] = useState(null);
 
             const fileInputRef = useRef(null);
             const viewRef = useRef(view);
             const itemsRef = useRef(items);
             const maxZIndexRef = useRef(maxZIndex);
+            const selectedIdsRef = useRef(selectedIds);
 
             useEffect(() => { viewRef.current = view; }, [view]);
             useEffect(() => {
                 itemsRef.current = items;
             }, [items]);
             useEffect(() => { maxZIndexRef.current = maxZIndex; }, [maxZIndex]);
+            useEffect(() => { selectedIdsRef.current = selectedIds; }, [selectedIds]);
 
             // ショートカットキーの実装（Cmd+Z / Ctrl+Z）
             useEffect(() => {
@@ -236,27 +240,31 @@
                 };
             };
 
-            const bringToFront = (id) => {
+            const bringToFront = (ids) => {
                 const newZ = maxZIndexRef.current + 1;
                 setMaxZIndex(newZ);
                 // 履歴に残さずZインデックスだけ更新したい場合はsetItemsを使いますが、
                 // Zインデックスの変更も状態として保存します。
-                setItems(items.map(item => item.id === id ? { ...item, zIndex: newZ } : item));
-                setSelectedId(id);
+                setItems(items.map(item => ids.includes(item.id) ? { ...item, zIndex: newZ } : item));
+                setSelectedIds(ids);
             };
 
             const updateItem = (id, changes) => {
                 setItems(items.map(item => item.id === id ? { ...item, ...changes } : item));
             };
 
-            const toggleLock = (id) => {
-                setItems(items.map(item => item.id === id ? { ...item, isLocked: !item.isLocked } : item));
+            const toggleLockSelected = () => {
+                if (selectedIds.length === 0) return;
+                const firstItem = items.find(i => i.id === selectedIds[0]);
+                if (!firstItem) return;
+                const newLockedStat = !firstItem.isLocked;
+                setItems(items.map(item => selectedIds.includes(item.id) ? { ...item, isLocked: newLockedStat } : item));
             };
 
-            const deleteItem = (id) => {
-                setItems(items.filter(item => item.id !== id));
-                setConnections(prev => prev.filter(conn => conn.from !== id && conn.to !== id));
-                if (selectedId === id) setSelectedId(null);
+            const deleteSelected = () => {
+                setItems(items.filter(item => !selectedIds.includes(item.id)));
+                setConnections(prev => prev.filter(conn => !selectedIds.includes(conn.from) && !selectedIds.includes(conn.to)));
+                setSelectedIds([]);
             };
 
             const addSticky = () => {
@@ -344,9 +352,9 @@
                 const newZ = maxZIndexRef.current + 1;
                 setMaxZIndex(newZ);
 
-                const w = sourceItem.width || 150;
-                const newX = sourceItem.x + w + 40;
-                const newY = sourceItem.y + 40;
+                const h = sourceItem.height || 100;
+                const newX = sourceItem.x;
+                const newY = sourceItem.y + h + 40;
 
                 const newItem = {
                     id: newId,
@@ -361,35 +369,80 @@
 
                 setItems([...items, newItem]);
                 setConnections(prev => [...prev, { from: sourceItem.id, to: newId }]);
-                setSelectedId(newId);
+                setSelectedIds([newId]);
                 setEditingId(newId);
             };
 
             const handleCanvasPointerDown = (e) => {
                 if (e.target.closest('[data-item]')) return;
-                setSelectedId(null);
+                setSelectedIds([]);
                 setEditingId(null);
-                setIsPanning(true);
 
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startViewX = viewRef.current.x;
-                const startViewY = viewRef.current.y;
+                if (isSelectionMode) {
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startViewX = viewRef.current.x;
+                    const startViewY = viewRef.current.y;
+                    const scale = viewRef.current.scale;
 
-                const handlePointerMove = (moveEvent) => {
-                    const dx = moveEvent.clientX - startX;
-                    const dy = moveEvent.clientY - startY;
-                    setView({ ...viewRef.current, x: startViewX + dx, y: startViewY + dy });
-                };
+                    const canvasStartX = (startX - startViewX) / scale;
+                    const canvasStartY = (startY - startViewY) / scale;
 
-                const handlePointerUp = () => {
-                    setIsPanning(false);
-                    document.removeEventListener('pointermove', handlePointerMove);
-                    document.removeEventListener('pointerup', handlePointerUp);
-                };
+                    const handlePointerMove = (moveEvent) => {
+                        const currentX = (moveEvent.clientX - startViewX) / scale;
+                        const currentY = (moveEvent.clientY - startViewY) / scale;
 
-                document.addEventListener('pointermove', handlePointerMove);
-                document.addEventListener('pointerup', handlePointerUp);
+                        const minX = Math.min(canvasStartX, currentX);
+                        const minY = Math.min(canvasStartY, currentY);
+                        const maxX = Math.max(canvasStartX, currentX);
+                        const maxY = Math.max(canvasStartY, currentY);
+
+                        setSelectionBox({ x: minX, y: minY, w: maxX - minX, h: maxY - minY });
+
+                        const newSelectedIds = itemsRef.current.filter(item => {
+                            const iw = item.width || 100;
+                            const ih = item.height || 100;
+                            return (
+                                item.x < minX + (maxX - minX) &&
+                                item.x + iw > minX &&
+                                item.y < minY + (maxY - minY) &&
+                                item.y + ih > minY
+                            );
+                        }).map(i => i.id);
+                        setSelectedIds(newSelectedIds);
+                    };
+
+                    const handlePointerUp = () => {
+                        setSelectionBox(null);
+                        document.removeEventListener('pointermove', handlePointerMove);
+                        document.removeEventListener('pointerup', handlePointerUp);
+                    };
+
+                    document.addEventListener('pointermove', handlePointerMove);
+                    document.addEventListener('pointerup', handlePointerUp);
+
+                } else {
+                    setIsPanning(true);
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startViewX = viewRef.current.x;
+                    const startViewY = viewRef.current.y;
+
+                    const handlePointerMove = (moveEvent) => {
+                        const dx = moveEvent.clientX - startX;
+                        const dy = moveEvent.clientY - startY;
+                        setView({ ...viewRef.current, x: startViewX + dx, y: startViewY + dy });
+                    };
+
+                    const handlePointerUp = () => {
+                        setIsPanning(false);
+                        document.removeEventListener('pointermove', handlePointerMove);
+                        document.removeEventListener('pointerup', handlePointerUp);
+                    };
+
+                    document.addEventListener('pointermove', handlePointerMove);
+                    document.addEventListener('pointerup', handlePointerUp);
+                }
             };
 
             const handleWheel = (e) => {
@@ -410,38 +463,44 @@
                 if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.closest('.lock-btn')) return;
 
                 const targetItem = itemsRef.current.find(i => i.id === id);
-                if (!targetItem) return;
-
-                if (!targetItem.isLocked) {
-                    bringToFront(id);
-                } else {
-                    setSelectedId(id);
-                    return; // ロック時はドラッグさせない
+                if (!targetItem || targetItem.isLocked) {
+                    if (targetItem && targetItem.isLocked) setSelectedIds([id]);
+                    return;
                 }
+
+                let dragTargetIds = selectedIdsRef.current;
+                if (!dragTargetIds.includes(id)) {
+                    dragTargetIds = [id];
+                    setSelectedIds(dragTargetIds);
+                }
+
+                bringToFront(dragTargetIds);
 
                 const startClientX = e.clientX;
                 const startClientY = e.clientY;
-                const startItemX = targetItem.x;
-                const startItemY = targetItem.y;
-                let hasMoved = false;
+
+                const startPositions = dragTargetIds.map(dragId => {
+                    const item = itemsRef.current.find(i => i.id === dragId);
+                    return item ? { id: dragId, x: item.x, y: item.y, isLocked: item.isLocked } : null;
+                }).filter(p => p && !p.isLocked);
 
                 const handlePointerMove = (moveEvent) => {
-                    hasMoved = true;
                     const scale = viewRef.current.scale;
                     const dx = (moveEvent.clientX - startClientX) / scale;
                     const dy = (moveEvent.clientY - startClientY) / scale;
 
-                    // ※ ここではリアルタイムなドラッグ中は履歴を大量に作らないため、
-                    // refや直接のDOM更新の代わりに簡易的にsetItemsを呼び続けます。
-                    // パフォーマンス上の懸念がある場合は別の実装を検討しますが、今回は要件通りに実装します。
-                    setItems(itemsRef.current.map(item => item.id === id ? { ...item, x: startItemX + dx, y: startItemY + dy } : item));
+                    setItems(itemsRef.current.map(item => {
+                        const startPos = startPositions.find(p => p.id === item.id);
+                        if (startPos) {
+                            return { ...item, x: startPos.x + dx, y: startPos.y + dy };
+                        }
+                        return item;
+                    }));
                 };
 
                 const handlePointerUp = () => {
                     document.removeEventListener('pointermove', handlePointerMove);
                     document.removeEventListener('pointerup', handlePointerUp);
-                    // 本来ならドラッグ終了時に履歴を1つ追加するのが綺麗ですが、今回はsetItemsを使っているため
-                    // そのままとします。
                 };
 
                 document.addEventListener('pointermove', handlePointerMove);
@@ -454,22 +513,38 @@
                 const targetItem = itemsRef.current.find(i => i.id === id);
                 if (!targetItem || targetItem.isLocked) return;
 
-                bringToFront(id);
+                let resizeTargetIds = selectedIdsRef.current;
+                if (!resizeTargetIds.includes(id)) {
+                    resizeTargetIds = [id];
+                    setSelectedIds(resizeTargetIds);
+                }
+
+                bringToFront(resizeTargetIds);
 
                 const startClientX = e.clientX;
                 const startClientY = e.clientY;
-                const startW = targetItem.width;
-                const startH = targetItem.height;
+
+                const startSizes = resizeTargetIds.map(resizeId => {
+                    const item = itemsRef.current.find(i => i.id === resizeId);
+                    return item ? { id: resizeId, w: item.width, h: item.height, isLocked: item.isLocked } : null;
+                }).filter(s => s && !s.isLocked);
 
                 const handlePointerMove = (moveEvent) => {
                     const scale = viewRef.current.scale;
                     const dx = (moveEvent.clientX - startClientX) / scale;
                     const dy = (moveEvent.clientY - startClientY) / scale;
-                    setItems(itemsRef.current.map(item => item.id === id ? {
-                        ...item,
-                        width: Math.max(100, startW + dx),
-                        height: Math.max(50, startH + dy)
-                    } : item));
+
+                    setItems(itemsRef.current.map(item => {
+                        const startSize = startSizes.find(s => s.id === item.id);
+                        if (startSize) {
+                            return {
+                                ...item,
+                                width: Math.max(100, startSize.w + dx),
+                                height: Math.max(50, startSize.h + dy)
+                            };
+                        }
+                        return item;
+                    }));
                 };
 
                 const handlePointerUp = () => {
@@ -521,10 +596,22 @@
                                         />
                                     );
                                 })}
+                                {selectionBox && (
+                                    <rect
+                                        x={selectionBox.x}
+                                        y={selectionBox.y}
+                                        width={selectionBox.w}
+                                        height={selectionBox.h}
+                                        fill="rgba(59, 130, 246, 0.1)"
+                                        stroke="rgba(59, 130, 246, 0.5)"
+                                        strokeWidth="2"
+                                        strokeDasharray="4 4"
+                                    />
+                                )}
                             </svg>
 
                             {items.map(item => {
-                                const isSelected = selectedId === item.id;
+                                const isSelected = selectedIds.includes(item.id);
                                 // 付箋やテキストは以前自動サイズでしたが、今回は拡大縮小をサポートするため
                                 // サイズ変更を可能とします（isAutoSized を除去）
                                 const isLocked = item.isLocked || false;
@@ -537,6 +624,8 @@
                                 const baseFontSize = item.type === 'text' ? 24 : 18;
                                 const baseWidth = item.type === 'text' ? 300 : 150;
                                 const computedFontSize = Math.max(12, Math.floor(baseFontSize * (item.width / baseWidth)));
+
+                                const isOnlySelected = selectedIds.length === 1 && isSelected;
 
                                 return (
                                     <div
@@ -558,7 +647,7 @@
                                         {isSelected && (
                                             <button
                                                 className={`lock-btn absolute -top-4 left-4 ${isLocked ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-500 hover:bg-slate-600'} text-white rounded-full p-2 z-50 shadow-lg transition-transform hover:scale-110 flex items-center justify-center`}
-                                                onPointerDown={(e) => { e.stopPropagation(); toggleLock(item.id); }}
+                                                onPointerDown={(e) => { e.stopPropagation(); toggleLockSelected(); }}
                                                 title={isLocked ? "ロック解除" : "位置をロック"}
                                                 style={{ width: '34px', height: '34px', fontSize: '14px' }}
                                             >
@@ -570,7 +659,7 @@
                                         {isSelected && !isLocked && (
                                             <button
                                                 className="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 z-50 shadow-lg cursor-pointer transition-transform hover:scale-110"
-                                                onPointerDown={(e) => { e.stopPropagation(); deleteItem(item.id); }}
+                                                onPointerDown={(e) => { e.stopPropagation(); deleteSelected(); }}
                                                 title="さくじょ"
                                             >
                                                 <Trash2 size={18} />
@@ -578,7 +667,7 @@
                                         )}
 
                                         {/* 繋ぐ（＋）ボタン（付箋のみ） */}
-                                        {isSelected && item.type === 'sticky' && !isLocked && (
+                                        {isOnlySelected && item.type === 'sticky' && !isLocked && (
                                             <button
                                                 className="absolute top-1/2 -right-6 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 shadow-lg z-50 cursor-pointer transition-transform hover:scale-110"
                                                 onPointerDown={(e) => { e.stopPropagation(); connectNewSticky(item); }}
@@ -595,7 +684,10 @@
                                                     <button
                                                         key={c}
                                                         className={`w-6 h-6 rounded-full ${c.split(' ')[0]} border shadow-sm transition-transform hover:scale-110 ${item.color === c ? 'border-slate-800 scale-110 ring-2 ring-slate-400' : 'border-slate-200'}`}
-                                                        onPointerDown={(e) => { e.stopPropagation(); updateItem(item.id, { color: c }); }}
+                                                        onPointerDown={(e) => {
+                                                            e.stopPropagation();
+                                                            setItems(items.map(i => (selectedIds.includes(i.id) && i.type === 'sticky') ? { ...i, color: c } : i));
+                                                        }}
                                                         title="色をかえる"
                                                     />
                                                 ))}
@@ -682,7 +774,12 @@
                             <span className="text-xs font-bold text-slate-600">もどる</span>
                         </button>
                         <div className="h-px bg-slate-200 my-1 w-full"></div>
-
+                        <button onClick={() => setIsSelectionMode(!isSelectionMode)} className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-colors group ${isSelectionMode ? 'bg-cyan-50 ring-2 ring-cyan-400' : 'hover:bg-cyan-50'}`}>
+                            <div className={`p-2 rounded-lg transition-transform ${isSelectionMode ? 'bg-cyan-200 scale-110' : 'bg-cyan-100 group-hover:scale-110'}`}>
+                                {isSelectionMode ? <MousePointer2 className="text-cyan-700" size={28} /> : <Hand className="text-cyan-600" size={28} />}
+                            </div>
+                            <span className={`text-xs font-bold ${isSelectionMode ? 'text-cyan-800' : 'text-slate-600'}`}>{isSelectionMode ? 'せんたく' : 'なでる'}</span>
+                        </button>
                         <button onClick={addSticky} className="flex flex-col items-center gap-1 p-3 hover:bg-yellow-50 rounded-xl transition-colors group">
                             <div className="bg-yellow-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><StickyNote className="text-yellow-600" size={28} /></div>
                             <span className="text-xs font-bold text-slate-600">ふせん</span>

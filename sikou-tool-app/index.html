@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思考ツール</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 relative">
+    <div id="root"></div>
+
+    <!-- Babel standalone for JSX parsing -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- React App Script -->
+    <script type="text/babel" data-type="module" data-plugins="transform-react-jsx">
+        import React, { useState, useRef, useEffect } from 'https://esm.sh/react@18?dev';
+        import { createRoot } from 'https://esm.sh/react-dom@18/client?dev';
+        import { StickyNote, Type, Image as ImageIcon, LayoutTemplate, Trash2, ArrowDownRight, ZoomIn, ZoomOut, Focus, Plus } from 'https://esm.sh/lucide-react@latest?deps=react@18';
+
+        // --- 定数とデータ ---
+        const STICKY_COLORS = [
+            'bg-yellow-100 border-yellow-300',
+            'bg-pink-100 border-pink-300',
+            'bg-blue-100 border-blue-300',
+            'bg-green-100 border-green-300',
+            'bg-purple-100 border-purple-300'
+        ];
+
+        const TEMPLATES = [
+            { id: 'x-chart', name: 'Xチャート (分類)', width: 1000, height: 800 },
+            { id: 'y-chart', name: 'Yチャート (分類)', width: 1000, height: 800 },
+            { id: 'axis-chart', name: '座標軸 (順序付け)', width: 1000, height: 1000 },
+            { id: 'venn-diagram', name: 'ベン図 (比較)', width: 1000, height: 700 },
+            { id: 'pmi-chart', name: 'PMIチャート (分析)', width: 1200, height: 800 },
+            { id: 'kwl-chart', name: 'KWLチャート (振り返り)', width: 1200, height: 800 },
+            { id: 'jellyfish-chart', name: 'クラゲチャート (見通す)', width: 1000, height: 800 },
+            { id: 'fishbone-diagram', name: 'フィッシュボーン図 (構造化)', width: 1200, height: 600 },
+            { id: 'candy-chart', name: 'キャンディーチャート (因果関係)', width: 1000, height: 500 },
+            { id: 'pyramid-chart', name: 'ピラミッドチャート (焦点化)', width: 1000, height: 800 },
+        ];
+
+        // --- テンプレートSVG描画コンポーネント ---
+        const TemplateSvg = ({ id }) => {
+            switch (id) {
+                case 'x-chart':
+                    return (
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                            <line x1="0" y1="0" x2="100" y2="100" stroke="#64748b" strokeWidth="1" />
+                            <line x1="100" y1="0" x2="0" y2="100" stroke="#64748b" strokeWidth="1" />
+                        </svg>
+                    );
+                case 'y-chart':
+                    return (
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                            <line x1="50" y1="50" x2="50" y2="100" stroke="#64748b" strokeWidth="1" />
+                            <line x1="50" y1="50" x2="0" y2="0" stroke="#64748b" strokeWidth="1" />
+                            <line x1="50" y1="50" x2="100" y2="0" stroke="#64748b" strokeWidth="1" />
+                        </svg>
+                    );
+                case 'axis-chart':
+                    return (
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                            <line x1="50" y1="5" x2="50" y2="95" stroke="#475569" strokeWidth="1" />
+                            <line x1="5" y1="50" x2="95" y2="50" stroke="#475569" strokeWidth="1" />
+                            <polygon points="50,0 45,8 55,8" fill="#475569" />
+                            <polygon points="100,50 92,45 92,55" fill="#475569" />
+                        </svg>
+                    );
+                case 'venn-diagram':
+                    return (
+                        <svg viewBox="0 0 200 120" preserveAspectRatio="xMidYMid meet" className="w-full h-full">
+                            <circle cx="70" cy="60" r="50" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <circle cx="130" cy="60" r="50" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                        </svg>
+                    );
+                case 'pmi-chart':
+                    return (
+                        <svg viewBox="0 0 300 200" preserveAspectRatio="none" className="w-full h-full">
+                            <line x1="100" y1="0" x2="100" y2="200" stroke="#64748b" strokeWidth="1" />
+                            <line x1="200" y1="0" x2="200" y2="200" stroke="#64748b" strokeWidth="1" />
+                            <line x1="0" y1="30" x2="300" y2="30" stroke="#64748b" strokeWidth="1" />
+                            <text x="50" y="20" textAnchor="middle" fill="#333" fontSize="12" fontWeight="bold">P (良いところ)</text>
+                            <text x="150" y="20" textAnchor="middle" fill="#333" fontSize="12" fontWeight="bold">M (悪いところ)</text>
+                            <text x="250" y="20" textAnchor="middle" fill="#333" fontSize="12" fontWeight="bold">I (おもしろい)</text>
+                        </svg>
+                    );
+                case 'kwl-chart':
+                    return (
+                        <svg viewBox="0 0 300 200" preserveAspectRatio="none" className="w-full h-full">
+                            <line x1="100" y1="0" x2="100" y2="200" stroke="#64748b" strokeWidth="1" />
+                            <line x1="200" y1="0" x2="200" y2="200" stroke="#64748b" strokeWidth="1" />
+                            <line x1="0" y1="30" x2="300" y2="30" stroke="#64748b" strokeWidth="1" />
+                            <text x="50" y="20" textAnchor="middle" fill="#333" fontSize="12" fontWeight="bold">K (知っている)</text>
+                            <text x="150" y="20" textAnchor="middle" fill="#333" fontSize="12" fontWeight="bold">W (知りたい)</text>
+                            <text x="250" y="20" textAnchor="middle" fill="#333" fontSize="12" fontWeight="bold">L (わかった)</text>
+                        </svg>
+                    );
+                case 'jellyfish-chart':
+                    return (
+                        <svg viewBox="0 0 400 230" preserveAspectRatio="none" className="w-full h-full">
+                            <path d="M 100 120 L 100 60 Q 100 10 200 10 Q 300 10 300 60 L 300 120 Z" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="120" y1="120" x2="80" y2="150" stroke="#64748b" strokeWidth="2" />
+                            <circle cx="80" cy="180" r="30" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="160" y1="120" x2="140" y2="150" stroke="#64748b" strokeWidth="2" />
+                            <circle cx="140" cy="180" r="30" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="200" y1="120" x2="200" y2="150" stroke="#64748b" strokeWidth="2" />
+                            <circle cx="200" cy="180" r="30" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="240" y1="120" x2="260" y2="150" stroke="#64748b" strokeWidth="2" />
+                            <circle cx="260" cy="180" r="30" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="280" y1="120" x2="320" y2="150" stroke="#64748b" strokeWidth="2" />
+                            <circle cx="320" cy="180" r="30" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                        </svg>
+                    );
+                case 'fishbone-diagram':
+                    return (
+                        <svg viewBox="0 0 700 300" preserveAspectRatio="none" className="w-full h-full">
+                            <path d="M 500 70 L 500 230 C 650 230, 650 70, 500 70 Z" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="40" y1="150" x2="500" y2="150" stroke="#64748b" strokeWidth="2" />
+                            <line x1="480" y1="150" x2="420" y2="30" stroke="#64748b" strokeWidth="2" />
+                            <line x1="420" y1="30" x2="270" y2="30" stroke="#64748b" strokeWidth="2" />
+                            <line x1="480" y1="150" x2="420" y2="270" stroke="#64748b" strokeWidth="2" />
+                            <line x1="420" y1="270" x2="270" y2="270" stroke="#64748b" strokeWidth="2" />
+                            <line x1="270" y1="150" x2="210" y2="30" stroke="#64748b" strokeWidth="2" />
+                            <line x1="210" y1="30" x2="60" y2="30" stroke="#64748b" strokeWidth="2" />
+                            <line x1="270" y1="150" x2="210" y2="270" stroke="#64748b" strokeWidth="2" />
+                            <line x1="210" y1="270" x2="60" y2="270" stroke="#64748b" strokeWidth="2" />
+                        </svg>
+                    );
+                case 'candy-chart':
+                    return (
+                        <svg viewBox="0 0 300 120" preserveAspectRatio="none" className="w-full h-full">
+                            <polygon points="100,60 20,20 20,100" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <polygon points="200,60 280,20 280,100" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <ellipse cx="150" cy="60" rx="60" ry="40" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                        </svg>
+                    );
+                case 'pyramid-chart':
+                    return (
+                        <svg viewBox="0 0 200 200" preserveAspectRatio="none" className="w-full h-full">
+                            <polygon points="100,10 10,190 190,190" fill="transparent" stroke="#64748b" strokeWidth="2" />
+                            <line x1="70" y1="70" x2="130" y2="70" stroke="#64748b" strokeWidth="2" />
+                            <line x1="40" y1="130" x2="160" y2="130" stroke="#64748b" strokeWidth="2" />
+                        </svg>
+                    );
+                default:
+                    return null;
+            }
+        };
+
+        // --- メインアプリケーション ---
+        function App() {
+            const [items, setItems] = useState([]);
+            const [connections, setConnections] = useState([]);
+            const [selectedId, setSelectedId] = useState(null);
+            const [editingId, setEditingId] = useState(null);
+            const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
+            const [isPanning, setIsPanning] = useState(false);
+            const [maxZIndex, setMaxZIndex] = useState(2);
+            const [showTemplateModal, setShowTemplateModal] = useState(false);
+
+            const fileInputRef = useRef(null);
+            const viewRef = useRef(view);
+            const itemsRef = useRef(items);
+            const maxZIndexRef = useRef(maxZIndex);
+
+            useEffect(() => { viewRef.current = view; }, [view]);
+            useEffect(() => {
+                itemsRef.current = items;
+            }, [items]);
+            useEffect(() => { maxZIndexRef.current = maxZIndex; }, [maxZIndex]);
+
+            const getCanvasCenter = () => {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                const v = viewRef.current;
+                return {
+                    x: (w / 2 - v.x) / v.scale,
+                    y: (h / 2 - v.y) / v.scale,
+                };
+            };
+
+            const bringToFront = (id) => {
+                const newZ = maxZIndexRef.current + 1;
+                setMaxZIndex(newZ);
+                setItems(prev => prev.map(item => item.id === id ? { ...item, zIndex: newZ } : item));
+                setSelectedId(id);
+            };
+
+            const updateItem = (id, changes) => {
+                setItems(prev => prev.map(item => item.id === id ? { ...item, ...changes } : item));
+            };
+
+            const deleteItem = (id) => {
+                setItems(prev => prev.filter(item => item.id !== id));
+                setConnections(prev => prev.filter(conn => conn.from !== id && conn.to !== id));
+                if (selectedId === id) setSelectedId(null);
+            };
+
+            const addSticky = () => {
+                const center = getCanvasCenter();
+                const color = STICKY_COLORS[0];
+                const newZ = maxZIndexRef.current + 1;
+                setMaxZIndex(newZ);
+                setItems([...items, {
+                    id: `sticky-${Date.now()}`,
+                    type: 'sticky',
+                    content: '',
+                    color,
+                    x: center.x - 75, y: center.y - 30,
+                    width: 150, height: 100,
+                    zIndex: newZ,
+                }]);
+            };
+
+            const addText = () => {
+                const center = getCanvasCenter();
+                const newZ = maxZIndexRef.current + 1;
+                setMaxZIndex(newZ);
+                setItems([...items, {
+                    id: `text-${Date.now()}`,
+                    type: 'text',
+                    content: '',
+                    x: center.x - 150, y: center.y - 50,
+                    width: 300, height: 100,
+                    zIndex: newZ,
+                }]);
+            };
+
+            const addTemplate = (templateId) => {
+                const tpl = TEMPLATES.find(t => t.id === templateId);
+                const center = getCanvasCenter();
+                const newZ = maxZIndexRef.current + 1;
+                setMaxZIndex(newZ);
+                setItems([...items, {
+                    id: `tpl-${Date.now()}`,
+                    type: 'template',
+                    content: tpl.id,
+                    x: center.x - tpl.width / 2, y: center.y - tpl.height / 2,
+                    width: tpl.width, height: tpl.height,
+                    zIndex: newZ,
+                }]);
+                setShowTemplateModal(false);
+            };
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const dataUrl = event.target.result;
+                    const img = new Image();
+                    img.onload = () => {
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > 400) { h = h * (400 / w); w = 400; }
+                        const center = getCanvasCenter();
+                        const newZ = maxZIndexRef.current + 1;
+                        setMaxZIndex(newZ);
+                        setItems(prev => [...prev, {
+                            id: `img-${Date.now()}`,
+                            type: 'image',
+                            content: dataUrl,
+                            x: center.x - w / 2, y: center.y - h / 2,
+                            width: w, height: h,
+                            zIndex: newZ,
+                        }]);
+                    };
+                    img.src = dataUrl;
+                };
+                reader.readAsDataURL(file);
+                e.target.value = '';
+            };
+
+            const connectNewSticky = (sourceItem) => {
+                const newId = `sticky-${Date.now()}`;
+                const color = sourceItem.color || STICKY_COLORS[0];
+                const newZ = maxZIndexRef.current + 1;
+                setMaxZIndex(newZ);
+
+                const w = sourceItem.width || 150;
+                const newX = sourceItem.x + w + 40;
+                const newY = sourceItem.y + 40;
+
+                const newItem = {
+                    id: newId,
+                    type: 'sticky',
+                    content: '',
+                    color,
+                    x: newX, y: newY,
+                    width: 150, height: 100,
+                    zIndex: newZ,
+                };
+
+                setItems(prev => [...prev, newItem]);
+                setConnections(prev => [...prev, { from: sourceItem.id, to: newId }]);
+                setSelectedId(newId);
+                setEditingId(newId);
+            };
+
+            const handleCanvasPointerDown = (e) => {
+                if (e.target.closest('[data-item]')) return;
+                setSelectedId(null);
+                setEditingId(null);
+                setIsPanning(true);
+
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startViewX = viewRef.current.x;
+                const startViewY = viewRef.current.y;
+
+                const handlePointerMove = (moveEvent) => {
+                    const dx = moveEvent.clientX - startX;
+                    const dy = moveEvent.clientY - startY;
+                    setView({ ...viewRef.current, x: startViewX + dx, y: startViewY + dy });
+                };
+
+                const handlePointerUp = () => {
+                    setIsPanning(false);
+                    document.removeEventListener('pointermove', handlePointerMove);
+                    document.removeEventListener('pointerup', handlePointerUp);
+                };
+
+                document.addEventListener('pointermove', handlePointerMove);
+                document.addEventListener('pointerup', handlePointerUp);
+            };
+
+            const handleWheel = (e) => {
+                // Only zoom if pinch (ctrlKey) to prevent standard scrolling zoom conflicts if possible,
+                // but let's stick to base implementation.
+                const zoomSensitivity = 0.001;
+                const delta = -e.deltaY * zoomSensitivity;
+                const newScale = Math.min(Math.max(0.1, view.scale * (1 + delta)), 5);
+
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+                const newX = mouseX - (mouseX - view.x) * (newScale / view.scale);
+                const newY = mouseY - (mouseY - view.y) * (newScale / view.scale);
+
+                setView({ x: newX, y: newY, scale: newScale });
+            };
+
+            const handleItemDragStart = (e, id) => {
+                e.stopPropagation();
+                bringToFront(id);
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+                const startClientX = e.clientX;
+                const startClientY = e.clientY;
+                const targetItem = itemsRef.current.find(i => i.id === id);
+                if (!targetItem) return;
+
+                const startItemX = targetItem.x;
+                const startItemY = targetItem.y;
+
+                const handlePointerMove = (moveEvent) => {
+                    const scale = viewRef.current.scale;
+                    const dx = (moveEvent.clientX - startClientX) / scale;
+                    const dy = (moveEvent.clientY - startClientY) / scale;
+                    updateItem(id, { x: startItemX + dx, y: startItemY + dy });
+                };
+
+                const handlePointerUp = () => {
+                    document.removeEventListener('pointermove', handlePointerMove);
+                    document.removeEventListener('pointerup', handlePointerUp);
+                };
+
+                document.addEventListener('pointermove', handlePointerMove);
+                document.addEventListener('pointerup', handlePointerUp);
+            };
+
+            const handleItemResizeStart = (e, id) => {
+                e.stopPropagation();
+                bringToFront(id);
+
+                const startClientX = e.clientX;
+                const startClientY = e.clientY;
+                const targetItem = itemsRef.current.find(i => i.id === id);
+                if (!targetItem) return;
+
+                const startW = targetItem.width;
+                const startH = targetItem.height;
+
+                const handlePointerMove = (moveEvent) => {
+                    const scale = viewRef.current.scale;
+                    const dx = (moveEvent.clientX - startClientX) / scale;
+                    const dy = (moveEvent.clientY - startClientY) / scale;
+                    updateItem(id, {
+                        width: Math.max(100, startW + dx),
+                        height: Math.max(50, startH + dy)
+                    });
+                };
+
+                const handlePointerUp = () => {
+                    document.removeEventListener('pointermove', handlePointerMove);
+                    document.removeEventListener('pointerup', handlePointerUp);
+                };
+
+                document.addEventListener('pointermove', handlePointerMove);
+                document.addEventListener('pointerup', handlePointerUp);
+            };
+
+            return (
+                <div
+                    className="w-screen h-screen flex relative overflow-hidden text-slate-800"
+                    style={{ fontFamily: '"Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN", "Meiryo", sans-serif' }}
+                >
+                    <div
+                        className={`w-full h-full absolute inset-0 touch-none ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        onPointerDown={handleCanvasPointerDown}
+                        onWheel={handleWheel}
+                        style={{
+                            backgroundColor: '#f8fafc',
+                            backgroundImage: `radial-gradient(#cbd5e1 ${1 * view.scale}px, transparent ${1 * view.scale}px)`,
+                            backgroundSize: `${20 * view.scale}px ${20 * view.scale}px`,
+                            backgroundPosition: `${view.x}px ${view.y}px`,
+                        }}
+                    >
+                        <div
+                            className="absolute top-0 left-0 origin-top-left w-full h-full pointer-events-none"
+                            style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}
+                        >
+                            <svg className="absolute top-0 left-0 w-full h-full overflow-visible pointer-events-none" style={{ zIndex: 0 }}>
+                                {connections.map((conn, idx) => {
+                                    const fromItem = items.find(i => i.id === conn.from);
+                                    const toItem = items.find(i => i.id === conn.to);
+                                    if (!fromItem || !toItem) return null;
+
+                                    const x1 = fromItem.x + (fromItem.width || 150) / 2;
+                                    const y1 = fromItem.y + (fromItem.height || 100) / 2;
+                                    const x2 = toItem.x + (toItem.width || 150) / 2;
+                                    const y2 = toItem.y + (toItem.height || 100) / 2;
+
+                                    return (
+                                        <line
+                                            key={idx}
+                                            x1={x1} y1={y1} x2={x2} y2={y2}
+                                            stroke="#475569" strokeWidth="3"
+                                            strokeLinecap="round"
+                                        />
+                                    );
+                                })}
+                            </svg>
+
+                            {items.map(item => {
+                                const isSelected = selectedId === item.id;
+                                const isAutoSized = ['sticky', 'text'].includes(item.type);
+
+                                const renderZIndex = item.type === 'template'
+                                    ? (isSelected ? item.zIndex + 1000 : item.zIndex)
+                                    : (isSelected ? item.zIndex + 11000 : item.zIndex + 10000);
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        id={`item-wrapper-${item.id}`}
+                                        data-item="true"
+                                        className={`absolute pointer-events-auto shadow-sm group ${isSelected ? 'ring-4 ring-blue-400 ring-offset-2 rounded-xl' : ''}`}
+                                        style={{
+                                            left: item.x,
+                                            top: item.y,
+                                            width: isAutoSized ? 'auto' : item.width,
+                                            height: isAutoSized ? 'auto' : item.height,
+                                            zIndex: renderZIndex
+                                        }}
+                                        onPointerDown={(e) => handleItemDragStart(e, item.id)}
+                                    >
+                                        {isSelected && (
+                                            <button
+                                                className="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 z-50 shadow-lg cursor-pointer transition-transform hover:scale-110"
+                                                onPointerDown={(e) => { e.stopPropagation(); deleteItem(item.id); }}
+                                                title="さくじょ"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
+
+                                        {isSelected && item.type === 'sticky' && (
+                                            <button
+                                                className="absolute top-1/2 -right-6 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 shadow-lg z-50 cursor-pointer transition-transform hover:scale-110"
+                                                onPointerDown={(e) => { e.stopPropagation(); connectNewSticky(item); }}
+                                                title="新しく繋ぐ"
+                                            >
+                                                <Plus size={20} />
+                                            </button>
+                                        )}
+
+                                        {isSelected && item.type === 'sticky' && (
+                                            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-full shadow-lg border border-slate-200 flex gap-2 z-50 pointer-events-auto">
+                                                {STICKY_COLORS.map(c => (
+                                                    <button
+                                                        key={c}
+                                                        className={`w-6 h-6 rounded-full ${c.split(' ')[0]} border shadow-sm transition-transform hover:scale-110 ${item.color === c ? 'border-slate-800 scale-110 ring-2 ring-slate-400' : 'border-slate-200'}`}
+                                                        onPointerDown={(e) => { e.stopPropagation(); updateItem(item.id, { color: c }); }}
+                                                        title="色をかえる"
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {item.type === 'sticky' && (
+                                            <div
+                                                className={`min-w-[120px] max-w-[300px] min-h-[50px] w-fit h-fit ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col cursor-move`}
+                                                onDoubleClick={() => setEditingId(item.id)}
+                                            >
+                                                {editingId === item.id ? (
+                                                    <textarea
+                                                        ref={el => {
+                                                            if (el) {
+                                                                el.style.height = '0px';
+                                                                el.style.height = Math.max(28, el.scrollHeight) + 'px';
+                                                            }
+                                                        }}
+                                                        className="w-full h-full bg-transparent resize-none outline-none font-bold text-lg text-slate-800 overflow-hidden"
+                                                        value={item.content}
+                                                        onChange={(e) => updateItem(item.id, { content: e.target.value })}
+                                                        onBlur={() => setEditingId(null)}
+                                                        placeholder="ここに入力..."
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full font-bold text-lg text-slate-800 whitespace-pre-wrap break-words select-none pointer-events-none min-h-[28px]">
+                                                        {item.content || <span className="text-black/30">ダブルクリックで入力</span>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {item.type === 'text' && (
+                                            <div
+                                                className="min-w-[150px] max-w-[500px] w-fit h-fit flex flex-col p-2 cursor-move"
+                                                onDoubleClick={() => setEditingId(item.id)}
+                                            >
+                                                {editingId === item.id ? (
+                                                    <textarea
+                                                        ref={el => {
+                                                            if (el) {
+                                                                el.style.height = '0px';
+                                                                el.style.height = el.scrollHeight + 'px';
+                                                            }
+                                                        }}
+                                                        className="w-full h-full bg-transparent resize-none outline-none font-extrabold text-2xl text-slate-700 leading-snug overflow-hidden"
+                                                        value={item.content}
+                                                        onChange={(e) => updateItem(item.id, { content: e.target.value })}
+                                                        onBlur={() => setEditingId(null)}
+                                                        placeholder="テキストを入力"
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full font-extrabold text-2xl text-slate-700 leading-snug whitespace-pre-wrap break-words select-none pointer-events-none min-h-[32px]">
+                                                        {item.content || <span className="text-black/30">テキストを入力 (ダブルクリック)</span>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {item.type === 'image' && (
+                                            <div className="w-full h-full bg-white border-4 border-white shadow-md rounded pointer-events-none">
+                                                <img src={item.content} alt="uploaded" className="w-full h-full object-contain" draggable={false} />
+                                            </div>
+                                        )}
+
+                                        {item.type === 'template' && (
+                                            <div className="w-full h-full pointer-events-none">
+                                                <TemplateSvg id={item.content} />
+                                            </div>
+                                        )}
+
+                                        {isSelected && !isAutoSized && (
+                                            <div
+                                                className="absolute -bottom-4 -right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 cursor-nwse-resize z-50 shadow-lg"
+                                                onPointerDown={(e) => handleItemResizeStart(e, item.id)}
+                                                title="おおきさ変更"
+                                            >
+                                                <ArrowDownRight size={18} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="absolute top-1/2 -translate-y-1/2 left-4 bg-white/90 backdrop-blur shadow-2xl rounded-2xl p-3 flex flex-col gap-4 z-50 border border-slate-200">
+                        <button onClick={addSticky} className="flex flex-col items-center gap-1 p-3 hover:bg-yellow-50 rounded-xl transition-colors group">
+                            <div className="bg-yellow-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><StickyNote className="text-yellow-600" size={28} /></div>
+                            <span className="text-xs font-bold text-slate-600">ふせん</span>
+                        </button>
+                        <button onClick={addText} className="flex flex-col items-center gap-1 p-3 hover:bg-blue-50 rounded-xl transition-colors group">
+                            <div className="bg-blue-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><Type className="text-blue-600" size={28} /></div>
+                            <span className="text-xs font-bold text-slate-600">文字</span>
+                        </button>
+                        <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-1 p-3 hover:bg-green-50 rounded-xl transition-colors group">
+                            <div className="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><ImageIcon className="text-green-600" size={28} /></div>
+                            <span className="text-xs font-bold text-slate-600">画像</span>
+                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                        </button>
+                        <div className="h-px bg-slate-200 my-1 w-full"></div>
+                        <button onClick={() => setShowTemplateModal(true)} className="flex flex-col items-center gap-1 p-3 hover:bg-purple-50 rounded-xl transition-colors group">
+                            <div className="bg-purple-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><LayoutTemplate className="text-purple-600" size={28} /></div>
+                            <span className="text-xs font-bold text-slate-600">テンプレート</span>
+                        </button>
+                        <div className="mt-4 flex flex-col items-center gap-1">
+                            <a href="../index.html" className="text-center font-bold text-sm text-slate-500 hover:text-slate-800 transition-colors">もどる</a>
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-6 right-6 flex bg-white/90 backdrop-blur shadow-xl rounded-full p-2 gap-2 z-50 border border-slate-200">
+                        <button onClick={() => setView(v => ({ ...v, scale: Math.min(5, v.scale * 1.2) }))} className="p-3 hover:bg-slate-100 rounded-full transition-colors text-slate-600" title="ズームイン">
+                            <ZoomIn size={24} />
+                        </button>
+                        <div className="flex items-center justify-center w-16 font-extrabold text-slate-700 text-sm">
+                            {Math.round(view.scale * 100)}%
+                        </div>
+                        <button onClick={() => setView(v => ({ ...v, scale: Math.max(0.1, v.scale / 1.2) }))} className="p-3 hover:bg-slate-100 rounded-full transition-colors text-slate-600" title="ズームアウト">
+                            <ZoomOut size={24} />
+                        </button>
+                        <div className="w-px bg-slate-200 my-2"></div>
+                        <button onClick={() => setView({ x: 0, y: 0, scale: 1 })} className="p-3 hover:bg-slate-100 rounded-full transition-colors text-slate-600" title="最初の位置にもどる">
+                            <Focus size={24} />
+                        </button>
+                    </div>
+
+                    {showTemplateModal && (
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+                            <div className="bg-white p-6 md:p-8 rounded-3xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl transform transition-all">
+                                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-6 text-center">つかいたい「思考ツール」をえらんでね！</h2>
+                                <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {TEMPLATES.map(t => (
+                                            <button
+                                                key={t.id}
+                                                onClick={() => addTemplate(t.id)}
+                                                className="border-4 border-slate-100 rounded-2xl p-4 hover:border-purple-400 hover:bg-purple-50 hover:-translate-y-1 transition-all flex flex-col items-center gap-4 group"
+                                            >
+                                                <div className="w-full h-32 bg-slate-50 rounded-xl flex items-center justify-center pointer-events-none p-2 relative overflow-hidden">
+                                                    <TemplateSvg id={t.id} />
+                                                    <div className="absolute inset-0 bg-transparent group-hover:bg-purple-500/10 transition-colors"></div>
+                                                </div>
+                                                <span className="font-extrabold text-slate-700 text-lg">{t.name}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="mt-8 flex justify-center">
+                                    <button
+                                        onClick={() => setShowTemplateModal(false)}
+                                        className="px-10 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-full font-bold text-lg transition-colors shadow-sm"
+                                    >
+                                        やめる (とじる)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <style>{`
+            .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+          `}</style>
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

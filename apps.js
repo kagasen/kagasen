@@ -128,5 +128,15 @@ const appsData = [
         colorClass: "subject-gray",
         image: "images/classbo-do.jpg", // サムネイル画像
         link: "classroom-board/index.html"
+    },
+    {
+        title: "思考ツール",
+        description: "考えを整理しよう！ふせんや図解・テンプレートを自由に配置できるボードアプリです。",
+        category: "others",        // その他
+        tagName: "その他",
+        date: "2026/02/27",
+        colorClass: "subject-purple",
+        image: "images/sikou-tool.jpg", // サムネイル画像
+        link: "sikou-tool-app/index.html"
     }
 ];

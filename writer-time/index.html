@@ -158,53 +158,58 @@
             { id: 'purple', class: 'bg-purple-600', name: 'パープル' },
         ];
 
-        // 小学生向けの選択式ヒント付きガイド
+        // 小学1・2年生でも書けるヒント付きガイド
         const GUIDE_QUESTIONS = [
             {
                 id: 'who',
-                title: '主人公（しゅじんこう）はだれ？',
-                hint: 'どんな子か、ボタンをおしてヒントをもらおう！',
+                part: 'はじめ',
+                title: '【はじめ】お話の主役（しゅじんこう）はだれ？',
+                hint: 'どんな子？ ボタンをおしてヒントをもらおう！',
                 choices: ['元気いっぱいの子', 'こわがりで泣き虫な子', 'ふしぎなまほう使い', 'しゃべるどうぶつ'],
-                placeholder: '例：空をとべるペンギンの「ペンタ」。でも、高いところが大のニガテ。',
+                placeholder: '例：空をとべるペンギンの「ペンタ」。',
                 icon: 'users',
                 color: 'bg-blue-100 text-blue-800 border-blue-200',
                 btnColor: 'bg-blue-200 hover:bg-blue-300 text-blue-800'
             },
             {
                 id: 'where',
-                title: 'どこで、いつのお話？',
-                hint: 'どんな場所からスタートする？',
-                choices: ['100年後の未来のまち', 'おばけがいっぱいの森', '雲のうえのフワフワ島', 'いつも行っている学校'],
-                placeholder: '例：雲の上にあるフワフワの島。いつもあまい綿あめのにおいがする。',
+                part: 'はじめ',
+                title: '【はじめ】どこで、なにをしているところ？',
+                hint: 'どこから お話がスタートするかな？',
+                choices: ['未来のまちで遊んでいる', 'おばけの森で迷子になっている', '雲のうえでお昼寝している', '学校で勉強している'],
+                placeholder: '例：雲の上にあるフワフワ島で、お昼寝している。',
                 icon: 'map',
                 color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
                 btnColor: 'bg-emerald-200 hover:bg-emerald-300 text-emerald-800'
             },
             {
                 id: 'what',
-                title: 'どんな「大事件」がおきる？',
-                hint: '主人公がこまってしまうことはなんだろう？',
-                choices: ['大切な宝物がぬすまれた！', 'ともだちが迷子になった！', 'まちが魔法でこおってしまった！', '学校に宇宙人がやってきた！'],
-                placeholder: '例：島を支えている「魔法のクリスタル」が、カラスにぬすまれてしまった！',
+                part: '中',
+                title: '【中】どんな びっくりすること（大事件）がおきる？',
+                hint: '主役が こまってしまうことはなんだろう？',
+                choices: ['大切な宝物がぬすまれた！', 'ともだちが迷子になった！', 'まちが魔法でこおってしまった！', 'UFOが落ちてきた！'],
+                placeholder: '例：大切な「魔法の石」が、カラスにぬすまれてしまった！',
                 icon: 'alert-circle',
                 color: 'bg-red-100 text-red-800 border-red-200',
                 btnColor: 'bg-red-200 hover:bg-red-300 text-red-800'
             },
             {
                 id: 'how',
-                title: '事件をどうやって乗りこえる？',
+                part: '中',
+                title: '【中】どうやって がんばる？（かいけつ）',
                 hint: 'だれかが助けてくれる？ 勇気をだす？',
                 choices: ['なかまと協力してたちむかう', 'ひみつのアイテムを使う', 'ニガテなことにちょうせんする', 'とんちをきかせてやっつける'],
-                placeholder: '例：ニガテな空をとんでカラスを追いかけ、友だちの風の精霊と協力して取りかえす。',
+                placeholder: '例：ニガテな空をとんで追いかけ、友だちと協力して取りかえす。',
                 icon: 'target',
                 color: 'bg-amber-100 text-amber-800 border-amber-200',
                 btnColor: 'bg-amber-200 hover:bg-amber-300 text-amber-800'
             },
             {
                 id: 'end',
-                title: 'さいごは、どうなる？',
-                hint: '事件がおわって、主人公はどうなったかな？',
-                placeholder: '例：クリスタルを取りもどし、ペンタは空をとぶのが少し好きになった。みんなでパーティーをして終わる。',
+                part: '終わり',
+                title: '【終わり】さいごは どうなった？',
+                hint: '事件がおわって、どんな気持ちになったかな？',
+                placeholder: '例：石を取りもどして、空をとぶのが少し好きになった。',
                 choices: ['みんなで笑いあっておわる', '次のぼうけんへ旅立つ', '少しだけ大人に成長する', '安心してお家へ帰る'],
                 icon: 'flag',
                 color: 'bg-purple-100 text-purple-800 border-purple-200',
@@ -214,6 +219,7 @@
 
         // ふりかえり（推敲）チェックリスト
         const REVISION_CHECKS = [
+            { id: 'check0', text: '名前（作者名）は書いた？' },
             { id: 'check1', text: '題名（タイトル）はつけた？' },
             { id: 'check2', text: '「。」や「、」は正しく使えている？' },
             { id: 'check3', text: 'カギカッコ「　」で、会話を入れてみた？' },
@@ -387,7 +393,8 @@
                                 <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center mb-3 text-current">
                                     <Icon name={currentQuestion.icon} size={32} />
                                 </div>
-                                <h2 className="text-3xl font-black mb-1 font-pop">{currentQuestion.title}</h2>
+                                <span className="bg-white/60 px-4 py-1 rounded-full text-sm font-bold mb-2 shadow-sm border border-black/10">構成：{currentQuestion.part}</span>
+                                <h2 className="text-2xl md:text-3xl font-black mb-1 font-pop">{currentQuestion.title}</h2>
                             </div>
 
                             <div className="p-6 bg-white -mt-4 rounded-t-3xl relative">
@@ -485,6 +492,16 @@
                 setCurrentPageIndex(pages.length);
             };
 
+            const generateDraft = () => {
+                const currentTextStr = pages[currentPageIndex] || '';
+                if (currentTextStr.trim() !== '' && !window.confirm('今書いているお話が消えてしまいますが、メモから文章を作り直してもいいですか？')) {
+                    return;
+                }
+                const draft = `　${guideAnswers.where || 'あるところに'}、${guideAnswers.who || 'だれかが'}いました。\n　ある日、${guideAnswers.what || 'たいへんなことがおきました'}。\n　そこで、${guideAnswers.how || 'がんばりました'}。\n　${guideAnswers.end || 'そして、おわりました'}。`;
+
+                handlePageContentChange({ target: { value: draft } });
+            };
+
             const removeCurrentPage = () => {
                 if (pages.length <= 1) return;
                 if (window.confirm('このページを消してもいいですか？')) {
@@ -557,10 +574,20 @@
                                     <Icon name="info" size={16} className="text-amber-500 mr-1 shrink-0 mt-0.5" />
                                     ここを見ながらお話を広げよう。メモはここで書き直せるよ。
                                 </p>
+
+                                <button
+                                    onClick={generateDraft}
+                                    className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-bold p-3 rounded-xl shadow-md border-2 border-amber-600 flex items-center justify-center group transition-all"
+                                    title="メモから短いお話を作ります"
+                                >
+                                    <Icon name="wand-2" size={20} className="mr-2 group-hover:rotate-12 transition-transform" />
+                                    魔法のステッキで文章にする！
+                                </button>
+
                                 {GUIDE_QUESTIONS.map((q, index) => (
                                     <div key={q.id} className={`p-4 rounded-xl shadow-sm border-l-8 relative text-sm font-bold ${q.color} bg-white opacity-90 hover:opacity-100 transition-opacity`}>
                                         <div className="flex flex-col gap-1 mb-2 text-black/80 border-b border-black/10 pb-2">
-                                            <span className="text-xs opacity-70">ステップ {index + 1}</span>
+                                            <span className="text-xs opacity-70">ステップ {index + 1} ({q.part})</span>
                                             <span className="">{q.title}</span>
                                         </div>
                                         <textarea

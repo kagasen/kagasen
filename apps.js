@@ -1,5 +1,15 @@
 const appsData = [
     {
+        title: "ビジョントレーニング",
+        description: "目を動かす練習をして、見つける力や集中力を高めよう！色々なトレーニングを選べるよ。",
+        category: "others",
+        tagName: "その他",
+        date: "2026/03/02",
+        colorClass: "subject-blue",
+        image: "images/vision-training.jpg",
+        link: "vision-training/index.html"
+    },
+    {
         title: "〇〇な最適解",
         description: "みんなの答えを予想してお題に一番合う「最適解」を見つけるゲーム！",
         category: "management",
@@ -138,5 +148,15 @@ const appsData = [
         colorClass: "subject-purple",
         image: "images/sikou-tool.jpg", // サムネイル画像
         link: "sikou-tool-app/index.html"
+    },
+    {
+        title: "作家の時間",
+        description: "しつもんに答えるだけで、キミだけの本ができる！お話づくりサポートアプリです。",
+        category: "japanese",      // 国語
+        tagName: "国語",
+        date: "2026/03/04",
+        colorClass: "subject-red",
+        image: "images/writer-time.jpg", // サムネイル画像 (一旦仮で設定)
+        link: "writer-time/index.html"
     }
 ];

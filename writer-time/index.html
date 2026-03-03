@@ -497,7 +497,19 @@
                 if (currentTextStr.trim() !== '' && !window.confirm('今書いているお話が消えてしまいますが、メモから文章を作り直してもいいですか？')) {
                     return;
                 }
-                const draft = `　${guideAnswers.where || 'あるところに'}、${guideAnswers.who || 'だれかが'}いました。\n　ある日、${guideAnswers.what || 'たいへんなことがおきました'}。\n　そこで、${guideAnswers.how || 'がんばりました'}。\n　${guideAnswers.end || 'そして、おわりました'}。`;
+                const draft = `　${guideAnswers.where || 'あるところに'}、${guideAnswers.who || 'だれかが'}いました。
+（主人公はどんな性格？ 何をするのが好きか、どんな見た目かをくわしく書いてみよう）
+
+　ある日、${guideAnswers.what || 'たいへんなことがおきました'}。
+（そのとき、まわりの様子はどうなった？ 主人公はどんな気持ちになったか、どんなことをつぶやいたか「　」を使って書いてみよう）
+
+　そこで、${guideAnswers.how || 'がんばりました'}。
+（どんなふうにがんばった？ 友だちや、まわりの人たちとどうやって協力したか、くわしく書いてみよう）
+
+　${guideAnswers.end || 'そして、おわりました'}。
+（さいごに、主人公はどんなことを思った？ 「また新しい冒険にいきたいな」など、最後の一文をかっこよくきめよう！）
+
+※（）の言葉をヒントにして、どんどんお話をふくらませていこう！`;
 
                 handlePageContentChange({ target: { value: draft } });
             };
@@ -719,7 +731,7 @@
                                         {project.title}
                                     </h3>
                                     <div className="w-full h-px bg-white/50 mb-4 mt-auto"></div>
-                                    <p className="text-white font-bold font-serif-jp">作： あなた</p>
+                                    <p className="text-white font-bold font-serif-jp">作： {project.authorName || 'あなた'}</p>
                                 </div>
                             </div>
                         </div>
@@ -731,13 +743,24 @@
                             </h2>
                             <p className="text-gray-600 font-bold mb-8">表紙の色を選んで、印刷して本にしよう！</p>
 
-                            <div className="mb-8">
+                            <div className="mb-6">
                                 <label className="block text-gray-700 font-black mb-3 text-lg">タイトル</label>
                                 <input
                                     type="text"
                                     value={project.title}
                                     onChange={(e) => updateProject({ title: e.target.value })}
                                     className="w-full border-4 border-amber-100 rounded-xl p-4 text-xl font-bold focus:outline-none focus:border-amber-400 focus:bg-amber-50 transition-all text-gray-800"
+                                />
+                            </div>
+
+                            <div className="mb-8">
+                                <label className="block text-gray-700 font-black mb-3 text-lg">作者名（なまえ）</label>
+                                <input
+                                    type="text"
+                                    value={project.authorName || ''}
+                                    onChange={(e) => updateProject({ authorName: e.target.value })}
+                                    className="w-full border-4 border-amber-100 rounded-xl p-4 text-xl font-bold focus:outline-none focus:border-amber-400 focus:bg-amber-50 transition-all text-gray-800"
+                                    placeholder="例：かがせん"
                                 />
                             </div>
 
@@ -783,7 +806,7 @@
                             <div className="border-[16px] border-double border-gray-800 p-24 text-center flex flex-col justify-center items-center w-4/5 h-4/5 relative">
                                 <h1 className="text-6xl font-black mb-16 tracking-[1em] leading-relaxed" style={{ writingMode: 'vertical-rl', height: '60%' }}>{project.title}</h1>
                                 <div className="w-full h-1 bg-gray-800 mb-8 mt-auto"></div>
-                                <p className="text-3xl font-bold tracking-widest">作： あなた</p>
+                                <p className="text-3xl font-bold tracking-widest">作： {project.authorName || 'あなた'}</p>
                             </div>
                         </div>
 
@@ -833,6 +856,7 @@
                     paperType: 'horizontal',
                     coverColor: 'amber',
                     checklist: [],
+                    authorName: '',
                     updatedAt: new Date().toISOString()
                 };
                 setProjects([newProject, ...projects]);

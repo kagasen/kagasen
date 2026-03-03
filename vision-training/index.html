@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ビジョントレーニング | かがせんのHAPPYアプリ集</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'pop': ['"Mochiy Pop One"', 'sans-serif'],
+                        'maru': ['"Zen Maru Gothic"', 'sans-serif'],
+                    },
+                    colors: {
+                        'natural-bg': '#FFFEFA',
+                        'natural-brown': '#5D4037',
+                        'subject-red': '#FFCDD2',
+                        'subject-blue': '#B3E5FC',
+                        'subject-green': '#C5E1A5',
+                        'subject-yellow': '#FFF59D',
+                        'subject-orange': '#FFCCBC',
+                        'subject-purple': '#E1BEE7',
+                        'subject-gray': '#E0E0E0',
+                        'accent-orange': '#FFAB91',
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFFEFA;
+            background-image: linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .app-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-thumbnail {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            position: relative;
+            background-color: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-thumbnail i {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .app-card:hover .card-thumbnail img,
+        .app-card:hover .card-thumbnail i {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body class="font-maru text-natural-brown min-h-screen flex flex-col">
+
+    <header class="w-full bg-white/80 backdrop-blur-sm py-4 border-b border-orange-100 sticky top-0 z-20">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="../index.html"
+                class="flex items-center gap-2 text-gray-500 hover:text-accent-orange transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="text-sm font-bold">アプリ集にもどる</span>
+            </a>
+            <h1 class="font-pop text-lg md:text-xl text-natural-brown tracking-widest hidden md:block">
+                ビジョントレーニング
+            </h1>
+            <div class="w-24"></div> <!-- スペーサー用 -->
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+
+        <div class="text-center mb-10">
+            <h2
+                class="font-pop text-2xl md:text-3xl text-natural-brown tracking-widest flex items-center justify-center gap-3 mb-4">
+                <i data-lucide="eye" class="w-8 h-8 text-subject-blue"></i>
+                ビジョントレーニング
+                <i data-lucide="eye" class="w-8 h-8 text-subject-blue"></i>
+            </h2>
+            <p class="text-gray-500 text-sm max-w-2xl mx-auto leading-relaxed">
+                目を動かす練習をして、見つける力や集中力を高めよう！<br>
+                好きなトレーニングを選んでチャレンジしてね。
+            </p>
+        </div>
+
+        <!-- トレーニングアプリ一覧表示エリア -->
+        <div id="trainingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 準備中のプレースホルダー -->
+            <div
+                class="group bg-white rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 h-full flex flex-col relative items-center justify-center py-12">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="plus" class="w-8 h-8 text-gray-300"></i>
+                </div>
+                <h3 class="text-lg text-gray-400 font-pop mb-2">新しいアプリを準備中...</h3>
+                <p class="text-gray-400 text-xs">「同じものを探せ」など、<br>楽しいアプリが追加される予定だよ！</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white/60 border-t border-orange-100 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400 text-xs">&copy; 2026 かがせんのHAPPYアプリ集</p>
+        </div>
+    </footer>
+
+    <script>
+        // 将来的に追加されるアプリのデータを管理する配列
+        const trainingApps = [
+            {
+                title: "同じものをさがそう",
+                description: "左右のカードの中から、同じ絵を1つだけ素早く見つけだそう！",
+                icon: "search",
+                colorClass: "subject-yellow",
+                image: "images/onajimonowosagasou.png",
+                link: "find-same/index.html",
+                isReady: true
+            },
+            {
+                title: "線をたどろう",
+                description: "おなじフルーツをつなぐ線をさがして、目で追う力を育てよう！",
+                icon: "git-commit",
+                colorClass: "subject-green",
+                image: "images/sennwotadorou.png",
+                link: "trace-line/index.html",
+                isReady: true
+            },
+            {
+                title: "ナンバータッチ",
+                description: "すうじをじゅんばんにはやくタッチしよう！",
+                icon: "pointer",
+                colorClass: "subject-blue",
+                image: "images/nannba-tatti.png",
+                link: "number-touch/index.html",
+                isReady: true
+            },
+            {
+                title: "ちがっているものをさがせ",
+                description: "にているえから ちがうものを １つだけさがしてね！",
+                icon: "search-check",
+                colorClass: "subject-orange",
+                image: "images/tigatteirumonowosagase.png",
+                link: "find-diff/index.html",
+                isReady: true
+            },
+            {
+                title: "いくつあるかな",
+                description: "していされたえが いくつあるか かぞえて すばやくこたえよう！",
+                icon: "hash",
+                colorClass: "subject-purple",
+                image: "images/ikutuarukana.png",
+                link: "count-items/index.html",
+                isReady: true
+            }
+        ];
+
+        function renderTrainingApps() {
+            const grid = document.getElementById('trainingGrid');
+
+            // アプリデータがある場合はそれを表示
+            if (trainingApps.length > 0) {
+                // 初期化してプレースホルダーを消す
+                grid.innerHTML = '';
+
+                trainingApps.forEach(app => {
+                    const card = document.createElement(app.link ? 'a' : 'div');
+                    if (app.link) card.href = app.link;
+
+                    card.className = `group block bg-white rounded-2xl overflow-hidden border-2 ${app.isReady ? `border-${app.colorClass} hover:shadow-card cursor-pointer` : 'border-gray-200 opacity-60 cursor-not-allowed'} shadow-soft h-full flex flex-col relative app-card`;
+
+                    const badge = !app.isReady ? `<span class="absolute top-2 right-2 bg-gray-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 tracking-widest">準備中</span>` : '';
+
+                    card.innerHTML = `
+                        ${badge}
+                        <div class="card-thumbnail bg-${app.colorClass}/10">
+                            ${app.image
+                            ? '<img src="' + app.image + '" alt="' + app.title + '" class="w-full h-full object-cover">'
+                            : '<i data-lucide="' + (app.icon || 'eye') + '" class="w-16 h-16 text-' + app.colorClass + '"></i>'
+                        }
+                        </div>
+                        <div class="p-5 flex-grow flex flex-col items-center text-center">
+                            <h3 class="text-lg text-natural-brown mb-2 border-b-2 border-${app.colorClass}/30 pb-1 px-4 font-pop">${app.title}</h3>
+                            <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">${app.description}</p>
+                            ${app.isReady ? `<span class="bg-${app.colorClass} text-natural-brown py-1.5 px-6 rounded-lg text-sm shadow-sm group-hover:opacity-80 transition tracking-widest border border-black/5">あそぶ</span>` : ''}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        renderTrainingApps();
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

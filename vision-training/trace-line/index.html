@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>線をたどろう - ビジョントレーニング</title>
+
+    <!-- Kagasen フォント -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'pop': ['"Mochiy Pop One"', 'sans-serif'],
+                        'maru': ['"Zen Maru Gothic"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
+            background-color: #f0fdfa;
+            /* Tailwind teal-50 */
+            touch-action: none;
+            /* スマホでのスワイプによる画面スクロールを防止 */
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .bounce {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(-5%);
+            }
+
+            50% {
+                transform: translateY(5%);
+            }
+        }
+
+        .pop {
+            animation: pop 0.3s ease-out forwards;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 戻るボタン -->
+    <button onclick="if(window.handleBackClick) window.handleBackClick(); else window.location.href='../index.html';"
+        class="fixed top-4 left-4 z-[100] bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md hover:scale-105 transition-transform flex items-center gap-2 pr-4 text-slate-600 outline-none"
+        style="text-decoration: none;">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        <span class="text-sm font-bold">もどる</span>
+    </button>
+
+    <div id="root" class="w-full h-screen flex flex-col items-center justify-center relative"></div>
+
+    <script>
+        // Lucide アイコンの初期化
+        lucide.createIcons();
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // フルーツのリスト（絵文字）
+        const FRUITS_LIST = ['🍎', '🍌', '🍇', '🍉', '🍊', '🍓', '🍒', '🍑', '🍍', '🥝', '🍈', '🍋'];
+
+        // 難易度の設定
+        const DIFFICULTIES = {
+            easy: { id: 'easy', label: 'かんたん', baseLines: 3, maxLines: 10, nodes: 1 },
+            normal: { id: 'normal', label: 'ふつう', baseLines: 4, maxLines: 10, nodes: 2 },
+            hard: { id: 'hard', label: 'むずかしい', baseLines: 5, maxLines: 10, nodes: 3 }
+        };
+
+        const TIME_LIMIT = 30;
+
+        // キャラクターのメッセージ
+        const MESSAGES = {
+            start: "おなじフルーツをつなぐ線をさがしてね！",
+            correct: "せいかい！よくみえたね！",
+            wrong: "ざんねん！ちがうフルーツだよ。(-100てん)",
+            timeup: "タイムアップ！よくがんばったね！"
+        };
+
+        const ScorePyramid = ({ score }) => {
+            const ranks = [
+                { id: 'rank-10', min: 7000, color: 'bg-yellow-400', name: '創造神 (7000〜)' },
+                { id: 'rank-9', min: 5500, color: 'bg-yellow-300', name: '神 (5500〜)' },
+                { id: 'rank-8', min: 4500, color: 'bg-pink-500', name: '伝説 (4500〜)' },
+                { id: 'rank-7', min: 3500, color: 'bg-pink-400', name: '仙人 (3500〜)' },
+                { id: 'rank-6', min: 2500, color: 'bg-red-400', name: '達人 (2500〜)' },
+                { id: 'rank-5', min: 1500, color: 'bg-orange-500', name: '名人 (1500〜)' },
+                { id: 'rank-4', min: 1000, color: 'bg-orange-400', name: 'プロ (1000〜)' },
+                { id: 'rank-3', min: 600, color: 'bg-orange-300', name: 'エース (600〜)' },
+                { id: 'rank-2', min: 300, color: 'bg-green-400', name: 'ベテラン (300〜)' },
+                { id: 'rank-1', min: 100, color: 'bg-teal-400', name: '中級者 (100〜)' },
+                { id: 'rank-0', min: 0, color: 'bg-blue-400', name: '初級者 (0〜)' }
+            ];
+
+            let achievedRankId = 'rank-0';
+            let achievedMessage = "よくがんばったね！";
+            for (let rank of ranks) {
+                if (score >= rank.min) {
+                    achievedRankId = rank.id;
+                    if (score >= 7000) achievedMessage = "そうぞうしんレベル！\nきみはでんせつだ！";
+                    else if (score >= 5500) achievedMessage = "かみさまレベル！\nきみはすごい！";
+                    else if (score >= 4500) achievedMessage = "でんせつレベル！\nあともうすこし！";
+                    else if (score >= 3500) achievedMessage = "せんにんレベル！\nすばらしすぎる！";
+                    else if (score >= 2500) achievedMessage = "たつじんレベル！\nめがとってもいいね！";
+                    else if (score >= 1500) achievedMessage = "めいじんレベル！\nそのちょうしだ！";
+                    else if (score >= 1000) achievedMessage = "プロレベル！\nすごいスピード！";
+                    else if (score >= 600) achievedMessage = "エースレベル！\nかなりはやいぞ！";
+                    else if (score >= 300) achievedMessage = "ベテランレベル！\nいいかんじ！";
+                    else if (score >= 100) achievedMessage = "ちゅうきゅうしゃ！\nもっといけるよ！";
+                    else achievedMessage = "しょきゅうしゃ！\nつぎはがんばろう！";
+                    break;
+                }
+            }
+
+            const getWidthClass = (index) => {
+                const percentages = ['w-1/4', 'w-1/3', 'w-5/12', 'w-1/2', 'w-7/12', 'w-2/3', 'w-3/4', 'w-4/5', 'w-5/6', 'w-11/12', 'w-full'];
+                return percentages[index] || 'w-full';
+            };
+
+            return (
+                <div className="flex flex-col items-center w-full">
+                    <div className="bg-white p-3 rounded-2xl shadow-md border-2 border-yellow-200 text-center w-full max-w-[280px] mb-4">
+                        <div className="text-gray-500 text-xs font-bold mb-1">あなたのスコア</div>
+                        <div className="text-5xl font-black text-amber-500">{score}<span className="text-xl ml-1">点</span></div>
+                    </div>
+                    <div className="flex items-center space-x-2 mb-4 w-full max-w-[280px] justify-center">
+                        <div className="text-3xl">🦉</div>
+                        <div className="relative bg-white rounded-2xl p-2 px-4 border-2 border-teal-100 shadow-sm text-sm font-bold text-teal-800 text-center whitespace-pre-wrap">
+                            {achievedMessage}
+                        </div>
+                    </div>
+                    <div className="w-full max-w-[260px] flex flex-col items-center relative bg-white/50 p-2 rounded-xl border-2 border-teal-50 shadow-inner">
+                        <div className="text-xs text-gray-500 font-bold mb-2 tracking-widest">【 ランク・ピラミッド 】</div>
+                        {ranks.map((rank, idx) => {
+                            const isAchieved = rank.id === achievedRankId;
+                            const baseClasses = `py-0.5 text-center text-[10px] sm:text-[11px] transition-all duration-300 border-t border-white ${getWidthClass(idx)}`;
+                            const activeClasses = `${rank.color} text-white font-bold scale-110 z-10 shadow-md rounded-md`;
+                            const inactiveClasses = "bg-gray-200 text-gray-400";
+                            return (
+                                <div key={rank.id} className={`${baseClasses} ${isAchieved ? activeClasses : inactiveClasses} ${idx === 0 && !isAchieved ? 'rounded-t-md' : ''} ${idx === ranks.length - 1 && !isAchieved ? 'rounded-b-md' : ''}`}>
+                                    {isAchieved ? `${rank.name} 🦉` : rank.name}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            // 状態管理
+            const [gameState, setGameState] = useState('menu'); // 'menu', 'playing', 'animating', 'timeup'
+            const [difficulty, setDifficulty] = useState(DIFFICULTIES.normal);
+            const [level, setLevel] = useState(1);
+            const [score, setScore] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
+            const [message, setMessage] = useState(MESSAGES.start);
+
+            // 戻るボタン用のグローバル関数登録
+            useEffect(() => {
+                window.handleBackClick = () => {
+                    if (gameState !== 'menu') {
+                        setGameState('menu');
+                    } else {
+                        window.location.href = '../index.html';
+                    }
+                };
+            }, [gameState]);
+
+            // 描画関連の参照
+            const canvasRef = useRef(null);
+            const levelDataRef = useRef(null);
+            const animationRef = useRef(null);
+            const containerRef = useRef(null);
+
+            // アニメーション状態の管理
+            const animStateRef = useRef({
+                isHighlighting: false,
+                highlightLineIndex: -1,
+                highlightProgress: 0,
+                errorLineIndex: -1,
+                errorAlpha: 0
+            });
+            const missesRef = useRef({ consecutive: 0, total: 0 });
+
+            // レベルデータを生成する関数
+            const generateLevelData = useCallback(() => {
+                const isMobile = window.innerWidth < 600;
+                const nodesCount = isMobile ? Math.min(difficulty.nodes, 2) : difficulty.nodes;
+
+                let lineCount = difficulty.baseLines + (level - 1);
+                lineCount = Math.min(lineCount, difficulty.maxLines);
+
+                const selectedFruits = [...FRUITS_LIST].sort(() => 0.5 - Math.random()).slice(0, lineCount);
+                const startFruits = [...selectedFruits].sort(() => 0.5 - Math.random());
+                const mapping = Array.from({ length: lineCount }, (_, i) => i).sort(() => 0.5 - Math.random());
+
+                const correctStartIndex = Math.floor(Math.random() * lineCount);
+                const correctEndIndex = mapping[correctStartIndex];
+                const correctFruit = startFruits[correctStartIndex];
+
+                let endFruits = new Array(lineCount).fill(null);
+                endFruits[correctEndIndex] = correctFruit;
+
+                const remainingEndIndices = Array.from({ length: lineCount }, (_, i) => i).filter(i => i !== correctEndIndex);
+                const remainingFruits = selectedFruits.filter(f => f !== correctFruit);
+
+                let valid = false;
+                while (!valid) {
+                    remainingFruits.sort(() => 0.5 - Math.random());
+                    valid = true;
+                    for (let i = 0; i < remainingEndIndices.length; i++) {
+                        const eIdx = remainingEndIndices[i];
+                        const sIdx = mapping.findIndex(m => m === eIdx);
+                        if (startFruits[sIdx] === remainingFruits[i]) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                }
+
+                remainingEndIndices.forEach((eIdx, i) => {
+                    endFruits[eIdx] = remainingFruits[i];
+                });
+
+                const intermediateLayers = [];
+                for (let l = 0; l < nodesCount; l++) {
+                    intermediateLayers.push(Array.from({ length: lineCount }, (_, i) => i).sort(() => 0.5 - Math.random()));
+                }
+
+                levelDataRef.current = {
+                    lineCount,
+                    startFruits,
+                    endFruits,
+                    mapping,
+                    correctStartIndex,
+                    correctEndIndex,
+                    intermediateLayers,
+                    nodesCount,
+                    lines: []
+                };
+
+                animStateRef.current = {
+                    isHighlighting: false,
+                    highlightLineIndex: -1,
+                    highlightProgress: 0,
+                    errorLineIndex: -1,
+                    errorAlpha: 0
+                };
+
+            }, [difficulty, level]);
+
+            // キャンバスに描画する関数
+            const drawCanvas = useCallback(() => {
+                const canvas = canvasRef.current;
+                if (!canvas || !levelDataRef.current) return;
+
+                const ctx = canvas.getContext('2d');
+                const data = levelDataRef.current;
+                const anim = animStateRef.current;
+
+                const width = canvas.width / (window.devicePixelRatio || 1);
+                const height = canvas.height / (window.devicePixelRatio || 1);
+
+                ctx.clearRect(0, 0, width, height);
+
+                const isMobile = width < 600;
+                const paddingX = isMobile ? 40 : 80;
+                const paddingY = 40;
+
+                const startX = paddingX;
+                const endX = width - paddingX;
+                const availableHeight = height - paddingY * 2;
+                const yStep = availableHeight / data.lineCount;
+
+                const maxRadius = (yStep / 2) - 4;
+                const baseRadius = isMobile ? 24 : 30;
+                const fruitRadius = Math.max(12, Math.min(baseRadius, maxRadius));
+                data.fruitRadius = fruitRadius;
+                const fontSize = fruitRadius * 1.2;
+
+                const layerYs = [];
+                for (let i = 0; i < data.lineCount; i++) {
+                    layerYs.push(paddingY + yStep * i + yStep / 2);
+                }
+
+                const xStep = (endX - startX) / (data.nodesCount + 1);
+                const layerXs = [];
+                for (let i = 1; i <= data.nodesCount; i++) {
+                    layerXs.push(startX + xStep * i);
+                }
+
+                if (data.lines.length === 0 || data.lines[0].segments[0].p0.x !== startX) {
+                    data.lines = [];
+                    for (let i = 0; i < data.lineCount; i++) {
+                        const points = [];
+                        points.push({ x: startX, y: layerYs[i] });
+
+                        for (let l = 0; l < data.nodesCount; l++) {
+                            points.push({ x: layerXs[l], y: layerYs[data.intermediateLayers[l][i]] });
+                        }
+
+                        points.push({ x: endX, y: layerYs[data.mapping[i]] });
+
+                        const segments = [];
+                        for (let j = 0; j < points.length - 1; j++) {
+                            const p1 = points[j];
+                            const p2 = points[j + 1];
+                            const cp1x = p1.x + (p2.x - p1.x) * 0.5;
+                            const cp1y = p1.y;
+                            const cp2x = p2.x - (p2.x - p1.x) * 0.5;
+                            const cp2y = p2.y;
+                            segments.push({ p0: p1, p1: { x: cp1x, y: cp1y }, p2: { x: cp2x, y: cp2y }, p3: p2 });
+                        }
+
+                        data.lines.push({
+                            index: i,
+                            isCorrect: i === data.correctStartIndex,
+                            segments: segments,
+                            startFruitPos: { x: startX, y: layerYs[i] },
+                            endFruitPos: { x: endX, y: layerYs[data.mapping[i]] }
+                        });
+                    }
+                }
+
+                ctx.lineCap = 'round';
+                data.lines.forEach((line, idx) => {
+                    if ((anim.isHighlighting && line.index === anim.highlightLineIndex) ||
+                        (line.index === anim.errorLineIndex)) {
+                        return;
+                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(line.segments[0].p0.x, line.segments[0].p0.y);
+                    line.segments.forEach(seg => {
+                        ctx.bezierCurveTo(seg.p1.x, seg.p1.y, seg.p2.x, seg.p2.y, seg.p3.x, seg.p3.y);
+                    });
+
+                    ctx.strokeStyle = 'rgba(148, 163, 184, 0.7)';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                });
+
+                if (anim.errorLineIndex !== -1) {
+                    const line = data.lines[anim.errorLineIndex];
+                    ctx.beginPath();
+                    ctx.moveTo(line.segments[0].p0.x, line.segments[0].p0.y);
+                    line.segments.forEach(seg => {
+                        ctx.bezierCurveTo(seg.p1.x, seg.p1.y, seg.p2.x, seg.p2.y, seg.p3.x, seg.p3.y);
+                    });
+                    ctx.strokeStyle = `rgba(244, 63, 94, ${anim.errorAlpha})`;
+                    ctx.lineWidth = 6;
+                    ctx.stroke();
+                }
+
+                if (anim.isHighlighting && anim.highlightLineIndex !== -1) {
+                    const line = data.lines[anim.highlightLineIndex];
+                    ctx.beginPath();
+                    ctx.moveTo(line.segments[0].p0.x, line.segments[0].p0.y);
+                    line.segments.forEach(seg => {
+                        ctx.bezierCurveTo(seg.p1.x, seg.p1.y, seg.p2.x, seg.p2.y, seg.p3.x, seg.p3.y);
+                    });
+                    ctx.strokeStyle = '#10b981';
+                    const pulse = Math.sin(anim.highlightProgress * Math.PI) * 4;
+                    ctx.lineWidth = 6 + pulse;
+                    ctx.stroke();
+                }
+
+                const drawFruit = (x, y, fruitStr, isHighlight, isError) => {
+                    ctx.beginPath();
+                    ctx.arc(x, y, fruitRadius, 0, Math.PI * 2);
+                    if (isHighlight) {
+                        ctx.fillStyle = '#d1fae5';
+                        ctx.strokeStyle = '#10b981';
+                        ctx.lineWidth = 4;
+                    } else if (isError) {
+                        ctx.fillStyle = '#ffe4e6';
+                        ctx.strokeStyle = '#f43f5e';
+                        ctx.lineWidth = 4;
+                    } else {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.strokeStyle = '#cbd5e1';
+                        ctx.lineWidth = 2;
+                    }
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetY = 2;
+                    ctx.fill();
+                    ctx.shadowColor = 'transparent';
+
+                    ctx.font = `${fontSize}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(fruitStr, x, y + (isMobile ? 2 : 4));
+                };
+
+                data.lines.forEach(line => {
+                    const isHighlight = anim.isHighlighting && line.index === anim.highlightLineIndex;
+                    const isError = line.index === anim.errorLineIndex;
+
+                    drawFruit(line.startFruitPos.x, line.startFruitPos.y, data.startFruits[line.index], isHighlight, isError);
+                    drawFruit(line.endFruitPos.x, line.endFruitPos.y, data.endFruits[data.mapping[line.index]], isHighlight, isError);
+                });
+
+            }, []);
+
+            // リサイズ時の処理
+            useEffect(() => {
+                const handleResize = () => {
+                    if (!containerRef.current || !canvasRef.current) return;
+
+                    const container = containerRef.current;
+                    const canvas = canvasRef.current;
+                    const dpr = window.devicePixelRatio || 1;
+
+                    const rect = container.getBoundingClientRect();
+                    canvas.width = rect.width * dpr;
+                    canvas.height = rect.height * dpr;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(dpr, dpr);
+
+                    if (levelDataRef.current) {
+                        levelDataRef.current.lines = [];
+                    }
+                    drawCanvas();
+                };
+
+                window.addEventListener('resize', handleResize);
+                handleResize();
+
+                return () => window.removeEventListener('resize', handleResize);
+            }, [drawCanvas]);
+
+            // 描画ループ（アニメーション用）
+            useEffect(() => {
+                const loop = () => {
+                    const anim = animStateRef.current;
+                    let needsRedraw = false;
+
+                    if (anim.isHighlighting) {
+                        anim.highlightProgress += 0.05;
+                        needsRedraw = true;
+                    }
+
+                    if (anim.errorAlpha > 0) {
+                        anim.errorAlpha -= 0.02;
+                        if (anim.errorAlpha <= 0) {
+                            anim.errorAlpha = 0;
+                            anim.errorLineIndex = -1;
+                        }
+                        needsRedraw = true;
+                    }
+
+                    if (needsRedraw) {
+                        drawCanvas();
+                    }
+                    animationRef.current = requestAnimationFrame(loop);
+                };
+                animationRef.current = requestAnimationFrame(loop);
+
+                return () => cancelAnimationFrame(animationRef.current);
+            }, [drawCanvas]);
+
+
+            useEffect(() => {
+                if (gameState === 'playing') {
+                    generateLevelData();
+                    setMessage(`レベル ${level} スタート！`);
+                    const timer = setTimeout(() => {
+                        setMessage(MESSAGES.start);
+                    }, 2000);
+
+                    if (containerRef.current && canvasRef.current) {
+                        const evt = new Event('resize');
+                        window.dispatchEvent(evt);
+                    }
+                    return () => clearTimeout(timer);
+                }
+            }, [gameState, level, generateLevelData]);
+
+
+            const getBezierPoint = (p0, p1, p2, p3, t) => {
+                const u = 1 - t;
+                const tt = t * t;
+                const uu = u * u;
+                const uuu = uu * u;
+                const ttt = tt * t;
+                const x = uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x;
+                const y = uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y;
+                return { x, y };
+            };
+
+            const checkHit = (x, y) => {
+                const data = levelDataRef.current;
+                if (!data) return null;
+
+                const fruitRadius = data.fruitRadius || 30;
+                const hitRadius = fruitRadius + 10;
+
+                let hitLineIndex = -1;
+
+                for (let i = 0; i < data.lines.length; i++) {
+                    const line = data.lines[i];
+                    const distStart = Math.hypot(line.startFruitPos.x - x, line.startFruitPos.y - y);
+                    const distEnd = Math.hypot(line.endFruitPos.x - x, line.endFruitPos.y - y);
+
+                    if (distStart <= hitRadius || distEnd <= hitRadius) {
+                        hitLineIndex = i;
+                        break;
+                    }
+                }
+
+                return hitLineIndex;
+            };
+
+            const handleInteraction = (e) => {
+                if (gameState !== 'playing') return;
+
+                const canvas = canvasRef.current;
+                const rect = canvas.getBoundingClientRect();
+
+                const clientX = e.clientX;
+                const clientY = e.clientY;
+
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                const hitLineIndex = checkHit(x, y);
+
+                if (hitLineIndex !== -1) {
+                    const data = levelDataRef.current;
+                    const isCorrect = data.lines[hitLineIndex].isCorrect;
+
+                    if (isCorrect) {
+                        handleCorrect(hitLineIndex);
+                    } else {
+                        handleWrong(hitLineIndex);
+                    }
+                }
+            };
+
+            const startGame = (selectedDiff) => {
+                setDifficulty(selectedDiff);
+                setLevel(1);
+                setScore(0);
+                setTimeLeft(TIME_LIMIT);
+                missesRef.current = { consecutive: 0, total: 0 };
+                setGameState('playing');
+                setMessage(MESSAGES.start);
+            };
+
+            const handleCorrect = (lineIndex) => {
+                setGameState('animating');
+                setMessage(MESSAGES.correct);
+                const points = 100 * level;
+                setScore(prev => prev + points);
+                missesRef.current.consecutive = 0;
+
+                animStateRef.current.isHighlighting = true;
+                animStateRef.current.highlightLineIndex = lineIndex;
+                animStateRef.current.highlightProgress = 0;
+
+                setTimeout(() => {
+                    setLevel(prev => prev + 1);
+                    setGameState('playing');
+                }, 800);
+            };
+
+            const handleWrong = (lineIndex) => {
+                missesRef.current.consecutive += 1;
+                missesRef.current.total += 1;
+
+                const currentConsecutive = missesRef.current.consecutive;
+                const currentTotal = missesRef.current.total;
+                const penalty = currentConsecutive * 100;
+
+                setScore(prev => Math.max(0, prev - penalty));
+
+                if (currentTotal >= 10) {
+                    setGameState('timeup');
+                    setMessage("10かいミスしたため、ゲームオーバー！");
+                    animStateRef.current.errorLineIndex = lineIndex;
+                    animStateRef.current.errorAlpha = 1.0;
+                    return;
+                }
+
+                setMessage(`ざんねん！ちがうフルーツだよ。（-${penalty}てん）`);
+
+                animStateRef.current.errorLineIndex = lineIndex;
+                animStateRef.current.errorAlpha = 1.0;
+
+                setTimeout(() => {
+                    setMessage(prev => {
+                        if (prev && prev.startsWith('ざんねん')) return MESSAGES.start;
+                        return prev;
+                    });
+                }, 1500);
+            };
+
+            useEffect(() => {
+                let timerId;
+                if ((gameState === 'playing' || gameState === 'animating') && timeLeft > 0) {
+                    timerId = setInterval(() => {
+                        setTimeLeft(prev => {
+                            if (prev <= 1) {
+                                clearInterval(timerId);
+                                setGameState('timeup');
+                                setMessage(MESSAGES.timeup);
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(timerId);
+            }, [gameState, timeLeft]);
+
+            const resetToMenu = () => {
+                setGameState('menu');
+                setMessage(MESSAGES.start);
+            };
+
+            if (gameState === 'menu') {
+                return (
+                    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-3xl shadow-xl border-4 border-teal-100 max-w-md w-full mx-4 text-center pop">
+                        <div className="text-6xl mb-6 flex space-x-2 justify-center">👀 <span className="text-teal-400">〰️</span> 🍎</div>
+                        <h1 className="text-4xl font-pop text-teal-600 mb-4 drop-shadow-sm">線をたどろう</h1>
+                        <p className="text-slate-600 mb-8 font-medium">おなじフルーツをつなぐせんをさがしてね！</p>
+
+                        <div className="w-full space-y-4">
+                            {Object.values(DIFFICULTIES).map((diff) => (
+                                <button
+                                    key={diff.id}
+                                    onClick={() => startGame(diff)}
+                                    className="w-full py-4 px-6 rounded-2xl text-xl font-bold transition-transform transform hover:scale-105 active:scale-95 shadow-md text-white font-maru"
+                                    style={{
+                                        backgroundColor: diff.id === 'easy' ? '#34d399' : diff.id === 'normal' ? '#38bdf8' : '#f472b6'
+                                    }}
+                                >
+                                    {diff.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="w-full h-full flex flex-col bg-teal-50 max-w-4xl mx-auto shadow-2xl relative font-maru">
+                    {/* ヘッダーエリア */}
+                    <header className="flex justify-between items-center p-4 bg-white shadow-sm z-10 font-bold">
+                        <div className="flex flex-col">
+                            <span className="text-sm text-slate-500">レベル</span>
+                            <span className="text-2xl font-black text-teal-600">{level}</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                            <span className="text-sm text-slate-500">スコア</span>
+                            <span className="text-2xl font-black text-amber-500">{score}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                            <span className="text-sm text-slate-500">のこりじかん</span>
+                            <span className={`text-2xl font-black ${timeLeft <= 5 ? 'text-rose-500 pop' : 'text-teal-600'}`}>
+                                {timeLeft}秒
+                            </span>
+                        </div>
+                    </header>
+
+                    {/* ゲーム画面本体 */}
+                    <div
+                        ref={containerRef}
+                        className="flex-grow w-full relative touch-none cursor-pointer"
+                        onPointerDown={handleInteraction}
+                    >
+                        <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full"></canvas>
+
+                        {(gameState === 'timeup') && (
+                            <div className="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center z-20 pop overflow-y-auto py-8">
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <div className="text-4xl">{missesRef.current.total >= 10 ? '😿' : '🎉'}</div>
+                                    <h2 className={`text-3xl font-pop drop-shadow-sm ${missesRef.current.total >= 10 ? 'text-rose-500' : 'text-amber-500'}`}>
+                                        {missesRef.current.total >= 10 ? 'ゲームオーバー！' : 'タイムアップ！'}
+                                    </h2>
+                                </div>
+
+                                <ScorePyramid score={score} />
+
+                                <button
+                                    onClick={resetToMenu}
+                                    className="mt-6 bg-teal-500 hover:bg-teal-600 text-white py-4 px-10 rounded-full text-xl font-bold shadow-lg transition-transform transform hover:scale-105 active:scale-95 w-full max-w-[280px]"
+                                >
+                                    メニューにもどる
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* キャラクターとメッセージ */}
+                    <footer className="h-28 bg-white border-t-4 border-teal-100 flex items-center p-4 z-10">
+                        <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center text-4xl shadow-inner mr-4 flex-shrink-0 bounce">
+                            🦉
+                        </div>
+                        <div className="relative bg-teal-50 rounded-2xl p-3 border-2 border-teal-100 flex-grow shadow-sm">
+                            <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-12 border-r-teal-50 border-b-8 border-b-transparent"></div>
+                            <p className="text-slate-700 font-bold sm:text-lg text-base leading-snug">
+                                {message}
+                            </p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

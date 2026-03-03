@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>いくつあるかな - ビジョントレーニング</title>
+
+    <!-- Kagasen フォント -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'pop': ['"Mochiy Pop One"', 'sans-serif'],
+                        'maru': ['"Zen Maru Gothic"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
+            touch-action: none;
+            overflow: hidden;
+            margin: 0;
+            background-color: #f0fdf4;
+            /* Tailwind green-50 */
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 戻るボタン -->
+    <button onclick="if(window.handleBackClick) window.handleBackClick(); else window.location.href='../index.html';"
+        class="fixed top-4 left-4 z-[100] bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md hover:scale-105 transition-transform flex items-center gap-2 pr-4 text-slate-600 outline-none"
+        style="text-decoration: none;">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        <span class="text-sm font-bold">もどる</span>
+    </button>
+
+    <div id="root" class="w-full h-screen overflow-y-auto overflow-x-hidden relative"></div>
+
+    <script>
+        // Lucide アイコンの初期化
+        lucide.createIcons();
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        // 目に優しいパステルカラーを定義
+        const COLORS = {
+            bg: 'bg-green-50',
+            text: 'text-gray-700',
+            primary: 'bg-teal-400 hover:bg-teal-500',
+            secondary: 'bg-orange-400 hover:bg-orange-500',
+            board: 'bg-white',
+            border: 'border-teal-100',
+        };
+
+        // ゲームに使用するアイテム（絵文字）
+        const ALL_ITEMS = ['🍎', '🍌', '🍇', '🍓', '🍊', '🍉', '🍩', '🍦', '🍔', '🍟', '🍕', '⚽', '🏀', '🚗', '🚀', '🌟', '🎈', '🎁', '🐶', '🐱', '🐼', '🐸', '🦁'];
+
+        // 評価ランクの定義（細分化して目標をわかりやすく）
+        const RANKS = [
+            { name: '神', min: 2500, message: 'す、すごい！キミはまさに「神の目」を持っているね！！パーフェクトだ！' },
+            { name: '達人', min: 2200, message: '素晴らしい！「達人」レベルだ！あともう少しで神になれるぞ！' },
+            { name: '名人', min: 1900, message: 'お見事！「名人」の称号をさずけよう！' },
+            { name: 'プロ', min: 1600, message: 'さすが！「プロ」の目利きだね！もっと上を目指してみよう！' },
+            { name: 'ベテラン', min: 1300, message: 'かなり慣れてきたね！「ベテラン」の域に達したぞ！' },
+            { name: 'エース', min: 1000, message: 'すごいスピードだ！キミはもう「エース」だね！' },
+            { name: '一人前', min: 700, message: 'よくできました！立派な「一人前」だね！' },
+            { name: '半人前', min: 400, message: 'その調子！まずは「一人前」を目指そう！' },
+            { name: 'みならい', min: 100, message: '最後までがんばったね！「みならい」としてがんばろう！' },
+            { name: 'しんじん', min: 0, message: 'ゲームクリア！「しんじん」からどんどんレベルアップしよう！' },
+            { name: 'たまご', min: -9999, message: 'マイナスになっちゃったね🥺 でも大丈夫！もう一回チャレンジして目を鍛えよう！' }
+        ];
+
+        const App = () => {
+            const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'result'
+            const [difficulty, setDifficulty] = useState('easy'); // 'easy', 'hard'
+            const [score, setScore] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(30);
+
+            const [board, setBoard] = useState([]);
+            const [targetItem, setTargetItem] = useState('');
+            const [targetCount, setTargetCount] = useState(0);
+            const [options, setOptions] = useState([]);
+            const [feedback, setFeedback] = useState(null); // 'O' or 'X'
+
+            // 効果音の代わりのフィードバック表示用タイマー
+            const [feedbackTimer, setFeedbackTimer] = useState(null);
+
+            // 戻るボタン用のグローバル関数登録
+            useEffect(() => {
+                window.handleBackClick = () => {
+                    if (gameState !== 'start') {
+                        setGameState('start');
+                        if (feedbackTimer) clearTimeout(feedbackTimer);
+                    } else {
+                        window.location.href = '../index.html';
+                    }
+                };
+            }, [gameState, feedbackTimer]);
+
+            const startGame = (diff) => {
+                setDifficulty(diff);
+                setScore(0);
+                setTimeLeft(30);
+                setGameState('playing');
+                generateProblem(diff);
+            };
+
+            const generateProblem = useCallback((diff) => {
+                const totalItems = diff === 'easy' ? 20 : 35;
+
+                // 難易度に応じて登場するアイテムの種類を絞る（探しやすくするため）
+                const numTypes = diff === 'easy' ? 4 : 6;
+                const shuffledItems = [...ALL_ITEMS].sort(() => 0.5 - Math.random());
+                const selectedTypes = shuffledItems.slice(0, numTypes);
+
+                // ボードを生成
+                let newBoard = [];
+                for (let i = 0; i < totalItems; i++) {
+                    const randomType = selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
+                    newBoard.push(randomType);
+                }
+
+                // ターゲットを決定（最低1つは存在するものを選ぶ）
+                const target = selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
+                const count = newBoard.filter(item => item === target).length;
+
+                // もしターゲットが0個になってしまったら、強制的に1つ置き換える
+                if (count === 0) {
+                    newBoard[Math.floor(Math.random() * totalItems)] = target;
+                }
+                const finalCount = newBoard.filter(item => item === target).length;
+
+                // 4択の選択肢を生成
+                let newOptions = new Set([finalCount]);
+                while (newOptions.size < 4) {
+                    // ターゲットの数に近い数字をランダムに生成（マイナスにならないように）
+                    const offset = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                    const fakeCount = finalCount + offset;
+                    if (fakeCount >= 0 && fakeCount !== finalCount) {
+                        newOptions.add(fakeCount);
+                    } else {
+                        newOptions.add(Math.max(0, finalCount + Math.floor(Math.random() * 5) + 1));
+                    }
+                }
+
+                setBoard(newBoard);
+                setTargetItem(target);
+                setTargetCount(finalCount);
+                setOptions([...newOptions].sort(() => 0.5 - Math.random()));
+            }, []);
+
+            const handleAnswer = (answer) => {
+                if (feedback) return; // 連打防止
+
+                if (answer === targetCount) {
+                    setScore(prev => prev + 100);
+                    setFeedback('O');
+                } else {
+                    setScore(prev => prev - 100);
+                    setFeedback('X');
+                }
+
+                if (feedbackTimer) clearTimeout(feedbackTimer);
+
+                const timer = setTimeout(() => {
+                    setFeedback(null);
+                    generateProblem(difficulty);
+                }, 500); // 0.5秒後に次の問題へ
+
+                setFeedbackTimer(timer);
+            };
+
+            // タイマー処理
+            useEffect(() => {
+                if (gameState === 'playing' && timeLeft > 0) {
+                    const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+                    return () => clearTimeout(timerId);
+                } else if (gameState === 'playing' && timeLeft === 0) {
+                    setGameState('result');
+                }
+            }, [timeLeft, gameState]);
+
+            // キャラクターのコンポーネント
+            const Character = ({ message, mood = 'normal' }) => {
+                const face = mood === 'happy' ? '😆' : mood === 'sad' ? '🥺' : '😊';
+                return (
+                    <div className="flex items-start space-x-4 my-4 p-4 bg-white rounded-2xl shadow-sm border-2 border-green-100">
+                        <div className="text-5xl bg-green-100 rounded-full p-2">{face}</div>
+                        <div className="relative bg-teal-50 text-gray-700 p-3 rounded-lg flex-1 shadow-sm border border-teal-100 text-left">
+                            <p className="font-bold text-lg md:text-xl leading-relaxed whitespace-pre-wrap">{message}</p>
+                            <div className="absolute top-4 -left-3 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-teal-50 border-b-8 border-b-transparent"></div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // 評価ランクの計算
+            const getRank = (score) => {
+                return RANKS.find(r => score >= r.min) || RANKS[RANKS.length - 1];
+            };
+
+            return (
+                <div className={`min-h-full w-full ${COLORS.bg} ${COLORS.text} font-sans flex flex-col items-center py-8 px-4 pt-20`}>
+
+                    {/* スタート画面 */}
+                    {gameState === 'start' && (
+                        <div className="w-full max-w-2xl text-center space-y-6 animate-fade-in font-maru">
+                            <h1 className="text-4xl md:text-5xl font-black text-teal-600 drop-shadow-sm mb-8 font-pop flex flex-col gap-2">
+                                <span>👀🔢👀</span>
+                                いくつあるかな？
+                            </h1>
+
+                            <Character message={"やあ！ぼくは「みっけ丸」！\n制限時間は30秒！上の四角の中にある絵が、下の枠の中にいくつあるか数えてね！\n正しい数字のボタンを押すと＋100点！間違えると－100点になるから気をつけてね！"} />
+
+                            <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-teal-100 mt-8">
+                                <h2 className="text-2xl font-bold mb-6 text-gray-700">難易度（なんいど）をえらんでね</h2>
+                                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                                    <button
+                                        onClick={() => startGame('easy')}
+                                        className={`${COLORS.primary} text-white text-xl font-bold py-4 px-8 rounded-full shadow-md transform transition active:scale-95`}
+                                    >
+                                        かんたん (20こ)
+                                    </button>
+                                    <button
+                                        onClick={() => startGame('hard')}
+                                        className={`${COLORS.secondary} text-white text-xl font-bold py-4 px-8 rounded-full shadow-md transform transition active:scale-95`}
+                                    >
+                                        むずかしい (35こ)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ゲーム画面 */}
+                    {gameState === 'playing' && (
+                        <div className="w-full max-w-3xl flex flex-col items-center">
+
+                            {/* ヘッダー情報 */}
+                            <div className="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border-2 border-teal-100 mb-6">
+                                <div className="text-2xl font-bold text-orange-500">
+                                    ⏳ のこり: <span className={timeLeft <= 5 ? "text-red-500 animate-pulse" : ""}>{timeLeft}秒</span>
+                                </div>
+                                <div className="text-2xl font-bold text-teal-600">
+                                    🏅 スコア: {score}点
+                                </div>
+                            </div>
+
+                            {/* 問題エリア */}
+                            <div className="bg-white w-full p-6 rounded-3xl shadow-sm border-2 border-teal-100 relative max-w-2xl">
+
+                                {/* O/X フィードバックオーバーレイ */}
+                                {feedback && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/70 rounded-3xl drop-shadow-md backdrop-blur-sm transition-all">
+                                        <span className={`text-9xl font-black ${feedback === 'O' ? 'text-red-500' : 'text-blue-500'} animate-fade-in`}>
+                                            {feedback}
+                                        </span>
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col items-center mb-6">
+                                    <span className="text-lg font-bold text-gray-500 mb-2 font-maru tracking-wider">▼ この絵をさがしてね ▼</span>
+                                    <div className="text-6xl bg-blue-50 w-24 h-24 rounded-2xl border-2 border-blue-200 shadow-sm flex items-center justify-center">
+                                        {targetItem}
+                                    </div>
+                                </div>
+
+                                {/* アイテムグリッド */}
+                                <div className={`grid gap-2 md:gap-4 justify-center mx-auto ${difficulty === 'easy' ? 'grid-cols-5 max-w-lg' : 'grid-cols-5 md:grid-cols-7 max-w-2xl'}`}>
+                                    {board.map((item, index) => (
+                                        <div key={index} className="flex items-center justify-center text-3xl md:text-5xl bg-gray-50 aspect-square rounded-xl border border-gray-200 hover:bg-teal-50 transition-colors shadow-sm">
+                                            {item}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 解答ボタン */}
+                            <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
+                                {options.map((opt, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => handleAnswer(opt)}
+                                        className="bg-white border-4 border-teal-400 text-teal-600 hover:bg-teal-400 hover:text-white text-3xl font-black py-4 rounded-2xl shadow-sm transform transition active:scale-95"
+                                    >
+                                        {opt}こ
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* リザルト画面 */}
+                    {gameState === 'result' && (() => {
+                        const rank = getRank(score);
+
+                        return (
+                            <div className="w-full max-w-2xl text-center space-y-6 animate-fade-in pb-16">
+                                <h1 className="text-4xl md:text-5xl font-black text-red-500 drop-shadow-sm mb-4 font-pop">タイムアップ！</h1>
+
+                                <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border-2 border-teal-100 w-full max-w-lg mx-auto">
+                                    <h2 className="text-2xl md:text-3xl font-bold text-gray-600 mb-2">あなたのスコア</h2>
+                                    <p className="text-5xl md:text-6xl font-black text-teal-600 mb-6 font-pop">{score} <span className="text-2xl md:text-3xl font-maru">点</span></p>
+
+                                    {/* ランク一覧と必要スコアの表示 */}
+                                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                        <h3 className="text-sm font-bold text-gray-500 mb-3">▼ ランク一覧（次の目標をチェック！） ▼</h3>
+                                        <div className="flex flex-col space-y-1">
+                                            {RANKS.filter(r => r.name !== 'たまご').map((r) => {
+                                                const isCurrent = rank.name === r.name;
+                                                return (
+                                                    <div
+                                                        key={r.name}
+                                                        className={`
+                                                        flex justify-between items-center px-4 py-1.5 rounded font-bold text-sm md:text-base transition-all duration-300
+                                                        ${isCurrent ? 'bg-orange-400 text-white shadow-md transform scale-105 z-10' : 'bg-white text-gray-600 border border-gray-100'}
+                                                        `}
+                                                    >
+                                                        <span className="flex items-center space-x-2">
+                                                            <span>{r.name}</span>
+                                                            {isCurrent && <span className="text-xl animate-bounce">✨</span>}
+                                                        </span>
+                                                        <span className={isCurrent ? 'text-white' : 'text-teal-600'}>{r.min}点〜</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Character message={rank.message} mood={score >= 1600 ? 'happy' : score < 0 ? 'sad' : 'normal'} />
+
+                                <button
+                                    onClick={() => setGameState('start')}
+                                    className={`${COLORS.primary} mt-4 text-white text-xl font-bold py-4 px-12 rounded-full shadow-md transform transition active:scale-95`}
+                                >
+                                    もういちどあそぶ
+                                </button>
+                            </div>
+                        );
+                    })()}
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

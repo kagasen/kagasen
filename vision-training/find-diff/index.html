@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>まちがいさがし ビジョントレーニング</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 戻るボタンのスタイル */
+        .back-button {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 0.5rem;
+            padding-right: 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #475569;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 0.875rem;
+            transition: transform 0.2s;
+        }
+
+        .back-button:hover {
+            transform: scale(1.05);
+        }
+
+        .back-button svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        /* 目に優しいデザインと基本設定 */
+        :root {
+            --bg-color: #F9F6F0;
+            /* アイボリー系ベージュ */
+            --primary-color: #A3D1A3;
+            /* 優しい緑 */
+            --primary-dark: #7DBA7D;
+            --text-color: #4A4A4A;
+            --border-color: #D0E5D0;
+            --correct-color: #FFB6C1;
+            /* 優しいピンク */
+            --error-color: #FFA07A;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'BIZ UDPGothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            box-sizing: border-box;
+            margin: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 画面切り替え */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ボタン */
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 5px 0 var(--primary-dark);
+            cursor: pointer;
+            transition: all 0.1s;
+            margin: 10px;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .btn-hard {
+            background-color: #FFB347;
+            /* 優しいオレンジ */
+            box-shadow: 0 5px 0 #E59A33;
+        }
+
+        /* タイトル画面 */
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2.7rem;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        /* キャラクターと吹き出し */
+        .character-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .character-svg {
+            width: 140px;
+            height: 140px;
+        }
+
+        .bubble {
+            background: #fff;
+            border: 3px solid var(--primary-color);
+            border-radius: 15px;
+            padding: 20px 25px;
+            margin-left: 20px;
+            position: relative;
+            max-width: 350px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            transform: translateY(-50%);
+            border: 10px solid transparent;
+            border-right-color: var(--primary-color);
+        }
+
+        .bubble::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -14px;
+            transform: translateY(-50%);
+            border: 7px solid transparent;
+            border-right-color: #fff;
+        }
+
+        @media (max-width: 500px) {
+            .character-area {
+                flex-direction: column;
+            }
+
+            .bubble {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .bubble::before {
+                top: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-color: transparent transparent var(--primary-color) transparent;
+            }
+
+            .bubble::after {
+                top: -14px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-color: transparent transparent #fff transparent;
+            }
+        }
+
+        /* ゲーム画面のヘッダー */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed var(--border-color);
+        }
+
+        .score-box {
+            color: #555;
+        }
+
+        .timer-box {
+            color: #555;
+        }
+
+        .timer-warning {
+            color: #E74C3C;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .instruction {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background-color: var(--bg-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: var(--primary-dark);
+        }
+
+        /* ボード部分 */
+        .boards-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 15px;
+            width: 100%;
+        }
+
+        @media (max-width: 650px) {
+            .boards-container {
+                flex-direction: column;
+            }
+        }
+
+        .board-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #666;
+            background-color: #eee;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .board {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 4px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            box-sizing: border-box;
+            min-height: 350px;
+            position: relative;
+            /* JSでgridまたはflexに切り替え */
+        }
+
+        /* アイテム（絵文字） */
+        .item {
+            font-size: 3.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 70px;
+            height: 70px;
+            user-select: none;
+            transition: all 0.2s;
+            border-radius: 15px;
+        }
+
+        .item span {
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+
+        .left-item {
+            cursor: default;
+        }
+
+        .right-item {
+            cursor: pointer;
+        }
+
+        .right-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .right-item:active {
+            transform: scale(0.9);
+        }
+
+        /* ピラミッド（ランク） */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        .tier {
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            border-radius: 8px;
+            transition: all 0.4s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            font-size: 0.85rem;
+        }
+
+        .tier-1 {
+            width: 120px;
+            background-color: #FFD700;
+        }
+
+        /* 金 */
+        .tier-2 {
+            width: 140px;
+            background-color: #FFA500;
+        }
+
+        /* オレンジ */
+        .tier-3 {
+            width: 160px;
+            background-color: #FF8C00;
+        }
+
+        /* 濃いオレンジ */
+        .tier-4 {
+            width: 180px;
+            background-color: #FF6347;
+        }
+
+        /* トマト */
+        .tier-5 {
+            width: 200px;
+            background-color: #FF4500;
+        }
+
+        /* オレンジレッド */
+        .tier-6 {
+            width: 220px;
+            background-color: #9370DB;
+        }
+
+        /* 紫 */
+        .tier-7 {
+            width: 240px;
+            background-color: #4682B4;
+        }
+
+        /* 青 */
+        .tier-8 {
+            width: 260px;
+            background-color: #20B2AA;
+        }
+
+        /* ライトシーグリーン */
+        .tier-9 {
+            width: 280px;
+            background-color: #3CB371;
+        }
+
+        /* 緑 */
+        .tier-10 {
+            width: 300px;
+            background-color: var(--primary-dark);
+        }
+
+        /* デフォルト緑 */
+
+        .tier.active {
+            transform: scale(1.15);
+            box-shadow: 0 0 15px currentColor;
+            border: 2px solid #fff;
+            z-index: 2;
+        }
+
+        .tier:not(.active) {
+            opacity: 0.4;
+        }
+
+        /* アニメーション用クラス */
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-8px);
+            }
+
+            50% {
+                transform: translateX(8px);
+            }
+
+            75% {
+                transform: translateX(-8px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .floating-text {
+            position: fixed;
+            font-size: 2.5rem;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 1000;
+            text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-60px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* ハードモード用の動くアニメーション */
+        .move-1 {
+            animation: moveAround1 4s infinite alternate ease-in-out;
+        }
+
+        .move-2 {
+            animation: moveAround2 5s infinite alternate ease-in-out;
+        }
+
+        .move-3 {
+            animation: moveAround3 3s infinite alternate ease-in-out;
+        }
+
+        .move-4 {
+            animation: moveAround4 6s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveAround1 {
+            0% {
+                transform: translate(0px, 0px) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(15px, -15px) rotate(5deg);
+            }
+
+            66% {
+                transform: translate(-15px, 15px) rotate(-5deg);
+            }
+
+            100% {
+                transform: translate(10px, 10px) rotate(2deg);
+            }
+        }
+
+        @keyframes moveAround2 {
+            0% {
+                transform: translate(0px, 0px) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(-20px, 10px) rotate(-10deg);
+            }
+
+            66% {
+                transform: translate(20px, -10px) rotate(10deg);
+            }
+
+            100% {
+                transform: translate(-10px, -20px) rotate(-5deg);
+            }
+        }
+
+        @keyframes moveAround3 {
+            0% {
+                transform: translate(0px, 0px) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(10px, 20px) rotate(5deg);
+            }
+
+            66% {
+                transform: translate(-20px, -10px) rotate(-5deg);
+            }
+
+            100% {
+                transform: translate(15px, -15px) rotate(8deg);
+            }
+        }
+
+        @keyframes moveAround4 {
+            0% {
+                transform: translate(0px, 0px) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(-15px, -20px) rotate(-8deg);
+            }
+
+            66% {
+                transform: translate(10px, 20px) rotate(5deg);
+            }
+
+            100% {
+                transform: translate(20px, -10px) rotate(10deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 戻るボタン -->
+    <button class="back-button" onclick="handleBackClick()">
+        <i data-lucide="arrow-left"></i>
+        <span>もどる</span>
+    </button>
+
+    <div id="app">
+
+        <!-- タイトル画面 -->
+        <div id="screen-title" class="screen active">
+            <h1>ちがっているものをさがせ</h1>
+
+            <div class="character-area">
+                <!-- フクロウ先生のSVGアイコン -->
+                <svg class="character-svg" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="#8B4513" />
+                    <circle cx="50" cy="50" r="40" fill="#D2B48C" />
+                    <circle cx="35" cy="40" r="14" fill="#FFF" />
+                    <circle cx="65" cy="40" r="14" fill="#FFF" />
+                    <circle cx="35" cy="40" r="5" fill="#000" />
+                    <circle cx="65" cy="40" r="5" fill="#000" />
+                    <polygon points="45,55 55,55 50,65" fill="#FFA500" />
+                    <circle cx="35" cy="40" r="16" fill="none" stroke="#4A4A4A" stroke-width="3" />
+                    <circle cx="65" cy="40" r="16" fill="none" stroke="#4A4A4A" stroke-width="3" />
+                    <line x1="49" y1="40" x2="51" y2="40" stroke="#4A4A4A" stroke-width="3" />
+                </svg>
+                <div class="bubble">ちがっているものをさがす<br>トレーニングだ！<br>にているえから ちがうものを さがしてね。</div>
+            </div>
+
+            <div>
+                <button class="btn" onclick="startGame('easy')">かんたん（アイテム4つ）</button>
+                <button class="btn btn-hard" onclick="startGame('hard')">むずかしい（バラバラ7つ）</button>
+            </div>
+        </div>
+
+        <!-- ゲーム画面 -->
+        <div id="screen-game" class="screen">
+            <div class="game-header">
+                <div class="score-box">スコア: <span id="score-display">0</span></div>
+                <div class="timer-box">のこり: <span id="timer-display">30</span> びょう</div>
+            </div>
+
+            <div class="instruction">「さがすほう」から、ちがうものを 1つ タッチ！</div>
+
+            <div class="boards-container">
+                <div class="board-wrapper">
+                    <div class="board-label">みほん</div>
+                    <div id="left-board" class="board"></div>
+                </div>
+                <div class="board-wrapper">
+                    <div class="board-label">さがすほう</div>
+                    <div id="right-board" class="board"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="screen-result" class="screen">
+            <h1>タイムアップ！</h1>
+            <p style="font-size: 1.5rem; font-weight: bold; margin: 10px 0;">きみのスコア：<span id="final-score"
+                    style="color: var(--primary-dark); font-size: 2rem;"></span> てん</p>
+
+            <div class="pyramid">
+                <div id="tier-1" class="tier tier-1">神 (5000点〜)</div>
+                <div id="tier-2" class="tier tier-2">仙人 (4000点〜)</div>
+                <div id="tier-3" class="tier tier-3">超人 (3000点〜)</div>
+                <div id="tier-4" class="tier tier-4">達人 (2000点〜)</div>
+                <div id="tier-5" class="tier tier-5">名人 (1500点〜)</div>
+                <div id="tier-6" class="tier tier-6">上級者 (1000点〜)</div>
+                <div id="tier-7" class="tier tier-7">中級者 (700点〜)</div>
+                <div id="tier-8" class="tier tier-8">一人前 (400点〜)</div>
+                <div id="tier-9" class="tier tier-9">初心者 (100点〜)</div>
+                <div id="tier-10" class="tier tier-10">見習い (0点〜)</div>
+            </div>
+
+            <div class="character-area">
+                <svg class="character-svg" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="#8B4513" />
+                    <circle cx="50" cy="50" r="40" fill="#D2B48C" />
+                    <!-- 笑った目 -->
+                    <path d="M 25 40 Q 35 30 45 40" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" />
+                    <path d="M 55 40 Q 65 30 75 40" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" />
+                    <polygon points="45,55 55,55 50,65" fill="#FFA500" />
+                    <circle cx="35" cy="40" r="16" fill="none" stroke="#4A4A4A" stroke-width="3" />
+                    <circle cx="65" cy="40" r="16" fill="none" stroke="#4A4A4A" stroke-width="3" />
+                    <line x1="49" y1="40" x2="51" y2="40" stroke="#4A4A4A" stroke-width="3" />
+                </svg>
+                <div id="result-bubble" class="bubble"></div>
+            </div>
+
+            <button class="btn" onclick="goToTitle()">もういちど あそぶ</button>
+        </div>
+
+    </div>
+
+    <script>
+        // 戻るボタンの処理
+        function handleBackClick() {
+            const screenTitle = document.getElementById('screen-title');
+            if (screenTitle && screenTitle.classList.contains('active')) {
+                // タイトル画面ならハブに戻る
+                window.location.href = '../index.html';
+            } else {
+                // ゲーム中や結果画面ならタイトル画面に戻る
+                if (timerId) {
+                    clearInterval(timerId);
+                    timerId = null;
+                }
+                goToTitle();
+            }
+        }
+
+        // Lucideアイコンの初期化
+        lucide.createIcons();
+
+        // アイテム（似ている絵文字のペア）
+        const itemPairs = [
+            ['🙂', '🙃'], ['🐢', '🐊'], ['🍓', '🍒'], ['🌲', '🌳'],
+            ['🍦', '🍧'], ['🐱', '🐯'], ['🐻', '🐹'], ['🍙', '🍘'],
+            ['🍔', '🥪'], ['🎈', '🏮'], ['🚲', '🛵'], ['✈️', '🚁'],
+            ['☀️', '🌤️'], ['☁️', '🌨️'], ['🍄', '🌰'], ['🦋', '🦇'],
+            ['🐠', '🐡'], ['🍎', '🍅'], ['🚗', '🚙'], ['🌻', '🌼'],
+            ['🐶', '🐺'], ['🌙', '🌛'], ['⚽', '🏀'], ['⏰', '⏱️'],
+            ['👕', '👚'], ['🏠', '🏡'], ['🍩', '🥯'], ['🍉', '🍈'],
+            ['🌭', '🌮'], ['📗', '📘'], ['🎸', '🎻'], ['🐭', '🐹'],
+            // ここから追加分
+            ['😀', '😃'], ['😉', '😜'], ['😎', '🤓'], ['😭', '😢'],
+            ['😡', '😠'], ['😱', '😨'], ['😴', '😪'], ['🤔', '🤨'],
+            ['🤐', '😶'], ['🤢', '🤮'], ['👽', '👻'], ['🤖', '👾'],
+            ['🐒', '🦍'], ['🦊', '🐺'], ['🦁', '🐯'], ['🐴', '🦓'],
+            ['🦄', '🐎'], ['🐮', '🐷'], ['🐗', '🐽'], ['🐪', '🐫'],
+            ['🐘', '🦏'], ['🐁', '🐀'], ['🐇', '🐰'], ['🐿️', '🦔'],
+            ['🐧', '🐦'], ['🦅', '🦆'], ['🦉', '🦇'], ['🐍', '🦎'],
+            ['🦖', '🦕'], ['🐙', '🦑'], ['🦀', '🦞'], ['🐬', '🐳'],
+            ['🐋', '🦈'], ['🐊', '🐉'], ['🌿', '🍃'], ['🌵', '🌴'],
+            ['🍁', '🍂'], ['🍇', '🫐'], ['🍈', '🍏'], ['🍊', '🍋'],
+            ['🍌', '🍍'], ['🥭', '🍑'], ['🍐', '🍏'], ['🥥', '🥝'],
+            ['🥦', '🥬'], ['🌽', '🥕'], ['🥔', '🍠'], ['🥐', '🥖'],
+            ['🥞', '🧇'], ['🧀', '🧈'], ['🍗', '🍖'], ['🥩', '🥓'],
+            ['🍕', '🌮'], ['🍲', '🥣'], ['🍜', '🍝'], ['🍣', '🍱'],
+            ['🍧', '🍨'], ['🍩', '🍪'], ['🎂', '🍰'], ['🧁', '🥧'],
+            ['🍫', '🍬'], ['🍮', '🍯'], ['☕', '🍵'], ['🍺', '🍻'],
+            ['🍷', '🥂'], ['🚗', '🚕'], ['🚙', '🚐'], ['🚌', '🚎'],
+            ['🚓', '🚑'], ['🚒', '🚜'], ['🚄', '🚅'], ['🚆', '🚇'],
+            ['🚢', '⛴️'], ['🛥️', '🚤'], ['📱', '📲'], ['💻', '🖥️'],
+            ['💽', '💾'], ['💿', '📀'], ['📸', '📹'], ['📺', '📻'],
+            ['📔', '📕'], ['📖', '📚'], ['💰', '🪙'], ['💴', '💵'],
+            ['✏️', '✒️'], ['🖊️', '🖋️'], ['💼', '🎒'], ['👞', '👟'],
+            ['👠', '👡'], ['👑', '👒'], ['🌂', '☂️'], ['👓', '🕶️'],
+            ['⚾', '🥎'], ['🎾', '🏸']
+        ];
+
+        // ゲーム状態
+        let score = 0;
+        let timeLeft = 30;
+        let timerId = null;
+        let currentDifficulty = 'easy'; // 'easy' or 'hard'
+
+        // 要素の取得
+        const screenTitle = document.getElementById('screen-title');
+        const screenGame = document.getElementById('screen-game');
+        const screenResult = document.getElementById('screen-result');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerDisplay = document.getElementById('timer-display');
+        const leftBoard = document.getElementById('left-board');
+        const rightBoard = document.getElementById('right-board');
+
+        // 配列をシャッフルする関数
+        function shuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 画面の切り替え
+        function showScreen(screenEl) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            screenEl.classList.add('active');
+        }
+
+        // タイトル画面へ戻る
+        function goToTitle() {
+            showScreen(screenTitle);
+        }
+
+        // ゲーム開始
+        function startGame(difficulty) {
+            currentDifficulty = difficulty;
+            score = 0;
+            timeLeft = 30;
+            updateHeader();
+
+            timerDisplay.classList.remove('timer-warning');
+            showScreen(screenGame);
+
+            generateQuestion();
+
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateHeader();
+
+                if (timeLeft <= 5 && timeLeft > 0) {
+                    timerDisplay.classList.add('timer-warning');
+                }
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // ヘッダーの更新
+        function updateHeader() {
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
+        }
+
+        // 問題の生成と描画
+        function generateQuestion() {
+            leftBoard.innerHTML = '';
+            rightBoard.innerHTML = '';
+
+            const numItems = currentDifficulty === 'hard' ? 7 : 4;
+            const selectedPairs = shuffle(itemPairs).slice(0, numItems);
+            const targetIndex = Math.floor(Math.random() * numItems);
+
+            let leftItemsData = [];
+            let rightItemsData = [];
+
+            selectedPairs.forEach((pair, index) => {
+                const isTarget = (index === targetIndex);
+                // ランダムな並び順（order）と回転・ズレ（むずかしい用）
+                const orderL = Math.floor(Math.random() * 20);
+                const orderR = Math.floor(Math.random() * 20);
+
+                const rotateL = currentDifficulty === 'hard' ? Math.floor(Math.random() * 360) : 0;
+                const rotateR = currentDifficulty === 'hard' ? Math.floor(Math.random() * 360) : 0;
+
+                const transXL = currentDifficulty === 'hard' ? (Math.random() * 20 - 10) : 0;
+                const transYL = currentDifficulty === 'hard' ? (Math.random() * 20 - 10) : 0;
+                const transXR = currentDifficulty === 'hard' ? (Math.random() * 20 - 10) : 0;
+                const transYR = currentDifficulty === 'hard' ? (Math.random() * 20 - 10) : 0;
+
+                // 動くアニメーションクラスの割り当て
+                const moveClassL = currentDifficulty === 'hard' ? `move-${Math.floor(Math.random() * 4) + 1}` : '';
+                const moveClassR = currentDifficulty === 'hard' ? `move-${Math.floor(Math.random() * 4) + 1}` : '';
+
+                leftItemsData.push({
+                    text: pair[0],
+                    order: currentDifficulty === 'hard' ? orderL : index,
+                    rotate: rotateL,
+                    x: transXL,
+                    y: transYL,
+                    moveClass: moveClassL,
+                    isTarget: false
+                });
+
+                rightItemsData.push({
+                    text: isTarget ? pair[1] : pair[0],
+                    order: currentDifficulty === 'hard' ? orderR : index,
+                    rotate: rotateR,
+                    x: transXR,
+                    y: transYR,
+                    moveClass: moveClassR,
+                    isTarget: isTarget
+                });
+            });
+
+            // ボードのレイアウト設定
+            if (currentDifficulty === 'easy') {
+                [leftBoard, rightBoard].forEach(board => {
+                    board.style.display = 'grid';
+                    board.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                    board.style.gap = '20px';
+                    board.style.justifyItems = 'center';
+                    board.style.alignContent = 'center';
+                });
+            } else {
+                [leftBoard, rightBoard].forEach(board => {
+                    board.style.display = 'flex';
+                    board.style.flexWrap = 'wrap';
+                    board.style.justifyContent = 'space-evenly';
+                    board.style.alignItems = 'center';
+                    board.style.gap = '10px';
+                });
+            }
+
+            // アイテムの描画
+            leftItemsData.forEach(data => {
+                const el = createItemElement(data, 'left-item');
+                leftBoard.appendChild(el);
+            });
+
+            rightItemsData.forEach(data => {
+                const el = createItemElement(data, 'right-item');
+                el.addEventListener('click', (e) => handleItemClick(data.isTarget, e));
+                rightBoard.appendChild(el);
+            });
+        }
+
+        // アイテム要素の生成
+        function createItemElement(data, className) {
+            const el = document.createElement('div');
+            el.className = `item ${className} ${data.moveClass || ''}`;
+            el.style.order = data.order;
+
+            const span = document.createElement('span');
+            span.textContent = data.text;
+            // 動くアニメーションがある場合は親要素(el)が動くため、初期の角度やズレはspanに適用する
+            if (currentDifficulty === 'hard' && !data.moveClass) {
+                span.style.transform = `translate(${data.x}px, ${data.y}px) rotate(${data.rotate}deg)`;
+            } else if (currentDifficulty === 'hard') {
+                span.style.transform = `rotate(${data.rotate}deg)`;
+            }
+            el.appendChild(span);
+            return el;
+        }
+
+        // クリック判定
+        function handleItemClick(isTarget, event) {
+            if (timeLeft <= 0) return;
+
+            // クリック位置の取得（タッチ対応）
+            const x = event.clientX || (event.touches && event.touches[0].clientX) || window.innerWidth / 2;
+            const y = event.clientY || (event.touches && event.touches[0].clientY) || window.innerHeight / 2;
+
+            if (isTarget) {
+                score += 100;
+                showFloatingText('+100', x, y, '#2ECC71'); // 緑
+                generateQuestion();
+            } else {
+                score = Math.max(0, score - 100);
+                showFloatingText('-100', x, y, '#E74C3C'); // 赤
+                const gameScreen = document.getElementById('screen-game');
+                gameScreen.classList.remove('shake');
+                void gameScreen.offsetWidth; // リフロー強制（アニメーション再起動のため）
+                gameScreen.classList.add('shake');
+            }
+            updateHeader();
+        }
+
+        // フローティングテキスト（+100, -100のエフェクト）
+        function showFloatingText(text, x, y, color) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.textContent = text;
+            el.style.color = color;
+            // 指の下から少し上にずらす
+            el.style.left = (x - 30) + 'px';
+            el.style.top = (y - 30) + 'px';
+            document.body.appendChild(el);
+
+            setTimeout(() => {
+                el.remove();
+            }, 800);
+        }
+
+        // ゲーム終了と結果表示
+        function endGame() {
+            clearInterval(timerId);
+            timerId = null;
+
+            document.getElementById('final-score').textContent = score;
+
+            // ピラミッドのリセット
+            document.querySelectorAll('.tier').forEach(el => el.classList.remove('active'));
+
+            // ランク判定
+            let rankId = '';
+            let message = '';
+
+            if (score >= 5000) {
+                rankId = 'tier-1';
+                message = 'おめでとう！ きみは まちがいさがしの『神』だ！';
+            } else if (score >= 4000) {
+                rankId = 'tier-2';
+                message = 'すさまじい！ きみは まちがいさがしの『仙人』だ！';
+            } else if (score >= 3000) {
+                rankId = 'tier-3';
+                message = 'すばらしい！ きみの めは 『超人』レベルだ！';
+            } else if (score >= 2000) {
+                rankId = 'tier-4';
+                message = 'すごい！ きみは もう立派な『達人』だ！';
+            } else if (score >= 1500) {
+                rankId = 'tier-5';
+                message = 'みごと！ 『名人』の なのり を あげよう！';
+            } else if (score >= 1000) {
+                rankId = 'tier-6';
+                message = 'たいしたものだ！ 『上級者』の なかまいり だ！';
+            } else if (score >= 700) {
+                rankId = 'tier-7';
+                message = 'いいちょうし！ 『中級者』として もっと うえ をめざそう！';
+            } else if (score >= 400) {
+                rankId = 'tier-8';
+                message = 'よくできたね！ これで『一人前』だ！';
+            } else if (score >= 100) {
+                rankId = 'tier-9';
+                message = 'がんばったね！ まずは『初心者』から はじめよう！';
+            } else {
+                rankId = 'tier-10';
+                message = 'どんまい！ 『見習い』から コツコツ れんしゅう しよう！';
+            }
+
+            // ランクハイライト
+            document.getElementById(rankId).classList.add('active');
+
+            // メッセージ設定
+            document.getElementById('result-bubble').innerHTML = message;
+
+            showScreen(screenResult);
+        }
+
+    </script>
+</body>
+
+</html>

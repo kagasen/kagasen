@@ -227,8 +227,6 @@
             { id: 'check5', text: '段落（だんらく）のはじめは、一文字あけている？' },
         ];
 
-        const MAX_CHARS_PER_PAGE = 400;
-
         // --- Custom Hooks ---
         function useLocalStorage(key, initialValue) {
             const [storedValue, setStoredValue] = useState(() => {
@@ -304,8 +302,6 @@
                                             <h3 className="text-xl font-bold text-gray-800 truncate mb-1 group-hover:text-amber-600 transition-colors">{p.title}</h3>
                                             <p className="text-sm text-gray-500 font-bold">
                                                 さいごに書いた日: {new Date(p.updatedAt).toLocaleDateString()}
-                                                <span className="mx-2">|</span>
-                                                {p.pages ? p.pages.length : 1} ページ
                                             </p>
                                         </div>
                                         <button
@@ -454,19 +450,26 @@
         // ★ 執筆画面
         const EditorView = ({ project, updateProject, setView }) => {
             const [showRevisions, setShowRevisions] = useState(false);
-            const [currentPageIndex, setCurrentPageIndex] = useState(0);
+            const textareaRef = useRef(null);
 
             if (!project) return null;
 
-            const pages = project.pages || [project.content || ''];
+            // 後方互換性のため、pagesがある場合は結合する
+            const currentText = project.content !== undefined ? project.content : (project.pages ? project.pages.join('\n') : '');
             const guideAnswers = project.guideAnswers || { who: '', where: '', what: '', how: '', end: '' };
             const checklist = project.checklist || [];
 
-            const handlePageContentChange = (e) => {
-                const newPages = [...pages];
-                newPages[currentPageIndex] = e.target.value;
-                updateProject({ pages: newPages });
+            const handleContentChange = (e) => {
+                updateProject({ content: e.target.value });
             };
+
+            // テキストエリアの高さを自動調整
+            useEffect(() => {
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+                }
+            }, [currentText, project.paperType]);
 
             const handleGuideAnswerChange = (id, value) => {
                 updateProject({
@@ -487,14 +490,8 @@
                 updateProject({ checklist: newList });
             };
 
-            const addNewPage = () => {
-                updateProject({ pages: [...pages, ''] });
-                setCurrentPageIndex(pages.length);
-            };
-
             const generateDraft = () => {
-                const currentTextStr = pages[currentPageIndex] || '';
-                if (currentTextStr.trim() !== '' && !window.confirm('今書いているお話が消えてしまいますが、メモから文章を作り直してもいいですか？')) {
+                if (currentText.trim() !== '' && !window.confirm('今書いているお話が消えてしまいますが、メモから文章を作り直してもいいですか？')) {
                     return;
                 }
                 const draft = `　${guideAnswers.where || 'あるところに'}、${guideAnswers.who || 'だれかが'}いました。
@@ -511,22 +508,11 @@
 
 ※（）の言葉をヒントにして、どんどんお話をふくらませていこう！`;
 
-                handlePageContentChange({ target: { value: draft } });
-            };
-
-            const removeCurrentPage = () => {
-                if (pages.length <= 1) return;
-                if (window.confirm('このページを消してもいいですか？')) {
-                    const newPages = pages.filter((_, index) => index !== currentPageIndex);
-                    updateProject({ pages: newPages });
-                    setCurrentPageIndex(Math.max(0, currentPageIndex - 1));
-                }
+                handleContentChange({ target: { value: draft } });
             };
 
             const selectedPaper = PAPER_TYPES.find(p => p.id === project.paperType) || PAPER_TYPES[0];
-            const currentText = pages[currentPageIndex] || '';
             const charCount = currentText.length;
-            const isOverLimit = charCount > MAX_CHARS_PER_PAGE;
 
             return (
                 <div className="flex flex-col h-screen bg-gray-100 no-print font-maru">
@@ -617,88 +603,56 @@
                         <div className="flex-1 relative flex flex-col items-center pt-8 bg-[#e5e7eb]">
 
                             {/* 原稿用紙エリア */}
-                            <div className="flex-1 w-full max-w-3xl overflow-y-auto px-4 pb-20 flex justify-center">
-                                <div className={`w-full bg-white shadow-xl min-h-[65vh] ${project.paperType === 'vertical' ? 'rtl flex justify-end' : ''}`}>
+                            <div className="flex-1 w-full overflow-y-auto px-4 pb-24 pt-8 flex justify-center scroll-smooth bg-gray-200 shadow-inner">
+                                <div className={`w-full max-w-[21cm] bg-white shadow-2xl min-h-[29.7cm] p-8 md:p-12 mb-12 ${project.paperType === 'vertical' ? 'rtl flex justify-end' : ''}`}>
                                     <textarea
-                                        className={`w-full h-full resize-none focus:outline-none text-gray-800 ${selectedPaper.styleClass} border-none font-bold`}
+                                        ref={textareaRef}
+                                        className={`w-full resize-none focus:outline-none text-gray-800 ${selectedPaper.styleClass} border-none font-bold overflow-hidden min-h-[25cm]`}
                                         placeholder="ここに本文を書きます..."
                                         value={currentText}
-                                        onChange={handlePageContentChange}
+                                        onChange={handleContentChange}
                                         dir={project.paperType === 'vertical' ? 'rtl' : 'ltr'}
                                     />
                                 </div>
                             </div>
 
-                            {/* ページネーションコントロール */}
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border-2 border-gray-200 rounded-full px-6 py-2 shadow-lg flex items-center justify-between min-w-[320px]">
-                                <button
-                                    onClick={() => setCurrentPageIndex(Math.max(0, currentPageIndex - 1))}
-                                    disabled={currentPageIndex === 0}
-                                    className="p-2 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-30 transition-colors"
-                                >
-                                    <Icon name="chevron-left" size={20} />
-                                </button>
-                                <span className="font-bold text-gray-700 text-sm md:text-base px-4">
-                                    {currentPageIndex + 1} / {pages.length} ページ
-                                </span>
-                                <button
-                                    onClick={() => setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1))}
-                                    disabled={currentPageIndex === pages.length - 1}
-                                    className="p-2 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-30 transition-colors"
-                                >
-                                    <Icon name="chevron-right" size={20} />
-                                </button>
-                            </div>
-
-                            {/* 追加・削除フローティングボタン群 */}
-                            <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                                <div className={`flex items-center justify-center font-bold px-3 py-1.5 rounded-xl border-2 shadow-sm bg-white text-xs md:text-sm ${isOverLimit ? 'border-red-400 text-red-600 bg-red-50' : 'border-gray-200 text-gray-500'}`}>
-                                    {charCount} / {MAX_CHARS_PER_PAGE} 文字
+                            {/* 文字数フローティングボタン */}
+                            <div className="absolute bottom-6 right-6 flex flex-col gap-2">
+                                <div className="flex items-center justify-center font-bold px-5 py-3 rounded-2xl border-2 shadow-lg bg-white text-gray-700 border-gray-200 tracking-wider">
+                                    <Icon name="file-text" size={20} className="mr-2 text-amber-500" />
+                                    {charCount} 文字
                                 </div>
-                                {pages.length > 1 && (
-                                    <button onClick={removeCurrentPage} className="flex items-center justify-center p-3 bg-white border-2 border-red-200 text-red-500 hover:bg-red-50 rounded-xl font-bold shadow-sm transition-colors">
-                                        <Icon name="trash-2" size={20} />
-                                    </button>
-                                )}
-                                <button
-                                    onClick={addNewPage}
-                                    className="flex items-center justify-center p-3 bg-amber-500 border-2 border-amber-600 text-white rounded-xl shadow-lg hover:bg-amber-600 transition-transform hover:scale-105 group"
-                                    title="新しいページ"
-                                >
-                                    <Icon name="plus" size={24} />
-                                </button>
                             </div>
-
-                            {/* ふりかえりチェックリスト (Right Sidebar) */}
-                            {showRevisions && (
-                                <div className="absolute right-0 top-0 bottom-0 w-80 bg-white border-l-4 border-blue-200 shadow-[-10px_0_20px_rgba(0,0,0,0.1)] flex flex-col z-20 animate-fade-in">
-                                    <div className="p-4 bg-blue-100 border-b border-blue-200 flex justify-between items-center">
-                                        <div className="font-black text-blue-900 flex items-center text-lg">
-                                            <Icon name="check-circle" size={20} className="mr-2" /> ふりかえりリスト
-                                        </div>
-                                        <button onClick={() => setShowRevisions(false)} className="text-blue-500 hover:text-blue-800 bg-white rounded-full p-1"><Icon name="x" size={18} /></button>
-                                    </div>
-
-                                    <div className="p-4 bg-blue-50 font-bold text-sm text-blue-800 border-b border-blue-100 flex items-center">
-                                        <Icon name="smile" size={18} className="mr-2" /> チェックをつけてお話を完成させよう！
-                                    </div>
-
-                                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
-                                        {REVISION_CHECKS.map(check => (
-                                            <label key={check.id} className={`flex items-start p-3 rounded-xl border-2 cursor-pointer transition-all ${checklist.includes(check.id) ? 'bg-blue-50 border-blue-400 opacity-70' : 'bg-white border-gray-200 hover:border-blue-300 shadow-sm'}`}>
-                                                <input
-                                                    type="checkbox"
-                                                    className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 accent-blue-500"
-                                                    checked={checklist.includes(check.id)}
-                                                    onChange={() => toggleChecklist(check.id)}
-                                                />
-                                                <span className={`ml-3 font-bold ${checklist.includes(check.id) ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{check.text}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
+
+                        {/* ふりかえりチェックリスト (Right Sidebar) */}
+                        {showRevisions && (
+                            <div className="absolute right-0 top-0 bottom-0 w-80 bg-white border-l-4 border-blue-200 shadow-[-10px_0_20px_rgba(0,0,0,0.1)] flex flex-col z-20 animate-fade-in">
+                                <div className="p-4 bg-blue-100 border-b border-blue-200 flex justify-between items-center">
+                                    <div className="font-black text-blue-900 flex items-center text-lg">
+                                        <Icon name="check-circle" size={20} className="mr-2" /> ふりかえりリスト
+                                    </div>
+                                    <button onClick={() => setShowRevisions(false)} className="text-blue-500 hover:text-blue-800 bg-white rounded-full p-1"><Icon name="x" size={18} /></button>
+                                </div>
+                                <div className="p-4 bg-blue-50 font-bold text-sm text-blue-800 border-b border-blue-100 flex items-center">
+                                    <Icon name="smile" size={18} className="mr-2" /> チェックをつけてお話を完成させよう！
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
+                                    {REVISION_CHECKS.map(check => (
+                                        <label key={check.id} className={`flex items-start p-3 rounded-xl border-2 cursor-pointer transition-all ${checklist.includes(check.id) ? 'bg-blue-50 border-blue-400 opacity-70' : 'bg-white border-gray-200 hover:border-blue-300 shadow-sm'}`}>
+                                            <input
+                                                type="checkbox"
+                                                className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 accent-blue-500"
+                                                checked={checklist.includes(check.id)}
+                                                onChange={() => toggleChecklist(check.id)}
+                                            />
+                                            <span className={`ml-3 font-bold ${checklist.includes(check.id) ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{check.text}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -707,7 +661,7 @@
         // ★ 印刷（出版）プレビュー画面
         const PrintPreviewView = ({ project, updateProject, setView }) => {
             if (!project) return null;
-            const pages = project.pages || [project.content || ''];
+            const currentText = project.content !== undefined ? project.content : (project.pages ? project.pages.join('\n') : '');
 
             const handlePrint = () => {
                 window.print();
@@ -810,18 +764,16 @@
                             </div>
                         </div>
 
-                        {/* 本文ページ (ページごとにループ) */}
-                        {pages.map((pageText, index) => (
-                            <div key={index} className="print-page p-16 h-[29.7cm] break-after-page relative border-b-8 border-gray-100 print:border-none">
-                                <div className="flex justify-between items-center mb-6 pb-2 border-b-2 border-gray-300">
-                                    <span className="text-lg text-gray-500 font-bold tracking-widest">{project.title}</span>
-                                    <span className="text-lg text-gray-500 font-bold">- {index + 1} -</span>
-                                </div>
-                                <div className={`whitespace-pre-wrap ${project.paperType === 'vertical' ? 'writing-vertical-rl float-right' : ''} leading-[2.8] text-[22px] min-h-[22cm] font-medium`}>
-                                    {pageText}
-                                </div>
+                        {/* 本文ページ (単一コンテナで、印刷時にA4で自動改ページされる) */}
+                        <div className="print-page py-16 px-20 min-h-[29.7cm] bg-white border-b-8 border-gray-100 print:border-none print:break-inside-auto">
+                            <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-gray-300 print:mb-4 print:pb-2">
+                                <span className="text-xl text-gray-500 font-bold tracking-widest">{project.title}</span>
+                                <span className="text-xl text-gray-500 font-bold">{project.authorName || 'あなた'}</span>
                             </div>
-                        ))}
+                            <div className={`whitespace-pre-wrap ${project.paperType === 'vertical' ? 'writing-vertical-rl float-right' : ''} leading-[2.8] text-[22px] min-h-[22cm] font-medium print:text-[18px]`}>
+                                {currentText}
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
@@ -852,7 +804,7 @@
                         how: '',
                         end: ''
                     },
-                    pages: [''],
+                    content: '', // 単一文字列に変更
                     paperType: 'horizontal',
                     coverColor: 'amber',
                     checklist: [],

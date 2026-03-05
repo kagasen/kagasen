@@ -238,8 +238,9 @@
                 return (
                     <div className="flex items-start space-x-4 my-4 p-4 bg-white rounded-2xl shadow-sm border-2 border-green-100">
                         <div
-                            className={`text-5xl bg-green-100 rounded-full p-2 ${onFaceClick ? 'cursor-pointer select-none active:scale-90 transition-transform' : ''}`}
+                            className={`text-5xl bg-green-100 rounded-full p-2 cursor-pointer select-none active:scale-90 transition-transform`}
                             onClick={onFaceClick}
+                            style={{ touchAction: 'manipulation' }}
                         >
                             {face}
                         </div>
@@ -256,6 +257,16 @@
                 return RANKS.find(r => score >= r.min) || RANKS[RANKS.length - 1];
             };
 
+            const handleSecretClick = () => {
+                const newCount = secretCount + 1;
+                if (newCount >= 10) {
+                    setSecretCount(0);
+                    startGame('super_hard');
+                } else {
+                    setSecretCount(newCount);
+                }
+            };
+
             return (
                 <div className={`min-h-full w-full ${COLORS.bg} ${COLORS.text} font-sans flex flex-col items-center py-8 px-4 pt-20`}>
 
@@ -269,15 +280,7 @@
 
                             <Character
                                 message={"やあ！ぼくは「みっけ丸」！\n制限時間は30秒！上の四角の中にある絵が、下の枠の中にいくつあるか数えてね！\n正しい数字のボタンを押すと＋100点！間違えると－100点になるから気をつけてね！"}
-                                onFaceClick={() => {
-                                    const newCount = secretCount + 1;
-                                    if (newCount >= 10) {
-                                        setSecretCount(0);
-                                        startGame('super_hard');
-                                    } else {
-                                        setSecretCount(newCount);
-                                    }
-                                }}
+                                onFaceClick={handleSecretClick}
                             />
 
                             <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-teal-100 mt-8">
@@ -401,7 +404,7 @@
                                     </div>
                                 </div>
 
-                                <Character message={rank.message} mood={score >= 1600 ? 'happy' : score < 0 ? 'sad' : 'normal'} />
+                                <Character message={rank.message} mood={score >= 1600 ? 'happy' : score < 0 ? 'sad' : 'normal'} onFaceClick={handleSecretClick} />
 
                                 <button
                                     onClick={() => {

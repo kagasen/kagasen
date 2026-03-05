@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #ccc;
+        }
+
+        .book-pages-horizontal {
+            writing-mode: horizontal-tb;
+            height: 200px;
+            column-width: 150px;
+            column-gap: 20px;
+            background-color: white;
+        }
+
+        .book-pages-vertical {
+            writing-mode: vertical-rl;
+            height: 150px;
+            column-width: 200px;
+            column-gap: 20px;
+            background-color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Horizontal</h2>
+    <div class="book-pages-horizontal" contenteditable="true">
+        Text goes here. A lot of text will make it flow into new columns to the right. Text goes here. A lot of text
+        will make it flow into new columns to the right. Text goes here. A lot of text will make it flow into new
+        columns to the right. Text goes here. A lot of text will make it flow into new columns to the right. Text goes
+        here. A lot of text will make it flow into new columns to the right. Text goes here. A lot of text will make it
+        flow into new columns to the right. Text goes here. A lot of text will make it flow into new columns to the
+        right. Text goes here. A lot of text will make it flow into new columns to the right.
+    </div>
+    <h2>Vertical</h2>
+    <div class="book-pages-vertical" contenteditable="true">
+        ああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ
+    </div>
+</body>
+
+</html>

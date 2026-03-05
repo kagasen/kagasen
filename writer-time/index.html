@@ -74,29 +74,57 @@
             text-orientation: upright;
         }
 
-        .paper-horizontal {
-            line-height: 2.2rem;
-            background-image: linear-gradient(transparent calc(2.2rem - 1px), #cbd5e1 calc(2.2rem - 1px), #cbd5e1 2.2rem);
-            background-size: 100% 2.2rem;
-            padding-top: 0.2rem;
-            font-size: 1.1rem;
-        }
-
-        .paper-vertical {
+        .paper-genko {
+            /* 縦書き原稿用紙 (20x20) */
             writing-mode: vertical-rl;
-            line-height: 2.5rem;
-            background-image: linear-gradient(90deg, transparent calc(2.5rem - 1px), #cbd5e1 calc(2.5rem - 1px), #cbd5e1 2.5rem);
-            background-size: 2.5rem 100%;
-            padding-right: 0.5rem;
+            text-orientation: upright;
             font-family: 'Noto Serif JP', serif;
-            font-size: 1.2rem;
+            /* 1マスあたり: 幅8.5mm, 行間4.35mm -> 行の幅12.85mm */
+            font-size: 8.5mm;
+            line-height: 12.85mm;
+            letter-spacing: 0;
+            padding: 0;
+            margin: 0;
+            color: #333;
+            /* 高さは20文字分固定 */
+            height: 170mm;
+            min-height: 170mm;
+            max-height: 170mm;
+            min-width: 257mm;
+            /* 余計な余白を防ぎトップ右上に強制 */
+            box-sizing: border-box;
+            vertical-align: top;
+
+            background: transparent;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow-x: auto;
+            overflow-y: hidden;
+            word-break: break-all;
+            white-space: pre-wrap;
+
+            /* 背景マス目レイヤー */
+            background-image:
+                /* 横方向の罫線（文字の上下の区切り: 8.5mmごとに線を引く） */
+                repeating-linear-gradient(to bottom, transparent 0, transparent calc(8.5mm - 1px), #d2a48b calc(8.5mm - 1px), #d2a48b 8.5mm),
+                /* 縦方向の罫線（行の区切り: 12.85mmごとに線を引く -> 8.5mmマス + 4.35mm空白） */
+                repeating-linear-gradient(to left, transparent 0, transparent 8.5mm, #d2a48b 8.5mm, #d2a48b calc(8.5mm + 1px), transparent calc(8.5mm + 1px), transparent 12.85mm);
+            background-size: 100% 8.5mm, 12.85mm 100%;
+            /* 右上を原点として描画 */
+            background-position: top 0 right 0;
+            background-attachment: local;
+            /* スクロールに合わせて背景のマス目も動く */
+            /* 外枠 */
+            border-top: 1px solid #d2a48b;
+            border-bottom: 1px solid #d2a48b;
         }
 
-        .paper-blank {
-            background-color: white;
-            padding: 1.5rem;
-            font-size: 1.1rem;
-            line-height: 1.8;
+        .paper-genko:empty:before {
+            content: attr(data-placeholder);
+            color: #999;
+            pointer-events: none;
+            display: block;
         }
     </style>
 </head>
@@ -135,6 +163,33 @@
             return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
         };
 
+        // Mac/Safari環境での縦書き（writing-mode: vertical-rl）バグを回避するため、textareaの代わりにcontentEditableを使用
+        const GenkoEditor = React.forwardRef(({ value, onChange, className, placeholder }, ref) => {
+            // 初回表示や、外部変更（例：魔法のステッキ等）で値が変わった場合に中身を同期
+            useEffect(() => {
+                if (ref && ref.current && document.activeElement !== ref.current) {
+                    ref.current.innerText = value || "";
+                }
+            }, [value, ref]);
+
+            const handleInput = (e) => {
+                onChange(e.currentTarget.innerText);
+            };
+
+            return (
+                <div
+                    ref={ref}
+                    contentEditable={true}
+                    suppressContentEditableWarning={true}
+                    className={className}
+                    onInput={handleInput}
+                    onBlur={handleInput}
+                    data-placeholder={placeholder}
+                    style={{ outline: "none", cursor: "text" }}
+                ></div>
+            );
+        });
+
         // --- Constants & Data ---
         const DAILY_TIPS = [
             "【五感をつかおう】 目で見えたもの、聞こえた音、においなどを書いてみよう！",
@@ -145,9 +200,7 @@
         ];
 
         const PAPER_TYPES = [
-            { id: 'horizontal', name: '横罫（よこ）ノート', styleClass: 'paper-horizontal' },
-            { id: 'vertical', name: '縦罫（たて）ノート', styleClass: 'paper-vertical' },
-            { id: 'blank', name: '白紙（はくし）', styleClass: 'paper-blank' },
+            { id: 'genko', name: '原稿用紙（20×20）', styleClass: 'paper-genko' }
         ];
 
         const COVER_COLORS = [
@@ -463,11 +516,12 @@
                 updateProject({ content: e.target.value });
             };
 
-            // テキストエリアの高さを自動調整
+            // テキストエリアの幅を自動調整（縦書き横スクロール用）
             useEffect(() => {
                 if (textareaRef.current) {
-                    textareaRef.current.style.height = 'auto';
-                    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+                    textareaRef.current.style.width = '257mm'; // 20行分の基本幅に戻す
+                    const scrollW = textareaRef.current.scrollWidth;
+                    textareaRef.current.style.width = scrollW + 'px'; // あふれたぶんだけ横へ広げる
                 }
             }, [currentText, project.paperType]);
 
@@ -532,13 +586,7 @@
                         </div>
 
                         <div className="flex items-center space-x-2 md:space-x-4">
-                            <select
-                                value={project.paperType}
-                                onChange={(e) => updateProject({ paperType: e.target.value })}
-                                className="bg-white border-2 border-gray-200 text-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400 font-bold shadow-sm"
-                            >
-                                {PAPER_TYPES.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                            </select>
+                            {/* ノート選択ドロップダウンは原稿用紙固定のため削除 */}
 
                             <button
                                 onClick={() => setShowRevisions(!showRevisions)}
@@ -603,16 +651,22 @@
                         <div className="flex-1 relative flex flex-col items-center pt-8 bg-[#e5e7eb]">
 
                             {/* 原稿用紙エリア */}
-                            <div className="flex-1 w-full overflow-y-auto px-4 pb-24 pt-8 flex justify-center scroll-smooth bg-gray-200 shadow-inner">
-                                <div className={`w-full max-w-[21cm] bg-white shadow-2xl min-h-[29.7cm] p-8 md:p-12 mb-12 ${project.paperType === 'vertical' ? 'rtl flex justify-end' : ''}`}>
-                                    <textarea
-                                        ref={textareaRef}
-                                        className={`w-full resize-none focus:outline-none text-gray-800 ${selectedPaper.styleClass} border-none font-bold overflow-hidden min-h-[25cm]`}
-                                        placeholder="ここに本文を書きます..."
-                                        value={currentText}
-                                        onChange={handleContentChange}
-                                        dir={project.paperType === 'vertical' ? 'rtl' : 'ltr'}
-                                    />
+                            <div className="flex-1 w-full overflow-auto px-4 pb-24 pt-12 flex justify-start scroll-smooth bg-gray-200 shadow-inner" style={{ direction: 'rtl' }}>
+                                {/* A4台紙 (上下左右20mmの余白) */}
+                                <div
+                                    className="bg-[#fdfaf6] shadow-2xl min-h-[210mm] min-w-[297mm] flex items-center justify-center shrink-0 mx-auto"
+                                    style={{ direction: 'ltr' }}
+                                >
+                                    {/* 20×20 のグリッド描画領域 */}
+                                    <div style={{ width: '257mm', height: '170mm', position: 'relative', display: 'flex', justifyContent: 'flex-end' }}>
+                                        <GenkoEditor
+                                            ref={textareaRef}
+                                            className={`${selectedPaper.styleClass}`}
+                                            placeholder="ここにお話を書いてね！（右上のマスからスタートします。1マス1文字です）"
+                                            value={currentText}
+                                            onChange={(text) => handleContentChange({ target: { value: text } })}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

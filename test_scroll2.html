@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .book-pages-vertical {
+            writing-mode: vertical-rl;
+            height: 170mm;
+            column-width: 257mm;
+            column-gap: 60mm;
+            padding: 20mm;
+            box-sizing: content-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="test1" class="book-pages-vertical">
+        <script>
+            let text = "あ".repeat(5000);
+            document.write(text);
+        </script>
+    </div>
+    <script>
+        const el = document.getElementById('test1');
+        const result = `ScrollWidth: ${el.scrollWidth}, ScrollHeight: ${el.scrollHeight}, ClientWidth: ${el.clientWidth}, ClientHeight: ${el.clientHeight}`;
+        fetch('http://localhost:8000/log?msg=' + encodeURIComponent(result));
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; padding: 20px; background: #ccc; }
+  .book-pages-horizontal {
+      writing-mode: horizontal-tb;
+      height: 200px;
+      column-width: 150px;
+      column-gap: 20px;
+      background-color: white;
+      box-sizing: content-box;
+      padding: 10px;
+  }
+</style>
+</head>
+<body>
+  <h2>Horizontal</h2>
+  <div class="scroller" style="overflow: auto; width: 500px; height: 300px;">
+      <div id="editor" class="book-pages-horizontal" contenteditable="true" oninput="updateSize()">
+        Text goes here. A lot of text will make it flow into new columns to the right. Text goes here. A lot of text will make it flow into new columns to the right. Text goes here. A lot of text will make it flow into new columns to the right. Text goes here. A lot of text will make it flow into new columns to the right.
+      </div>
+  </div>
+  <script>
+    function updateSize() {
+        var el = document.getElementById('editor');
+        // Reset width to natural to measure columns
+        el.style.width = '150px'; 
+        var sw = el.scrollWidth;
+        console.log("Scroll Width", sw);
+        // Col width is 150, padding 10 on each side -> 170 for 1 col.
+        // Gap is 20. 2 cols -> 10 + 150 + 20 + 150 + 10 = 340.
+        // Let's set the width to sw - paddings.
+        // Actually, if we just set width = sw - 20 (padding) ?
+        el.style.width = (sw - 20) + 'px';
+    }
+    updateSize();
+  </script>
+</body>
+</html>

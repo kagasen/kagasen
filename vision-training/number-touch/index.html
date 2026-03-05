@@ -142,7 +142,7 @@
 
             <div class="flex items-center space-x-4 bg-white p-4 rounded-2xl shadow-sm border border-green-200">
                 <div class="text-5xl cursor-pointer select-none active:scale-90 transition-transform"
-                    onclick="handleSecretClick()">🦉</div>
+                    style="touch-action: manipulation;" onclick="handleSecretClick()">🦉</div>
                 <div class="text-green-800 font-bold text-lg leading-relaxed">
                     すうじを じゅんばんに<br>タッチしてね！
                 </div>
@@ -209,7 +209,8 @@
 
                 <!-- リザルト画面のフクロウとメッセージ -->
                 <div class="flex items-center space-x-2">
-                    <div class="text-4xl">🦉</div>
+                    <div class="text-4xl cursor-pointer select-none active:scale-90 transition-transform"
+                        style="touch-action: manipulation;" onclick="handleSecretClick()">🦉</div>
                     <div id="result-message"
                         class="speech-bubble text-sm sm:text-base font-bold text-center leading-relaxed">
                         <!-- ここにメッセージが入ります -->

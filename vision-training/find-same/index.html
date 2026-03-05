@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>同じものをさがそう | ビジョントレーニング</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -98,7 +98,7 @@
 
         <div class="flex items-center justify-center mb-8 w-full">
             <div class="text-6xl mr-3 animate-bounce cursor-pointer select-none active:scale-90 transition-transform"
-                onclick="handleSecretClick()">🐶</div>
+                style="touch-action: manipulation;" onclick="handleSecretClick()">🐶</div>
             <div class="bg-white rounded-2xl p-4 shadow-md relative border-2 border-stone-200 flex-1 text-left">
                 <div
                     class="absolute w-4 h-4 bg-white border-b-2 border-l-2 border-stone-200 transform -rotate-45 -left-[9px] top-6">
@@ -166,7 +166,8 @@
 
         <!-- 犬のキャラクターと結果の吹き出し -->
         <div class="flex items-center justify-center mb-10 w-full">
-            <div class="text-6xl mr-3 animate-bounce">🐶</div>
+            <div class="text-6xl mr-3 animate-bounce cursor-pointer select-none active:scale-90 transition-transform"
+                style="touch-action: manipulation;" onclick="handleSecretClick()">🐶</div>
             <div class="bg-white rounded-2xl p-6 shadow-md relative border-2 border-stone-200 flex-1 text-center">
                 <div
                     class="absolute w-4 h-4 bg-white border-b-2 border-l-2 border-stone-200 transform -rotate-45 -left-[9px] top-6">

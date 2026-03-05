@@ -586,7 +586,7 @@
 
             <div class="character-area">
                 <!-- フクロウ先生のSVGアイコン -->
-                <svg class="character-svg" viewBox="0 0 100 100">
+                <svg class="character-svg cursor-pointer" viewBox="0 0 100 100" onclick="handleSecretClick()">
                     <circle cx="50" cy="50" r="45" fill="#8B4513" />
                     <circle cx="50" cy="50" r="40" fill="#D2B48C" />
                     <circle cx="35" cy="40" r="14" fill="#FFF" />
@@ -729,6 +729,7 @@
         let timeLeft = 30;
         let timerId = null;
         let currentDifficulty = 'easy'; // 'easy' or 'hard'
+        let secretCount = 0; // 隠しモード用カウント
 
         // 要素の取得
         const screenTitle = document.getElementById('screen-title');
@@ -757,7 +758,16 @@
 
         // タイトル画面へ戻る
         function goToTitle() {
+            secretCount = 0;
             showScreen(screenTitle);
+        }
+
+        // 隠しコマンド
+        function handleSecretClick() {
+            secretCount++;
+            if (secretCount >= 10) {
+                startGame('super_hard');
+            }
         }
 
         // ゲーム開始
@@ -798,15 +808,18 @@
             leftBoard.innerHTML = '';
             rightBoard.innerHTML = '';
 
-            const numItems = currentDifficulty === 'hard' ? 7 : 4;
-            const selectedPairs = shuffle(itemPairs).slice(0, numItems);
+            const numItems = currentDifficulty === 'hard' ? 7 : (currentDifficulty === 'super_hard' ? 15 : 4);
+            const selectedPairs = shuffle(itemPairs).slice(0, Math.max(7, numItems));
             const targetIndex = Math.floor(Math.random() * numItems);
 
             let leftItemsData = [];
             let rightItemsData = [];
 
-            selectedPairs.forEach((pair, index) => {
+            for (let index = 0; index < numItems; index++) {
+                const pairIndex = index % selectedPairs.length;
+                const pair = selectedPairs[pairIndex];
                 const isTarget = (index === targetIndex);
+
                 // ランダムな並び順（order）と回転・ズレ（むずかしい用）
                 const orderL = Math.floor(Math.random() * 20);
                 const orderR = Math.floor(Math.random() * 20);
@@ -820,12 +833,13 @@
                 const transYR = currentDifficulty === 'hard' ? (Math.random() * 20 - 10) : 0;
 
                 // 動くアニメーションクラスの割り当て
-                const moveClassL = currentDifficulty === 'hard' ? `move-${Math.floor(Math.random() * 4) + 1}` : '';
-                const moveClassR = currentDifficulty === 'hard' ? `move-${Math.floor(Math.random() * 4) + 1}` : '';
+                const isHard = currentDifficulty === 'hard' || currentDifficulty === 'super_hard';
+                const moveClassL = isHard ? `move-${Math.floor(Math.random() * 4) + 1}` : '';
+                const moveClassR = isHard ? `move-${Math.floor(Math.random() * 4) + 1}` : '';
 
                 leftItemsData.push({
                     text: pair[0],
-                    order: currentDifficulty === 'hard' ? orderL : index,
+                    order: isHard ? orderL : index,
                     rotate: rotateL,
                     x: transXL,
                     y: transYL,
@@ -835,14 +849,14 @@
 
                 rightItemsData.push({
                     text: isTarget ? pair[1] : pair[0],
-                    order: currentDifficulty === 'hard' ? orderR : index,
+                    order: isHard ? orderR : index,
                     rotate: rotateR,
                     x: transXR,
                     y: transYR,
                     moveClass: moveClassR,
                     isTarget: isTarget
                 });
-            });
+            }
 
             // ボードのレイアウト設定
             if (currentDifficulty === 'easy') {
@@ -882,12 +896,20 @@
             el.className = `item ${className} ${data.moveClass || ''}`;
             el.style.order = data.order;
 
+            const isHard = currentDifficulty === 'hard' || currentDifficulty === 'super_hard';
+
+            if (currentDifficulty === 'super_hard') {
+                el.style.fontSize = '2.5rem';
+                el.style.width = '50px';
+                el.style.height = '50px';
+            }
+
             const span = document.createElement('span');
             span.textContent = data.text;
             // 動くアニメーションがある場合は親要素(el)が動くため、初期の角度やズレはspanに適用する
-            if (currentDifficulty === 'hard' && !data.moveClass) {
+            if (isHard && !data.moveClass) {
                 span.style.transform = `translate(${data.x}px, ${data.y}px) rotate(${data.rotate}deg)`;
-            } else if (currentDifficulty === 'hard') {
+            } else if (isHard) {
                 span.style.transform = `rotate(${data.rotate}deg)`;
             }
             el.appendChild(span);

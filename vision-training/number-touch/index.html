@@ -141,7 +141,8 @@
             </h1>
 
             <div class="flex items-center space-x-4 bg-white p-4 rounded-2xl shadow-sm border border-green-200">
-                <div class="text-5xl">🦉</div>
+                <div class="text-5xl cursor-pointer select-none active:scale-90 transition-transform"
+                    onclick="handleSecretClick()">🦉</div>
                 <div class="text-green-800 font-bold text-lg leading-relaxed">
                     すうじを じゅんばんに<br>タッチしてね！
                 </div>
@@ -281,6 +282,7 @@
 
         let timerId = null;
         let animationId = null;
+        let secretCount = 0; // 隠しコマンド用カウント
 
         // 数字と順番の管理
         let targetSequence = [];     // 押すべき順番の配列
@@ -337,9 +339,18 @@
             showStartScreen();
         }
 
+        // 隠しコマンド処理
+        function handleSecretClick() {
+            secretCount++;
+            if (secretCount >= 10) {
+                startGame('super_hard');
+            }
+        }
+
         // スタート画面の表示
         function showStartScreen() {
             gameState = 'start';
+            secretCount = 0;
             switchScreen('start-screen');
             cancelAnimationFrame(animationId);
             clearInterval(timerId);
@@ -381,7 +392,7 @@
 
             if (currentDifficulty === 'easy' || currentDifficulty === 'normal') {
                 targetSequence = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-            } else {
+            } else if (currentDifficulty === 'hard') {
                 let pool = Array.from({ length: 100 }, (_, i) => i + 1);
                 targetSequence = [];
                 for (let i = 0; i < 10; i++) {
@@ -390,9 +401,18 @@
                     pool.splice(r, 1);
                 }
                 targetSequence.sort((a, b) => a - b);
+            } else if (currentDifficulty === 'super_hard') {
+                let pool = Array.from({ length: 200 }, (_, i) => i + 1);
+                targetSequence = [];
+                for (let i = 0; i < 20; i++) {
+                    let r = Math.floor(Math.random() * pool.length);
+                    targetSequence.push(pool[r]);
+                    pool.splice(r, 1);
+                }
+                targetSequence.sort((a, b) => a - b);
             }
 
-            if (currentDifficulty === 'hard') {
+            if (currentDifficulty === 'hard' || currentDifficulty === 'super_hard') {
                 showMessage("ヒントなし！がんばれ！");
             } else {
                 showMessage(`つぎは ${targetSequence[0]} だよ！`);
@@ -414,7 +434,8 @@
                 let vx = 0;
                 let vy = 0;
                 if (currentDifficulty !== 'easy') {
-                    const speed = w * (0.001 + Math.random() * 0.0015);
+                    let speedMult = currentDifficulty === 'super_hard' ? 1.5 : 1.0;
+                    const speed = w * (0.001 + Math.random() * 0.0015) * speedMult;
                     vx = (Math.random() < 0.5 ? 1 : -1) * speed;
                     vy = (Math.random() < 0.5 ? 1 : -1) * speed;
                 }
@@ -424,6 +445,9 @@
                 el.style.width = `${size}px`;
                 el.style.height = `${size}px`;
                 el.style.fontSize = `${size * 0.45}px`;
+                if (currentDifficulty === 'super_hard') {
+                    el.style.fontSize = `${size * 0.35}px`; // 3桁対応で文字を少し小さく
+                }
                 el.style.backgroundColor = colors[index % colors.length];
                 el.style.left = `${pos.x}px`;
                 el.style.top = `${pos.y}px`;
@@ -442,7 +466,8 @@
         }
 
         function getValidPosition(size, maxW, maxH, existing) {
-            for (let i = 0; i < 100; i++) {
+            const tryCount = currentDifficulty === 'super_hard' ? 50 : 100; // 密度が高いので試行回数調整
+            for (let i = 0; i < tryCount; i++) {
                 let x = Math.random() * Math.max(0, maxW - size);
                 let y = Math.random() * Math.max(0, maxH - size);
                 let overlap = false;
@@ -486,7 +511,7 @@
                     showMessage("すごい！つぎのモンダイ！");
                     setTimeout(setupLevel, 300);
                 } else {
-                    if (currentDifficulty === 'hard') {
+                    if (currentDifficulty === 'hard' || currentDifficulty === 'super_hard') {
                         showMessage("いいね！そのちょうし！");
                     } else {
                         showMessage(`いいね！つぎは ${targetSequence[currentTargetIndex]} だよ！`);

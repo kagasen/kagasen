@@ -126,6 +126,9 @@
             // 効果音の代わりのフィードバック表示用タイマー
             const [feedbackTimer, setFeedbackTimer] = useState(null);
 
+            // 隠しコマンド用（顔タップ回数）
+            const [secretCount, setSecretCount] = useState(0);
+
             // 戻るボタン用のグローバル関数登録
             useEffect(() => {
                 window.handleBackClick = () => {
@@ -147,10 +150,18 @@
             };
 
             const generateProblem = useCallback((diff) => {
-                const totalItems = diff === 'easy' ? 20 : 35;
+                let totalItems = 20;
+                let numTypes = 4;
 
-                // 難易度に応じて登場するアイテムの種類を絞る（探しやすくするため）
-                const numTypes = diff === 'easy' ? 4 : 6;
+                // 難易度に応じて登場するアイテムの種類と数を設定
+                if (diff === 'hard') {
+                    totalItems = 35;
+                    numTypes = 6;
+                } else if (diff === 'super_hard') {
+                    totalItems = 100;
+                    numTypes = 10;
+                }
+
                 const shuffledItems = [...ALL_ITEMS].sort(() => 0.5 - Math.random());
                 const selectedTypes = shuffledItems.slice(0, numTypes);
 
@@ -222,11 +233,16 @@
             }, [timeLeft, gameState]);
 
             // キャラクターのコンポーネント
-            const Character = ({ message, mood = 'normal' }) => {
+            const Character = ({ message, mood = 'normal', onFaceClick }) => {
                 const face = mood === 'happy' ? '😆' : mood === 'sad' ? '🥺' : '😊';
                 return (
                     <div className="flex items-start space-x-4 my-4 p-4 bg-white rounded-2xl shadow-sm border-2 border-green-100">
-                        <div className="text-5xl bg-green-100 rounded-full p-2">{face}</div>
+                        <div
+                            className={`text-5xl bg-green-100 rounded-full p-2 ${onFaceClick ? 'cursor-pointer select-none active:scale-90 transition-transform' : ''}`}
+                            onClick={onFaceClick}
+                        >
+                            {face}
+                        </div>
                         <div className="relative bg-teal-50 text-gray-700 p-3 rounded-lg flex-1 shadow-sm border border-teal-100 text-left">
                             <p className="font-bold text-lg md:text-xl leading-relaxed whitespace-pre-wrap">{message}</p>
                             <div className="absolute top-4 -left-3 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-teal-50 border-b-8 border-b-transparent"></div>
@@ -251,7 +267,18 @@
                                 いくつあるかな？
                             </h1>
 
-                            <Character message={"やあ！ぼくは「みっけ丸」！\n制限時間は30秒！上の四角の中にある絵が、下の枠の中にいくつあるか数えてね！\n正しい数字のボタンを押すと＋100点！間違えると－100点になるから気をつけてね！"} />
+                            <Character
+                                message={"やあ！ぼくは「みっけ丸」！\n制限時間は30秒！上の四角の中にある絵が、下の枠の中にいくつあるか数えてね！\n正しい数字のボタンを押すと＋100点！間違えると－100点になるから気をつけてね！"}
+                                onFaceClick={() => {
+                                    const newCount = secretCount + 1;
+                                    if (newCount >= 10) {
+                                        setSecretCount(0);
+                                        startGame('super_hard');
+                                    } else {
+                                        setSecretCount(newCount);
+                                    }
+                                }}
+                            />
 
                             <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-teal-100 mt-8">
                                 <h2 className="text-2xl font-bold mb-6 text-gray-700">難易度（なんいど）をえらんでね</h2>
@@ -307,9 +334,14 @@
                                 </div>
 
                                 {/* アイテムグリッド */}
-                                <div className={`grid gap-2 md:gap-4 justify-center mx-auto ${difficulty === 'easy' ? 'grid-cols-5 max-w-lg' : 'grid-cols-5 md:grid-cols-7 max-w-2xl'}`}>
+                                <div className={`grid justify-center mx-auto 
+                                    ${difficulty === 'super_hard' ? 'grid-cols-8 md:grid-cols-10 max-w-4xl gap-1 md:gap-2' :
+                                        difficulty === 'hard' ? 'grid-cols-5 md:grid-cols-7 max-w-2xl gap-2 md:gap-4' :
+                                            'grid-cols-5 max-w-lg gap-2 md:gap-4'}`}
+                                >
                                     {board.map((item, index) => (
-                                        <div key={index} className="flex items-center justify-center text-3xl md:text-5xl bg-gray-50 aspect-square rounded-xl border border-gray-200 hover:bg-teal-50 transition-colors shadow-sm">
+                                        <div key={index} className={`flex items-center justify-center bg-gray-50 aspect-square rounded-xl border border-gray-200 hover:bg-teal-50 transition-colors shadow-sm
+                                            ${difficulty === 'super_hard' ? 'text-2xl md:text-3xl' : 'text-3xl md:text-5xl'}`}>
                                             {item}
                                         </div>
                                     ))}
@@ -372,7 +404,10 @@
                                 <Character message={rank.message} mood={score >= 1600 ? 'happy' : score < 0 ? 'sad' : 'normal'} />
 
                                 <button
-                                    onClick={() => setGameState('start')}
+                                    onClick={() => {
+                                        setGameState('start');
+                                        setSecretCount(0);
+                                    }}
                                     className={`${COLORS.primary} mt-4 text-white text-xl font-bold py-4 px-12 rounded-full shadow-md transform transition active:scale-95`}
                                 >
                                     もういちどあそぶ

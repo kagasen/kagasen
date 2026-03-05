@@ -111,7 +111,8 @@
         const DIFFICULTIES = {
             easy: { id: 'easy', label: 'かんたん', baseLines: 3, maxLines: 10, nodes: 1 },
             normal: { id: 'normal', label: 'ふつう', baseLines: 4, maxLines: 10, nodes: 2 },
-            hard: { id: 'hard', label: 'むずかしい', baseLines: 5, maxLines: 10, nodes: 3 }
+            hard: { id: 'hard', label: 'むずかしい', baseLines: 5, maxLines: 10, nodes: 3 },
+            super_hard: { id: 'super_hard', label: '超むずかしい', baseLines: 8, maxLines: 15, nodes: 4 } // 隠しコマンド用
         };
 
         const TIME_LIMIT = 30;
@@ -202,6 +203,7 @@
             const [score, setScore] = useState(0);
             const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
             const [message, setMessage] = useState(MESSAGES.start);
+            const [secretCount, setSecretCount] = useState(0); // 隠しコマンド用
 
             // 戻るボタン用のグローバル関数登録
             useEffect(() => {
@@ -598,6 +600,7 @@
                 missesRef.current = { consecutive: 0, total: 0 };
                 setGameState('playing');
                 setMessage(MESSAGES.start);
+                setSecretCount(0);
             };
 
             const handleCorrect = (lineIndex) => {
@@ -674,12 +677,25 @@
             if (gameState === 'menu') {
                 return (
                     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-3xl shadow-xl border-4 border-teal-100 max-w-md w-full mx-4 text-center pop">
-                        <div className="text-6xl mb-6 flex space-x-2 justify-center">👀 <span className="text-teal-400">〰️</span> 🍎</div>
+                        <div className="text-6xl mb-6 flex space-x-2 justify-center">
+                            <span
+                                className="cursor-pointer select-none active:scale-90 transition-transform"
+                                onClick={() => {
+                                    const nextCount = secretCount + 1;
+                                    setSecretCount(nextCount);
+                                    if (nextCount > 0 && nextCount % 10 === 0) {
+                                        startGame(DIFFICULTIES.super_hard);
+                                    }
+                                }}
+                            >👀</span>
+                            <span className="text-teal-400 cursor-default">〰️</span>
+                            <span className="cursor-default">🍎</span>
+                        </div>
                         <h1 className="text-4xl font-pop text-teal-600 mb-4 drop-shadow-sm">線をたどろう</h1>
                         <p className="text-slate-600 mb-8 font-medium">おなじフルーツをつなぐせんをさがしてね！</p>
 
                         <div className="w-full space-y-4">
-                            {Object.values(DIFFICULTIES).map((diff) => (
+                            {Object.values(DIFFICULTIES).filter(d => d.id !== 'super_hard').map((diff) => (
                                 <button
                                     key={diff.id}
                                     onClick={() => startGame(diff)}

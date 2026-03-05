@@ -96,9 +96,9 @@
             </h1>
         </div>
 
-        <!-- 🐶のキャラクターと吹き出し -->
         <div class="flex items-center justify-center mb-8 w-full">
-            <div class="text-6xl mr-3 animate-bounce">🐶</div>
+            <div class="text-6xl mr-3 animate-bounce cursor-pointer select-none active:scale-90 transition-transform"
+                onclick="handleSecretClick()">🐶</div>
             <div class="bg-white rounded-2xl p-4 shadow-md relative border-2 border-stone-200 flex-1 text-left">
                 <div
                     class="absolute w-4 h-4 bg-white border-b-2 border-l-2 border-stone-200 transform -rotate-45 -left-[9px] top-6">
@@ -233,6 +233,7 @@
         let timerInterval = null;
         let currentMatchId = null;
         let animationFrames = []; // アニメーションループ管理用
+        let secretCount = 0; // 隠しコマンド用カウント
 
         // DOM要素
         const menuScreen = document.getElementById('menuScreen');
@@ -296,6 +297,12 @@
                 { x: 20, y: 40 }, { x: 80, y: 40 },
                 { x: 20, y: 60 }, { x: 80, y: 60 },
                 { x: 35, y: 80 }, { x: 65, y: 80 }
+            ],
+            12: [
+                { x: 25, y: 15 }, { x: 50, y: 15 }, { x: 75, y: 15 },
+                { x: 25, y: 38 }, { x: 50, y: 38 }, { x: 75, y: 38 },
+                { x: 25, y: 62 }, { x: 50, y: 62 }, { x: 75, y: 62 },
+                { x: 25, y: 85 }, { x: 50, y: 85 }, { x: 75, y: 85 }
             ]
         };
 
@@ -378,12 +385,20 @@
 
         // 画面遷移
         function showMenu() {
+            secretCount = 0;
             menuScreen.classList.remove('hidden');
             playingScreen.classList.add('hidden');
             playingScreen.classList.remove('flex');
             resultScreen.classList.add('hidden');
             resultScreen.classList.remove('flex');
             clearAllAnimations();
+        }
+
+        function handleSecretClick() {
+            secretCount++;
+            if (secretCount >= 10) {
+                startGame(12); // 超むずかしいモード
+            }
         }
 
         function showResult() {
@@ -406,6 +421,7 @@
             currentDifficulty = level;
             currentScore = 0;
             timeLeft = 30;
+            secretCount = 0;
 
             updateScoreDisplay();
             updateTimerDisplay();

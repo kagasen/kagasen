@@ -6,7 +6,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/03/02",
         colorClass: "subject-blue",
-        image: "images/vision-training.jpg",
+        image: "images/visiontore-ning.jpg",
         link: "vision-training/index.html"
     },
     {

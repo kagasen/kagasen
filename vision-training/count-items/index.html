@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>いくつあるかな - ビジョントレーニング | 小学生向けの安全な教育アプリ</title>
-    <meta name="description" content="いくつあるかな - ビジョントレーニングは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
+    <meta name="description"
+        content="いくつあるかな - ビジョントレーニングは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
 
     <!-- Kagasen フォント -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +42,7 @@
         body {
             font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
             touch-action: none;
-            overflow: hidden;
+            overflow-x: hidden;
             margin: 0;
             background-color: #f0fdf4;
             /* Tailwind green-50 */
@@ -74,7 +75,7 @@
         <span class="text-sm font-bold">もどる</span>
     </button>
 
-    <div id="root" class="w-full h-screen overflow-y-auto overflow-x-hidden relative"></div>
+    <div id="root" class="w-full h-[100dvh] overflow-y-auto overflow-x-hidden relative"></div>
 
     <script>
         // Lucide アイコンの初期化

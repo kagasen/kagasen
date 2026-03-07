@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>線をたどろう - ビジョントレーニング | 小学生向けの安全な教育アプリ</title>
-    <meta name="description" content="線をたどろう - ビジョントレーニングは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
+    <meta name="description"
+        content="線をたどろう - ビジョントレーニングは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
 
     <!-- Kagasen フォント -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,7 +45,7 @@
             /* Tailwind teal-50 */
             touch-action: none;
             /* スマホでのスワイプによる画面スクロールを防止 */
-            overflow: hidden;
+            overflow-x: hidden;
             margin: 0;
         }
 
@@ -95,7 +96,7 @@
         <span class="text-sm font-bold">もどる</span>
     </button>
 
-    <div id="root" class="w-full h-screen flex flex-col items-center justify-center relative"></div>
+    <div id="root" class="w-full h-[100dvh] flex flex-col items-center justify-center relative"></div>
 
     <script>
         // Lucide アイコンの初期化

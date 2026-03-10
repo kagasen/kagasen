@@ -154,9 +154,9 @@ const appsData = [
         description: "しつもんに答えるだけで、キミだけの本ができる！お話づくりサポートアプリです。",
         category: "japanese",      // 国語
         tagName: "国語",
-        date: "2026/03/04",
+        date: "2026/03/10",
         colorClass: "subject-red",
-        image: "images/writer-time.jpg", // サムネイル画像 (一旦仮で設定)
+        image: "images/sakkanojikan.jpg",
         link: "writer-time/index.html"
     }
 ];

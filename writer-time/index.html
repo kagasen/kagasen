@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>作家の時間 | 小学生向け物語作成支援アプリ</title>
+    <meta name="description" content="小学生向けの物語作成支援アプリです。質問に答えるだけで、自分だけのオリジナルストーリーが作れます。安全で広告のない教育用ツールです。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #FFF9E6;
+            background-image: radial-gradient(#FDE68A 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #333;
+            touch-action: manipulation;
+        }
+
+        .btn-bounce {
+            transition: all 0.15s ease;
+        }
+
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FCD34D;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F59E0B;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.9);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .chip-selected {
+            animation: pop 0.2s ease-out forwards;
+        }
+
+        ruby {
+            ruby-align: center;
+        }
+
+        rt {
+            font-size: 0.65em;
+            color: #666;
+        }
+
+        .theme-classic {
+            background-color: #fdf6e3;
+            color: #333;
+            border: 8px double #d4a373;
+            font-family: serif;
+        }
+
+        .theme-magic {
+            background-color: #1e1b4b;
+            color: #e0e7ff;
+            border: 4px dashed #fcd34d;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .theme-forest {
+            background-color: #f0fdf4;
+            color: #14532d;
+            border: 12px solid #86efac;
+            border-radius: 20px;
+        }
+
+        .theme-notebook {
+            background-color: #ffffff;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-left: 20px solid #fca5a5;
+            border-radius: 4px;
+        }
+
+        .theme-antique {
+            background-color: #fef3c7;
+            color: #451a03;
+            border: 10px solid #78350f;
+            outline: 2px solid #fef3c7;
+            outline-offset: -8px;
+            font-family: serif;
+        }
+
+        .theme-ocean {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 8px dashed #38bdf8;
+            border-radius: 12px;
+        }
+
+        .theme-sunset {
+            background: linear-gradient(to bottom, #fff7ed, #ffedd5, #fed7aa);
+            color: #9a3412;
+            border: 8px solid #ea580c;
+            border-radius: 8px;
+        }
+
+        .theme-sakura {
+            background-color: #fdf2f8;
+            color: #9d174d;
+            border: 6px solid #f9a8d4;
+            border-radius: 16px;
+        }
+
+        .theme-space {
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 4px solid #475569;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-monochrome {
+            background-color: #f8fafc;
+            color: #0f172a;
+            border: 12px solid #334155;
+            font-family: serif;
+        }
+
+        #print-area {
+            display: none;
+        }
+
+        @media print {
+            body {
+                background: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            #app {
+                display: none !important;
+            }
+
+            #print-area {
+                display: block !important;
+                width: 100%;
+            }
+
+            .print-page {
+                width: 100%;
+                height: 98vh;
+                page-break-after: always;
+                page-break-inside: avoid;
+                overflow: hidden;
+                margin-bottom: 0;
+                box-sizing: border-box;
+            }
+
+            @page {
+                size: B5;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <div id="app" class="relative w-full min-h-screen h-full flex flex-col">
+
+        <!-- ================== トップ画面 ================== -->
+        <div id="screen-start" class="flex-grow flex flex-col items-center justify-center p-4">
+            <div
+                class="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl text-center max-w-lg w-full border-4 border-orange-200">
+                <div class="text-6xl mb-4">📖✍️</div>
+                <h1
+                    class="text-4xl md:text-5xl font-extrabold text-orange-500 mb-6 drop-shadow-sm tracking-wide leading-normal">
+                    <ruby>作家<rt>さっか</rt></ruby>の<ruby>時間<rt>じかん</rt></ruby>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-700 mb-10 font-bold leading-relaxed">
+                    キミだけのオリジナルストーリーを<br><ruby>作<rt>つく</rt></ruby>ってみよう！
+                </p>
+                <button onclick="startApp()"
+                    class="btn-bounce w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xl md:text-2xl font-extrabold py-5 px-10 rounded-full shadow-lg hover:shadow-xl hover:from-orange-500 hover:to-orange-600 border-b-4 border-orange-600 active:border-b-0 active:translate-y-1 leading-normal">
+                    <span><ruby>書<rt>か</rt></ruby>き<ruby>始<rt>はじ</rt></ruby>める ✨</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================== 質問画面 ================== -->
+        <div id="screen-question"
+            class="hidden flex-grow flex flex-col p-2 md:p-4 lg:p-6 max-w-4xl mx-auto w-full h-full">
+            <div
+                class="mb-2 md:mb-4 flex justify-between items-center text-sm md:text-base font-bold text-gray-500 bg-white py-2 px-4 rounded-full shadow-sm">
+                <span id="q-progress" class="tracking-widest">1 / 6</span>
+                <span id="q-badge" class="px-4 py-1 rounded-full text-sm md:text-base font-bold shadow-inner">はじめ</span>
+            </div>
+
+            <div
+                class="bg-white p-4 md:p-6 rounded-3xl shadow-md border-2 border-orange-100 flex-grow flex flex-col overflow-y-auto relative">
+                <div class="mb-4">
+                    <h2 id="q-title"
+                        class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2 leading-relaxed block">どんな主人公？</h2>
+                    <p id="q-desc" class="text-gray-600 font-bold text-sm md:text-base leading-relaxed block">5つまでえらんでね！
+                    </p>
+                </div>
+
+                <div class="mb-4 bg-gray-50 p-3 md:p-5 rounded-2xl border border-gray-100">
+                    <div id="q-options" class="flex flex-wrap justify-center gap-2 md:gap-3">
+                        <!-- JSで動的生成 -->
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="block text-gray-700 font-bold mb-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-orange-500 flex-shrink-0">
+                                <path
+                                    d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                                <path d="m15 5 4 4" />
+                            </svg>
+                            <span class="leading-relaxed"><ruby>自由<rt>じゆう</rt></ruby>に<ruby>書<rt>か</rt>
+                                    </ruby>いてもいいよ！</span>
+                        </div>
+                        <button type="button" onclick="toggleDictation('q-freetext', this)"
+                            class="flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-colors border border-red-200 shadow-sm flex-shrink-0">
+                            🎤 <span class="btn-text leading-none"><ruby>声<rt>こえ</rt></ruby>で入力</span>
+                        </button>
+                    </div>
+                    <textarea id="q-freetext"
+                        class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-2xl focus:border-orange-400 focus:ring-4 focus:ring-orange-100 focus:outline-none resize-none transition-all font-medium text-gray-700 text-sm md:text-base"
+                        rows="2" placeholder="思（おも）いついたことを自由（じゆう）に書いてみよう！"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-3 gap-3 pb-2">
+                <button onclick="prevStep()" id="btn-prev"
+                    class="btn-bounce bg-white text-gray-600 font-bold py-3 md:py-4 px-6 md:px-8 rounded-full shadow-sm border-2 border-gray-200 hover:bg-gray-50 flex-1 md:flex-none text-center">
+                    もどる
+                </button>
+                <button onclick="nextStep()"
+                    class="btn-bounce bg-orange-500 text-white font-extrabold py-3 md:py-4 px-8 md:px-12 rounded-full shadow-md hover:bg-orange-600 border-b-4 border-orange-700 active:border-b-0 active:translate-y-1 flex-1 md:flex-none text-center text-lg">
+                    つぎへ ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- ================== 執筆画面 ================== -->
+        <div id="screen-writing"
+            class="hidden flex-grow flex flex-col p-2 md:p-6 lg:p-8 max-w-7xl mx-auto w-full h-auto min-h-screen md:h-screen md:min-h-0 md:overflow-hidden">
+
+            <div
+                class="flex justify-between items-center mb-4 bg-white p-3 md:p-4 rounded-2xl shadow-sm overflow-x-auto">
+                <h2
+                    class="text-xl md:text-3xl font-extrabold text-gray-800 flex items-center gap-2 flex-shrink-0 mr-4 leading-relaxed">
+                    <span>📝</span>
+                    <span>お<ruby>話<rt>はなし</rt></ruby>を<ruby>書<rt>か</rt></ruby>こう！</span>
+                </h2>
+                <div class="flex gap-2 flex-shrink-0">
+                    <button onclick="openChecklist()"
+                        class="btn-bounce bg-green-500 text-white font-bold py-2 px-3 md:px-6 rounded-full shadow hover:bg-green-600 text-sm md:text-base flex items-center gap-2 border-b-4 border-green-700 active:border-b-0 active:translate-y-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <path d="m9 15 2 2 4-4" />
+                        </svg>
+                        <span class="hidden md:inline leading-none">ふり<ruby>返<rt>かえ</rt></ruby>り</span><span
+                            class="leading-none">チェック</span>
+                    </button>
+                    <button onclick="finishStory()"
+                        class="btn-bounce bg-yellow-400 text-yellow-900 font-extrabold py-2 px-4 md:px-8 rounded-full shadow-md hover:bg-yellow-500 text-sm md:text-lg flex items-center gap-1 border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1">
+                        ✨ 完成！
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 flex-grow md:overflow-hidden">
+
+                <!-- 左側：設定の確認 -->
+                <div
+                    class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-3xl shadow-sm border-2 border-orange-100 flex flex-col h-40 md:h-full flex-shrink-0">
+                    <div class="bg-orange-50 p-3 rounded-t-3xl border-b border-orange-100">
+                        <h3
+                            class="font-bold text-base md:text-lg text-orange-700 flex items-center gap-1 leading-relaxed">
+                            <span>🔍</span>
+                            <span>キミが<ruby>考<rt>かんが</rt></ruby>えたこと</span>
+                        </h3>
+                    </div>
+                    <div id="memo-content" class="flex-grow overflow-y-auto p-4 space-y-5 text-sm md:text-base">
+                        <!-- JSで動的生成 -->
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-b-3xl border-t border-gray-100 flex flex-col gap-2">
+                        <button onclick="useMagicWand()"
+                            class="btn-bounce w-full bg-purple-500 text-white font-bold py-3 px-2 rounded-xl shadow hover:bg-purple-600 text-xs md:text-sm flex items-center justify-center gap-1 border-b-4 border-purple-700 active:border-b-0 active:translate-y-1 leading-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="flex-shrink-0">
+                                <path
+                                    d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z" />
+                                <path d="m14 7 3 3" />
+                                <path d="M5 6v4" />
+                                <path d="M19 14v4" />
+                                <path d="M10 2v2" />
+                                <path d="M7 8H3" />
+                                <path d="M21 16h-4" />
+                                <path d="M11 3H9" />
+                            </svg>
+                            <span>まほうのステッキで<ruby>下書<rt>したが</rt></ruby>き</span>
+                        </button>
+                        <button onclick="appData.step = 1; updateScreen();"
+                            class="btn-bounce w-full bg-white text-gray-600 font-bold py-2 px-2 rounded-xl shadow-sm border-2 border-gray-200 hover:bg-gray-100 text-xs md:text-sm flex items-center justify-center gap-1 transition-colors active:translate-y-1">
+                            <span>🔄 もう<ruby>一度<rt>いちど</rt></ruby><ruby>考<rt>かんが</rt></ruby>える</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右側：エディタ -->
+                <div
+                    class="w-full md:w-2/3 lg:w-3/4 flex flex-col min-h-[60vh] md:min-h-0 md:h-full bg-white rounded-3xl shadow-sm border-2 border-gray-200 overflow-hidden">
+                    <div class="flex flex-col">
+                        <input type="text" id="story-title" placeholder="お話（はなし）のタイトル"
+                            class="text-xl md:text-3xl font-extrabold p-4 md:p-6 pb-2 border-b border-dashed border-gray-300 focus:bg-orange-50 focus:outline-none w-full text-center text-gray-800 placeholder-gray-300 transition-colors">
+                        <div
+                            class="flex justify-between items-center pr-4 md:pr-6 py-2 border-b-2 border-dashed border-gray-300 bg-gray-50 focus-within:bg-orange-50 transition-colors">
+                            <button type="button" onclick="toggleDictation('story-editor', this)"
+                                class="flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 ml-4 rounded-full text-sm font-bold transition-colors border border-red-200 shadow-sm leading-none">
+                                🎤 <span class="btn-text"><ruby>声<rt>こえ</rt></ruby>で入力</span>
+                            </button>
+                            <div class="flex items-center">
+                                <span class="text-gray-500 font-bold mr-2 text-sm md:text-base">なまえ：</span>
+                                <input type="text" id="story-author" placeholder="ここに入力"
+                                    class="text-base md:text-lg font-bold p-1 focus:outline-none bg-transparent text-gray-800 w-32 md:w-48 text-left">
+                            </div>
+                        </div>
+                    </div>
+                    <textarea id="story-editor" placeholder="ここにお話（はなし）を書いてね！&#13;&#10;左（ひだり）のメモを見ながら進めよう。"
+                        class="flex-grow w-full p-4 md:p-8 focus:outline-none resize-none text-base md:text-lg text-gray-700 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjQwIj48bGluZSB4MT0iMCIgeTE9IjM5IiB4Mj0iMTAwJSIgeTI9IjM5IiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==')] bg-local"
+                        style="line-height: 40px; background-size: 100% 40px;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== 完成画面（プレビュー＆印刷） ================== -->
+        <div id="screen-finish"
+            class="hidden flex-grow flex flex-col p-2 md:p-6 max-w-5xl mx-auto w-full h-full overflow-y-auto">
+            <h2
+                class="text-2xl md:text-4xl font-extrabold text-center text-orange-500 mb-6 drop-shadow-sm leading-relaxed">
+                <span>🎉</span> <span>キミのお<ruby>話<rt>はなし</rt></ruby>が<ruby>完成<rt>かんせい</rt></ruby>したよ！</span>
+            </h2>
+
+            <!-- デザイン選択 -->
+            <div class="mb-6">
+                <p class="text-center text-sm md:text-base font-bold text-gray-600 mb-3">本のデザインをえらんでね</p>
+                <div class="flex flex-wrap gap-3 justify-center px-2">
+                    <button onclick="setTheme('classic')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-orange-500 text-white border-orange-600 shadow-sm"
+                        data-theme="classic">📖 クラシック</button>
+                    <button onclick="setTheme('magic')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="magic">✨ ほしぞら魔法</button>
+                    <button onclick="setTheme('forest')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="forest">🌿 森の物語</button>
+                    <button onclick="setTheme('notebook')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="notebook">📓 かわいいノート</button>
+                    <button onclick="setTheme('antique')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="antique">🖼️ アンティーク</button>
+                    <button onclick="setTheme('ocean')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="ocean">🌊 海のぼうけん</button>
+                    <button onclick="setTheme('sunset')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="sunset">🌇 夕焼け空</button>
+                    <button onclick="setTheme('sakura')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="sakura">🌸 さくら色</button>
+                    <button onclick="setTheme('space')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="space">🚀 宇宙旅行</button>
+                    <button onclick="setTheme('monochrome')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="monochrome">🎞️ モノクロ映画</button>
+                </div>
+            </div>
+
+            <div class="flex-grow flex items-center justify-center relative px-8 md:px-12 my-4">
+                <button onclick="prevPage()"
+                    class="btn-bounce absolute left-0 z-10 p-2 md:p-4 bg-white/90 rounded-full shadow-lg text-xl md:text-2xl font-bold text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition-colors">◀</button>
+
+                <div id="preview-box"
+                    class="w-full max-w-[600px] aspect-[1/1.414] shadow-2xl relative transition-all duration-300 theme-classic mx-auto">
+                    <div id="preview-content"
+                        class="absolute inset-0 p-6 md:p-10 flex flex-col text-base md:text-lg leading-loose overflow-hidden break-words">
+                    </div>
+                </div>
+
+                <button onclick="nextPage()"
+                    class="btn-bounce absolute right-0 z-10 p-2 md:p-4 bg-white/90 rounded-full shadow-lg text-xl md:text-2xl font-bold text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition-colors">▶</button>
+            </div>
+
+            <div class="text-center mt-3 font-bold text-gray-500 text-sm md:text-base tracking-widest"
+                id="page-indicator">1 / 1 ページ</div>
+
+            <div class="flex justify-center items-center mt-6 gap-4 pb-10">
+                <button onclick="appData.step = 7; updateScreen();"
+                    class="btn-bounce bg-white text-gray-600 font-bold py-3 md:py-4 px-6 md:px-8 rounded-full shadow-sm border-2 border-gray-200 hover:bg-gray-50">もどる</button>
+                <button onclick="printStory()"
+                    class="btn-bounce bg-blue-500 text-white font-extrabold py-3 md:py-4 px-10 md:px-14 rounded-full shadow-lg border-b-4 border-blue-700 hover:bg-blue-600 text-lg md:text-xl flex items-center gap-2 active:border-b-0 active:translate-y-1">🖨️
+                    いんさつする</button>
+            </div>
+        </div>
+
+        <!-- ページ計算用 -->
+        <div id="measure-container"
+            class="absolute opacity-0 pointer-events-none z-[-50] left-0 top-0 w-full flex justify-center px-8 md:px-12">
+            <div id="measure-box" class="w-full max-w-[600px] aspect-[1/1.414] relative theme-classic">
+                <div id="measure-content"
+                    class="absolute inset-0 p-6 md:p-10 flex flex-col text-base md:text-lg leading-loose overflow-hidden break-words">
+                </div>
+            </div>
+        </div>
+
+        <!-- 振り返りモーダル -->
+        <div id="modal-checklist"
+            class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div
+                class="bg-white rounded-[2rem] p-6 md:p-8 max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl transform transition-all border-4 border-green-400">
+                <div class="flex-shrink-0">
+                    <h3
+                        class="text-2xl md:text-3xl font-extrabold text-green-600 mb-2 flex items-center gap-2 justify-center leading-relaxed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                        <span>ふり<ruby>返<rt>かえ</rt></ruby>りチェック</span>
+                    </h3>
+                    <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base text-center font-bold leading-relaxed">
+                        いい<ruby>作文<rt>さくぶん</rt></ruby>になっているか、たしかめてみよう！</p>
+                </div>
+
+                <div class="overflow-y-auto pr-2 mb-6 flex-grow space-y-6">
+                    <div class="space-y-3">
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">まちがえた<ruby>字
+                                    <rt>じ</rt></ruby>や、ぬけている<ruby>字<rt>じ</rt></ruby>はないかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span
+                                class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「　」（かぎかっこ）を<ruby>使
+                                    <rt>つか</rt></ruby>って、<ruby>会話文<rt>かいわぶん</rt></ruby>を<ruby>入<rt>い</rt>
+                                    </ruby>れているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span
+                                class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「〜です」「〜だ」などの<ruby>文
+                                    <rt>ぶん</rt></ruby>の<ruby>終<rt>お</rt></ruby>わり<ruby>方<rt>かた</rt>
+                                    </ruby>はそろっているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「、」や「。」は<ruby>読
+                                    <rt>よ</rt></ruby>みやすい<ruby>場所<rt>ばしょ</rt></ruby>にあるかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>気持<rt>きも
+                                    </rt></ruby>ちやようすがわかる<ruby>言葉<rt>ことば</rt></ruby>（ドキドキ、キラキラなど）を<ruby>使<rt>つか</rt>
+                                    </ruby>っているかな？</span>
+                        </label>
+                    </div>
+                    <div class="space-y-3">
+                        <h4
+                            class="font-bold text-orange-600 border-b-2 border-orange-200 pb-1 mb-3 flex items-center gap-2 text-lg leading-relaxed">
+                            🌟 <span><ruby>上級者編<rt>じょうきゅうしゃへん</rt></ruby></span></h4>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">その<ruby>場所<rt>
+                                        ばしょ</rt></ruby>のけしきを、<ruby>色<rt>いろ</rt></ruby>もまじえて<ruby>書<rt>か</rt>
+                                    </ruby>いているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>主人公<rt>
+                                        しゅじんこう</rt></ruby>の<ruby>気持<rt>きも</rt></ruby>ちがかわったきっかけを、くわしく<ruby>書<rt>か</rt>
+                                    </ruby>いているかな？</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="text-center flex-shrink-0">
+                    <button onclick="closeChecklist()"
+                        class="btn-bounce bg-green-500 text-white font-extrabold py-4 px-10 rounded-full shadow-lg hover:bg-green-600 w-full text-lg border-b-4 border-green-700 active:border-b-0 active:translate-y-1">チェックおわり！
+                        👍</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast"
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none z-50 font-bold">
+            メッセージ</div>
+
+    </div>
+
+    <div id="print-area"></div>
+
+    <script>
+    function parseRuby(str) {
+      return str.replace(/\[(.+?):(.+?)\]/g, "<ruby>$1<rt>$2</rt></ruby>");
+    }
+
+    function stripRuby(str) {
+      return str.replace(/\[(.+?):(.+?)\]/g, "$1");
+    }
+
+    const protagonistOptions = ["つよい[勇者:ゆうしゃ]", "おくびょうなまほう[使:つか]い", "おしゃべりな[猫:ねこ]", "[空:そら]をとぶペンギン", "わすれんぼうのおじいちゃん", "[天才:てんさい][発明家:はつめいか]", "おこりんぼうのドラゴン", "なきむしのおひめ[様:さま]", "[足:あし]が[速:はや]いカメ", "とうめい[人間:にんげん]"];
+    const timeOptions = ["むかしむかし", "ある[晴:は]れた[日:ひ]の[朝:あさ]", "[真夜中:まよなか]", "[夕:ゆう]やけ[空:そら]の[下:した]", "[夏休:なつやす]みの[最後:さいご]の[日:ひ]"];
+    const placeOptions = ["だれもいない[島:しま]", "まほうの[森:もり]", "うちゅう[船:せん]の[中:なか]", "[近所:きんじょ]の[公園:こうえん]", "おかしの[家:いえ]"];
+    const eventOptions = ["[大切:たいせつ]な[宝物:たいせつなもの]を[落:お]とした", "まいごになった", "[空:そら]からUFOが[落:お]ちてきた", "きょうりゅうが[生:い]き[返:かえ]った", "まほうの[力:ちから]にめざめた"];
+    const solutionOptions = ["[友:とも]だちと[力:ちから]をあわせて[助:たす]かった", "ひらめきでピンチをぬけ[出:だ]した", "ぐうぜんが[重:かさ]なってうまく[行:い]った", "ゆう[気:き]を[出:だ]してたたかった", "まほうのアイテムを[使:つか]った"];
+    const endingOptions = ["とてもハッピーな[気持:きも]ちになった", "[少:すこ]し[大人:おとな]になった[気:き]がした", "また[新:あたら]しいぼうけんに[出:で]たくなった", "ほっと[安心:あんしん]した", "ちょっと[悲:かな]しいけれど[前:まえ]を[向:む]いた"];
+
+    const questionsData = [
+      { id: 'protagonist', badge: 'はじめ', title: 'どんな[主人公:しゅじんこう]？', desc: '[主人公:しゅじんこう]のイメージを5つまでえらんでね！', maxSelect: 5, options: protagonistOptions },
+      { id: 'time', badge: 'はじめ', title: 'いつのお[話:はなし]？', desc: 'お[話:はなし]の[始:はじ]まりはいつだろう？3つまでえらべるよ。', maxSelect: 3, options: timeOptions },
+      { id: 'place', badge: 'はじめ', title: '[場所:ばしょ]はどこ？', desc: 'お[話:はなし]の[舞台:ぶたい]はどこ？3つまでえらべるよ。', maxSelect: 3, options: placeOptions },
+      { id: 'event', badge: '中', title: 'どんな[出来事:できごと]が[起:お]きた？', desc: '[主人公:しゅじんこう]に[何:なに]が[起:お]きたかな？3つまでえらべるよ。', maxSelect: 3, options: eventOptions },
+      { id: 'solution', badge: '中', title: 'どうやってかいけつした？', desc: 'その[出来事:できごと]をどうやってのりこえた？3つまでえらべるよ。', maxSelect: 3, options: solutionOptions },
+      { id: 'ending', badge: 'おわり', title: '[最後:さいご]にどう[思:おも]った？', desc: 'お[話:はなし]の[最後:さいご]はどうなったかな？3つまでえらべるよ。', maxSelect: 3, options: endingOptions }
+    ];
+
+    const appData = {
+      step: 0,
+      answers: {
+        protagonist: { selected: [], free: '', visibleOptions: [] },
+        time: { selected: [], free: '', visibleOptions: [] },
+        place: { selected: [], free: '', visibleOptions: [] },
+        event: { selected: [], free: '', visibleOptions: [] },
+        solution: { selected: [], free: '', visibleOptions: [] },
+        ending: { selected: [], free: '', visibleOptions: [] }
+      }
+    };
+
+    function startApp() { appData.step = 1; updateScreen(); }
+    function finishStory() { appData.step = 8; updateScreen(); }
+
+    function updateScreen() {
+      if (typeof stopDictation === 'function') stopDictation();
+      document.getElementById('screen-start').classList.add('hidden');
+      document.getElementById('screen-question').classList.add('hidden');
+      document.getElementById('screen-writing').classList.add('hidden');
+      document.getElementById('screen-finish').classList.add('hidden');
+      window.scrollTo(0, 0);
+      if (appData.step === 0) document.getElementById('screen-start').classList.remove('hidden');
+      else if (appData.step >= 1 && appData.step <= 6) { renderQuestion(appData.step - 1); document.getElementById('screen-question').classList.remove('hidden'); }
+      else if (appData.step === 7) { renderWritingScreen(); document.getElementById('screen-writing').classList.remove('hidden'); }
+      else if (appData.step === 8) { document.getElementById('screen-finish').classList.remove('hidden'); setTimeout(createPreviewPages, 100); }
+    }
+
+    function renderQuestion(index) {
+      const q = questionsData[index];
+      const ans = appData.answers[q.id];
+      if (!ans.visibleOptions.length) ans.visibleOptions = q.options.slice(0, 5);
+      document.getElementById('q-progress').innerText = `${index + 1} / 6`;
+      const badge = document.getElementById('q-badge');
+      badge.innerText = q.badge;
+      document.getElementById('q-title').innerHTML = parseRuby(q.title);
+      document.getElementById('q-desc').innerHTML = parseRuby(q.desc);
+      const container = document.getElementById('q-options');
+      container.innerHTML = '';
+      ans.visibleOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        const isSelected = ans.selected.includes(opt);
+        btn.innerHTML = parseRuby(opt);
+        btn.className = `px-3 py-1.5 md:px-4 md:py-2 rounded-full border-2 text-sm md:text-base font-bold transition-all ${isSelected ? 'bg-orange-500 border-orange-500 text-white shadow-md chip-selected' : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300 hover:bg-orange-50'}`;
+        btn.onclick = () => toggleOption(q.id, opt, q.maxSelect, btn);
+        container.appendChild(btn);
+      });
+      document.getElementById('q-freetext').value = ans.free;
+      document.getElementById('q-freetext').oninput = e => { ans.free = e.target.value; };
+      document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
+    }
+
+    function toggleOption(qId, option, maxSelect, btn) {
+      const ans = appData.answers[qId];
+      const idx = ans.selected.indexOf(option);
+      if (idx > -1) { ans.selected.splice(idx, 1); updateScreen(); }
+      else if (ans.selected.length < maxSelect) { ans.selected.push(option); updateScreen(); }
+      else showToast(`えらべるのは ${maxSelect}つ までだよ！`);
+    }
+
+    function nextStep() { if (appData.step < 8) { appData.step++; updateScreen(); } }
+    function prevStep() { if (appData.step > 1) { appData.step--; updateScreen(); } }
+
+    function renderWritingScreen() {
+      const memo = document.getElementById('memo-content');
+      memo.innerHTML = '';
+      questionsData.forEach(q => {
+        const ans = appData.answers[q.id];
+        if (!ans.selected.length && !ans.free.trim()) return;
+        const div = document.createElement('div');
+        div.className = "bg-white p-3 rounded-2xl shadow-sm border border-gray-100 mb-2";
+        div.innerHTML = `<h4 class="font-bold text-gray-800 text-sm mb-1">${parseRuby(q.title)}</h4>`;
+        if (ans.selected.length) div.innerHTML += `<div class="flex flex-wrap gap-1">${ans.selected.map(s => `<span class="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded">${parseRuby(s)}</span>`).join('')}</div>`;
+        if (ans.free.trim()) div.innerHTML += `<p class="text-gray-600 text-xs mt-1 border-l-2 border-orange-200 pl-2">${ans.free}</p>`;
+        memo.appendChild(div);
+      });
+    }
+
+    function useMagicWand() {
+      const editor = document.getElementById('story-editor');
+      const text = "（ここに下書きを入力）\n\nしつもんに答えた内容を参考にしてお話を書いてみよう！";
+      editor.value = text;
+      showToast("🪄 下書きを作ったよ！");
+    }
+
+    let pagesData = [];
+    let currentPageIndex = 0;
+    let currentTheme = 'classic';
+
+    function setTheme(theme) { currentTheme = theme; createPreviewPages(); }
+
+    function createPreviewPages() {
+      const title = document.getElementById('story-title').value || '無題';
+      const text = document.getElementById('story-editor').value || '';
+      const author = document.getElementById('story-author').value || '';
+      pagesData = [`<div class="text-center mb-4"><h1 class="text-2xl font-bold">${parseRuby(title)}</h1><p class="text-right text-sm">なまえ：${parseRuby(author)}</p></div><div>${text.replace(/\n/g, '<br>')}</div>`];
+      showPage(0);
+    }
+
+    function showPage(idx) {
+      if (!pagesData.length) return;
+      currentPageIndex = idx;
+      document.getElementById('preview-content').innerHTML = pagesData[idx];
+      document.getElementById('page-indicator').innerText = `${idx + 1} / ${pagesData.length} ページ`;
+    }
+
+    function nextPage() { if (currentPageIndex < pagesData.length - 1) showPage(currentPageIndex + 1); }
+    function prevPage() { if (currentPageIndex > 0) showPage(currentPageIndex - 1); }
+
+    function printStory() { window.print(); }
+    function openChecklist() { document.getElementById('modal-checklist').classList.remove('hidden'); }
+    function closeChecklist() { document.getElementById('modal-checklist').classList.add('hidden'); }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.replace('opacity-0', 'opacity-100');
+      setTimeout(() => toast.classList.replace('opacity-100', 'opacity-0'), 2500);
+    }
+
+    function toggleDictation(id, btn) { showToast("音声入力は準備中だよ！"); }
+    </script>
+</body>
+
+</html>

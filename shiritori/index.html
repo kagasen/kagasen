@@ -1062,7 +1062,7 @@
       { r: 'くさ', w: '草', m: '地面に生える植物。' },
       { r: 'くさり', w: '鎖', m: '金属の輪をつなげたもの。チェーン。' },
       { r: 'くし', w: '櫛', m: '髪をとかす道具。' },
-      { r: 'くじ', w: '鯨', m: '海に住む巨大な哺乳類。' },
+      { r: 'くじら', w: 'クジラ', m: '海に住む巨大な哺乳類。' },
       { r: 'くじゃく', w: '孔雀', m: '美しい羽を広げる鳥。' },
       { r: 'くすり', w: '薬', m: '病気を治すもの。' },
       { r: 'くせ', w: '癖', m: '無意識にしてしまう習慣。' },
@@ -1099,6 +1099,7 @@
       { r: 'くしゃみ', w: 'くしゃみ', m: '鼻がむずむずして息が激しく出ること。' },
       { r: 'くじょう', w: '苦情', m: '不満や文句を相手に伝えること。' },
       { r: 'くじびき', w: 'くじ引き', m: 'くじを引いて当たり外れを決めること。' },
+      
       { r: 'くず', w: '屑', m: '役に立たなくなった細かいゴミ。' },
       { r: 'くずれる', w: '崩れる', m: 'まとまっていたものが壊れて落ちること。' },
       { r: 'くせげ', w: '癖毛', m: '生まれつき縮れたり曲がったりしている髪の毛。' },
@@ -5133,6 +5134,7 @@
       { r: 'るかりお', w: 'ルカリオ', m: 'ポケモンの仲間。青い体で、相手の気持ちを感じ取ることができる。' },
       { r: 'るーびっくきゅーぶ', w: 'ルービックキューブ', m: 'バラバラの色を回して、６つの面の色を全部そろえるパズル。' },
       { r: 'るーぷたい', w: 'ループタイ', m: 'ひもを金ぐで止める、おしゃれなネクタイ。' },
+      { r: 'るんば', w: 'ルンバ', m: '自動掃除機' },
       { r: 'れ', w: 'レ', m: '音の名前。' },
       { r: 'れい', w: '礼', m: 'お辞儀。お礼。' },
       { r: 'れいがい', w: '例外', m: '特別あつかい。' },
@@ -5762,6 +5764,35 @@
         return "まさかここまでとは...次は負けるかもしれん。";
       };
 
+      /* ----- ピラミッドランク判定 ----- */
+      const getPyramidRank = (s) => {
+        if (s >= 300) return "神";
+        if (s >= 200) return "伝説";
+        if (s >= 150) return "仙人";
+        if (s >= 125) return "達人";
+        if (s >= 100) return "名人";
+        if (s >=  75) return "プロ";
+        if (s >=  50) return "エース";
+        if (s >=  30) return "上級者";
+        if (s >=  10) return "中級者";
+        if (s >=   5) return "初級者";
+        return "見習い";
+      };
+
+      const PYRAMID_RANKS = [
+        { label:"神",   min:300 },
+        { label:"伝説", min:200 },
+        { label:"仙人", min:150 },
+        { label:"達人", min:125 },
+        { label:"名人", min:100 },
+        { label:"プロ", min: 75 },
+        { label:"エース", min:50 },
+        { label:"上級者", min:30 },
+        { label:"中級者", min:10 },
+        { label:"初級者", min: 5 },
+        { label:"見習い", min: 0 },
+      ];
+
       const generateHint = (targetChar, history) => {
         const used = new Set(history.map(h => h.reading));
         const cands = DICTIONARY.filter(item =>
@@ -6253,6 +6284,12 @@
                   <p className="text-white/80 text-sm font-bold">回連続成功</p>
                 </div>
 
+                {/* ピラミッドランク表示 */}
+                <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 rounded-2xl px-4 py-2 shadow-[0_0_25px_rgba(248,250,252,0.7)] text-center w-full max-w-xs border border-white/70">
+                  <p className="text-xs font-bold text-white/90 tracking-widest mb-1">あなたのランク</p>
+                  <p className="text-3xl font-black text-white drop-shadow-md">{getPyramidRank(score)}</p>
+                </div>
+
                 <div className="bg-white rounded-2xl p-3 shadow-xl border-4 border-white/40 w-full max-w-xs text-center">
                   <p className="text-indigo-900 font-black text-sm">{getMajinEndMessage(score)}</p>
                   <p className="text-red-600 text-xs font-bold mt-1 bg-red-50 rounded-lg py-1 px-2">{gameOverReason}</p>
@@ -6294,6 +6331,39 @@
                     </div>
                   </div>
                 )}
+
+                {/* ピラミッドランク一覧（スクロール可） */}
+                <div className="bg-black/25 backdrop-blur-sm rounded-2xl p-4 border border-white/20 max-h-64 overflow-y-auto">
+                  <p className="text-white font-bold text-xs mb-2 flex items-center gap-2">
+                    <Crown size={13} className="text-yellow-300"/> ピラミッドランク
+                  </p>
+                  <div className="flex flex-col-reverse gap-1 mt-1">
+                    {PYRAMID_RANKS.slice().reverse().map((rank, idx) => {
+                      const current = getPyramidRank(score) === rank.label;
+                      return (
+                        <div
+                          key={idx}
+                          className={
+                            "flex items-center justify-between rounded-xl px-3 py-1.5 text-xs " +
+                            (current
+                              ? "bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-slate-900 font-black shadow-[0_0_20px_rgba(251,191,36,0.9)]"
+                              : "bg-white/10 text-white/80")
+                          }
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: `rgba(248, 250, 252, ${0.2 + idx * 0.06})` }}
+                            />
+                            <span className="text-sm">{rank.label}</span>
+                          </span>
+                          <span className="text-[0.6rem]">
+                            {rank.min}pt 以上
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 <div className="flex flex-col gap-2.5">
                   <button onClick={() => setGameState('review')}
@@ -6361,6 +6431,10 @@
                   </div>
                   <p className="text-7xl font-black text-white drop-shadow-lg">{score}</p>
                   <p className="text-white/70 text-lg mt-1">回連続成功</p>
+                  <div className="mt-4 inline-block bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 rounded-2xl px-4 py-2 shadow-[0_0_25px_rgba(248,250,252,0.7)] border border-white/70">
+                    <p className="text-[0.65rem] font-bold text-white/90 tracking-widest mb-1">あなたのランク</p>
+                    <p className="text-2xl md:text-3xl font-black text-white drop-shadow-md">{getPyramidRank(score)}</p>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-3">
                   <button onClick={() => setGameState('review')}

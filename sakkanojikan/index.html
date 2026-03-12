@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>作家の時間</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        /* === アプリ専用のスタイル（他の要素に干渉しないように #sakka-app に限定） === */
+        #sakka-app {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #FFF9E6;
+            background-image: radial-gradient(#FDE68A 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #333;
+            touch-action: manipulation;
+        }
+
+        #sakka-app .btn-bounce {
+            transition: all 0.15s ease;
+        }
+
+        #sakka-app .btn-bounce:active {
+            transform: scale(0.95);
+        }
+
+        /* スクロールバーのカスタマイズ */
+        #sakka-app ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sakka-app ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sakka-app ::-webkit-scrollbar-thumb {
+            background: #FCD34D;
+            border-radius: 4px;
+        }
+
+        #sakka-app ::-webkit-scrollbar-thumb:hover {
+            background: #F59E0B;
+        }
+
+        @keyframes sakka-pop {
+            0% {
+                transform: scale(0.9);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #sakka-app .chip-selected {
+            animation: sakka-pop 0.2s ease-out forwards;
+        }
+
+        /* === ふりがな（ルビ）のバランス調整 === */
+        #sakka-app ruby {
+            ruby-align: center;
+        }
+
+        #sakka-app rt {
+            font-size: 0.65em;
+            color: #666;
+        }
+
+        /* === 本のデザイン（テーマ）10種類 === */
+        .sakka-theme-classic {
+            background-color: #fdf6e3;
+            color: #333;
+            border: 8px double #d4a373;
+            font-family: serif;
+        }
+
+        .sakka-theme-magic {
+            background-color: #1e1b4b;
+            color: #e0e7ff;
+            border: 4px dashed #fcd34d;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .sakka-theme-forest {
+            background-color: #f0fdf4;
+            color: #14532d;
+            border: 12px solid #86efac;
+            border-radius: 20px;
+        }
+
+        .sakka-theme-notebook {
+            background-color: #ffffff;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-left: 20px solid #fca5a5;
+            border-radius: 4px;
+        }
+
+        .sakka-theme-antique {
+            background-color: #fef3c7;
+            color: #451a03;
+            border: 10px solid #78350f;
+            outline: 2px solid #fef3c7;
+            outline-offset: -8px;
+            font-family: serif;
+        }
+
+        .sakka-theme-ocean {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 8px dashed #38bdf8;
+            border-radius: 12px;
+        }
+
+        .sakka-theme-sunset {
+            background: linear-gradient(to bottom, #fff7ed, #ffedd5, #fed7aa);
+            color: #9a3412;
+            border: 8px solid #ea580c;
+            border-radius: 8px;
+        }
+
+        .sakka-theme-sakura {
+            background-color: #fdf2f8;
+            color: #9d174d;
+            border: 6px solid #f9a8d4;
+            border-radius: 16px;
+        }
+
+        .sakka-theme-space {
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 4px solid #475569;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .sakka-theme-monochrome {
+            background-color: #f8fafc;
+            color: #0f172a;
+            border: 12px solid #334155;
+            font-family: serif;
+        }
+
+        /* === 印刷用のスタイル === */
+        #sakka-print-area {
+            display: none;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body {
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            #sakka-app {
+                display: none !important;
+            }
+
+            #sakka-print-area {
+                display: block !important;
+                width: 100%;
+            }
+
+            .sakka-print-page {
+                width: 100%;
+                /* ページいっぱいまで枠を広げるため、高さをギリギリまで拡張 */
+                min-height: 99.5vh;
+                page-break-after: always;
+                page-break-inside: avoid;
+                overflow: hidden;
+                margin: 0 auto;
+                box-sizing: border-box;
+                position: relative;
+            }
+
+            .sakka-print-page:last-child {
+                page-break-after: auto; /* 最後のページの後は改ページしないことで白紙を防ぐ */
+            }
+
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <div id="sakka-app" class="relative w-full min-h-screen h-full flex flex-col">
+
+        <!-- ================== トップ画面 ================== -->
+        <div id="sakka-screen-start" class="flex-grow flex flex-col items-center justify-center p-4">
+            <div
+                class="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl text-center max-w-lg w-full border-4 border-orange-200">
+                <div class="text-6xl mb-4">📖✍️</div>
+                <h1
+                    class="text-4xl md:text-5xl font-extrabold text-orange-500 mb-6 drop-shadow-sm tracking-wide leading-normal">
+                    <ruby>作家<rt>さっか</rt></ruby>の<ruby>時間<rt>じかん</rt></ruby>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-700 mb-10 font-bold leading-relaxed">
+                    キミだけのオリジナルストーリーを<br><ruby>作<rt>つく</rt></ruby>ってみよう！
+                </p>
+                <button onclick="sakka_startApp()"
+                    class="btn-bounce w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xl md:text-2xl font-extrabold py-5 px-10 rounded-full shadow-lg hover:shadow-xl hover:from-orange-500 hover:to-orange-600 border-b-4 border-orange-600 active:border-b-0 active:translate-y-1 leading-normal">
+                    <span><ruby>書<rt>か</rt></ruby>き<ruby>始<rt>はじ</rt></ruby>める ✨</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================== 質問画面 ================== -->
+        <div id="sakka-screen-question"
+            class="hidden flex-grow flex flex-col p-2 md:p-4 lg:p-6 max-w-4xl mx-auto w-full h-full">
+            <div
+                class="mb-2 md:mb-4 flex justify-between items-center text-sm md:text-base font-bold text-gray-500 bg-white py-2 px-4 rounded-full shadow-sm">
+                <span id="sakka-q-progress" class="tracking-widest">1 / 6</span>
+                <span id="sakka-q-badge"
+                    class="px-4 py-1 rounded-full text-sm md:text-base font-bold shadow-inner">はじめ</span>
+            </div>
+
+            <div
+                class="bg-white p-4 md:p-6 rounded-3xl shadow-md border-2 border-orange-100 flex-grow flex flex-col overflow-y-auto relative">
+                <div class="mb-4">
+                    <h2 id="sakka-q-title"
+                        class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2 leading-relaxed block">どんな主人公？</h2>
+                    <p id="sakka-q-desc" class="text-gray-600 font-bold text-sm md:text-base leading-relaxed block">
+                        5つまでえらんでね！</p>
+                </div>
+
+                <div class="mb-4 bg-gray-50 p-3 md:p-5 rounded-2xl border border-gray-100">
+                    <div id="sakka-q-options" class="flex flex-wrap justify-center gap-2 md:gap-3">
+                        <!-- JSで動的生成 -->
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="block text-gray-700 font-bold mb-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-orange-500 flex-shrink-0">
+                                <path
+                                    d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                                <path d="m15 5 4 4" />
+                            </svg>
+                            <span class="leading-relaxed"><ruby>自由<rt>じゆう</rt></ruby>に<ruby>書<rt>か</rt>
+                                    </ruby>いてもいいよ！</span>
+                        </div>
+                    </div>
+                    <textarea id="sakka-q-freetext"
+                        class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-2xl focus:border-orange-400 focus:ring-4 focus:ring-orange-100 focus:outline-none resize-none transition-all font-medium text-gray-700 text-sm md:text-base"
+                        rows="2" placeholder="思（おも）いついたことを自由（じゆう）に書いてみよう！"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-3 gap-3 pb-2">
+                <button onclick="sakka_prevStep()" id="sakka-btn-prev"
+                    class="btn-bounce bg-white text-gray-600 font-bold py-3 md:py-4 px-6 md:px-8 rounded-full shadow-sm border-2 border-gray-200 hover:bg-gray-50 flex-1 md:flex-none text-center">
+                    もどる
+                </button>
+                <button onclick="sakka_nextStep()"
+                    class="btn-bounce bg-orange-500 text-white font-extrabold py-3 md:py-4 px-8 md:px-12 rounded-full shadow-md hover:bg-orange-600 border-b-4 border-orange-700 active:border-b-0 active:translate-y-1 flex-1 md:flex-none text-center text-lg">
+                    つぎへ ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- ================== 執筆画面 ================== -->
+        <div id="sakka-screen-writing"
+            class="hidden flex-grow flex flex-col p-2 md:p-6 lg:p-8 max-w-7xl mx-auto w-full h-auto min-h-screen md:h-screen md:min-h-0 md:overflow-hidden">
+
+            <div
+                class="flex justify-between items-center mb-4 bg-white p-3 md:p-4 rounded-2xl shadow-sm overflow-x-auto">
+                <h2
+                    class="text-xl md:text-3xl font-extrabold text-gray-800 flex items-center gap-2 flex-shrink-0 mr-4 leading-relaxed">
+                    <span>📝</span>
+                    <span>お<ruby>話<rt>はなし</rt></ruby>を<ruby>書<rt>か</rt></ruby>こう！</span>
+                </h2>
+                <div class="flex gap-2 flex-shrink-0">
+                    <button onclick="sakka_openChecklist()"
+                        class="btn-bounce bg-green-500 text-white font-bold py-2 px-3 md:px-6 rounded-full shadow hover:bg-green-600 text-sm md:text-base flex items-center gap-2 border-b-4 border-green-700 active:border-b-0 active:translate-y-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <path d="m9 15 2 2 4-4" />
+                        </svg>
+                        <span class="hidden md:inline leading-none">ふり<ruby>返<rt>かえ</rt></ruby>り</span><span
+                            class="leading-none">チェック</span>
+                    </button>
+                    <button onclick="sakka_finishStory()"
+                        class="btn-bounce bg-yellow-400 text-yellow-900 font-extrabold py-2 px-4 md:px-8 rounded-full shadow-md hover:bg-yellow-500 text-sm md:text-lg flex items-center gap-1 border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1">
+                        ✨ 完成！
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 flex-grow md:overflow-hidden">
+
+                <!-- 左側：設定の確認 -->
+                <div
+                    class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-3xl shadow-sm border-2 border-orange-100 flex flex-col h-40 md:h-full flex-shrink-0">
+                    <div class="bg-orange-50 p-3 rounded-t-3xl border-b border-orange-100">
+                        <h3
+                            class="font-bold text-base md:text-lg text-orange-700 flex items-center gap-1 leading-relaxed">
+                            <span>🔍</span>
+                            <span>キミが<ruby>考<rt>かんが</rt></ruby>えたこと</span>
+                        </h3>
+                    </div>
+                    <div id="sakka-memo-content" class="flex-grow overflow-y-auto p-4 space-y-5 text-sm md:text-base">
+                        <!-- JSで動的生成 -->
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-b-3xl border-t border-gray-100 flex flex-col gap-2">
+                        <button onclick="sakka_useMagicWand()"
+                            class="btn-bounce w-full bg-purple-500 text-white font-bold py-3 px-2 rounded-xl shadow hover:bg-purple-600 text-xs md:text-sm flex items-center justify-center gap-1 border-b-4 border-purple-700 active:border-b-0 active:translate-y-1 leading-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="flex-shrink-0">
+                                <path
+                                    d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z" />
+                                <path d="m14 7 3 3" />
+                                <path d="M5 6v4" />
+                                <path d="M19 14v4" />
+                                <path d="M10 2v2" />
+                                <path d="M7 8H3" />
+                                <path d="M21 16h-4" />
+                                <path d="M11 3H9" />
+                            </svg>
+                            <span>まほうのステッキで<ruby>下書<rt>したが</rt></ruby>き</span>
+                        </button>
+                        <button onclick="sakka_appData.step = 1; sakka_updateScreen();"
+                            class="btn-bounce w-full bg-white text-gray-600 font-bold py-2 px-2 rounded-xl shadow-sm border-2 border-gray-200 hover:bg-gray-100 text-xs md:text-sm flex items-center justify-center gap-1 transition-colors active:translate-y-1">
+                            <span>🔄 もう<ruby>一度<rt>いちど</rt></ruby><ruby>考<rt>かんが</rt></ruby>える</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右側：エディタ -->
+                <div
+                    class="w-full md:w-2/3 lg:w-3/4 flex flex-col min-h-[60vh] md:min-h-0 md:h-full bg-white rounded-3xl shadow-sm border-2 border-gray-200 overflow-hidden">
+                    <div class="flex flex-col">
+                        <input type="text" id="sakka-story-title" placeholder="お話（はなし）のタイトル"
+                            class="text-xl md:text-3xl font-extrabold p-4 md:p-6 pb-2 border-b border-dashed border-gray-300 focus:bg-orange-50 focus:outline-none w-full text-center text-gray-800 placeholder-gray-300 transition-colors">
+                        <div
+                            class="flex justify-end items-center pr-4 md:pr-6 py-2 border-b-2 border-dashed border-gray-300 bg-gray-50 focus-within:bg-orange-50 transition-colors">
+                            <div class="flex items-center">
+                                <span class="text-gray-500 font-bold mr-2 text-sm md:text-base">なまえ：</span>
+                                <input type="text" id="sakka-story-author" placeholder="ここに入力"
+                                    class="text-base md:text-lg font-bold p-1 focus:outline-none bg-transparent text-gray-800 w-32 md:w-48 text-left">
+                            </div>
+                        </div>
+                    </div>
+                    <textarea id="sakka-story-editor" placeholder="ここにお話（はなし）を書いてね！&#13;&#10;左（ひだり）のメモを見ながら進めよう。"
+                        class="flex-grow w-full p-4 md:p-8 focus:outline-none resize-none text-base md:text-lg text-gray-700 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjQwIj48bGluZSB4MT0iMCIgeTE9IjM5IiB4Mj0iMTAwJSIgeTI9IjM5IiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==')] bg-local"
+                        style="line-height: 40px; background-size: 100% 40px;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== 完成画面（プレビュー＆印刷） ================== -->
+        <div id="sakka-screen-finish"
+            class="hidden flex-grow flex flex-col p-2 md:p-6 max-w-5xl mx-auto w-full h-full overflow-y-auto">
+            <h2
+                class="text-2xl md:text-4xl font-extrabold text-center text-orange-500 mb-6 drop-shadow-sm leading-relaxed">
+                <span>🎉</span> <span>キミのお<ruby>話<rt>はなし</rt></ruby>が<ruby>完成<rt>かんせい</rt></ruby>したよ！</span>
+            </h2>
+
+            <!-- デザイン選択 -->
+            <div class="mb-6">
+                <p class="text-center text-sm md:text-base font-bold text-gray-600 mb-3">本のデザインをえらんでね</p>
+                <div class="flex flex-wrap gap-3 justify-center px-2">
+                    <button onclick="sakka_setTheme('classic')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-orange-500 text-white border-orange-600 shadow-sm"
+                        data-theme="classic">📖 クラシック</button>
+                    <button onclick="sakka_setTheme('magic')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="magic">✨ ほしぞら魔法</button>
+                    <button onclick="sakka_setTheme('forest')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="forest">🌿 森の物語</button>
+                    <button onclick="sakka_setTheme('notebook')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="notebook">📓 かわいいノート</button>
+                    <button onclick="sakka_setTheme('antique')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="antique">🖼️ アンティーク</button>
+                    <button onclick="sakka_setTheme('ocean')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="ocean">🌊 海のぼうけん</button>
+                    <button onclick="sakka_setTheme('sunset')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="sunset">🌇 夕焼け空</button>
+                    <button onclick="sakka_setTheme('sakura')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="sakura">🌸 さくら色</button>
+                    <button onclick="sakka_setTheme('space')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="space">🚀 宇宙旅行</button>
+                    <button onclick="sakka_setTheme('monochrome')"
+                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        data-theme="monochrome">🎞️ モノクロ映画</button>
+                </div>
+            </div>
+
+            <!-- プレビュー本体 -->
+            <div class="flex-grow flex items-center justify-center relative px-8 md:px-12 my-4">
+                <button onclick="sakka_prevPage()"
+                    class="btn-bounce absolute left-0 z-10 p-2 md:p-4 bg-white/90 rounded-full shadow-lg text-xl md:text-2xl font-bold text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition-colors">◀</button>
+
+                <div id="sakka-preview-box"
+                    class="w-full max-w-[600px] aspect-[1/1.414] shadow-2xl relative transition-all duration-300 sakka-theme-classic mx-auto">
+                    <div id="sakka-preview-content"
+                        class="absolute inset-0 p-6 md:p-10 flex flex-col text-base md:text-lg leading-loose overflow-hidden break-words">
+                        <!-- JSでページの内容が入る -->
+                    </div>
+                </div>
+
+                <button onclick="sakka_nextPage()"
+                    class="btn-bounce absolute right-0 z-10 p-2 md:p-4 bg-white/90 rounded-full shadow-lg text-xl md:text-2xl font-bold text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition-colors">▶</button>
+            </div>
+
+            <div class="text-center mt-3 font-bold text-gray-500 text-sm md:text-base tracking-widest"
+                id="sakka-page-indicator">
+                1 / 1 ページ
+            </div>
+
+            <div class="flex justify-center items-center mt-6 gap-4 pb-10">
+                <button onclick="sakka_appData.step = 7; sakka_updateScreen();"
+                    class="btn-bounce bg-white text-gray-600 font-bold py-3 md:py-4 px-6 md:px-8 rounded-full shadow-sm border-2 border-gray-200 hover:bg-gray-50">
+                    もどる
+                </button>
+                <button onclick="sakka_printStory()"
+                    class="btn-bounce bg-blue-500 text-white font-extrabold py-3 md:py-4 px-10 md:px-14 rounded-full shadow-lg border-b-4 border-blue-700 hover:bg-blue-600 text-lg md:text-xl flex items-center gap-2 active:border-b-0 active:translate-y-1">
+                    🖨️ いんさつする
+                </button>
+            </div>
+        </div>
+
+        <!-- ページ計算用の隠しコンテナ -->
+        <div id="sakka-measure-container"
+            class="absolute opacity-0 pointer-events-none z-[-50] left-0 top-0 w-full flex justify-center px-8 md:px-12">
+            <div id="sakka-measure-box" class="w-full max-w-[600px] aspect-[1/1.414] relative sakka-theme-classic">
+                <div id="sakka-measure-content"
+                    class="absolute inset-0 p-6 md:p-10 flex flex-col text-base md:text-lg leading-loose overflow-hidden break-words">
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== 振り返りモーダル ================== -->
+        <div id="sakka-modal-checklist"
+            class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div
+                class="bg-white rounded-[2rem] p-6 md:p-8 max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl transform transition-all border-4 border-green-400">
+                <div class="flex-shrink-0">
+                    <h3
+                        class="text-2xl md:text-3xl font-extrabold text-green-600 mb-2 flex items-center gap-2 justify-center leading-relaxed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                        <span>ふり<ruby>返<rt>かえ</rt></ruby>りチェック</span>
+                    </h3>
+                    <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base text-center font-bold leading-relaxed">
+                        いい<ruby>作文<rt>さくぶん</rt></ruby>になっているか、たしかめてみよう！</p>
+                </div>
+
+                <div class="overflow-y-auto pr-2 mb-6 flex-grow space-y-6">
+                    <div class="space-y-3">
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">まちがえた<ruby>字
+                                    <rt>じ</rt></ruby>や、ぬけている<ruby>字<rt>じ</rt></ruby>はないかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span
+                                class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「　」（かぎかっこ）を<ruby>使
+                                    <rt>つか</rt></ruby>って、<ruby>会話文<rt>かいわぶん</rt></ruby>を<ruby>入<rt>い</rt>
+                                    </ruby>れているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span
+                                class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「〜です」「〜だ」などの<ruby>文
+                                    <rt>ぶん</rt></ruby>の<ruby>終<rt>お</rt></ruby>わり<ruby>方<rt>かた</rt>
+                                    </ruby>はそろっているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「、」や「。」は<ruby>読
+                                    <rt>よ</rt></ruby>みやすい<ruby>場所<rt>ばしょ</rt></ruby>にあるかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>気持<rt>きも
+                                    </rt></ruby>ちやようすがわかる<ruby>言葉<rt>ことば</rt></ruby>（ドキドキ、キラキラなど）を<ruby>使<rt>つか</rt>
+                                    </ruby>っているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">お<ruby>話<rt>はなし
+                                    </rt></ruby>がかわるところで、<ruby>行<rt>ぎょう</rt></ruby>をかえたり、マスをあけたりしているかな？（だんらく）</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">つなぐ<ruby>言葉<rt>
+                                        ことば</rt></ruby>（そして、しかし、など）を<ruby>使<rt>つか</rt></ruby>って、<ruby>文<rt>ぶん</rt>
+                                    </ruby>と<ruby>文<rt>ぶん</rt></ruby>をつないでいるかな？</span>
+                        </label>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4
+                            class="font-bold text-orange-600 border-b-2 border-orange-200 pb-1 mb-3 flex items-center gap-2 text-lg leading-relaxed">
+                            🌟 <span><ruby>上級者編<rt>じょうきゅうしゃへん</rt></ruby></span>
+                        </h4>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">その<ruby>場所<rt>
+                                        ばしょ</rt></ruby>のけしきを、<ruby>色<rt>いろ</rt></ruby>もまじえて<ruby>書<rt>か</rt>
+                                    </ruby>いているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>主人公<rt>
+                                        しゅじんこう</rt></ruby>の<ruby>気持<rt>きも</rt></ruby>ちがかわったきっかけを、くわしく<ruby>書<rt>か</rt>
+                                    </ruby>いているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">においや、さわった<ruby>感
+                                    <rt>かん</rt></ruby>じなど、いろいろな<ruby>感覚<rt>かんかく</rt></ruby>を<ruby>言葉<rt>ことば</rt>
+                                    </ruby>にしているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">お<ruby>話<rt>はなし
+                                    </rt></ruby>の<ruby>始<rt>はじ</rt></ruby>まりから<ruby>終<rt>お</rt></ruby>わりまで、<ruby>順番<rt>
+                                        じゅんばん</rt></ruby>がわかりやすくつながっているかな？</span>
+                        </label>
+                        <label
+                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
+                            <input type="checkbox"
+                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
+                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>読<rt>よ
+                                    </rt></ruby>む<ruby>人<rt>ひと</rt></ruby>がワクワクしたり、びっくりしたりするような<ruby>工夫<rt>くふう</rt>
+                                    </ruby>があるかな？</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="text-center flex-shrink-0">
+                    <button onclick="sakka_closeChecklist()"
+                        class="btn-bounce bg-green-500 text-white font-extrabold py-4 px-10 rounded-full shadow-lg hover:bg-green-600 w-full text-lg border-b-4 border-green-700 active:border-b-0 active:translate-y-1">
+                        チェックおわり！ 👍
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- シンプルな通知用トースト -->
+        <div id="sakka-toast"
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none z-50 font-bold">
+            メッセージ
+        </div>
+
+    </div>
+
+    <!-- ================== 印刷用エリア ================== -->
+    <div id="sakka-print-area">
+        <!-- JSでここに印刷用のページが生成されます -->
+    </div>
+
+    <script>
+        // === グローバル汚染を防ぐためのプレフィックス付き変数・関数 ===
+
+        // --- ふりがな（ルビ）変換用の関数 ---
+        function sakka_parseRuby(str) {
+            return str.replace(/\[(.+?):(.+?)\]/g, "<ruby>$1<rt>$2</rt></ruby>");
+        }
+
+        function sakka_stripRuby(str) {
+            return str.replace(/\[(.+?):(.+?)\]/g, "$1");
+        }
+
+        // --- データ定義 ---
+        const sakka_protagonistOptions = [
+            "つよい[勇者:ゆうしゃ]", "おくびょうなまほう[使:つか]い", "おしゃべりな[猫:ねこ]", "[空:そら]をとぶペンギン", "わすれんぼうのおじいちゃん",
+            "[天才:てんさい][発明家:はつめいか]", "おこりんぼうのドラゴン", "なきむしのおひめ[様:さま]", "[足:あし]が[速:はや]いカメ", "とうめい[人間:にんげん]",
+            "[歌:うた]が[上手:じょうず]なカエル", "うちゅうから[来:き]たエイリアン", "[未来:みらい]から[来:き]たロボット", "まほうのじゅうたん", "やさしいおばけ",
+            "いたずら[好:す]きのようせい", "おっちょこちょいなたんてい", "[力持:ちからも]ちのクマ", "はずかしがりやのウサギ", "[物知:ものし]りなフクロウ",
+            "りょうりがとくいなブタ", "おどるガイコツ", "ねむってばかりのライオン", "へんしんできるタヌキ", "うそつきなキツネ",
+            "みんなの[味方:みかた]", "わるいボスの", "たからをさがす[海:うみ]ぞく", "[空:そら]の[上:うえ]の[神様:かみさま]", "[海:うみ]のそこの[人魚:にんぎょ]",
+            "いつもはらペコなオオカミ", "きかいが[好:す]きな[少年:しょうねん]", "[本:ほん]を[読:よ]むのが[好:す]きな[少女:しょうじょ]", "スポーツがとくいな[転校生:てんこうせい]", "おばけが[見:み]えるお[坊:ぼう]さん",
+            "[時間:じかん]を[止:と]められる[時計屋:とけいや]", "[星:ほし]を[食:た]べるバク", "にじ[色:いろ]の[鳥:とり]", "お[金持:かねも]ちのニワトリ", "びんぼうな[王子様:おうじさま]",
+            "おかしでできた[雪:ゆき]だるま", "[火:ひ]をあやつる[人:ひと]", "[氷:こおり]のま[女:じょ]", "[言葉:ことば]を[話:はな]す[剣:けん]", "[空:そら]をとぶほうき",
+            "かげが[動:うご]くにんじゃ", "[雲:くも]にのる[神様:かみさま]", "とても[大:おお]きなクジラ", "[小:ちい]さなアリの[王様:おうさま]", "ふつうの[小学生:しょうがくせい]",
+            "[魔法:まほう]のリンゴ", "さすらいの[剣士:けんし]", "おんがくが[好:す]きなクマ", "にじ[色:いろ]のチョウ", "うたう[花:はな]",
+            "[元気:げんき]な[子犬:こいぬ]", "はずかしがりやのオバケ", "[空:そら]とぶサカナ", "ものしりなカメ", "ロボットの[犬:いぬ]",
+            "いたずらな[子猫:こねこ]", "おこりんぼうの[星:ほし]", "[氷:こおり]の[妖精:ようせい]", "火をはくトカゲ", "おかしが[好:す]きな[王様:おうさま]",
+            "[勇気:ゆうき]ある[村人:むらびと]", "おどり[子:こ]のウサギ", "なぞの[忍者:にんじゃ]", "ふしぎな[魔法使:まほうつか]い", "わんぱくな[子ザル:こざる]"
+        ];
+
+        const sakka_timeOptions = [
+            "むかしむかし", "ある[晴:は]れた[日:ひ]の[朝:あさ]", "[真夜中:まよなか]", "[夕:ゆう]やけ[空:そら]の[下:した]", "[夏休:なつやす]みの[最後:さいご]の[日:ひ]",
+            "3000[年:ねん]の[未来:みらい]", "100[年:ねん][前:まえ]のむかし", "[雨:あめ]がふる[夜:よる]", "あらしの[日:ひ]", "[春:はる]のポカポカした[日:ひ]",
+            "[雪:ゆき]がしんしんとふる[日:ひ]", "[時計:とけい]が12[時:じ]を[打:う]った[時:とき]", "[学校:がっこう]の[帰:かえ]り[道:みち]", "だれも[起:お]きていない[時間:じかん]", "ゆめの[中:なか]",
+            "[朝日:あさひ]がのぼるころ", "おやつの[時間:じかん]", "[星:ほし]が[流:なが]れた[夜:よる]", "[日:ひ]が[暮:く]れるころ", "お[昼:ひる]ごはんのあと",
+            "にじが[出:で]た[時:とき]", "[雷:かみなり]がなった[日:ひ]", "[春:はる]の[風:かぜ]がふく[日:ひ]", "[夏:なつ]のあつい[日:ひ]", "[秋:あき]の[夕暮:ゆうぐ]れ",
+            "[冬:ふゆ]のさむい[朝:あさ]", "[時計:とけい]がとまった[時:とき]", "[満月:まんげつ]の[夜:よる]", "[朝:あさ]つゆがひかるころ", "みんながねずまったころ",
+            "お[祭:まつ]りの[日:ひ]", "たんじょう[日:ひ]の[朝:あさ]", "はじめて[雪:ゆき]がふった[日:ひ]", "とおくでサイレンがなった[時:とき]", "かぜが[強:つよ]くふく[日:ひ]"
+        ];
+
+        const sakka_placeOptions = [
+            "だれもいない[島:しま]", "まほうの[森:もり]", "うちゅう[船:せん]の[中:なか]", "[近所:きんじょ]の[公園:こうえん]", "おかしの[家:いえ]",
+            "[深:ふか]い[海:うみ]のそこ", "[空:そら]にうかぶお[城:しろ]", "ひみつの[地下室:ちかしつ]", "[古:ふる]い[図書館:としょかん]", "おばけ[屋敷:やしき]",
+            "キラキラ[光:ひか]るどうくつ", "[雲:くも]の[上:うえ]", "かがみの[中:なか]の[世界:せかい]", "きょうりゅうがいるジャングル", "いつもの[教室:きょうしつ]",
+            "[山:やま]のてっぺん", "ふかい[谷底:たにぞこ]", "お[花畑:はなばたけ]", "[秘密:ひみつ]の[基地:きち]", "[砂漠:さばく]の[真:ま]ん[中:なか]",
+            "にじの[橋:はし]の[上:うえ]", "[月:つき]の[世界:せかい]", "[地下:ちか]のめいろ", "[魔法:まほう]のがっこう", "おもちゃの[国:くに]",
+            "[火:か]ざんの[中:なか]", "[氷:こおり]のお[城:しろ]", "きのこの[森:もり]", "[空:そら]とぶ[船:ふね]の[中:なか]", "まっくらなトンネル",
+            "[川:かわ]のほとり", "[海:うみ]の[上:うえ]の[小:ちい]さな[島:しま]", "おんがくの[町:まち]", "[星:ほし]がふってくる[丘:おか]", "だれもいない[遊園地:ゆうえんち]"
+        ];
+
+        const sakka_eventOptions = [
+            "[大切:たいせつ]な[宝物:たからもの]を[落:お]とした", "まいごになった", "[空:そら]からUFOが[落:お]ちてきた", "きょうりゅうが[生:い]き[返:かえ]った", "まほうの[力:ちから]にめざめた",
+            "[友:とも]だちと[大:おお]げんかした", "ふしぎなドアを[見:み]つけた", "かいじゅうが[町:まち]にやってきた", "とうめいになってしまった", "タイムスリップした",
+            "[大切:たいせつ]な[人:ひと]がさらわれた", "しゃべる[動物:どうぶつ]に出[会:あ]った", "[宝:たから]の[地図:ちず]をひろった", "[大雨:おおあめ]で[家:いえ]が[流:なが]されそうになった", "だれもいない[町:まち]にまよいこんだ",
+            "[空:そら]をとべるようになった", "どうぶつと[話:はな]せるようになった", "ふしぎなボタンをおした", "おおきな[卵:たまご]を[見:み]つけた", "かげがにげだした",
+            "[時計:とけい]の[針:はり]がぎゃくに[回:まわ]った", "にじの[色:いろ]がきえた", "おもちゃが[動:うご]き[出:だ]した", "まっくらやみになった", "おおきな[穴:あな]におちた",
+            "とつぜん[体:からだ]が[小:ちい]さくなった", "なぞの手紙がとどいた", "[魔法:まほう]のつえが[折:お]れた", "[風:かぜ]に[飛:と]ばされた", "ふしぎな[音:おと]が聞こえた",
+            "たいせつな[約束:やくそく]をわすれた", "ともだちが[姿:すがた]をけした", "あやしい[影:かげ]を[見:み]た", "たから[箱:ばこ]があかない", "[空:そら]から[星:ほし]がふってきた"
+        ];
+
+        const sakka_solutionOptions = [
+            "[友:とも]だちと[力:ちから]をあわせて[助:たす]かった", "ひらめきでピンチをぬけ[出:だ]した", "ぐうぜんが[重:かさ]なってうまく[行:い]った", "ゆう[気:き]を[出:だ]してたたかった", "まほうのアイテムを[使:つか]った",
+            "よく[話:はな]し[合:あ]ってなかなおりした", "にげ[出:だ]して[助:たす]かった", "だれかが[助:たす]けてくれた", "おもしろいギャグで[笑:わら]わせた", "わなをしかけてつかまえた",
+            "[歌:うた]を[歌:うた]ってかいけつした", "なみだを[流:なが]したらきせきが[起:お]きた", "あきらめずに[最後:さいご]までがんばった", "わるい[人:ひと]を[止:と]めた", "じつは[全部:ぜんぶ]ゆめだった",
+            "[魔法:まほう]の[言葉:ことば]をとなえた", "みんなで[歌:うた]をうたった", "おおきな[声:こえ]でさけんだ", "かくし[持:も]っていたアイテムを[使:つか]った", "すばやい[動:うご]きでよけた",
+            "[知恵:ちえ]をふりしぼった", "なぞなぞに[正解:せいかい]した", "ごめんなさいとあやまった", "おもしろい[踊:おど]りをした", "[涙:なみだ]で[氷:こおり]をとかした",
+            "やさしい[心:こころ]でつつみこんだ", "あきらめずに[走:はし]りつづけた", "ともだちを[信:しん]じた", "[新:あたら]しい[魔法:まほう]をおぼえた", "たいせつな[思:おも]い[出:で]をはなした",
+            "えがおでピンチをのりこえた", "[勇気:ゆうき]の[剣:けん]をふりかざした", "[動物:どうぶつ]たちがたすけてくれた", "[光:ひかり]の[道:みち]があらわれた", "じつはちっともこわくなかった"
+        ];
+
+        const sakka_endingOptions = [
+            "とてもハッピーな[気持:きも]ちになった", "[少:すこ]し[大人:おとな]になった[気:き]がした", "また[新:あたら]しいぼうけんに[出:で]たくなった", "ほっと[安心:あんしん]した", "ちょっと[悲:かな]しいけれど[前:まえ]を[向:む]いた",
+            "[家族:かぞく]のあたたかさを[知:し]った", "[友:とも]だちの[大切:たいせつ]さに[気:き]づいた", "いつもの[毎日:まいにち]がもどってきた", "つぎのなぞがのこった", "ひみつはだれにも[言:い]わないことにした",
+            "みんながえがおになった", "ゆめに[向:む]かって[走:はし]り[出:だ]した", "[大:おお]きな[声:こえ]で[笑:わら]った", "[星空:ほしぞら]を[見上:みあ]げてちかった", "そしてだれもいなくなった",
+            "[次:つぎ]の[日:ひ]から[何:なに]かがかわった", "ずっと[忘:わす]れない[思:おも]い[出:で]になった", "[空:そら]の[上:うえ]から[見守:みまも]ることにした", "[魔法:まほう]の[力:ちから]はきえてしまった", "みんなでパーティーをした",
+            "あしたもきっといい[日:ひ]になる", "お[腹:なか]がいっぱいになった", "またひとつ[年:とし]をとった", "ふしぎな[夢:ゆめ]からさめた", "[誰:だれ]も[知:し]らない[秘密:ひみつ]のまま",
+            "[宝物:たからもの]はずっと[心:こころ]の[中:なか]に", "[新:あたら]しい[友:とも]だちができた", "そして[夜:よる]が明けた", "いつもの[笑顔:えがお]がもどった", "[遠:とお]くから[歌:うた]が聞こえた",
+            "[風:かぜ]がやさしくふいた", "どこかへ[旅立:たびだ]っていった", "にじの[橋:はし]をわたった", "ほんの[少:すこ]し[勇気:ゆうき]がもてた", "これからもぼうけんはつづく"
+        ];
+
+        const sakka_questionsData = [
+            { id: 'protagonist', badge: 'はじめ', title: 'どんな[主人公:しゅじんこう]？', desc: '[主人公:しゅじんこう]のイメージを5つまでえらんでね！', maxSelect: 5, options: sakka_protagonistOptions },
+            { id: 'time', badge: 'はじめ', title: 'いつのお[話:はなし]？', desc: 'お[話:はなし]の[始:はじ]まりはいつだろう？3つまでえらべるよ。', maxSelect: 3, options: sakka_timeOptions },
+            { id: 'place', badge: 'はじめ', title: '[場所:ばしょ]はどこ？', desc: 'お[話:はなし]の[舞台:ぶたい]はどこ？3つまでえらべるよ。', maxSelect: 3, options: sakka_placeOptions },
+            { id: 'event', badge: '中', title: 'どんな[出来事:できごと]が[起:お]きた？', desc: '[主人公:しゅじんこう]に[何:なに]が[起:お]きたかな？3つまでえらべるよ。', maxSelect: 3, options: sakka_eventOptions },
+            { id: 'solution', badge: '中', title: 'どうやってかいけつした？', desc: 'その[出来事:できごと]をどうやってのりこえた？3つまでえらべるよ。', maxSelect: 3, options: sakka_solutionOptions },
+            { id: 'ending', badge: 'おわり', title: '[最後:さいご]にどう[思:おも]った？', desc: 'お[話:はなし]の[最後:さいご]はどうなったかな？3つまでえらべるよ。', maxSelect: 3, options: sakka_endingOptions }
+        ];
+
+        // --- 状態管理 ---
+        const sakka_appData = {
+            step: 0,
+            answers: {
+                protagonist: { selected: [], free: '', visibleOptions: [] },
+                time: { selected: [], free: '', visibleOptions: [] },
+                place: { selected: [], free: '', visibleOptions: [] },
+                event: { selected: [], free: '', visibleOptions: [] },
+                solution: { selected: [], free: '', visibleOptions: [] },
+                ending: { selected: [], free: '', visibleOptions: [] }
+            }
+        };
+
+        function sakka_getRandomItems(array, num) {
+            const shuffled = [...array].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
+        }
+
+        function sakka_generateVisibleOptions(qId) {
+            const q = sakka_questionsData.find(item => item.id === qId);
+            const ans = sakka_appData.answers[qId];
+            let newVisible = [...ans.selected];
+            const neededCount = 5 - ans.selected.length;
+            if (neededCount > 0) {
+                const unselectedOptions = q.options.filter(opt => !ans.selected.includes(opt));
+                newVisible = newVisible.concat(sakka_getRandomItems(unselectedOptions, neededCount));
+            }
+            ans.visibleOptions = newVisible.sort(() => 0.5 - Math.random());
+        }
+
+        function sakka_shuffleOptions(qId) {
+            sakka_generateVisibleOptions(qId);
+            sakka_renderQuestion(sakka_appData.step - 1);
+        }
+
+        function sakka_startApp() {
+            sakka_appData.step = 1;
+            sakka_updateScreen();
+        }
+
+        function sakka_finishStory() {
+            sakka_appData.step = 8;
+            sakka_updateScreen();
+        }
+
+        function sakka_updateScreen() {
+            document.getElementById('sakka-screen-start').classList.add('hidden');
+            document.getElementById('sakka-screen-question').classList.add('hidden');
+            document.getElementById('sakka-screen-writing').classList.add('hidden');
+            document.getElementById('sakka-screen-finish').classList.add('hidden');
+
+            try { window.scrollTo(0, 0); } catch (e) { }
+
+            if (sakka_appData.step === 0) {
+                document.getElementById('sakka-screen-start').classList.remove('hidden');
+            } else if (sakka_appData.step >= 1 && sakka_appData.step <= 6) {
+                sakka_renderQuestion(sakka_appData.step - 1);
+                document.getElementById('sakka-screen-question').classList.remove('hidden');
+            } else if (sakka_appData.step === 7) {
+                sakka_renderWritingScreen();
+                document.getElementById('sakka-screen-writing').classList.remove('hidden');
+            } else if (sakka_appData.step === 8) {
+                document.getElementById('sakka-screen-finish').classList.remove('hidden');
+                setTimeout(sakka_createPreviewPages, 100);
+            }
+        }
+
+        function sakka_renderQuestion(index) {
+            const q = sakka_questionsData[index];
+            const currentAnswers = sakka_appData.answers[q.id];
+
+            if (!currentAnswers.visibleOptions || currentAnswers.visibleOptions.length === 0) {
+                sakka_generateVisibleOptions(q.id);
+            }
+
+            document.getElementById('sakka-q-progress').innerText = `${index + 1} / 6`;
+
+            const badge = document.getElementById('sakka-q-badge');
+            badge.innerText = q.badge;
+            badge.className = 'px-4 py-1 rounded-full text-sm md:text-base font-bold shadow-inner ';
+            if (q.badge === 'はじめ') badge.classList.add('bg-blue-100', 'text-blue-700');
+            else if (q.badge === '中') badge.classList.add('bg-green-100', 'text-green-700');
+            else if (q.badge === 'おわり') badge.classList.add('bg-pink-100', 'text-pink-700');
+
+            document.getElementById('sakka-q-title').innerHTML = sakka_parseRuby(q.title);
+            document.getElementById('sakka-q-desc').innerHTML = sakka_parseRuby(q.desc);
+
+            const optionsContainer = document.getElementById('sakka-q-options');
+            optionsContainer.innerHTML = '';
+
+            currentAnswers.visibleOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                const isSelected = currentAnswers.selected.includes(opt);
+
+                btn.innerHTML = `<span class="leading-relaxed">${sakka_parseRuby(opt)}</span>`;
+                let baseClass = 'px-3 py-1.5 md:px-4 md:py-2 rounded-full border-2 text-sm md:text-base font-bold transition-all duration-200 select-none ';
+                if (isSelected) {
+                    btn.className = baseClass + 'bg-orange-500 border-orange-500 text-white shadow-md chip-selected';
+                } else {
+                    btn.className = baseClass + 'bg-white border-gray-200 text-gray-700 hover:border-orange-300 hover:bg-orange-50';
+                }
+                btn.onclick = () => sakka_toggleOption(q.id, opt, q.maxSelect, btn, baseClass);
+                optionsContainer.appendChild(btn);
+            });
+
+            const othersBtn = document.createElement('button');
+            othersBtn.innerHTML = '🔄 そのほか';
+            othersBtn.className = 'px-4 py-1.5 md:px-6 md:py-2 rounded-full border-2 border-dashed border-gray-400 text-gray-600 bg-white text-sm md:text-base font-bold hover:bg-gray-100 transition-all select-none w-full md:w-auto mt-1 md:mt-2';
+            othersBtn.onclick = () => sakka_shuffleOptions(q.id);
+            optionsContainer.appendChild(othersBtn);
+
+            const freeTextEl = document.getElementById('sakka-q-freetext');
+            freeTextEl.value = currentAnswers.free;
+            freeTextEl.oninput = (e) => {
+                sakka_appData.answers[q.id].free = e.target.value;
+            };
+
+            document.getElementById('sakka-btn-prev').style.visibility = (index === 0) ? 'hidden' : 'visible';
+        }
+
+        function sakka_toggleOption(qId, option, maxSelect, btnEl, baseClass) {
+            const selectedArr = sakka_appData.answers[qId].selected;
+            const index = selectedArr.indexOf(option);
+
+            if (index > -1) {
+                selectedArr.splice(index, 1);
+                btnEl.className = baseClass + 'bg-white border-gray-200 text-gray-700 hover:border-orange-300 hover:bg-orange-50';
+            } else {
+                if (selectedArr.length < maxSelect) {
+                    selectedArr.push(option);
+                    btnEl.className = baseClass + 'bg-orange-500 border-orange-500 text-white shadow-md';
+                    void btnEl.offsetWidth;
+                    btnEl.classList.add('chip-selected');
+                } else {
+                    sakka_showToast(`えらべるのは ${maxSelect}つ までだよ！`);
+                    btnEl.classList.add('transform', 'translate-x-1');
+                    setTimeout(() => btnEl.classList.remove('translate-x-1'), 100);
+                    setTimeout(() => btnEl.classList.add('-translate-x-1'), 200);
+                    setTimeout(() => btnEl.classList.remove('-translate-x-1'), 300);
+                }
+            }
+        }
+
+        function sakka_nextStep() {
+            if (sakka_appData.step < 8) {
+                sakka_appData.step++;
+                sakka_updateScreen();
+            }
+        }
+
+        function sakka_prevStep() {
+            if (sakka_appData.step > 1) {
+                sakka_appData.step--;
+                sakka_updateScreen();
+            }
+        }
+
+        function sakka_renderWritingScreen() {
+            const memoContent = document.getElementById('sakka-memo-content');
+            memoContent.innerHTML = '';
+
+            sakka_questionsData.forEach(q => {
+                const ans = sakka_appData.answers[q.id];
+                if (ans.selected.length === 0 && !ans.free.trim()) return;
+
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-2xl shadow-sm border border-gray-100";
+
+                let badgeColor = q.badge === 'はじめ' ? 'bg-blue-100 text-blue-700' : (q.badge === '中' ? 'bg-green-100 text-green-700' : 'bg-pink-100 text-pink-700');
+
+                let contentHtml = `
+          <h4 class="font-bold text-gray-800 mb-2 flex items-start text-sm md:text-base leading-relaxed">
+            <span class="text-xs px-2 py-0.5 rounded-full ${badgeColor} mr-2 mt-1 flex-shrink-0">${q.badge}</span>
+            <span class="block">${sakka_parseRuby(q.title.replace(/【.*】/, ''))}</span>
+          </h4>`;
+
+                if (ans.selected.length > 0) {
+                    contentHtml += `<div class="flex flex-wrap gap-1 mb-2">`;
+                    ans.selected.forEach(s => {
+                        contentHtml += `<span class="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded-md leading-relaxed">${sakka_parseRuby(s)}</span>`;
+                    });
+                    contentHtml += `</div>`;
+                }
+
+                if (ans.free.trim()) {
+                    contentHtml += `<p class="text-gray-600 text-sm whitespace-pre-wrap border-l-4 border-orange-300 pl-3 py-1 bg-orange-50/50 rounded-r-md">${ans.free}</p>`;
+                }
+
+                div.innerHTML = contentHtml;
+                memoContent.appendChild(div);
+            });
+
+            if (memoContent.innerHTML === '') {
+                memoContent.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm leading-relaxed">なにもえらばれていないよ。<br>自由に書いてみよう！</p>';
+            }
+        }
+
+        function sakka_useMagicWand() {
+            const ans = sakka_appData.answers;
+            const getAnsStr = (key, defaultText) => {
+                let str = ans[key].selected.map(sakka_stripRuby).join('と、');
+                if (ans[key].free.trim()) {
+                    str += (str ? '。さらに、' : '') + ans[key].free.trim();
+                }
+                return str || defaultText;
+            };
+
+            const protagonist = getAnsStr('protagonist', 'だれか');
+            const time = getAnsStr('time', 'あるとき');
+            const place = getAnsStr('place', 'どこか');
+            const event = getAnsStr('event', 'ふしぎなこと');
+            const solution = getAnsStr('solution', 'がんばった');
+            const ending = getAnsStr('ending', 'おしまいになりました');
+
+            const draft = `　${time}、${place}でのことです。
+（どんなけしきが広がっているかな？天気や周りの音も書いてみよう！）
+
+　そこには、${protagonist}がいました。
+（主人公はどんな人？どんなふくを着ているかな？）
+
+　ある日、${event}ということが起きました。
+（その時、主人公はどんな気持ちになった？「　」を使ってセリフを入れてみよう！）
+
+　どうなることかと思いましたが、${solution}ことで、なんとかのりこえることができました。
+（のりこえるために、一番大変だったことは何かな？）
+
+　最後に、${ending}。
+（この出来事のあと、主人公はどんなふうにかわったかな？）
+
+　これでお話はおしまいです。`;
+
+            const editor = document.getElementById('sakka-story-editor');
+
+            if (editor.value.trim() !== '') {
+                editor.value += '\n\n【✨ まほうのステッキの下書き ✨】\n' + draft;
+            } else {
+                editor.value = draft;
+            }
+
+            sakka_showToast("🪄 まほうのステッキで下書きを作ったよ！");
+            editor.classList.add('bg-purple-50');
+            setTimeout(() => editor.classList.remove('bg-purple-50'), 1000);
+        }
+
+        let sakka_pagesData = [];
+        let sakka_currentPageIndex = 0;
+        let sakka_currentTheme = 'classic';
+
+        function sakka_setTheme(themeName) {
+            sakka_currentTheme = themeName;
+
+            document.querySelectorAll('.sakka-theme-btn').forEach(btn => {
+                if (btn.dataset.theme === themeName) {
+                    btn.classList.add('bg-orange-500', 'text-white', 'border-orange-600');
+                    btn.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+                } else {
+                    btn.classList.remove('bg-orange-500', 'text-white', 'border-orange-600');
+                    btn.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+                }
+            });
+
+            sakka_createPreviewPages();
+        }
+
+        function sakka_tokenizeAll(text) {
+            const tokens = [];
+            let i = 0;
+            while (i < text.length) {
+                if (text[i] === '[') {
+                    let j = text.indexOf(']', i);
+                    if (j !== -1 && text.substring(i, j).includes(':')) {
+                        tokens.push({ type: 'ruby', value: text.substring(i, j + 1) });
+                        i = j + 1;
+                        continue;
+                    }
+                }
+                if (text[i] === '\n') {
+                    tokens.push({ type: 'br' });
+                } else {
+                    tokens.push({ type: 'text', value: text[i] });
+                }
+                i++;
+            }
+            return tokens;
+        }
+
+        function sakka_createPreviewPages() {
+            const title = document.getElementById('sakka-story-title').value || '無題のお話';
+            const author = document.getElementById('sakka-story-author').value || '';
+            const text = document.getElementById('sakka-story-editor').value || '';
+
+            const previewBox = document.getElementById('sakka-preview-box');
+            const measureBox = document.getElementById('sakka-measure-box');
+            const measureContent = document.getElementById('sakka-measure-content');
+
+            previewBox.className = `w-full max-w-[600px] aspect-[1/1.414] shadow-2xl relative transition-all duration-300 sakka-theme-${sakka_currentTheme} mx-auto`;
+            measureBox.className = `w-full max-w-[600px] aspect-[1/1.414] relative sakka-theme-${sakka_currentTheme}`;
+
+            measureBox.style.width = previewBox.offsetWidth + 'px';
+
+            measureContent.innerHTML = '';
+            sakka_pagesData = [];
+
+            const isOverflow = () => measureContent.scrollHeight > measureContent.clientHeight;
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = "mb-4 md:mb-6 text-center flex-shrink-0";
+            headerDiv.innerHTML = `
+        <h1 class="text-xl md:text-3xl font-extrabold mb-2 leading-relaxed break-words">${sakka_parseRuby(title)}</h1>
+        <p class="text-sm md:text-lg text-gray-700 font-bold text-right pr-4">なまえ：${sakka_parseRuby(author)}</p>
+      `;
+            measureContent.appendChild(headerDiv);
+
+            const tokens = sakka_tokenizeAll(text);
+            let contentDiv = document.createElement('div');
+            contentDiv.className = "whitespace-pre-wrap break-words flex-grow";
+            measureContent.appendChild(contentDiv);
+
+            for (let i = 0; i < tokens.length; i++) {
+                const t = tokens[i];
+                let node;
+                if (t.type === 'br') {
+                    node = document.createElement('br');
+                } else if (t.type === 'ruby') {
+                    const match = t.value.match(/\[(.+?):(.+?)\]/);
+                    node = document.createElement('ruby');
+                    node.innerHTML = `${match[1]}<rt>${match[2]}</rt>`;
+                } else {
+                    node = document.createTextNode(t.value);
+                }
+
+                contentDiv.appendChild(node);
+
+                if (isOverflow()) {
+                    contentDiv.removeChild(node);
+                    sakka_pagesData.push(measureContent.innerHTML);
+
+                    measureContent.innerHTML = '';
+                    contentDiv = document.createElement('div');
+                    contentDiv.className = "whitespace-pre-wrap break-words flex-grow";
+                    measureContent.appendChild(contentDiv);
+
+                    contentDiv.appendChild(node);
+                }
+            }
+
+            if (measureContent.innerHTML.trim() !== '') {
+                sakka_pagesData.push(measureContent.innerHTML);
+            }
+
+            sakka_showPage(0);
+        }
+
+        function sakka_showPage(index) {
+            if (sakka_pagesData.length === 0) return;
+            if (index < 0) index = 0;
+            if (index >= sakka_pagesData.length) index = sakka_pagesData.length - 1;
+
+            sakka_currentPageIndex = index;
+            document.getElementById('sakka-preview-content').innerHTML = sakka_pagesData[index];
+            document.getElementById('sakka-page-indicator').innerText = `${index + 1} / ${sakka_pagesData.length} ページ`;
+        }
+
+        function sakka_nextPage() { sakka_showPage(sakka_currentPageIndex + 1); }
+        function sakka_prevPage() { sakka_showPage(sakka_currentPageIndex - 1); }
+
+        function sakka_printStory() {
+            const printArea = document.getElementById('sakka-print-area');
+            printArea.innerHTML = '';
+
+            sakka_pagesData.forEach((pageHtml, index) => {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = `sakka-print-page sakka-theme-${sakka_currentTheme} relative p-10 md:p-16 mx-auto overflow-hidden block`;
+
+                const innerDiv = document.createElement('div');
+                innerDiv.className = "flex flex-col text-base md:text-xl leading-loose h-full break-words";
+                innerDiv.innerHTML = pageHtml;
+
+                const pageNum = document.createElement('div');
+                pageNum.className = "absolute bottom-4 left-0 right-0 text-center text-sm font-bold text-gray-500";
+                pageNum.innerText = `- ${index + 1} -`;
+
+                pageDiv.appendChild(innerDiv);
+                pageDiv.appendChild(pageNum);
+                printArea.appendChild(pageDiv);
+            });
+
+            setTimeout(() => {
+                try { window.print(); } catch (e) { }
+            }, 300);
+        }
+
+        function sakka_openChecklist() {
+            const modal = document.getElementById('sakka-modal-checklist');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.firstElementChild.classList.add('scale-100');
+                modal.firstElementChild.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function sakka_closeChecklist() {
+            const modal = document.getElementById('sakka-modal-checklist');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 150);
+        }
+
+        let sakka_toastTimeout;
+        function sakka_showToast(msg) {
+            const toast = document.getElementById('sakka-toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+
+            clearTimeout(sakka_toastTimeout);
+            sakka_toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        window.addEventListener('resize', () => {
+            if (sakka_appData.step === 8) {
+                sakka_createPreviewPages();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

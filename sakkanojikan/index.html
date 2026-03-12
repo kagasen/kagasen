@@ -282,6 +282,11 @@
         </h2>
         <div class="flex gap-2 flex-shrink-0">
           
+          <!-- 最初から書くボタン -->
+          <button onclick="sakka_openResetConfirm()" class="btn-bounce bg-red-400 text-white font-bold py-2 px-3 md:px-6 rounded-full shadow hover:bg-red-500 text-sm md:text-base flex items-center gap-1 border-b-4 border-red-600 active:border-b-0 active:translate-y-1">
+            🗑️ <span class="hidden md:inline leading-none"><ruby>最初<rt>さいしょ</rt></ruby>から</span>
+          </button>
+
           <!-- 途中保存ボタン -->
           <button onclick="sakka_exportData()" class="btn-bounce bg-blue-500 text-white font-bold py-2 px-3 md:px-6 rounded-full shadow hover:bg-blue-600 text-sm md:text-base flex items-center gap-1 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1">
             💾 <span class="hidden md:inline leading-none">途中保存</span>
@@ -398,6 +403,26 @@
           <div id="sakka-measure-content" class="sakka-page-inner">
           </div>
        </div>
+    </div>
+
+    <!-- ================== リセット確認モーダル ================== -->
+    <div id="sakka-modal-reset" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-[2rem] p-6 md:p-8 max-w-sm w-full flex flex-col shadow-2xl transform transition-all scale-95 border-4 border-red-400 text-center">
+        <h3 class="text-xl md:text-2xl font-extrabold text-red-600 mb-4 leading-relaxed">
+          ほんとうに<ruby>最初<rt>さいしょ</rt></ruby>から<ruby>書<rt>か</rt></ruby>く？
+        </h3>
+        <p class="text-gray-600 mb-8 font-bold text-sm md:text-base leading-relaxed">
+          いままで<ruby>書<rt>か</rt></ruby>いたお<ruby>話<rt>はなし</rt></ruby>は<br>ぜんぶ消えてしまうよ！
+        </p>
+        <div class="flex gap-3 justify-center">
+          <button onclick="sakka_closeResetConfirm()" class="btn-bounce flex-1 bg-gray-200 text-gray-700 font-extrabold py-3 rounded-full shadow-sm hover:bg-gray-300 text-base active:translate-y-1">
+            いいえ
+          </button>
+          <button onclick="sakka_resetAndGoStart()" class="btn-bounce flex-1 bg-red-500 text-white font-extrabold py-3 rounded-full shadow-lg border-b-4 border-red-700 hover:bg-red-600 text-base active:border-b-0 active:translate-y-1">
+            はい
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ================== 振り返りモーダル ================== -->
@@ -1070,6 +1095,32 @@
       modal.firstElementChild.classList.add('scale-95');
       setTimeout(() => {
         modal.classList.add('hidden');
+      }, 150);
+    }
+
+    function sakka_openResetConfirm() {
+      const modal = document.getElementById('sakka-modal-reset');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.firstElementChild.classList.add('scale-100');
+        modal.firstElementChild.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function sakka_closeResetConfirm() {
+      const modal = document.getElementById('sakka-modal-reset');
+      modal.firstElementChild.classList.remove('scale-100');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150);
+    }
+
+    function sakka_resetAndGoStart() {
+      sakka_closeResetConfirm();
+      setTimeout(() => {
+        sakka_appData.step = 0;
+        sakka_updateScreen();
       }, 150);
     }
 

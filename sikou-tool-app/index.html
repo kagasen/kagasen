@@ -22,7 +22,7 @@
     <script type="text/babel" data-type="module" data-plugins="transform-react-jsx">
         import React, { useState, useRef, useEffect } from 'https://esm.sh/react@18?dev';
         import { createRoot } from 'https://esm.sh/react-dom@18/client?dev';
-        import { StickyNote, Type, Image as ImageIcon, LayoutTemplate, Trash2, ArrowDownRight, ZoomIn, ZoomOut, Focus, Plus, MousePointer2, Hand, PenLine, Eraser, HelpCircle } from 'https://esm.sh/lucide-react@latest?deps=react@18';
+        import { StickyNote, Type, Image as ImageIcon, LayoutTemplate, Trash2, ArrowDownRight, ZoomIn, ZoomOut, Focus, Plus, MousePointer2, Hand, PenLine, Eraser, HelpCircle, AlignLeft } from 'https://esm.sh/lucide-react@latest?deps=react@18';
 
         // --- 定数とデータ ---
         const STICKY_COLORS = [
@@ -333,6 +333,23 @@
                     width: 300, height: 100,
                     zIndex: newZ,
                     isLocked: false
+                }]);
+            };
+
+            const addSummary = () => {
+                const center = getCanvasCenter();
+                const newZ = maxZIndexRef.current + 1;
+                setMaxZIndex(newZ);
+                const offset = (items.length % 10) * 10;
+                setItems([...items, {
+                    id: `summary-${Date.now()}`,
+                    type: 'summary',
+                    content: '',
+                    x: center.x - 500 + offset, y: center.y - 140 + offset,
+                    width: 1000, height: 280,
+                    zIndex: newZ,
+                    isLocked: false,
+                    fontSize: 22
                 }]);
             };
 
@@ -676,6 +693,20 @@
                 document.addEventListener('pointerup', handlePointerUp);
             };
 
+            const changeFontSizeSelected = (delta) => {
+                if (selectedIdsRef.current.length === 0) return;
+                setItems(itemsRef.current.map(item => {
+                    if (!selectedIdsRef.current.includes(item.id)) return item;
+                    if (item.isLocked) return item;
+                    if (item.type !== 'text' && item.type !== 'summary') return item;
+                    const current = typeof item.fontSize === 'number'
+                        ? item.fontSize
+                        : (item.type === 'text' ? 24 : 22);
+                    const next = Math.min(60, Math.max(12, current + delta));
+                    return { ...item, fontSize: next };
+                }));
+            };
+
             return (
                 <div
                     className="w-screen h-screen flex relative overflow-hidden text-slate-800"
@@ -817,7 +848,9 @@
                                 // 幅に依存したフォントサイズの計算 (初期サイズを基準としたスケール)
                                 const baseFontSize = item.type === 'text' ? 24 : 18;
                                 const baseWidth = item.type === 'text' ? 300 : 150;
-                                const computedFontSize = Math.max(12, Math.floor(baseFontSize * (item.width / baseWidth)));
+                                const computedFontSize = typeof item.fontSize === 'number'
+                                    ? item.fontSize
+                                    : Math.max(12, Math.floor(baseFontSize * (item.width / baseWidth)));
 
                                 const isOnlySelected = selectedIds.length === 1 && isSelected;
 
@@ -888,6 +921,29 @@
                                             </div>
                                         )}
 
+                                        {/* 文字サイズ（文字・まとめ） */}
+                                        {isSelected && (item.type === 'text' || item.type === 'summary') && !isLocked && (
+                                            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-full shadow-lg border border-slate-200 flex items-center gap-2 z-50 pointer-events-auto">
+                                                <button
+                                                    className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 font-extrabold text-slate-700"
+                                                    onPointerDown={(e) => { e.stopPropagation(); changeFontSizeSelected(-2); }}
+                                                    title="文字を小さく"
+                                                >
+                                                    A-
+                                                </button>
+                                                <div className="min-w-[56px] text-center text-xs font-bold text-slate-600">
+                                                    {computedFontSize}px
+                                                </div>
+                                                <button
+                                                    className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 font-extrabold text-slate-700"
+                                                    onPointerDown={(e) => { e.stopPropagation(); changeFontSizeSelected(2); }}
+                                                    title="文字を大きく"
+                                                >
+                                                    A+
+                                                </button>
+                                            </div>
+                                        )}
+
                                         {item.type === 'sticky' && (
                                             <div
                                                 className={`w-full h-full ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
@@ -931,6 +987,35 @@
                                                         {item.content || <span className="text-black/30">テキスト(ダブルクリック)</span>}
                                                     </div>
                                                 )}
+                                            </div>
+                                        )}
+
+                                        {item.type === 'summary' && (
+                                            <div
+                                                className={`w-full h-full bg-white/95 border-2 border-slate-200 rounded-2xl shadow-md flex flex-col overflow-hidden ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
+                                                onDoubleClick={() => !isLocked && setEditingId(item.id)}
+                                                style={{ fontSize: `${computedFontSize}px`, lineHeight: 1.35 }}
+                                            >
+                                                <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                                                    <div className="text-sm font-extrabold text-slate-700 tracking-wide">まとめ</div>
+                                                    <div className="text-[11px] font-bold text-slate-500">ダブルクリックで入力</div>
+                                                </div>
+                                                <div className="flex-1 p-4">
+                                                    {editingId === item.id ? (
+                                                        <textarea
+                                                            className="w-full h-full bg-transparent resize-none outline-none font-bold text-slate-800 overflow-auto"
+                                                            value={item.content}
+                                                            onChange={(e) => updateItem(item.id, { content: e.target.value })}
+                                                            onBlur={() => setEditingId(null)}
+                                                            placeholder="ここに「まとめ」を書こう。"
+                                                            autoFocus
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full font-bold text-slate-800 whitespace-pre-wrap break-words select-none pointer-events-none">
+                                                            {item.content || <span className="text-black/30">ダブルクリックで入力</span>}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
 
@@ -1008,6 +1093,10 @@
                         <button onClick={addText} className="flex flex-col items-center gap-1 p-3 hover:bg-blue-50 rounded-xl transition-colors group">
                             <div className="bg-blue-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><Type className="text-blue-600" size={28} /></div>
                             <span className="text-xs font-bold text-slate-600">文字</span>
+                        </button>
+                        <button onClick={addSummary} className="flex flex-col items-center gap-1 p-3 hover:bg-slate-100 rounded-xl transition-colors group">
+                            <div className="bg-slate-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><AlignLeft className="text-slate-700" size={28} /></div>
+                            <span className="text-xs font-bold text-slate-600">まとめ</span>
                         </button>
                         <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-1 p-3 hover:bg-green-50 rounded-xl transition-colors group">
                             <div className="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><ImageIcon className="text-green-600" size={28} /></div>

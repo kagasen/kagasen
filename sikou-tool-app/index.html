@@ -9,11 +9,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-50 relative">
+    <body class="bg-slate-50 relative">
     <div id="root"></div>
 
     <!-- Babel standalone for JSX parsing -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 思考ツールお題データ -->
+    <script src="./topicsData.js"></script>
 
     <!-- React App Script -->
     <script type="text/babel" data-type="module" data-plugins="transform-react-jsx">
@@ -209,6 +212,11 @@
             const [selectionBox, setSelectionBox] = useState(null);
             const [drawColor, setDrawColor] = useState('#ef4444'); // ペンカラー初期値（赤）
             const [currentDrawingPath, setCurrentDrawingPath] = useState(null); // 描画中のパス
+            const [showPromptModal, setShowPromptModal] = useState(false);
+            const [selectedToolForPrompt, setSelectedToolForPrompt] = useState(null);
+            const [currentPrompt, setCurrentPrompt] = useState('');
+            const [rouletteDisplay, setRouletteDisplay] = useState('');
+            const [isRouletteRunning, setIsRouletteRunning] = useState(false);
 
             const fileInputRef = useRef(null);
             const viewRef = useRef(view);
@@ -216,6 +224,8 @@
             const maxZIndexRef = useRef(maxZIndex);
             const selectedIdsRef = useRef(selectedIds);
             const drawColorRef = useRef(drawColor);
+            const rouletteIntervalRef = useRef(null);
+            const rouletteTimeoutRef = useRef(null);
 
             useEffect(() => { viewRef.current = view; }, [view]);
             useEffect(() => { drawColorRef.current = drawColor; }, [drawColor]);
@@ -224,6 +234,12 @@
             }, [items]);
             useEffect(() => { maxZIndexRef.current = maxZIndex; }, [maxZIndex]);
             useEffect(() => { selectedIdsRef.current = selectedIds; }, [selectedIds]);
+            useEffect(() => {
+                return () => {
+                    if (rouletteIntervalRef.current) clearInterval(rouletteIntervalRef.current);
+                    if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
+                };
+            }, []);
 
             // ショートカットキーの実装（Cmd+Z / Ctrl+Z）
             useEffect(() => {
@@ -335,6 +351,38 @@
                     isLocked: false
                 }]);
                 setShowTemplateModal(false);
+            };
+
+            const startPromptRoulette = (toolId) => {
+                const prompts = THOUGHT_TOOL_PROMPTS[toolId];
+                if (!prompts || prompts.length === 0) return;
+
+                setSelectedToolForPrompt(toolId);
+
+                if (rouletteIntervalRef.current) clearInterval(rouletteIntervalRef.current);
+                if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
+
+                setIsRouletteRunning(true);
+                setCurrentPrompt('');
+
+                let count = 0;
+                const maxCount = 20;
+                const finalPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+                rouletteIntervalRef.current = setInterval(() => {
+                    const tempPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+                    setRouletteDisplay(tempPrompt);
+                    count += 1;
+                }, 80);
+
+                rouletteTimeoutRef.current = setTimeout(() => {
+                    if (rouletteIntervalRef.current) {
+                        clearInterval(rouletteIntervalRef.current);
+                    }
+                    setIsRouletteRunning(false);
+                    setCurrentPrompt(finalPrompt);
+                    setRouletteDisplay(finalPrompt);
+                }, maxCount * 80);
             };
 
             const handleImageUpload = (e) => {
@@ -972,6 +1020,14 @@
                             <span className="text-xs font-bold text-slate-600">テンプレート</span>
                         </button>
 
+                        <button onClick={() => setShowPromptModal(true)} className="flex flex-col items-center gap-1 p-3 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors group shadow-sm border border-pink-200">
+                            <div className="bg-pink-100 p-2 rounded-lg group-hover:scale-110 transition-transform flex items-center justify-center">
+                                <span className="text-pink-600 font-extrabold text-lg">お</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-pink-700">思考ツールの</span>
+                            <span className="text-[10px] font-bold text-pink-700">お題</span>
+                        </button>
+
                         <div className="h-px bg-slate-200 my-1 w-full"></div>
 
                         <button onClick={() => setShowTutorialModal(true)} className="flex flex-col items-center gap-1 p-3 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors group shadow-sm border border-indigo-200">
@@ -1006,6 +1062,79 @@
                             <Focus size={24} />
                         </button>
                     </div>
+
+                    {/* 思考ツールのお題モーダル */}
+                    {
+                        showPromptModal && (
+                            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[120] p-4">
+                                <div className="bg-white p-6 md:p-8 rounded-3xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl transform transition-all">
+                                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-3 text-center">
+                                        思考ツールのお題ルーレット
+                                    </h2>
+                                    <p className="text-sm md:text-base text-slate-600 mb-6 text-center">
+                                        まずはツールをえらんでね。ボタンをおすと、お題がルーレットみたいにくるくる動いて決まるよ！
+                                    </p>
+                                    <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-1 overflow-hidden">
+                                        {/* ツール一覧 */}
+                                        <div className="md:w-1/2 overflow-y-auto pr-2 custom-scrollbar">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {THOUGHT_TOOL_LIST.map(tool => (
+                                                    <button
+                                                        key={tool.id}
+                                                        onClick={() => startPromptRoulette(tool.id)}
+                                                        className={`text-left rounded-2xl px-4 py-3 border-2 transition-all shadow-sm ${
+                                                            selectedToolForPrompt === tool.id
+                                                                ? 'border-pink-400 bg-pink-50 shadow-md'
+                                                                : 'border-slate-200 bg-slate-50 hover:bg-pink-50 hover:border-pink-300'
+                                                        }`}
+                                                    >
+                                                        <div className="text-xs font-semibold text-slate-500 mb-1">ツール</div>
+                                                        <div className="font-extrabold text-slate-800 text-sm md:text-base">
+                                                            {tool.label}
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* ルーレット表示エリア */}
+                                        <div className="md:w-1/2 flex flex-col items-center justify-center gap-4">
+                                            <div className="text-xs font-semibold text-slate-500 tracking-wide">
+                                                えらばれたお題
+                                            </div>
+                                            <div className="w-full">
+                                                <div className="bg-gradient-to-r from-pink-400 via-sky-400 to-emerald-400 p-[3px] rounded-3xl shadow-xl">
+                                                    <div className={`bg-white rounded-[22px] px-4 py-6 md:px-6 md:py-8 flex items-center justify-center min-h-[140px] md:min-h-[180px] text-center ${isRouletteRunning ? 'animate-pulse' : ''}`}>
+                                                        <span className="text-base md:text-xl font-extrabold text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                                            {rouletteDisplay || currentPrompt || 'どのツールにするかボタンをおして、お題ルーレットをスタートしよう！'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {isRouletteRunning && (
+                                                <div className="text-xs md:text-sm font-semibold text-pink-600 animate-bounce">
+                                                    ルーレット中… どんなお題が出るかな？
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="mt-6 flex justify-center gap-4">
+                                        <button
+                                            onClick={() => {
+                                                setShowPromptModal(false);
+                                                setIsRouletteRunning(false);
+                                                if (rouletteIntervalRef.current) clearInterval(rouletteIntervalRef.current);
+                                                if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
+                                            }}
+                                            className="px-10 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-full font-bold text-lg transition-colors shadow-sm"
+                                        >
+                                            とじる
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                     {
                         showTemplateModal && (

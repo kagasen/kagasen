@@ -66,6 +66,37 @@
       object-fit: cover;
       object-position: center;
     }
+    /* 縦横どちらでも画像が画面をはみ出さないようにする */
+    .matrix-wrapper img {
+      display: block;
+      max-width: min(620px, 90vw);
+      max-height: 58vh;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+    @media (max-height: 500px) {
+      /* 横向き小型端末 */
+      .matrix-wrapper img { max-height: 42vh; }
+    }
+    /* 吹き出しの三角（下向き） */
+    .bubble-tail {
+      width: 0; height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 14px solid white;
+    }
+    .bubble-tail-border {
+      width: 0; height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 16px solid #e0e7ff;
+    }
+    @keyframes mascotFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-6px); }
+    }
+    .mascot-float { animation: mascotFloat 3s ease-in-out infinite; }
   </style>
 </head>
 
@@ -86,7 +117,8 @@
       action: '',
       reflection: '',
       viewingRecordId: null,
-      fromSummary: false     // 記録一覧をまとめ画面から開いたか
+      fromSummary: false,    // 記録一覧をまとめ画面から開いたか
+      confirmDeleteId: null  // 削除確認中の記録ID
     };
 
     const IMAGES = {
@@ -131,14 +163,27 @@
     function buildHome() {
       const count = getRecords().length;
       return `
-        <div class="min-h-screen flex flex-col items-center justify-center gap-8 text-center px-4 py-12 fade-in">
-          <div>
-            <div class="text-5xl mb-4 select-none">🧭</div>
-            <h1 class="text-3xl font-extrabold text-slate-800 mb-2">心マトリクス</h1>
-            <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
-              今の心の状態を「見える化」して、<br>自分を深く知るためのアプリ。
-            </p>
+        <div class="min-h-[100dvh] flex flex-col items-center justify-center gap-6 text-center px-4 py-10 fade-in">
+          <h1 class="text-2xl font-extrabold text-slate-800 tracking-wide">心マトリクス</h1>
+
+          <!-- マスコット + 吹き出し -->
+          <div class="flex flex-col items-center gap-0 select-none">
+            <!-- 吹き出し -->
+            <div class="relative bg-white rounded-2xl shadow-md px-5 py-4 border border-indigo-100 max-w-[280px]">
+              <p class="font-extrabold text-slate-700 text-sm leading-relaxed">
+                今の心の状態を見える化して、<br>自分を深く知ろう
+              </p>
+              <!-- 吹き出しの三角（下向き・中央） -->
+              <div class="absolute -bottom-[15px] left-1/2 -translate-x-1/2">
+                <div class="bubble-tail-border mx-auto"></div>
+                <div class="bubble-tail -mt-[15px] mx-auto"></div>
+              </div>
+            </div>
+            <!-- マスコット -->
+            <div class="text-[72px] mt-2 mascot-float">🐻</div>
           </div>
+
+          <!-- ボタン群 -->
           <div class="flex flex-col gap-4 w-full max-w-xs">
             <button id="startBtn"
               class="px-8 py-4 bg-indigo-500 hover:bg-indigo-600 text-white font-extrabold
@@ -155,6 +200,7 @@
                 : ''}
             </button>
           </div>
+
           <div class="max-w-xs bg-white/60 rounded-2xl px-5 py-4 border border-slate-100 text-xs text-slate-400 leading-relaxed">
             💾 記録はこのブラウザにずっと保存されます。<br>
             同じ端末・同じブラウザを使えばいつでも見返せます。
@@ -167,9 +213,9 @@
     // ==================== SESSION ====================
     function buildSession() {
       return `
-        <div class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col">
+        <div class="max-w-2xl mx-auto px-4 py-6">
           ${buildSessionHeader()}
-          <main class="flex-1 flex flex-col items-center gap-6 pb-12 fade-in">
+          <main class="flex flex-col items-center gap-6 pb-12 fade-in">
             ${buildStepContent()}
           </main>
         </div>
@@ -446,7 +492,7 @@
       const mlabel = MATRIX_LABELS[r.matrixType] || '';
 
       return `
-        <div class="max-w-xl mx-auto px-3 py-6 min-h-screen flex flex-col fade-in">
+        <div class="max-w-xl mx-auto px-3 py-6 flex flex-col fade-in">
           <!-- ヘッダー -->
           <div class="flex items-center justify-between mb-4">
             <button id="${isViewMode ? 'backToRecords' : 'summaryHome'}"
@@ -530,7 +576,7 @@
     function buildRecords() {
       const all = getRecords().slice().reverse();
       return `
-        <div class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col fade-in">
+        <div class="max-w-2xl mx-auto px-4 py-6 flex flex-col fade-in">
           <header class="flex items-center justify-between mb-6">
             <button id="backFromRecords"
               class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
@@ -601,9 +647,20 @@
               </div>
             </div>
           </button>
-          <div class="border-t border-slate-50 flex justify-end px-4 py-2">
-            <button class="rec-del text-[11px] text-red-300 hover:text-red-500 font-bold transition-colors"
-                    data-id="${r.id}">削除</button>
+          <div class="border-t border-slate-50 flex items-center px-4 py-2
+                      ${state.confirmDeleteId === r.id ? 'justify-between' : 'justify-end'}">
+            ${state.confirmDeleteId === r.id ? `
+              <span class="text-xs text-red-500 font-bold">本当に削除しますか？</span>
+              <div class="flex gap-2">
+                <button class="rec-del-yes text-xs text-white bg-red-400 hover:bg-red-500 font-extrabold rounded-full px-3 py-1.5 transition-colors"
+                        data-id="${r.id}">削除する</button>
+                <button class="rec-del-no text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 font-bold rounded-full px-3 py-1.5 transition-colors">
+                  やめる</button>
+              </div>
+            ` : `
+              <button class="rec-del text-[11px] text-red-300 hover:text-red-400 font-bold transition-colors"
+                      data-id="${r.id}">削除</button>
+            `}
           </div>
         </div>
       `;
@@ -811,12 +868,27 @@
           render();
         });
       });
+      // 削除ボタン：confirm()不使用・インライン確認UIに切り替え
       document.querySelectorAll('.rec-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (confirm('この記録を削除しますか？')) {
-            removeRecord(Number(btn.dataset.id));
-            render();
-          }
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          state.confirmDeleteId = Number(btn.dataset.id);
+          render();
+        });
+      });
+      document.querySelectorAll('.rec-del-yes').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          removeRecord(Number(btn.dataset.id));
+          state.confirmDeleteId = null;
+          render();
+        });
+      });
+      document.querySelectorAll('.rec-del-no').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          state.confirmDeleteId = null;
+          render();
         });
       });
 
@@ -840,7 +912,7 @@
       Object.assign(state, {
         step: 1, matrixType: null, dateText: '', timeText: '',
         pin1: null, pin2: null, feeling: '', action: '', reflection: '',
-        fromSummary: false
+        fromSummary: false, confirmDeleteId: null
       });
     }
 

@@ -9,101 +9,177 @@
     body {
       font-family: "Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN", "Hiragino Sans", Meiryo, sans-serif;
     }
-
     .pin {
       position: absolute;
       transform: translate(-50%, -100%);
       pointer-events: none;
-      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
     }
-
     .pin-enter {
       animation: pinDrop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
-
     @keyframes pinDrop {
       from { transform: translate(-50%, -180%) scale(0.4); opacity: 0; }
       to   { transform: translate(-50%, -100%) scale(1);   opacity: 1; }
     }
-
     .fade-in {
-      animation: fadeIn 0.35s ease-out forwards;
+      animation: fadeIn 0.3s ease-out forwards;
     }
-
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
     .matrix-wrapper {
       position: relative;
       display: inline-block;
       line-height: 0;
     }
-
     .matrix-wrapper img {
       display: block;
-      max-width: min(640px, 90vw);
+      max-width: min(620px, 90vw);
       width: 100%;
-      border-radius: 16px;
     }
-
     .matrix-wrapper svg.arrow-layer {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      border-radius: 16px;
     }
-
-    /* Textarea focus ring */
     textarea:focus {
       outline: none;
       border-color: #818cf8;
       box-shadow: 0 0 0 3px rgba(129,140,248,0.2);
     }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129,140,248,0.2);
+    }
+    .record-card-img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      object-position: center;
+    }
   </style>
 </head>
 
-<body class="min-h-screen" style="background: linear-gradient(135deg, #f0f4ff 0%, #f5f0ff 50%, #f0fff4 100%);">
-
-  <div id="app" class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col"></div>
+<body class="min-h-screen" style="background:linear-gradient(135deg,#f0f4ff 0%,#f5f0ff 50%,#f0fff4 100%);">
+  <div id="app"></div>
 
   <script>
     // ==================== State ====================
     const state = {
-      step: 1,
-      pin1: null,   // { xPct, yPct }
-      pin2: null,   // { xPct, yPct }
+      screen: 'home',        // 'home' | 'session' | 'summary' | 'records' | 'record-detail'
+      step: 1,               // 1〜5
+      matrixType: null,      // '1' | '2'
+      dateText: '',
+      timeText: '',
+      pin1: null,            // { xPct, yPct }
+      pin2: null,
       feeling: '',
       action: '',
-      reflection: ''
+      reflection: '',
+      viewingRecordId: null
     };
 
-    const IMG = './心マトリクス１.webp';
+    const IMAGES = {
+      '1': './心マトリクス１.webp',
+      '2': './心マトリクス2.webp'
+    };
+    const MATRIX_LABELS = {
+      '1': 'かんたん版（心マトリクス１）',
+      '2': 'くわしく版（心マトリクス２）'
+    };
+    const TIME_OPTIONS = ['朝', '1時間目', '2時間目', '3時間目', '昼休み', '4時間目', '5時間目', '6時間目', '放課後', '夜'];
 
-    // ==================== Main render ====================
+    // ==================== Storage ====================
+    function getRecords() {
+      try { return JSON.parse(localStorage.getItem('shinmatorikusu_v2') || '[]'); }
+      catch { return []; }
+    }
+    function addRecord(r) {
+      const all = getRecords();
+      all.push(r);
+      localStorage.setItem('shinmatorikusu_v2', JSON.stringify(all));
+    }
+    function removeRecord(id) {
+      const all = getRecords().filter(r => r.id !== id);
+      localStorage.setItem('shinmatorikusu_v2', JSON.stringify(all));
+    }
+
+    // ==================== Render ====================
     function render() {
       const app = document.getElementById('app');
-      app.innerHTML = `
-        ${buildHeader()}
-        <main class="flex-1 flex flex-col items-center gap-6 pb-10 fade-in">
-          ${buildStepContent()}
-        </main>
-      `;
+      switch (state.screen) {
+        case 'home':          app.innerHTML = buildHome();          break;
+        case 'session':       app.innerHTML = buildSession();       break;
+        case 'summary':       app.innerHTML = buildSummaryScreen(); break;
+        case 'records':       app.innerHTML = buildRecords();       break;
+        case 'record-detail': app.innerHTML = buildRecordDetail();  break;
+      }
       attachEvents();
     }
 
-    // ==================== Header ====================
-    function buildHeader() {
+    // ==================== HOME ====================
+    function buildHome() {
+      const count = getRecords().length;
+      return `
+        <div class="min-h-screen flex flex-col items-center justify-center gap-8 text-center px-4 py-12 fade-in">
+          <div>
+            <div class="text-5xl mb-4 select-none">🧭</div>
+            <h1 class="text-3xl font-extrabold text-slate-800 mb-2">心マトリクス</h1>
+            <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
+              今の心の状態を「見える化」して、<br>自分を深く知るためのアプリ。
+            </p>
+          </div>
+          <div class="flex flex-col gap-4 w-full max-w-xs">
+            <button id="startBtn"
+              class="px-8 py-4 bg-indigo-500 hover:bg-indigo-600 text-white font-extrabold
+                     rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-105 active:scale-95 text-lg">
+              はじめる ▶
+            </button>
+            <button id="recordsBtn"
+              class="flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-slate-50
+                     text-slate-600 font-bold rounded-full shadow border border-slate-200
+                     transition-all hover:scale-105 active:scale-95">
+              📋 これまでの記録を見る
+              ${count > 0
+                ? `<span class="bg-indigo-100 text-indigo-600 text-xs font-extrabold px-2 py-0.5 rounded-full">${count}</span>`
+                : ''}
+            </button>
+          </div>
+          <div class="max-w-xs bg-white/60 rounded-2xl px-5 py-4 border border-slate-100 text-xs text-slate-400 leading-relaxed">
+            💾 記録はこのブラウザにずっと保存されます。<br>
+            同じ端末・同じブラウザを使えばいつでも見返せます。
+          </div>
+          <a href="../index.html" class="text-slate-300 hover:text-slate-500 text-xs font-bold transition-colors">← 一覧へ</a>
+        </div>
+      `;
+    }
+
+    // ==================== SESSION ====================
+    function buildSession() {
+      return `
+        <div class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col">
+          ${buildSessionHeader()}
+          <main class="flex-1 flex flex-col items-center gap-6 pb-12 fade-in">
+            ${buildStepContent()}
+          </main>
+        </div>
+      `;
+    }
+
+    function buildSessionHeader() {
       return `
         <header class="flex items-center justify-between mb-4">
-          <a href="../index.html"
-             class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5 rounded-xl hover:bg-white/70 transition-all">
-            ← 一覧へ
-          </a>
-          <h1 class="text-lg font-extrabold text-slate-700 tracking-wide">心マトリクス</h1>
+          <button id="homeBtn"
+            class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5 rounded-xl
+                   hover:bg-white/70 transition-all">
+            ← ホーム
+          </button>
+          <h1 class="text-base font-extrabold text-slate-700 tracking-wide">心マトリクス</h1>
           <div class="w-16"></div>
         </header>
         ${buildStepBar()}
@@ -112,75 +188,145 @@
 
     function buildStepBar() {
       const steps = [
-        { n: 1, label: '現在地' },
-        { n: 2, label: '言語化' },
-        { n: 3, label: '変化'   },
-        { n: 4, label: '振り返り' }
+        {n:1, label:'選ぶ'},
+        {n:2, label:'現在地'},
+        {n:3, label:'言語化'},
+        {n:4, label:'変化'},
+        {n:5, label:'振り返り'}
       ];
-      const dots = steps.map((s, i) => {
-        const active   = state.step === s.n;
-        const done     = state.step > s.n;
-        const dotClass = active
-          ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200 scale-110'
-          : done
-          ? 'bg-indigo-200 text-indigo-700'
-          : 'bg-slate-200 text-slate-400';
-        const lineClass = done || (state.step === s.n + 1)
-          ? 'bg-indigo-300' : 'bg-slate-200';
-        return `
-          <div class="flex items-center">
-            <div class="flex flex-col items-center gap-1">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-sm transition-all duration-300 ${dotClass}">
-                ${done ? '✓' : s.n}
-              </div>
-              <span class="text-[10px] font-bold ${active ? 'text-indigo-600' : 'text-slate-400'}">${s.label}</span>
-            </div>
-            ${i < steps.length - 1
-              ? `<div class="w-10 h-0.5 mt-[-14px] mx-1 rounded-full transition-all duration-500 ${lineClass}"></div>`
-              : ''}
-          </div>
-        `;
-      }).join('');
-
       return `
-        <div class="flex items-center justify-center gap-0 mb-6">
-          ${dots}
+        <div class="flex items-center justify-center mb-6">
+          ${steps.map((s, i) => {
+            const active = state.step === s.n;
+            const done   = state.step > s.n;
+            const dot = active
+              ? 'bg-indigo-500 text-white shadow-md shadow-indigo-200 scale-110'
+              : done
+              ? 'bg-indigo-200 text-indigo-700'
+              : 'bg-slate-200 text-slate-400';
+            const line = done ? 'bg-indigo-300' : 'bg-slate-200';
+            return `
+              <div class="flex items-center">
+                <div class="flex flex-col items-center gap-0.5">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-xs transition-all duration-300 ${dot}">
+                    ${done ? '✓' : s.n}
+                  </div>
+                  <span class="text-[9px] font-bold whitespace-nowrap ${active ? 'text-indigo-600' : 'text-slate-400'}">${s.label}</span>
+                </div>
+                ${i < steps.length - 1
+                  ? `<div class="w-6 h-0.5 mb-3 mx-0.5 rounded-full ${line} transition-all duration-300"></div>`
+                  : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
       `;
     }
 
-    // ==================== Steps ====================
     function buildStepContent() {
       switch (state.step) {
         case 1: return buildStep1();
         case 2: return buildStep2();
         case 3: return buildStep3();
         case 4: return buildStep4();
+        case 5: return buildStep5();
         default: return '';
       }
     }
 
-    /* ---------- Step 1 ---------- */
+    /* -------- Step 1: マトリクス選択 + 日時 -------- */
     function buildStep1() {
       return `
         <div class="text-center">
-          <h2 class="text-2xl font-extrabold text-slate-800 mb-1">今の心はどこにいる？</h2>
-          <p class="text-slate-500 text-sm">心マトリクスの中で、今の自分の状態をクリックして選んでね。</p>
+          <h2 class="text-2xl font-extrabold text-slate-800 mb-1">マトリクスを選ぼう</h2>
+          <p class="text-slate-500 text-sm">どっちのマトリクスをつかう？</p>
         </div>
 
+        <div class="w-full max-w-md flex flex-col gap-3">
+          <button id="selectMatrix1"
+            class="flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left w-full
+                   ${state.matrixType === '1'
+                     ? 'border-indigo-400 bg-indigo-50 shadow-md shadow-indigo-100'
+                     : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50'}">
+            <img src="${IMAGES['1']}" alt="心マトリクス1" class="w-20 h-20 object-cover rounded-xl border border-slate-100 flex-shrink-0">
+            <div class="flex-1">
+              <div class="font-extrabold text-slate-800">かんたん版</div>
+              <div class="text-slate-500 text-xs mt-0.5">心マトリクス１</div>
+              <div class="text-slate-400 text-[10px] mt-1">大きなエリアで選びやすい</div>
+            </div>
+            ${state.matrixType === '1' ? `<div class="text-indigo-500 text-2xl">✓</div>` : ''}
+          </button>
+          <button id="selectMatrix2"
+            class="flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left w-full
+                   ${state.matrixType === '2'
+                     ? 'border-violet-400 bg-violet-50 shadow-md shadow-violet-100'
+                     : 'border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50'}">
+            <img src="${IMAGES['2']}" alt="心マトリクス2" class="w-20 h-20 object-cover rounded-xl border border-slate-100 flex-shrink-0">
+            <div class="flex-1">
+              <div class="font-extrabold text-slate-800">くわしく版</div>
+              <div class="text-slate-500 text-xs mt-0.5">心マトリクス２</div>
+              <div class="text-slate-400 text-[10px] mt-1">細かく分かれていて、より正確に選べる</div>
+            </div>
+            ${state.matrixType === '2' ? `<div class="text-violet-500 text-2xl">✓</div>` : ''}
+          </button>
+        </div>
+
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-md p-5 border border-slate-100 flex flex-col gap-5">
+          <div>
+            <label class="block text-sm font-extrabold text-slate-700 mb-2">📅 今日は何月何日？</label>
+            <input type="text" id="dateInput" value="${escHtml(state.dateText)}"
+              class="w-full rounded-xl border-2 border-slate-100 p-3 text-slate-700 text-sm transition-all"
+              placeholder="例：3月13日">
+          </div>
+          <div>
+            <label class="block text-sm font-extrabold text-slate-700 mb-2">🕐 今は何の時間？</label>
+            <div class="flex flex-wrap gap-2 mb-2">
+              ${TIME_OPTIONS.map(t => `
+                <button class="time-opt px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all
+                               ${state.timeText === t
+                                 ? 'border-indigo-400 bg-indigo-100 text-indigo-700'
+                                 : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-indigo-200 hover:bg-indigo-50'}"
+                        data-time="${t}">${t}</button>
+              `).join('')}
+            </div>
+            <input type="text" id="timeInput" value="${escHtml(state.timeText)}"
+              class="w-full rounded-xl border-2 border-slate-100 p-2.5 text-slate-700 text-sm transition-all"
+              placeholder="または自由に入力...">
+          </div>
+        </div>
+
+        <button id="nextStep1"
+          class="px-10 py-3 font-extrabold rounded-full shadow-lg transition-all hover:scale-105 active:scale-95
+                 ${state.matrixType
+                   ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-200'
+                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+          次へ →
+        </button>
+      `;
+    }
+
+    /* -------- Step 2: ピン1（赤） -------- */
+    function buildStep2() {
+      const img = IMAGES[state.matrixType];
+      return `
+        <div class="text-center">
+          <h2 class="text-2xl font-extrabold text-slate-800 mb-1">今の心はどこにいる？</h2>
+          <p class="text-slate-500 text-sm">マトリクスの中で、今の自分の状態をクリックして選んでね。</p>
+          ${state.dateText || state.timeText
+            ? `<p class="mt-1 text-indigo-400 text-xs font-bold">${escHtml(state.dateText)} ${escHtml(state.timeText)}</p>`
+            : ''}
+        </div>
         <div class="flex flex-col items-center gap-4">
-          <div class="matrix-wrapper cursor-crosshair rounded-2xl overflow-hidden shadow-2xl
-                      border-4 border-white ring-2 ring-indigo-100" id="matrix1">
-            <img src="${IMG}" alt="心マトリクス" draggable="false" id="matrixImg1">
+          <div class="matrix-wrapper cursor-crosshair rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-2 ring-indigo-100" id="matrix2">
+            <img src="${img}" alt="心マトリクス" draggable="false">
             ${state.pin1 ? buildPin(state.pin1, 'red', true) : ''}
           </div>
-
           ${state.pin1
             ? `<div class="flex flex-col items-center gap-3">
                  <p class="text-slate-400 text-sm">ここでいい？クリックし直すと変えられるよ。</p>
-                 <button id="nextStep1"
-                   class="px-10 py-3 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white
-                          font-extrabold rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-105">
+                 <button id="nextStep2"
+                   class="px-10 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-extrabold
+                          rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-105 active:scale-95">
                    次へ →
                  </button>
                </div>`
@@ -190,64 +336,51 @@
       `;
     }
 
-    /* ---------- Step 2 ---------- */
-    function buildStep2() {
+    /* -------- Step 3: 言語化 -------- */
+    function buildStep3() {
+      const img = IMAGES[state.matrixType];
       return `
         <div class="text-center">
           <h2 class="text-2xl font-extrabold text-slate-800 mb-1">今の気持ちを言葉にしよう</h2>
-          <p class="text-slate-500 text-sm">ピンの位置を見ながら、今の自分を言葉にしてみよう。</p>
+          <p class="text-slate-500 text-sm">ピンの場所を見ながら、今の自分を言葉にしてみよう。</p>
         </div>
-
-        <div class="matrix-wrapper rounded-2xl overflow-hidden shadow-md border-4 border-white ring-1 ring-indigo-100 opacity-90">
-          <img src="${IMG}" alt="心マトリクス" draggable="false" style="max-width:min(400px,80vw);">
+        <div class="matrix-wrapper rounded-2xl overflow-hidden shadow-md border-4 border-white opacity-90">
+          <img src="${img}" alt="心マトリクス" draggable="false" style="max-width:min(380px,85vw);">
           ${state.pin1 ? buildPin(state.pin1, 'red', false) : ''}
         </div>
-
         <div class="w-full max-w-md flex flex-col gap-4">
-          ${buildCard({
-            dot: '#f87171', label: '今の気持ちは？',
-            id: 'feelingInput', value: state.feeling,
-            placeholder: '例：なんだか焦っていて、頭がいっぱいな感じ...'
-          })}
-          ${buildCard({
-            dot: '#818cf8', label: 'これからどうしたい？（目標・アクション）',
-            id: 'actionInput', value: state.action,
-            placeholder: '例：深呼吸して、まず1つずつ片付けていきたい...'
-          })}
-
-          <button id="nextStep2"
-            class="px-10 py-3 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white
-                   font-extrabold rounded-full shadow-lg shadow-indigo-200 transition-all
-                   hover:scale-105 self-center">
+          ${buildCard({dot:'#f87171', label:'今の気持ちは？', id:'feelingInput', value:state.feeling, placeholder:'例：なんだか焦っていて、頭がいっぱいな感じ...'})}
+          ${buildCard({dot:'#818cf8', label:'これからどうしたい？（目標・アクション）', id:'actionInput', value:state.action, placeholder:'例：深呼吸して、まず1つずつ片付けていきたい...'})}
+          <button id="nextStep3"
+            class="px-10 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-extrabold
+                   rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-105 active:scale-95 self-center">
             決定 →
           </button>
         </div>
       `;
     }
 
-    /* ---------- Step 3 ---------- */
-    function buildStep3() {
+    /* -------- Step 4: ピン2（青） -------- */
+    function buildStep4() {
+      const img = IMAGES[state.matrixType];
       return `
         <div class="text-center">
           <h2 class="text-2xl font-extrabold text-slate-800 mb-1">アクションの後、心はどこへ？</h2>
           <p class="text-slate-500 text-sm">アクションをした後の自分の状態をクリックして選んでね。</p>
         </div>
-
         <div class="flex flex-col items-center gap-4">
-          <div class="matrix-wrapper cursor-crosshair rounded-2xl overflow-hidden shadow-2xl
-                      border-4 border-white ring-2 ring-blue-100" id="matrix3">
-            <img src="${IMG}" alt="心マトリクス" draggable="false" id="matrixImg3">
+          <div class="matrix-wrapper cursor-crosshair rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-2 ring-blue-100" id="matrix4">
+            <img src="${img}" alt="心マトリクス" draggable="false">
             ${state.pin1 ? buildPin(state.pin1, 'red', false) : ''}
             ${state.pin2 ? buildPin(state.pin2, 'blue', true) : ''}
-            ${state.pin1 && state.pin2 ? buildArrow() : ''}
+            ${state.pin1 && state.pin2 ? buildArrow(state) : ''}
           </div>
-
           ${state.pin2
             ? `<div class="flex flex-col items-center gap-3">
                  <p class="text-slate-400 text-sm">ここでいい？クリックし直すと変えられるよ。</p>
-                 <button id="nextStep3"
-                   class="px-10 py-3 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white
-                          font-extrabold rounded-full shadow-lg shadow-blue-200 transition-all hover:scale-105">
+                 <button id="nextStep4"
+                   class="px-10 py-3 bg-blue-500 hover:bg-blue-600 text-white font-extrabold
+                          rounded-full shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95">
                    次へ →
                  </button>
                </div>`
@@ -257,49 +390,242 @@
       `;
     }
 
-    /* ---------- Step 4 ---------- */
-    function buildStep4() {
+    /* -------- Step 5: 振り返り -------- */
+    function buildStep5() {
+      const img = IMAGES[state.matrixType];
       return `
         <div class="text-center">
           <h2 class="text-2xl font-extrabold text-slate-800 mb-1">変化を振り返ろう</h2>
           <p class="text-slate-500 text-sm">どんなアクションをして、心はどう変わった？</p>
         </div>
-
-        <div class="matrix-wrapper rounded-2xl overflow-hidden shadow-md border-4 border-white ring-1 ring-blue-100 opacity-90">
-          <img src="${IMG}" alt="心マトリクス" draggable="false" style="max-width:min(400px,80vw);">
+        <div class="matrix-wrapper rounded-2xl overflow-hidden shadow-md border-4 border-white opacity-90">
+          <img src="${img}" alt="心マトリクス" draggable="false" style="max-width:min(380px,85vw);">
           ${state.pin1 ? buildPin(state.pin1, 'red', false) : ''}
           ${state.pin2 ? buildPin(state.pin2, 'blue', false) : ''}
-          ${state.pin1 && state.pin2 ? buildArrow() : ''}
+          ${state.pin1 && state.pin2 ? buildArrow(state) : ''}
         </div>
-
         <div class="w-full max-w-md flex flex-col gap-4">
-          <!-- ここまでの入力サマリ -->
-          <div class="bg-white/80 rounded-2xl p-4 border border-indigo-100 flex flex-col gap-2 text-sm">
-            <div class="flex gap-2">
+          <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100 flex flex-col gap-2 text-sm">
+            <div class="flex gap-2 items-start">
               <span class="text-red-400 font-extrabold flex-shrink-0">●</span>
-              <span><span class="font-bold text-slate-600">今の気持ち：</span>
-                    <span class="text-slate-700">${escHtml(state.feeling) || '<span class="text-slate-300">(未入力)</span>'}</span></span>
+              <span><span class="font-bold text-slate-600">今の気持ち：</span><span class="text-slate-700">${escHtml(state.feeling) || '<span class="text-slate-300">（未入力）</span>'}</span></span>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-start">
               <span class="text-indigo-400 font-extrabold flex-shrink-0">→</span>
-              <span><span class="font-bold text-slate-600">アクション：</span>
-                    <span class="text-slate-700">${escHtml(state.action) || '<span class="text-slate-300">(未入力)</span>'}</span></span>
+              <span><span class="font-bold text-slate-600">アクション：</span><span class="text-slate-700">${escHtml(state.action) || '<span class="text-slate-300">（未入力）</span>'}</span></span>
+            </div>
+          </div>
+          ${buildCard({dot:'#60a5fa', label:'振り返り（何をして、どう変わった？）', id:'reflectionInput', value:state.reflection, rows:4, placeholder:'例：散歩に出かけたら少し落ち着いた。まだ完全じゃないけど、前より穏やかになった気がする...'})}
+          <button id="nextStep5"
+            class="px-10 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold
+                   rounded-full shadow-lg shadow-emerald-200 transition-all hover:scale-105 active:scale-95 self-center">
+            まとめを見る ✨
+          </button>
+        </div>
+      `;
+    }
+
+    // ==================== SUMMARY ====================
+    function buildSummaryScreen() {
+      return buildSummaryCard(state, false);
+    }
+
+    function buildRecordDetail() {
+      const r = getRecords().find(r => r.id === state.viewingRecordId);
+      if (!r) { state.screen = 'records'; return buildRecords(); }
+      return buildSummaryCard(r, true);
+    }
+
+    function buildSummaryCard(r, isViewMode) {
+      const img    = IMAGES[r.matrixType] || IMAGES['1'];
+      const dlabel = [r.dateText, r.timeText].filter(Boolean).join('　');
+      const mlabel = MATRIX_LABELS[r.matrixType] || '';
+
+      return `
+        <div class="max-w-xl mx-auto px-3 py-6 min-h-screen flex flex-col fade-in">
+          <!-- ヘッダー -->
+          <div class="flex items-center justify-between mb-4">
+            <button id="${isViewMode ? 'backToRecords' : 'summaryHome'}"
+              class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
+                     rounded-xl hover:bg-white/70 transition-all">
+              ${isViewMode ? '← 一覧へ' : '← ホーム'}
+            </button>
+            <h1 class="text-base font-extrabold text-slate-700">心マトリクス記録</h1>
+            <div class="w-16"></div>
+          </div>
+
+          <!-- まとめカード（スクリーンショット対象） -->
+          <div id="summaryCard"
+               class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col">
+
+            <!-- カードヘッダー -->
+            <div class="px-6 py-5" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+              <div class="text-white/70 text-xs font-bold mb-1">心マトリクス 記録</div>
+              <div class="text-white text-xl font-extrabold">${escHtml(dlabel) || '日時未記入'}</div>
+              <div class="text-white/60 text-xs mt-1">${escHtml(mlabel)}</div>
+            </div>
+
+            <!-- マトリクス画像 + ピン -->
+            <div class="flex justify-center py-5 px-4 bg-slate-50 border-b border-slate-100">
+              <div class="matrix-wrapper rounded-2xl overflow-hidden shadow-md border-2 border-white">
+                <img src="${img}" alt="心マトリクス" draggable="false" style="max-width:min(460px,88vw);">
+                ${r.pin1 ? buildPin(r.pin1, 'red', false) : ''}
+                ${r.pin2 ? buildPin(r.pin2, 'blue', false) : ''}
+                ${r.pin1 && r.pin2 ? buildArrow(r, 'arrowSummary') : ''}
+              </div>
+            </div>
+
+            <!-- テキストまとめ -->
+            <div class="px-5 py-5 flex flex-col gap-4">
+              ${buildSummaryRow('🔴', '今の気持ち', r.feeling)}
+              ${buildSummaryRow('💜', 'これからのアクション', r.action)}
+              ${buildSummaryRow('🔵', '振り返り', r.reflection)}
+            </div>
+
+            <!-- スクリーンショット誘導 -->
+            <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 text-center">
+              <p class="text-[10px] text-slate-400 font-bold">
+                📸 スクリーンショットを撮っていつでも見返せるようにしよう
+              </p>
             </div>
           </div>
 
-          ${buildCard({
-            dot: '#60a5fa', label: '振り返り（何をして、どう変わった？）',
-            id: 'reflectionInput', value: state.reflection, rows: 4,
-            placeholder: '例：散歩に出かけたら少し落ち着いた。まだ完全じゃないけど、前より穏やかになった気がする...'
-          })}
-
-          <button id="saveRecord"
-            class="px-10 py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white
-                   font-extrabold rounded-full shadow-lg shadow-emerald-200 transition-all
-                   hover:scale-105 self-center">
-            記録を保存 ✓
-          </button>
+          <!-- アクションボタン（閲覧モード以外） -->
+          ${!isViewMode ? `
+            <div class="flex flex-col items-center gap-3 mt-6">
+              <button id="saveAndFinish"
+                class="px-10 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold
+                       rounded-full shadow-lg shadow-emerald-200 transition-all hover:scale-105 active:scale-95">
+                記録を保存する ✓
+              </button>
+              <p class="text-xs text-slate-400">保存するとこのブラウザにずっと残るよ</p>
+              <button id="viewRecordsBtn"
+                class="text-indigo-400 hover:text-indigo-600 text-sm font-bold transition-colors">
+                📋 過去の記録を見る
+              </button>
+            </div>
+          ` : ''}
         </div>
+      `;
+    }
+
+    function buildSummaryRow(icon, label, text) {
+      return `
+        <div>
+          <div class="text-xs font-extrabold text-slate-400 mb-1">${icon} ${label}</div>
+          <div class="bg-slate-50 rounded-xl px-4 py-3 text-sm text-slate-700 font-bold leading-relaxed
+                      whitespace-pre-wrap min-h-[48px] border border-slate-100">
+            ${escHtml(text) || '<span class="text-slate-300 font-normal">（未入力）</span>'}
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== RECORDS ====================
+    function buildRecords() {
+      const all = getRecords().slice().reverse();
+      return `
+        <div class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col fade-in">
+          <header class="flex items-center justify-between mb-6">
+            <button id="backToHome"
+              class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
+                     rounded-xl hover:bg-white/70 transition-all">
+              ← ホーム
+            </button>
+            <h2 class="text-lg font-extrabold text-slate-700">これまでの記録</h2>
+            <div class="w-16"></div>
+          </header>
+
+          <div class="mb-4 bg-white/60 rounded-2xl px-4 py-3 border border-slate-100 text-xs text-slate-400 leading-relaxed text-center">
+            💾 記録はこの端末のブラウザに保存されています。<br>
+            ブラウザのキャッシュを消すと消えることがあります。
+          </div>
+
+          ${all.length === 0
+            ? `<div class="flex-1 flex flex-col items-center justify-center gap-4 text-center py-16">
+                 <div class="text-5xl">📭</div>
+                 <p class="text-slate-400 text-sm">まだ記録がありません。<br>「はじめる」から記録してみよう！</p>
+               </div>`
+            : `<div class="flex flex-col gap-3">
+                 ${all.map(r => buildRecordCard(r)).join('')}
+               </div>`
+          }
+        </div>
+      `;
+    }
+
+    function buildRecordCard(r) {
+      const img    = IMAGES[r.matrixType] || IMAGES['1'];
+      const dlabel = [r.dateText, r.timeText].filter(Boolean).join('　') || '日時未記入';
+      const snippet = (r.feeling || '').slice(0, 40) + ((r.feeling || '').length > 40 ? '...' : '');
+      return `
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <button class="rec-view w-full text-left p-4 hover:bg-slate-50 transition-colors flex gap-4 items-center"
+                  data-id="${r.id}">
+            <!-- サムネ -->
+            <div class="matrix-wrapper rounded-xl overflow-hidden border border-slate-100 shadow-sm flex-shrink-0"
+                 style="width:72px;height:72px;">
+              <img src="${img}" alt="心マトリクス" class="record-card-img">
+              ${r.pin1 ? buildPinMini(r.pin1, 'red') : ''}
+              ${r.pin2 ? buildPinMini(r.pin2, 'blue') : ''}
+            </div>
+            <!-- テキスト -->
+            <div class="flex-1 min-w-0">
+              <div class="font-extrabold text-slate-700 text-sm mb-0.5">${escHtml(dlabel)}</div>
+              <div class="text-xs text-slate-400 mb-1">${escHtml(MATRIX_LABELS[r.matrixType] || '')}</div>
+              ${snippet ? `<div class="text-xs text-slate-500 line-clamp-2">${escHtml(snippet)}</div>` : ''}
+            </div>
+            <div class="text-slate-300 text-lg flex-shrink-0">›</div>
+          </button>
+          <div class="border-t border-slate-50 flex justify-end px-4 py-2">
+            <button class="rec-del text-[11px] text-red-300 hover:text-red-500 font-bold transition-colors"
+                    data-id="${r.id}">削除</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildPinMini({ xPct, yPct }, color) {
+      const fill = color === 'red' ? '#ef4444' : '#3b82f6';
+      return `
+        <div style="position:absolute;left:${xPct}%;top:${yPct}%;transform:translate(-50%,-100%);pointer-events:none;">
+          <svg width="12" height="18" viewBox="0 0 30 44" fill="none">
+            <path d="M15 0C6.716 0 0 6.716 0 15C0 26.25 15 44 15 44S30 26.25 30 15C30 6.716 23.284 0 15 0Z" fill="${fill}"/>
+            <circle cx="15" cy="14" r="5" fill="rgba(255,255,255,0.8)"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    // ==================== Pin / Arrow ====================
+    function buildPin({ xPct, yPct }, color, animate) {
+      const fill = color === 'red' ? '#ef4444' : '#3b82f6';
+      return `
+        <div class="pin${animate ? ' pin-enter' : ''}" style="left:${xPct}%;top:${yPct}%;">
+          <svg width="30" height="44" viewBox="0 0 30 44" fill="none">
+            <path d="M15 0C6.716 0 0 6.716 0 15C0 26.25 15 44 15 44S30 26.25 30 15C30 6.716 23.284 0 15 0Z" fill="${fill}"/>
+            <circle cx="15" cy="14" r="6" fill="rgba(255,255,255,0.8)"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    function buildArrow(r, markerId) {
+      if (!r.pin1 || !r.pin2) return '';
+      const mid = markerId || 'arrowBlue';
+      return `
+        <svg class="arrow-layer" overflow="visible">
+          <defs>
+            <marker id="${mid}" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" opacity="0.9"/>
+            </marker>
+          </defs>
+          <line
+            x1="${r.pin1.xPct}%" y1="${r.pin1.yPct}%"
+            x2="${r.pin2.xPct}%" y2="${r.pin2.yPct}%"
+            stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="8,4"
+            opacity="0.8" marker-end="url(#${mid})"/>
+        </svg>
       `;
     }
 
@@ -311,160 +637,162 @@
             <span class="inline-block w-3 h-3 rounded-full mr-2 align-middle" style="background:${dot}"></span>
             ${label}
           </label>
-          <textarea
-            id="${id}"
+          <textarea id="${id}"
             class="w-full rounded-xl border-2 border-slate-100 p-3 text-slate-700 resize-none text-sm transition-all"
-            rows="${rows}"
-            placeholder="${placeholder}"
-          >${escHtml(value)}</textarea>
+            rows="${rows}" placeholder="${placeholder}">${escHtml(value)}</textarea>
         </div>
       `;
     }
 
-    function buildPin({ xPct, yPct }, color, animate) {
-      const fill  = color === 'red' ? '#ef4444' : '#3b82f6';
-      const inner = color === 'red' ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.75)';
-      return `
-        <div class="pin${animate ? ' pin-enter' : ''}" style="left:${xPct}%;top:${yPct}%;">
-          <svg width="30" height="44" viewBox="0 0 30 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 0C6.716 0 0 6.716 0 15C0 26.25 15 44 15 44C15 44 30 26.25 30 15C30 6.716 23.284 0 15 0Z" fill="${fill}"/>
-            <circle cx="15" cy="14" r="6" fill="${inner}"/>
-          </svg>
-        </div>
-      `;
-    }
-
-    function buildArrow() {
-      if (!state.pin1 || !state.pin2) return '';
-      return `
-        <svg class="arrow-layer" overflow="visible">
-          <defs>
-            <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" opacity="0.9"/>
-            </marker>
-          </defs>
-          <line
-            x1="${state.pin1.xPct}%" y1="${state.pin1.yPct}%"
-            x2="${state.pin2.xPct}%" y2="${state.pin2.yPct}%"
-            stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="8,4"
-            opacity="0.75" marker-end="url(#arrowBlue)"
-          />
-        </svg>
-      `;
-    }
-
-    function escHtml(str) {
-      return (str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+    function escHtml(s) {
+      return (s || '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     // ==================== Events ====================
     function attachEvents() {
-      /* Step 1 */
-      const m1 = document.getElementById('matrix1');
-      if (m1) {
-        m1.addEventListener('click', (e) => {
-          const r = m1.getBoundingClientRect();
-          state.pin1 = {
-            xPct: ((e.clientX - r.left) / r.width)  * 100,
-            yPct: ((e.clientY - r.top)  / r.height) * 100
-          };
-          render();
-        });
-      }
-      on('nextStep1', () => { state.step = 2; render(); });
+      /* Home */
+      on('startBtn',    () => { state.screen = 'session'; state.step = 1; render(); });
+      on('recordsBtn',  () => { state.screen = 'records'; render(); });
 
-      /* Step 2 */
-      liveInput('feelingInput',  v => state.feeling = v);
-      liveInput('actionInput',   v => state.action  = v);
-      on('nextStep2', () => {
-        state.feeling  = val('feelingInput');
-        state.action   = val('actionInput');
-        state.step = 3;
+      /* Session header */
+      on('homeBtn', () => {
+        if (confirm('ホームに戻ると、入力中のデータが消えます。よろしいですか？')) {
+          resetSession();
+          state.screen = 'home';
+          render();
+        }
+      });
+
+      /* Step 1 */
+      on('selectMatrix1', () => { state.matrixType = '1'; render(); });
+      on('selectMatrix2', () => { state.matrixType = '2'; render(); });
+
+      document.querySelectorAll('.time-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.timeText = btn.dataset.time;
+          const ti = document.getElementById('timeInput');
+          if (ti) ti.value = state.timeText;
+          document.querySelectorAll('.time-opt').forEach(b => {
+            b.classList.remove('border-indigo-400','bg-indigo-100','text-indigo-700');
+            b.classList.add('border-slate-200','bg-slate-50','text-slate-500');
+          });
+          btn.classList.remove('border-slate-200','bg-slate-50','text-slate-500');
+          btn.classList.add('border-indigo-400','bg-indigo-100','text-indigo-700');
+        });
+      });
+
+      liveInput('dateInput', v => state.dateText = v);
+      liveInput('timeInput', v => state.timeText = v);
+
+      on('nextStep1', () => {
+        if (!state.matrixType) return;
+        state.dateText = val('dateInput');
+        state.timeText = val('timeInput');
+        state.step = 2;
         render();
       });
 
-      /* Step 3 */
-      const m3 = document.getElementById('matrix3');
-      if (m3) {
-        m3.addEventListener('click', (e) => {
-          const r = m3.getBoundingClientRect();
-          state.pin2 = {
-            xPct: ((e.clientX - r.left) / r.width)  * 100,
-            yPct: ((e.clientY - r.top)  / r.height) * 100
-          };
+      /* Step 2 */
+      const m2 = document.getElementById('matrix2');
+      if (m2) {
+        m2.addEventListener('click', e => {
+          const r = m2.getBoundingClientRect();
+          state.pin1 = { xPct: (e.clientX - r.left) / r.width * 100, yPct: (e.clientY - r.top) / r.height * 100 };
           render();
         });
       }
-      on('nextStep3', () => { state.step = 4; render(); });
+      on('nextStep2', () => { state.step = 3; render(); });
+
+      /* Step 3 */
+      liveInput('feelingInput', v => state.feeling = v);
+      liveInput('actionInput',  v => state.action  = v);
+      on('nextStep3', () => {
+        state.feeling = val('feelingInput');
+        state.action  = val('actionInput');
+        state.step = 4;
+        render();
+      });
 
       /* Step 4 */
+      const m4 = document.getElementById('matrix4');
+      if (m4) {
+        m4.addEventListener('click', e => {
+          const r = m4.getBoundingClientRect();
+          state.pin2 = { xPct: (e.clientX - r.left) / r.width * 100, yPct: (e.clientY - r.top) / r.height * 100 };
+          render();
+        });
+      }
+      on('nextStep4', () => { state.step = 5; render(); });
+
+      /* Step 5 */
       liveInput('reflectionInput', v => state.reflection = v);
-      on('saveRecord', () => {
+      on('nextStep5', () => {
         state.reflection = val('reflectionInput');
-        saveToStorage();
-        showSuccess();
+        state.screen = 'summary';
+        render();
       });
+
+      /* Summary */
+      on('saveAndFinish', () => {
+        addRecord({
+          id:         Date.now(),
+          savedAt:    new Date().toISOString(),
+          matrixType: state.matrixType,
+          dateText:   state.dateText,
+          timeText:   state.timeText,
+          pin1:       state.pin1,
+          pin2:       state.pin2,
+          feeling:    state.feeling,
+          action:     state.action,
+          reflection: state.reflection
+        });
+        resetSession();
+        state.screen = 'home';
+        render();
+      });
+      on('viewRecordsBtn', () => { state.screen = 'records'; render(); });
+      on('summaryHome',    () => { resetSession(); state.screen = 'home'; render(); });
+
+      /* Records */
+      on('backToHome', () => { state.screen = 'home'; render(); });
+
+      document.querySelectorAll('.rec-view').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.viewingRecordId = Number(btn.dataset.id);
+          state.screen = 'record-detail';
+          render();
+        });
+      });
+      document.querySelectorAll('.rec-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (confirm('この記録を削除しますか？')) {
+            removeRecord(Number(btn.dataset.id));
+            render();
+          }
+        });
+      });
+
+      /* Record detail */
+      on('backToRecords', () => { state.screen = 'records'; render(); });
     }
 
     function on(id, fn) {
       const el = document.getElementById(id);
       if (el) el.addEventListener('click', fn);
     }
-
     function liveInput(id, setter) {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', e => setter(e.target.value));
     }
-
     function val(id) {
       const el = document.getElementById(id);
       return el ? el.value : '';
     }
-
-    // ==================== Storage ====================
-    function saveToStorage() {
-      const record = {
-        id:         Date.now(),
-        date:       new Date().toISOString(),
-        pin1:       state.pin1,
-        pin2:       state.pin2,
-        feeling:    state.feeling,
-        action:     state.action,
-        reflection: state.reflection
-      };
-      const records = JSON.parse(localStorage.getItem('shinmatorikusu_records') || '[]');
-      records.push(record);
-      localStorage.setItem('shinmatorikusu_records', JSON.stringify(records));
-    }
-
-    // ==================== Success screen ====================
-    function showSuccess() {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <div class="flex-1 flex flex-col items-center justify-center gap-6 text-center fade-in py-20">
-          <div class="text-7xl select-none">✨</div>
-          <h2 class="text-2xl font-extrabold text-slate-800">記録しました！</h2>
-          <p class="text-slate-500 text-sm leading-relaxed max-w-xs">
-            今日の心の動きを記録したよ。<br>また振り返りたいときにいつでも使ってね。
-          </p>
-          <button id="startAgain"
-            class="px-10 py-3 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white
-                   font-extrabold rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-105 mt-2">
-            もう一度はじめる
-          </button>
-          <a href="../index.html"
-             class="text-slate-400 hover:text-slate-600 text-sm font-bold transition-colors">
-            一覧へ戻る
-          </a>
-        </div>
-      `;
-      document.getElementById('startAgain').addEventListener('click', () => {
-        Object.assign(state, { step: 1, pin1: null, pin2: null, feeling: '', action: '', reflection: '' });
-        render();
+    function resetSession() {
+      Object.assign(state, {
+        step: 1, matrixType: null, dateText: '', timeText: '',
+        pin1: null, pin2: null, feeling: '', action: '', reflection: ''
       });
     }
 

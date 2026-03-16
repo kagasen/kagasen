@@ -51,10 +51,14 @@
       border-color: #818cf8;
       box-shadow: 0 0 0 3px rgba(129,140,248,0.2);
     }
-    input[type="text"]:focus {
+    input[type="text"]:focus,
+    input[type="date"]:focus {
       outline: none;
       border-color: #818cf8;
       box-shadow: 0 0 0 3px rgba(129,140,248,0.2);
+    }
+    input[type="date"] {
+      color: #334155;
     }
     .record-card-img {
       width: 72px;
@@ -81,7 +85,8 @@
       feeling: '',
       action: '',
       reflection: '',
-      viewingRecordId: null
+      viewingRecordId: null,
+      fromSummary: false     // 記録一覧をまとめ画面から開いたか
     };
 
     const IMAGES = {
@@ -274,9 +279,8 @@
         <div class="w-full max-w-md bg-white rounded-2xl shadow-md p-5 border border-slate-100 flex flex-col gap-5">
           <div>
             <label class="block text-sm font-extrabold text-slate-700 mb-2">📅 今日は何月何日？</label>
-            <input type="text" id="dateInput" value="${escHtml(state.dateText)}"
-              class="w-full rounded-xl border-2 border-slate-100 p-3 text-slate-700 text-sm transition-all"
-              placeholder="例：3月13日">
+            <input type="date" id="dateInput" value="${escHtml(state.dateText)}"
+              class="w-full rounded-xl border-2 border-slate-100 p-3 text-slate-700 text-sm transition-all">
           </div>
           <div>
             <label class="block text-sm font-extrabold text-slate-700 mb-2">🕐 今は何の時間？</label>
@@ -313,7 +317,7 @@
           <h2 class="text-2xl font-extrabold text-slate-800 mb-1">今の心はどこにいる？</h2>
           <p class="text-slate-500 text-sm">マトリクスの中で、今の自分の状態をクリックして選んでね。</p>
           ${state.dateText || state.timeText
-            ? `<p class="mt-1 text-indigo-400 text-xs font-bold">${escHtml(state.dateText)} ${escHtml(state.timeText)}</p>`
+            ? `<p class="mt-1 text-indigo-400 text-xs font-bold">${escHtml(formatDate(state.dateText))} ${escHtml(state.timeText)}</p>`
             : ''}
         </div>
         <div class="flex flex-col items-center gap-4">
@@ -438,7 +442,7 @@
 
     function buildSummaryCard(r, isViewMode) {
       const img    = IMAGES[r.matrixType] || IMAGES['1'];
-      const dlabel = [r.dateText, r.timeText].filter(Boolean).join('　');
+      const dlabel = [formatDate(r.dateText), r.timeText].filter(Boolean).join('　');
       const mlabel = MATRIX_LABELS[r.matrixType] || '';
 
       return `
@@ -500,8 +504,9 @@
               </button>
               <p class="text-xs text-slate-400">保存するとこのブラウザにずっと残るよ</p>
               <button id="viewRecordsBtn"
-                class="text-indigo-400 hover:text-indigo-600 text-sm font-bold transition-colors">
+                class="flex items-center gap-1 text-indigo-400 hover:text-indigo-600 text-sm font-bold transition-colors">
                 📋 過去の記録を見る
+                <span class="text-[10px] text-slate-400 font-normal">（まとめに戻れます）</span>
               </button>
             </div>
           ` : ''}
@@ -527,10 +532,10 @@
       return `
         <div class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col fade-in">
           <header class="flex items-center justify-between mb-6">
-            <button id="backToHome"
+            <button id="backFromRecords"
               class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
                      rounded-xl hover:bg-white/70 transition-all">
-              ← ホーム
+              ${state.fromSummary ? '← まとめに戻る' : '← ホーム'}
             </button>
             <h2 class="text-lg font-extrabold text-slate-700">これまでの記録</h2>
             <div class="w-16"></div>
@@ -556,26 +561,45 @@
 
     function buildRecordCard(r) {
       const img    = IMAGES[r.matrixType] || IMAGES['1'];
-      const dlabel = [r.dateText, r.timeText].filter(Boolean).join('　') || '日時未記入';
-      const snippet = (r.feeling || '').slice(0, 40) + ((r.feeling || '').length > 40 ? '...' : '');
+      const dlabel = [formatDate(r.dateText), r.timeText].filter(Boolean).join('　') || '日時未記入';
+      const fLine  = firstLine(r.feeling);
+      const aLine  = firstLine(r.action);
+      const rLine  = firstLine(r.reflection);
       return `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <button class="rec-view w-full text-left p-4 hover:bg-slate-50 transition-colors flex gap-4 items-center"
-                  data-id="${r.id}">
-            <!-- サムネ -->
-            <div class="matrix-wrapper rounded-xl overflow-hidden border border-slate-100 shadow-sm flex-shrink-0"
-                 style="width:72px;height:72px;">
-              <img src="${img}" alt="心マトリクス" class="record-card-img">
-              ${r.pin1 ? buildPinMini(r.pin1, 'red') : ''}
-              ${r.pin2 ? buildPinMini(r.pin2, 'blue') : ''}
+          <button class="rec-view w-full text-left hover:bg-slate-50 transition-colors" data-id="${r.id}">
+            <!-- ヘッダー行 -->
+            <div class="flex items-center justify-between px-4 pt-4 pb-2 gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="font-extrabold text-slate-700 text-sm">${escHtml(dlabel)}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">${escHtml(MATRIX_LABELS[r.matrixType] || '')}</div>
+              </div>
+              <!-- サムネイル（ピン付き） -->
+              <div class="matrix-wrapper rounded-xl overflow-hidden border border-slate-100 shadow-sm flex-shrink-0"
+                   style="width:64px;height:64px;">
+                <img src="${img}" alt="心マトリクス" class="record-card-img">
+                ${r.pin1 ? buildPinMini(r.pin1, 'red') : ''}
+                ${r.pin2 ? buildPinMini(r.pin2, 'blue') : ''}
+              </div>
             </div>
-            <!-- テキスト -->
-            <div class="flex-1 min-w-0">
-              <div class="font-extrabold text-slate-700 text-sm mb-0.5">${escHtml(dlabel)}</div>
-              <div class="text-xs text-slate-400 mb-1">${escHtml(MATRIX_LABELS[r.matrixType] || '')}</div>
-              ${snippet ? `<div class="text-xs text-slate-500 line-clamp-2">${escHtml(snippet)}</div>` : ''}
+            <!-- 3行テキスト -->
+            <div class="px-4 pb-4 flex flex-col gap-1.5">
+              <div class="flex items-baseline gap-1.5 text-xs">
+                <span class="text-red-400 font-extrabold flex-shrink-0">●</span>
+                <span class="text-slate-500 font-bold flex-shrink-0">今の気持ち</span>
+                <span class="text-slate-600 truncate">${escHtml(fLine) || '<span class="text-slate-300">（未入力）</span>'}</span>
+              </div>
+              <div class="flex items-baseline gap-1.5 text-xs">
+                <span class="text-violet-400 font-extrabold flex-shrink-0">→</span>
+                <span class="text-slate-500 font-bold flex-shrink-0">アクション</span>
+                <span class="text-slate-600 truncate">${escHtml(aLine) || '<span class="text-slate-300">（未入力）</span>'}</span>
+              </div>
+              <div class="flex items-baseline gap-1.5 text-xs">
+                <span class="text-blue-400 font-extrabold flex-shrink-0">●</span>
+                <span class="text-slate-500 font-bold flex-shrink-0">振り返り</span>
+                <span class="text-slate-600 truncate">${escHtml(rLine) || '<span class="text-slate-300">（未入力）</span>'}</span>
+              </div>
             </div>
-            <div class="text-slate-300 text-lg flex-shrink-0">›</div>
           </button>
           <div class="border-t border-slate-50 flex justify-end px-4 py-2">
             <button class="rec-del text-[11px] text-red-300 hover:text-red-500 font-bold transition-colors"
@@ -647,6 +671,21 @@
     function escHtml(s) {
       return (s || '')
         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // "2026-03-13" → "3月13日"、旧テキスト形式はそのまま返す
+    function formatDate(s) {
+      if (!s) return '';
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) return `${parseInt(m[2])}月${parseInt(m[3])}日`;
+      return s;
+    }
+
+    // テキストの最初の1行を返す（maxLen文字まで）
+    function firstLine(text, maxLen = 52) {
+      if (!text) return '';
+      const line = text.split('\n')[0].trim();
+      return line.length > maxLen ? line.slice(0, maxLen) + '…' : line;
     }
 
     // ==================== Events ====================
@@ -751,11 +790,19 @@
         state.screen = 'home';
         render();
       });
-      on('viewRecordsBtn', () => { state.screen = 'records'; render(); });
+      on('viewRecordsBtn', () => { state.fromSummary = true; state.screen = 'records'; render(); });
       on('summaryHome',    () => { resetSession(); state.screen = 'home'; render(); });
 
       /* Records */
-      on('backToHome', () => { state.screen = 'home'; render(); });
+      on('backFromRecords', () => {
+        if (state.fromSummary) {
+          state.fromSummary = false;
+          state.screen = 'summary';
+        } else {
+          state.screen = 'home';
+        }
+        render();
+      });
 
       document.querySelectorAll('.rec-view').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -792,7 +839,8 @@
     function resetSession() {
       Object.assign(state, {
         step: 1, matrixType: null, dateText: '', timeText: '',
-        pin1: null, pin2: null, feeling: '', action: '', reflection: ''
+        pin1: null, pin2: null, feeling: '', action: '', reflection: '',
+        fromSummary: false
       });
     }
 

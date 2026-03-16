@@ -158,13 +158,26 @@
     const TIME_OPTIONS = ['朝', '1時間目', '2時間目', '3時間目', '昼休み', '4時間目', '5時間目', '6時間目', '放課後', '夜'];
 
     const FEELINGS = [
+      // シンプルな気持ちの言葉
       'うれしい', 'たのしい', 'わくわく', 'ほっとした', 'おだやか',
       'まんぞく', 'きもちいい', 'げんき', 'うきうき', 'あんしん',
       'かなしい', 'つらい', 'さみしい', 'くやしい', 'がっかり',
       'ふあん', 'こわい', 'しんぱい', 'はずかしい', 'もじもじ',
       'イライラ・むかつく', 'もやもや', 'ぼんやり', 'つかれた',
       'やる気がない', 'びっくり', 'こんらん', 'ぐるぐる',
-      '集中できない', '何も感じない'
+      '集中できない', '何も感じない',
+      // こどものうちなる声
+      'だれもわかってくれない', 'ひとりでいたい', 'みんなの中に入れない',
+      'うまくできるか不安', 'がんばりたいけどしんどい', 'なんでわたしだけ',
+      'ずるいと思う', 'もっとほめてもらいたい', '見てほしい・気づいてほしい',
+      'なにもしたくない', 'またやってしまった', 'じぶんがダメだと思う',
+      'だれかのそばにいたい', '気持ちがうまく言えない', 'こころがからっぽな感じ',
+      'なんかしらないけどなきたい', 'いつもとなんか違う', 'いろんなことが重なってしんどい',
+      '期待されているのがプレッシャー', 'がんばっているのに認められない',
+      'ドキドキが止まらない', 'もっと上手になりたい', 'あきらめたくないけどつかれた',
+      'やり直したい', 'だれかに助けてほしい',
+      '大丈夫って言えるけど本当はしんどい', '楽しみたいのに楽しめない',
+      '本当のことが言えない', '負けたくない', 'もっとじぶんを好きになりたい'
     ];
 
     const ACTIONS = [
@@ -276,13 +289,17 @@
     function buildSessionHeader() {
       return `
         <header class="flex items-center justify-between mb-4">
+          <button id="prevStepBtn"
+            class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5 rounded-xl
+                   hover:bg-white/70 transition-all">
+            ← 1つ前
+          </button>
+          <h1 class="text-base font-extrabold text-slate-700 tracking-wide">心マトリクス</h1>
           <button id="homeBtn"
             class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5 rounded-xl
                    hover:bg-white/70 transition-all">
-            ← ホーム
+            🏠 ホーム
           </button>
-          <h1 class="text-base font-extrabold text-slate-700 tracking-wide">心マトリクス</h1>
-          <div class="w-16"></div>
         </header>
         ${buildStepBar()}
       `;
@@ -546,13 +563,17 @@
         <div class="max-w-xl mx-auto px-3 py-6 flex flex-col fade-in">
           <!-- ヘッダー -->
           <div class="flex items-center justify-between mb-4">
-            <button id="${isViewMode ? 'backToRecords' : 'summaryHome'}"
+            <button id="${isViewMode ? 'backToRecords' : 'summaryBack'}"
               class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
                      rounded-xl hover:bg-white/70 transition-all">
-              ${isViewMode ? '← 一覧へ' : '← ホーム'}
+              ${isViewMode ? '← 一覧へ' : '← 1つ前'}
             </button>
             <h1 class="text-base font-extrabold text-slate-700">心マトリクス記録</h1>
-            <div class="w-16"></div>
+            <button id="${isViewMode ? 'detailHomeBtn' : 'summaryHome'}"
+              class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
+                     rounded-xl hover:bg-white/70 transition-all">
+              🏠 ホーム
+            </button>
           </div>
 
           <!-- まとめカード（スクリーンショット対象） -->
@@ -645,10 +666,14 @@
             <button id="backFromRecords"
               class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
                      rounded-xl hover:bg-white/70 transition-all">
-              ${state.fromSummary ? '← まとめに戻る' : '← ホーム'}
+              ← 1つ前${state.fromSummary ? '（まとめへ）' : ''}
             </button>
             <h2 class="text-lg font-extrabold text-slate-700">これまでの記録</h2>
-            <div class="w-16"></div>
+            <button id="recordsHomeBtn"
+              class="text-slate-400 hover:text-slate-600 text-sm font-bold px-3 py-1.5
+                     rounded-xl hover:bg-white/70 transition-all">
+              🏠 ホーム
+            </button>
           </header>
 
           <div class="mb-4 bg-white/60 rounded-2xl px-4 py-3 border border-slate-100 text-xs text-slate-400 leading-relaxed text-center">
@@ -856,6 +881,13 @@
       on('recordsBtn',  () => { state.screen = 'records'; render(); });
 
       /* Session header */
+      on('prevStepBtn', () => {
+        if (state.step <= 1) {
+          resetSession(); state.screen = 'home'; render();
+        } else {
+          state.step--; render();
+        }
+      });
       on('homeBtn', () => {
         if (confirm('ホームに戻ると、入力中のデータが消えます。よろしいですか？')) {
           resetSession();
@@ -973,7 +1005,14 @@
         render();
       });
       on('viewRecordsBtn', () => { state.fromSummary = true; state.screen = 'records'; render(); });
-      on('summaryHome',    () => { resetSession(); state.screen = 'home'; render(); });
+      // まとめ画面「← 1つ前」→ セッションのステップ5へ戻る
+      on('summaryBack', () => { state.screen = 'session'; state.step = 5; render(); });
+      // まとめ画面「🏠 ホーム」→ 確認してリセット
+      on('summaryHome', () => {
+        if (confirm('ホームに戻ると、保存されていないデータが消えます。よろしいですか？')) {
+          resetSession(); state.screen = 'home'; render();
+        }
+      });
 
       /* Records */
       on('backFromRecords', () => {
@@ -985,6 +1024,7 @@
         }
         render();
       });
+      on('recordsHomeBtn', () => { state.screen = 'home'; render(); });
 
       document.querySelectorAll('.rec-view').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1018,7 +1058,8 @@
       });
 
       /* Record detail */
-      on('backToRecords', () => { state.screen = 'records'; render(); });
+      on('backToRecords',  () => { state.screen = 'records'; render(); });
+      on('detailHomeBtn',  () => { state.screen = 'home';    render(); });
     }
 
     function on(id, fn) {

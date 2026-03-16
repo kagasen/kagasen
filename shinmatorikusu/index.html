@@ -97,11 +97,36 @@
       50%       { transform: translateY(-6px); }
     }
     .mascot-float { animation: mascotFloat 3s ease-in-out infinite; }
+
+    /* ピッカーモーダル（底から出るシート） */
+    #pickerRoot { position: relative; z-index: 200; }
+    .picker-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .picker-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.4);
+    }
+    .picker-sheet {
+      position: relative;
+      background: white;
+      border-radius: 1.5rem 1.5rem 0 0;
+      max-height: 72vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 -4px 32px rgba(0,0,0,0.18);
+    }
+    @keyframes sheetUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .picker-sheet { animation: sheetUp 0.22s ease-out forwards; }
   </style>
 </head>
 
 <body class="min-h-screen" style="background:linear-gradient(135deg,#f0f4ff 0%,#f5f0ff 50%,#f0fff4 100%);">
   <div id="app"></div>
+  <div id="pickerRoot"></div>
 
   <script>
     // ==================== State ====================
@@ -118,7 +143,8 @@
       reflection: '',
       viewingRecordId: null,
       fromSummary: false,    // 記録一覧をまとめ画面から開いたか
-      confirmDeleteId: null  // 削除確認中の記録ID
+      confirmDeleteId: null, // 削除確認中の記録ID
+      pickerType: null       // 'feeling' | 'action' | null
     };
 
     const IMAGES = {
@@ -130,6 +156,29 @@
       '2': 'くわしく版（心マトリクス２）'
     };
     const TIME_OPTIONS = ['朝', '1時間目', '2時間目', '3時間目', '昼休み', '4時間目', '5時間目', '6時間目', '放課後', '夜'];
+
+    const FEELINGS = [
+      'うれしい', 'たのしい', 'わくわく', 'ほっとした', 'おだやか',
+      'まんぞく', 'きもちいい', 'げんき', 'うきうき', 'あんしん',
+      'かなしい', 'つらい', 'さみしい', 'くやしい', 'がっかり',
+      'ふあん', 'こわい', 'しんぱい', 'はずかしい', 'もじもじ',
+      'イライラ・むかつく', 'もやもや', 'ぼんやり', 'つかれた',
+      'やる気がない', 'びっくり', 'こんらん', 'ぐるぐる',
+      '集中できない', '何も感じない'
+    ];
+
+    const ACTIONS = [
+      '深呼吸をしてみる', '外を歩く・散歩する', '友だちや家族と話す', '先生に相談する',
+      '好きな音楽を聴く', '好きなことをする時間をつくる', '体を動かす・運動する',
+      'まず1つだけやってみる', 'ゆっくり休む', '早めに寝る',
+      'ノートや紙に書き出す', '目標を紙に書く', '計画を立て直す', '整理・整頓する',
+      '好きな本を読む', '絵を描く・工作する', '水を飲む・少し休憩する',
+      'できたことを確認する', '自分をほめる', '誰かにほめてもらう',
+      '気分転換をする', '楽しみをつくる', '感謝することを見つける',
+      'ごはんをしっかり食べる', 'とりあえず始めてみる', '一段階ずつ進める',
+      '苦手なことを後回しにしない', '助けを求める', '今日できたことを振り返る',
+      'ゆっくり考える時間をつくる'
+    ];
 
     // ==================== Storage ====================
     function getRecords() {
@@ -156,6 +205,8 @@
         case 'records':       app.innerHTML = buildRecords();       break;
         case 'record-detail': app.innerHTML = buildRecordDetail();  break;
       }
+      const pickerRoot = document.getElementById('pickerRoot');
+      pickerRoot.innerHTML = state.pickerType ? buildPickerModal() : '';
       attachEvents();
     }
 
@@ -399,8 +450,8 @@
           ${state.pin1 ? buildPin(state.pin1, 'red', false) : ''}
         </div>
         <div class="w-full max-w-md flex flex-col gap-4">
-          ${buildCard({dot:'#f87171', label:'今の気持ちは？', id:'feelingInput', value:state.feeling, placeholder:'例：なんだか焦っていて、頭がいっぱいな感じ...'})}
-          ${buildCard({dot:'#818cf8', label:'これからどうしたい？（目標・アクション）', id:'actionInput', value:state.action, placeholder:'例：深呼吸して、まず1つずつ片付けていきたい...'})}
+          ${buildCard({dot:'#f87171', label:'今の気持ちは？', id:'feelingInput', value:state.feeling, placeholder:'例：なんだか焦っていて、頭がいっぱいな感じ...', pickerId:'openFeelingPicker'})}
+          ${buildCard({dot:'#818cf8', label:'これからどうしたい？（目標・アクション）', id:'actionInput', value:state.action, placeholder:'例：深呼吸して、まず1つずつ片付けていきたい...', pickerId:'openActionPicker'})}
           <button id="nextStep3"
             class="px-10 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-extrabold
                    rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-105 active:scale-95 self-center">
@@ -527,9 +578,9 @@
 
             <!-- テキストまとめ -->
             <div class="px-5 py-5 flex flex-col gap-4">
-              ${buildSummaryRow('🔴', '今の気持ち', r.feeling)}
-              ${buildSummaryRow('💜', 'これからのアクション', r.action)}
-              ${buildSummaryRow('🔵', '振り返り', r.reflection)}
+              ${buildSummaryRow('🔴', '今の気持ち',         r.feeling,    isViewMode ? null : 'summaryFeeling')}
+              ${buildSummaryRow('💜', 'これからのアクション', r.action,     isViewMode ? null : 'summaryAction')}
+              ${buildSummaryRow('🔵', '振り返り',           r.reflection, isViewMode ? null : 'summaryReflection')}
             </div>
 
             <!-- スクリーンショット誘導 -->
@@ -560,7 +611,20 @@
       `;
     }
 
-    function buildSummaryRow(icon, label, text) {
+    function buildSummaryRow(icon, label, text, fieldId = null) {
+      if (fieldId) {
+        // 編集可能テキストエリア（まとめ画面・保存前）
+        return `
+          <div>
+            <div class="text-xs font-extrabold text-slate-400 mb-1">${icon} ${label}</div>
+            <textarea id="${fieldId}"
+              class="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm text-slate-700 font-bold
+                     leading-relaxed min-h-[56px] border-2 border-slate-100 resize-none transition-all"
+              rows="3" placeholder="ここに入力できるよ">${escHtml(text)}</textarea>
+          </div>
+        `;
+      }
+      // 読み取り専用（記録閲覧時）
       return `
         <div>
           <div class="text-xs font-extrabold text-slate-400 mb-1">${icon} ${label}</div>
@@ -711,16 +775,56 @@
     }
 
     // ==================== UI Helpers ====================
-    function buildCard({ dot, label, id, value, placeholder, rows = 3 }) {
+    function buildCard({ dot, label, id, value, placeholder, rows = 3, pickerId = null }) {
       return `
         <div class="bg-white rounded-2xl shadow-md p-5 border border-slate-100">
-          <label class="block text-sm font-extrabold text-slate-700 mb-2" for="${id}">
-            <span class="inline-block w-3 h-3 rounded-full mr-2 align-middle" style="background:${dot}"></span>
-            ${label}
-          </label>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-extrabold text-slate-700 flex items-center gap-2" for="${id}">
+              <span class="inline-block w-3 h-3 rounded-full flex-shrink-0" style="background:${dot}"></span>
+              ${label}
+            </label>
+            ${pickerId ? `
+              <button id="${pickerId}"
+                class="flex-shrink-0 text-xs font-bold text-indigo-500 hover:text-indigo-700
+                       bg-indigo-50 hover:bg-indigo-100 border border-indigo-100
+                       rounded-full px-3 py-1.5 transition-all active:scale-95">
+                💭 えらぶ
+              </button>
+            ` : ''}
+          </div>
           <textarea id="${id}"
             class="w-full rounded-xl border-2 border-slate-100 p-3 text-slate-700 resize-none text-sm transition-all"
             rows="${rows}" placeholder="${placeholder}">${escHtml(value)}</textarea>
+        </div>
+      `;
+    }
+
+    function buildPickerModal() {
+      const isFeelingPicker = state.pickerType === 'feeling';
+      const items = isFeelingPicker ? FEELINGS : ACTIONS;
+      const title = isFeelingPicker ? '💭 気持ちを選ぶ' : '🎯 アクションを選ぶ';
+      return `
+        <div class="picker-overlay">
+          <div class="picker-backdrop close-picker"></div>
+          <div class="picker-sheet">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
+              <h3 class="font-extrabold text-slate-800 text-base">${title}</h3>
+              <button class="close-picker text-slate-400 hover:text-slate-600 text-xl font-bold
+                             w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                ✕
+              </button>
+            </div>
+            <div class="overflow-y-auto p-4 flex flex-wrap gap-2">
+              ${items.map(item => `
+                <button class="picker-item px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800
+                               font-bold text-sm rounded-xl border border-indigo-100 transition-all
+                               active:scale-95" data-value="${escHtml(item)}">${escHtml(item)}</button>
+              `).join('')}
+            </div>
+            <p class="text-center text-[11px] text-slate-400 py-2 pb-safe flex-shrink-0">
+              選んだあと、自由に書き直せるよ
+            </p>
+          </div>
         </div>
       `;
     }
@@ -803,6 +907,8 @@
       /* Step 3 */
       liveInput('feelingInput', v => state.feeling = v);
       liveInput('actionInput',  v => state.action  = v);
+      on('openFeelingPicker', () => { state.feeling = val('feelingInput'); state.pickerType = 'feeling'; render(); });
+      on('openActionPicker',  () => { state.action  = val('actionInput');  state.pickerType = 'action';  render(); });
       on('nextStep3', () => {
         state.feeling = val('feelingInput');
         state.action  = val('actionInput');
@@ -827,6 +933,25 @@
         state.reflection = val('reflectionInput');
         state.screen = 'summary';
         render();
+      });
+
+      /* Summary editable fields */
+      liveInput('summaryFeeling',    v => state.feeling    = v);
+      liveInput('summaryAction',     v => state.action     = v);
+      liveInput('summaryReflection', v => state.reflection = v);
+
+      /* Picker */
+      document.querySelectorAll('.close-picker').forEach(el => {
+        el.addEventListener('click', () => { state.pickerType = null; render(); });
+      });
+      document.querySelectorAll('.picker-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const v = btn.dataset.value;
+          if (state.pickerType === 'feeling') state.feeling = v;
+          if (state.pickerType === 'action')  state.action  = v;
+          state.pickerType = null;
+          render();
+        });
       });
 
       /* Summary */
@@ -912,7 +1037,7 @@
       Object.assign(state, {
         step: 1, matrixType: null, dateText: '', timeText: '',
         pin1: null, pin2: null, feeling: '', action: '', reflection: '',
-        fromSummary: false, confirmDeleteId: null
+        fromSummary: false, confirmDeleteId: null, pickerType: null
       });
     }
 

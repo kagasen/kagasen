@@ -1,5 +1,15 @@
 const appsData = [
     {
+        title: "心マトリクス",
+        description: "今の心の状態をマトリクスで可視化して言葉にしよう。アクションの後の変化も記録できる、メタ認知をうながすアプリ。",
+        category: "others",
+        tagName: "その他",
+        date: "2026/03/13",
+        colorClass: "subject-purple",
+        image: "shinmatorikusu/心マトリクス１.webp",
+        link: "shinmatorikusu/index.html"
+    },
+    {
         title: "ビジョントレーニング",
         description: "目を動かす練習をして、見つける力や集中力を高めよう！色々なトレーニングを選べるよ。",
         category: "others",

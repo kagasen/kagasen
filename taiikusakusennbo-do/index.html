@@ -390,9 +390,32 @@
         <button id="animatePlayerBtn" class="menu-button bg-green-50 hover:bg-green-100 text-green-700">
             アニメーション移動設定
         </button>
+        <button id="renamePlayerBtn" class="menu-button bg-purple-50 hover:bg-purple-100 text-purple-700">
+            名前の変更
+        </button>
         <button id="deletePlayerBtn" class="menu-button bg-red-50 hover:bg-red-100 text-red-700">
             削除
         </button>
+    </div>
+
+    <!-- 名前変更モーダル -->
+    <div id="renameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; display:none; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:12px; padding:20px; min-width:260px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+            <p style="font-size:15px; font-weight:bold; margin-bottom:10px; color:#374151;">名前を入力してください</p>
+            <input id="renameInput" type="text" maxlength="6" placeholder="名前（最大6文字）"
+                style="width:100%; padding:8px 10px; border:2px solid #d1d5db; border-radius:8px; font-size:15px; outline:none; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#d1d5db'">
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button id="renameConfirmBtn"
+                    style="flex:1; background:#7c3aed; color:white; border:none; padding:8px; border-radius:8px; font-size:14px; cursor:pointer; font-weight:bold;">
+                    決定
+                </button>
+                <button id="renameCancelBtn"
+                    style="flex:1; background:#e5e7eb; color:#374151; border:none; padding:8px; border-radius:8px; font-size:14px; cursor:pointer;">
+                    キャンセル
+                </button>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -622,14 +645,19 @@
     const playerMenu = document.getElementById('playerMenu');
     const movePlayerBtn = document.getElementById('movePlayerBtn');
     const animatePlayerBtn = document.getElementById('animatePlayerBtn');
+    const renamePlayerBtn = document.getElementById('renamePlayerBtn');
     const deletePlayerBtn = document.getElementById('deletePlayerBtn');
+    const renameModal = document.getElementById('renameModal');
+    const renameInput = document.getElementById('renameInput');
+    const renameConfirmBtn = document.getElementById('renameConfirmBtn');
+    const renameCancelBtn = document.getElementById('renameCancelBtn');
     
     function showPlayerMenu(player, x, y) {
         playerMenu.style.display = 'block';
         
         // メニューが画面外に出ないように調整
         const menuWidth = 150;
-        const menuHeight = 120;
+        const menuHeight = 155;
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
         
@@ -681,6 +709,42 @@
         showMessage('移動先をクリックしてください', 2000);
     });
     
+    // 名前変更ボタン
+    renamePlayerBtn.addEventListener('click', () => {
+        hidePlayerMenu();
+        if (!selectedPlayer || selectedPlayer.dataset.type === 'ball') return;
+        const span = selectedPlayer.querySelector('.player-number');
+        renameInput.value = span ? span.textContent : '';
+        renameModal.style.display = 'flex';
+        setTimeout(() => renameInput.focus(), 50);
+    });
+
+    function applyRename() {
+        const name = renameInput.value.trim();
+        if (!selectedPlayer) { renameModal.style.display = 'none'; return; }
+        const span = selectedPlayer.querySelector('.player-number');
+        if (span) {
+            span.textContent = name !== '' ? name : span.dataset.originalNumber || span.textContent;
+            // 文字数に応じてフォントサイズ調整
+            if (name.length >= 5) span.style.fontSize = '0.55rem';
+            else if (name.length >= 3) span.style.fontSize = '0.75rem';
+            else span.style.fontSize = '1.2rem';
+        }
+        renameModal.style.display = 'none';
+        selectedPlayer.classList.remove('selected');
+        selectedPlayer = null;
+        showMessage('名前を変更しました', 1200);
+    }
+
+    renameConfirmBtn.addEventListener('click', applyRename);
+    renameCancelBtn.addEventListener('click', () => {
+        renameModal.style.display = 'none';
+    });
+    renameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') applyRename();
+        if (e.key === 'Escape') renameModal.style.display = 'none';
+    });
+
     deletePlayerBtn.addEventListener('click', () => {
         if (selectedPlayer) {
             const playerId = selectedPlayer.dataset.id;
@@ -767,6 +831,7 @@
             const numberSpan = document.createElement('span');
             numberSpan.className = 'player-number';
             numberSpan.textContent = playerNumber;
+            numberSpan.dataset.originalNumber = playerNumber;
             playerDiv.appendChild(numberSpan);
             
             player.appendChild(playerDiv);

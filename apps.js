@@ -168,5 +168,15 @@ const appsData = [
         colorClass: "subject-red",
         image: "images/sakkanojikann.jpg",
         link: "sakkanojikan/index.html"
+    },
+    {
+        title: "漢字部首シューティング",
+        description: "部首とつくりを組み合わせて漢字を作ろう！シューティングゲームで楽しく漢字を覚えられるよ。",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/03/17",
+        colorClass: "subject-red",
+        image: "images/kannjibusyu-ta.jpg",
+        link: "kannjibusyu-ta/kanjibusyu-ta.html"
     }
 ];

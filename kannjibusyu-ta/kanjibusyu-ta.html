@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>漢字部首シューティング！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: white;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            overflow: hidden;
+            touch-action: none; /* タッチスクロール防止 */
+        }
+        #game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+        canvas {
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            /* アスペクト比3:4を維持しつつ画面にフィットさせる */
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="600" height="800"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- ゲームデータ ---
+    // 合体後の漢字を表示するためのマップを作成（小・中学校で習う漢字を大幅に追加！）
+    const KANJI_MAP = {
+        '木': {
+            '寸':'村', '交':'校', '几':'机', '支':'枝', '反':'板', '公':'松', '毎':'梅', '白':'柏', '目':'相', '冬':'柊',
+            '才':'材', '主':'柱', '不':'杯', '艮':'根', '卒':'枠', '直':'植', '莫':'模', '朱':'株', '各':'格', '丙':'柄',
+            '同':'桐', '兆':'桃', '曹':'槽', '僉':'検', '倉':'槍', '票':'標', '幾':'機', '喬':'橋', '亟':'極', '冓':'構', '雚':'権'
+        },
+        '亻': {
+            '木':'休', '本':'体', '主':'住', '士':'仕', '言':'信', '中':'仲', '云':'伝', '乍':'作', '半':'伴', '門':'們',
+            '也':'他', 'ム':'仏', '弋':'代', '氐':'低', '吏':'使', '呆':'保', '亭':'停', '象':'像', '到':'倒', '責':'債',
+            '意':'億', '西':'価', '扁':'偏', '旁':'傍', '則':'側', '寺':'侍', '圭':'佳', '禺':'偶', '侖':'倫', '白':'伯',
+            '昔':'借', '直':'値', '反':'仮', '可':'何', '系':'係', '固':'個', '故':'做', '非':'俳', '十':'什', '千':'仟',
+            '弗':'佛', '建':'健'
+        },
+        '氵': {
+            '毎':'海', '永':'泳', '也':'池', '台':'治', '立':'泣', '皮':'波', '主':'注', '羊':'洋', '舌':'活', '去':'法',
+            '夬':'決', '昜':'湯', '昷':'温', '先':'洗', '原':'源', '寅':'演', '則':'測', '斉':'済', '昆':'混', '魚':'漁',
+            '莫':'漠', '啇':'滴', '冘':'沈', '工':'江', '尼':'泥', '白':'泊', '十':'汁', '干':'汗', '于':'汚', '朝':'潮',
+            '帯':'滞', '容':'溶', '炎':'淡', '少':'沙', '咸':'減', '戔':'浅', '㐬':'流', '曼':'漫', '妻':'凄'
+        },
+        '言': {
+            '吾':'語', '舌':'話', '売':'読', '己':'記', '寺':'詩', '尺':'訳', '寸':'討', '川':'訓', '式':'試', '成':'誠',
+            '丁':'訂', '司':'詞', '忍':'認', '義':'議', '侖':'論', '某':'謀', '迷':'謎', '秀':'誘', '果':'課', '炎':'談',
+            '射':'謝', '兌':'説', '冓':'講', '殳':'設', '志':'誌', '兆':'誂', '夸':'誇', '羊':'詳', '平':'評', '方':'訪',
+            '午':'許', '正':'証', '乍':'詐', '永':'詠', '襄':'譲', '隹':'誰', '胃':'謂', '普':'譜', '呉':'誤', '若':'諾'
+        },
+        '口': {
+            '未':'味', '乎':'呼', '及':'吸', '欠':'吹', '关':'咲', '土':'吐', '昌':'唱', '鳥':'鳴', '十':'叶', '貝':'唄',
+            '丩':'叫', '今':'吟', '隹':'唯', '垂':'唾', '曷':'喝', '奐':'喚', '契':'喫', '赫':'嚇', '属':'嘱', '宣':'喧',
+            '臭':'嗅', '朝':'嘲', '尊':'噂', '燕':'嚥', '交':'咬', '乞':'吃', '可':'呵', '犬':'吠', '勿':'吻', '虚':'嘘', 
+            '歯':'噛', '兪':'喩', '兄':'呪'
+        }
+    };
+
+    // マップから既存の KANJI_DATA を自動生成
+    const KANJI_DATA = {};
+    for (let bushu in KANJI_MAP) {
+        KANJI_DATA[bushu] = Object.keys(KANJI_MAP[bushu]);
+    }
+    
+    const BUSHU_LABELS = {
+        '木': 'きへん',
+        '亻': 'にんべん',
+        '氵': 'さんずい',
+        '言': 'ごんべん',
+        '口': 'くちへん'
+    };
+
+    // 全ての「つくり」のリストを作成（重複なし）
+    const ALL_TSUKURI = [...new Set(Object.values(KANJI_DATA).flat())];
+
+    // --- ゲーム状態変数 ---
+    let state = 'TITLE'; // TITLE, SELECT, PLAY, GAMEOVER
+    let score = 0;
+    let life = 5;
+    let frameCount = 0;
+    let shakeTime = 0;
+
+    let player = null;
+    let bullets = [];
+    let enemies = [];
+    let items = []; // ハートなどのアイテム用配列を追加
+    let particles = [];
+    let stars = [];
+
+    // キー入力状態
+    const keys = {
+        ArrowUp: false,
+        ArrowDown: false,
+        ArrowLeft: false,
+        ArrowRight: false,
+        w: false, a: false, s: false, d: false,
+        Space: false,
+        n: false, N: false // Nキー追加
+    };
+
+    // マウス/タッチ状態
+    const pointer = { x: canvas.width/2, y: canvas.height/2, active: false, slashInput: false };
+
+    // --- クラス定義 ---
+
+    class Player {
+        constructor(bushu) {
+            this.bushu = bushu;
+            this.x = canvas.width / 2;
+            this.y = canvas.height - 100;
+            this.width = 40;
+            this.height = 40;
+            this.speed = 6;
+            this.shootTimer = 0;
+            
+            // 刀用
+            this.slashCooldown = 0;
+            this.slashTimer = 0;
+            this.isSlashing = false;
+            this.slashRadius = 80; // 斬撃の範囲
+            
+            // 武器ごとの連射間隔
+            switch(bushu) {
+                case '木': this.shootInterval = 10; break;
+                case '亻': this.shootInterval = 5; break; // レーザー
+                case '氵': this.shootInterval = 25; break; // 散弾
+                case '言': this.shootInterval = 15; break; // 文字
+                case '口': this.shootInterval = 6; break; // 螺旋
+            }
+        }
+
+        update() {
+            // キーボード移動
+            if (keys.ArrowUp || keys.w) this.y -= this.speed;
+            if (keys.ArrowDown || keys.s) this.y += this.speed;
+            if (keys.ArrowLeft || keys.a) this.x -= this.speed;
+            if (keys.ArrowRight || keys.d) this.x += this.speed;
+
+            // タッチ/マウス移動（ポインターに少し遅れて追従）
+            if (pointer.active) {
+                const dx = pointer.x - this.x;
+                // 指で隠れないように少し上にオフセット
+                const dy = (pointer.y - 40) - this.y; 
+                this.x += dx * 0.15;
+                this.y += dy * 0.15;
+            }
+
+            // 画面外に出ないように制限
+            this.x = Math.max(this.width/2, Math.min(canvas.width - this.width/2, this.x));
+            this.y = Math.max(this.height/2, Math.min(canvas.height - this.height/2, this.y));
+
+            // 刀の更新
+            if (this.slashCooldown > 0) this.slashCooldown--;
+            if (this.slashTimer > 0) {
+                this.slashTimer--;
+                if (this.slashTimer <= 0) this.isSlashing = false;
+            }
+
+            if ((keys.n || keys.N || pointer.slashInput) && this.slashCooldown <= 0) {
+                this.isSlashing = true;
+                this.slashTimer = 10; // 斬撃エフェクト持続時間
+                this.slashCooldown = 30; // クールダウン
+                pointer.slashInput = false; // 入力を消費
+            }
+
+            // タッチ中またはスペースキー押下時のみ射撃
+            this.shootTimer++;
+            if ((pointer.active || keys.Space) && this.shootTimer >= this.shootInterval) {
+                this.shoot();
+                this.shootTimer = 0;
+            }
+        }
+
+        shoot() {
+            if (this.bushu === '氵') {
+                // 5方向散弾
+                for(let i = -2; i <= 2; i++) {
+                    bullets.push(new Bullet(this.x, this.y - this.height/2, this.bushu, -Math.PI/2 + i * 0.25));
+                }
+            } else {
+                bullets.push(new Bullet(this.x, this.y - this.height/2, this.bushu));
+            }
+        }
+
+        draw(ctx) {
+            // 斬撃の描画 (自機の下に描画)
+            if (this.isSlashing) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // 斬撃のアニメーション進行度 (0.0 〜 1.0)
+                const progress = 1 - (this.slashTimer / 10); 
+                const startAngle = Math.PI; // 左側
+                const currentAngle = Math.PI + (Math.PI * progress); // 左から右へ進む角度
+
+                // 斬撃の軌跡（扇形）
+                ctx.beginPath();
+                ctx.moveTo(0, -10);
+                ctx.arc(0, -10, this.slashRadius, startAngle, currentAngle);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+
+                // 軌跡の外側の線
+                ctx.beginPath();
+                ctx.arc(0, -10, this.slashRadius, startAngle, currentAngle);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#00ffff';
+                ctx.stroke();
+
+                // 刀身自体（現在角度に向かって伸びる線）
+                ctx.beginPath();
+                ctx.moveTo(0, -10);
+                ctx.lineTo(
+                    Math.cos(currentAngle) * this.slashRadius, 
+                    -10 + Math.sin(currentAngle) * this.slashRadius
+                );
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // 自機の描画（青い光るカプセル）
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            
+            // エンジン炎 (縦スクロールに合わせて下向きに)
+            ctx.fillStyle = `rgba(0, 255, 255, ${0.5 + Math.sin(frameCount * 0.5) * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(-10, this.height/2);
+            ctx.lineTo(0, this.height/2 + 20 + Math.random()*10);
+            ctx.lineTo(10, this.height/2);
+            ctx.fill();
+
+            // 機体
+            ctx.fillStyle = '#0a2a4a';
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(-this.width/2, -this.height/2, this.width, this.height, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // 部首テキスト
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '24px "M PLUS Rounded 1c"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.bushu, 0, 0);
+            
+            ctx.restore();
+        }
+    }
+
+    // --- 不足していた Bullet クラスを復元 ---
+    class Bullet {
+        constructor(x, y, bushu, angle = -Math.PI/2) {
+            this.x = x;
+            this.y = y;
+            this.bushu = bushu;
+            this.markedForDeletion = false;
+            this.age = 0;
+
+            switch(bushu) {
+                case '木': // ノーマル弾
+                    this.vx = 0; this.vy = -12;
+                    this.width = 10; this.height = 20;
+                    break;
+                case '亻': // レーザー（貫通）
+                    this.vx = 0; this.vy = -25;
+                    this.width = 6; this.height = 80;
+                    this.piercing = true;
+                    this.hitEnemies = new Set();
+                    break;
+                case '氵': // 散弾（飛距離制限あり）
+                    const speed = 10;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.width = 12; this.height = 12;
+                    this.maxAge = 25; // 短射程
+                    break;
+                case '言': // わぁ（巨大化）
+                    this.vx = 0; this.vy = -8;
+                    this.width = 60; this.height = 60;
+                    this.text = 'わぁ';
+                    break;
+                case '口': // 螺旋
+                    this.baseX = x;
+                    this.vy = -6;
+                    this.width = 15; this.height = 15;
+                    this.angle = 0;
+                    break;
+            }
+        }
+
+        update() {
+            this.age++;
+
+            if (this.bushu === '氵' && this.age > this.maxAge) {
+                this.markedForDeletion = true;
+            }
+
+            if (this.bushu === '口') {
+                this.y += this.vy;
+                this.angle += 0.3;
+                this.x = this.baseX + Math.sin(this.angle) * 60;
+            } else {
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            if (this.y < -50 || this.x < -50 || this.x > canvas.width + 50) {
+                this.markedForDeletion = true;
+            }
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            if (this.bushu === '言') {
+                ctx.fillStyle = '#ffaa00';
+                ctx.font = 'bold 40px "M PLUS Rounded 1c"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.text, 0, 0);
+            } else if (this.bushu === '亻') {
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ffff';
+                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+            } else if (this.bushu === '氵') {
+                ctx.fillStyle = '#00aaff';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.width/2, 0, Math.PI*2);
+                ctx.fill();
+            } else if (this.bushu === '口') {
+                ctx.fillStyle = '#ff00ff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff00ff';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.width/2, 0, Math.PI*2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = '#ffff00';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffff00';
+                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+            }
+
+            ctx.restore();
+        }
+    }
+
+    // --- 不足していた Enemy クラスを復元 ---
+    class Enemy {
+        constructor() {
+            this.x = Math.random() * (canvas.width - 80) + 40;
+            this.y = -50;
+            this.baseX = this.x;
+            // スピードをさらに遅くして、じっくり考えられるようにする
+            this.speed = 0.15 + Math.random() * 0.3 + (score / 8000); 
+            this.width = 40;
+            this.height = 40;
+            this.markedForDeletion = false;
+
+            // --- 動きの不規則化 ---
+            // 動きのタイプ（0: 直進, 1: 蛇行, 2: 複雑な蛇行）
+            this.moveType = Math.floor(Math.random() * 3); 
+            
+            // 揺れの基準となる角度
+            this.angle = Math.random() * Math.PI * 2;
+            // 揺れる速さ（個体ごとに違う）
+            this.angleSpeed = 0.01 + Math.random() * 0.03; 
+            // 揺れる幅（20〜80ピクセルの間でランダム）
+            this.amplitude = 20 + Math.random() * 60; 
+            
+            // 複雑な蛇行（moveType === 2）用のサブパラメータ
+            this.angle2 = Math.random() * Math.PI * 2;
+            this.angleSpeed2 = 0.02 + Math.random() * 0.04;
+
+            // つくりを決定する
+            // 40%の確率で、プレイヤーの部首にとって正解となるつくりを選ぶ
+            if (Math.random() < 0.4 && player) {
+                const correctList = KANJI_DATA[player.bushu];
+                this.tsukuri = correctList[Math.floor(Math.random() * correctList.length)];
+            } else {
+                // 残りは完全ランダム
+                this.tsukuri = ALL_TSUKURI[Math.floor(Math.random() * ALL_TSUKURI.length)];
+            }
+        }
+
+        update() {
+            this.y += this.speed;
+            
+            if (this.moveType === 1) {
+                // 個体ごとに違う幅・速さで蛇行
+                this.x = this.baseX + Math.sin(this.angle) * this.amplitude;
+                this.angle += this.angleSpeed;
+            } else if (this.moveType === 2) {
+                // 2つの波を合成した予測しづらい不規則な蛇行
+                this.x = this.baseX + Math.sin(this.angle) * (this.amplitude * 0.6) + Math.cos(this.angle2) * (this.amplitude * 0.4);
+                this.angle += this.angleSpeed;
+                this.angle2 += this.angleSpeed2;
+            }
+
+            // 画面外（左右）に完全にはみ出さないように制限
+            this.x = Math.max(this.width/2 + 10, Math.min(canvas.width - this.width/2 - 10, this.x));
+
+            if (this.y > canvas.height + 50) {
+                this.markedForDeletion = true;
+                
+                // 正解の漢字を見逃したらライフマイナス1
+                if (state === 'PLAY' && player && isValidKanji(player.bushu, this.tsukuri)) {
+                    life -= 1;
+                    shakeTime = 15;
+                    particles.push(new Particle(player.x, player.y, 'batsu'));
+                    if (life <= 0) {
+                        state = 'GAMEOVER';
+                    }
+                }
+            }
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // 敵機体（赤いカプセル）
+            ctx.fillStyle = '#4a0a1a';
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(-this.width/2, -this.height/2, this.width, this.height, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // つくりテキスト
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '24px "M PLUS Rounded 1c"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.tsukuri, 0, 0);
+
+            ctx.restore();
+        }
+    }
+
+
+    // --- 新規追加：回復アイテム（ハート） ---
+    class Heart {
+        constructor() {
+            this.x = Math.random() * (canvas.width - 80) + 40;
+            this.y = -50;
+            this.speed = 1.5 + Math.random(); 
+            this.width = 30;
+            this.height = 30;
+            this.markedForDeletion = false;
+            // ふわふわさせるための設定
+            this.angle = Math.random() * Math.PI * 2;
+            this.baseX = this.x;
+        }
+
+        update() {
+            this.y += this.speed;
+            this.x = this.baseX + Math.sin(this.angle) * 30;
+            this.angle += 0.03;
+
+            if (this.y > canvas.height + 50) this.markedForDeletion = true;
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            // ドクンドクンと脈打つアニメーション
+            const scale = 1 + Math.sin(frameCount * 0.1) * 0.15;
+            ctx.scale(scale, scale);
+            
+            ctx.font = '30px "M PLUS Rounded 1c"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // 文字の影で光らせる
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff55aa';
+            ctx.fillText('💖', 0, 0);
+            
+            ctx.restore();
+        }
+    }
+
+    class Particle {
+        constructor(x, y, type, text = '') {
+            this.x = x;
+            this.y = y;
+            this.type = type; // 'maru', 'batsu', 'explosion', 'score', 'kanji'
+            this.text = text;
+            this.life = 60;
+            this.maxLife = 60;
+            this.vx = (Math.random() - 0.5) * 4;
+            this.vy = (Math.random() - 0.5) * 4;
+            if (type === 'score' || type === 'maru' || type === 'batsu' || type === 'kanji') {
+                this.vx = 0;
+                this.vy = -1; // 上にゆっくり昇る
+            }
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.life--;
+        }
+
+        draw(ctx) {
+            const alpha = Math.max(0, this.life / this.maxLife);
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(this.x, this.y);
+
+            if (this.type === 'maru') {
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(0, 0, 30 + (this.maxLife - this.life), 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (this.type === 'batsu') {
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                const s = 20 + (this.maxLife - this.life)*0.5;
+                ctx.moveTo(-s, -s); ctx.lineTo(s, s);
+                ctx.moveTo(s, -s); ctx.lineTo(-s, s);
+                ctx.stroke();
+            } else if (this.type === 'kanji') {
+                // 合体した漢字の表示
+                ctx.fillStyle = '#ffff00';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ffff00';
+                ctx.font = 'bold 50px "M PLUS Rounded 1c"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.text, 0, 0);
+                ctx.shadowBlur = 0;
+            } else if (this.type === 'score') {
+                ctx.fillStyle = '#ffff00';
+                ctx.font = 'bold 24px "M PLUS Rounded 1c"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.text, 0, 0);
+            } else if (this.type === 'explosion') {
+                ctx.fillStyle = '#ff8800';
+                ctx.beginPath();
+                ctx.arc(0, 0, 5 + Math.random()*10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+    }
+
+    // 背景の星
+    function initStars() {
+        stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2 + 1,
+                speed: Math.random() * 2 + 0.5
+            });
+        }
+    }
+
+    function updateDrawStars() {
+        ctx.fillStyle = '#ffffff';
+        stars.forEach(star => {
+            // 縦にスクロールさせる
+            star.y += star.speed;
+            if (star.y > canvas.height) {
+                star.y = 0;
+                star.x = Math.random() * canvas.width;
+            }
+            ctx.globalAlpha = star.size / 3;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+    }
+
+    // --- ユーティリティ ---
+
+    // 漢字が正しいかチェックする関数
+    function isValidKanji(bushu, tsukuri) {
+        return KANJI_DATA[bushu].includes(tsukuri);
+    }
+
+    // 当たり判定 (AABB)
+    function checkCollision(rect1, rect2) {
+        return (
+            rect1.x - rect1.width/2 < rect2.x + rect2.width/2 &&
+            rect1.x + rect1.width/2 > rect2.x - rect2.width/2 &&
+            rect1.y - rect1.height/2 < rect2.y + rect2.height/2 &&
+            rect1.y + rect1.height/2 > rect2.y - rect2.height/2
+        );
+    }
+
+    function spawnExplosion(x, y) {
+        for(let i=0; i<10; i++){
+            particles.push(new Particle(x, y, 'explosion'));
+        }
+    }
+
+    // --- ゲームループ関連 ---
+
+    function resetGame() {
+        score = 0;
+        life = 5;
+        frameCount = 0;
+        bullets = [];
+        enemies = [];
+        items = []; // アイテムもリセット
+        particles = [];
+        pointer.active = false; // タッチ状態リセット
+    }
+
+    function update() {
+        frameCount++;
+
+        if (state === 'PLAY') {
+            player.update();
+
+            // 弾の更新
+            bullets.forEach(b => b.update());
+            bullets = bullets.filter(b => !b.markedForDeletion);
+
+            // --- アイテムの生成と更新 ---
+            // 約0.2%の確率（平均して数秒〜十数秒に1回）でハートが出現
+            if (Math.random() < 0.002) {
+                items.push(new Heart());
+            }
+
+            items.forEach(item => {
+                item.update();
+                // プレイヤーとハートの衝突判定
+                if (!item.markedForDeletion && checkCollision(player, item)) {
+                    item.markedForDeletion = true;
+                    if (life < 5) {
+                        life++; // ライフ回復（最大5）
+                        particles.push(new Particle(player.x, player.y - 20, 'score', '+1 💖'));
+                    } else {
+                        score += 300; // 満タン時はボーナススコア
+                        particles.push(new Particle(player.x, player.y - 20, 'score', '+300'));
+                    }
+                }
+            });
+            items = items.filter(i => !i.markedForDeletion);
+
+            // 敵の生成（徐々に早く）
+            let spawnRate = Math.max(30, 100 - Math.floor(score / 50));
+            if (frameCount % spawnRate === 0) {
+                enemies.push(new Enemy());
+            }
+
+            // 敵の更新と衝突判定
+            enemies.forEach(enemy => {
+                enemy.update();
+
+                // 刀(斬撃)と敵の衝突判定
+                if (player.isSlashing && !enemy.markedForDeletion) {
+                    const dx = enemy.x - player.x;
+                    const dy = enemy.y - (player.y - 10);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    // 前方半円内にいるか
+                    if (dist < player.slashRadius + enemy.width/2 && dy < 10) {
+                        enemy.markedForDeletion = true;
+                        
+                        if (isValidKanji(player.bushu, enemy.tsukuri)) {
+                            // ペナルティ：正解の漢字を切ってしまった
+                            life -= 1;
+                            shakeTime = 15;
+                            particles.push(new Particle(enemy.x, enemy.y, 'batsu'));
+                            spawnExplosion(enemy.x, enemy.y);
+                            if (life <= 0) state = 'GAMEOVER';
+                        } else {
+                            // セーフ：不正解の漢字を切り捨てた
+                            score += 100; // 刀で切った時のポイント追加
+                            particles.push(new Particle(enemy.x, enemy.y, 'score', '斬！ +100'));
+                            for(let i=0; i<5; i++) particles.push(new Particle(enemy.x, enemy.y, 'explosion'));
+                        }
+                    }
+                }
+
+                // 弾と敵の衝突判定
+                bullets.forEach(bullet => {
+                    if (!bullet.markedForDeletion && !enemy.markedForDeletion) {
+                        if (checkCollision(bullet, enemy)) {
+                            
+                            // レーザーの貫通処理
+                            if (bullet.piercing) {
+                                if (bullet.hitEnemies.has(enemy)) return; // 既に当たった敵は無視
+                                bullet.hitEnemies.add(enemy);
+                            } else {
+                                bullet.markedForDeletion = true;
+                            }
+                            
+                            enemy.markedForDeletion = true;
+                            
+                            if (isValidKanji(player.bushu, enemy.tsukuri)) {
+                                // 正解！
+                                score += 100;
+                                // 〇と得点の代わりに合体漢字を表示
+                                const combinedKanji = KANJI_MAP[player.bushu][enemy.tsukuri];
+                                particles.push(new Particle(enemy.x, enemy.y, 'kanji', combinedKanji));
+                                spawnExplosion(enemy.x, enemy.y);
+                            } else {
+                                // 不正解！
+                                life -= 1;
+                                shakeTime = 15; // 画面揺れ
+                                particles.push(new Particle(enemy.x, enemy.y, 'batsu'));
+                                spawnExplosion(enemy.x, enemy.y);
+                                
+                                if (life <= 0) {
+                                    state = 'GAMEOVER';
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // プレイヤーと敵の衝突判定
+                if (!enemy.markedForDeletion && checkCollision(player, enemy)) {
+                    enemy.markedForDeletion = true;
+                    life -= 1;
+                    shakeTime = 15;
+                    particles.push(new Particle(player.x, player.y, 'batsu'));
+                    spawnExplosion(player.x, player.y);
+                    if (life <= 0) {
+                        state = 'GAMEOVER';
+                    }
+                }
+            });
+
+            enemies = enemies.filter(e => !e.markedForDeletion);
+
+            // パーティクルの更新
+            particles.forEach(p => p.update());
+            particles = particles.filter(p => p.life > 0);
+        }
+    }
+
+    function draw() {
+        // 画面クリア
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 画面揺れエフェクト
+        ctx.save();
+        if (shakeTime > 0) {
+            const dx = (Math.random() - 0.5) * 10;
+            const dy = (Math.random() - 0.5) * 10;
+            ctx.translate(dx, dy);
+            shakeTime--;
+        }
+
+        updateDrawStars();
+
+        if (state === 'TITLE') {
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            
+            ctx.font = 'bold 50px "M PLUS Rounded 1c"';
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText('漢字部首シューティング', canvas.width/2, canvas.height/2 - 150);
+            
+            // ルール説明を追加
+            ctx.font = 'bold 24px "M PLUS Rounded 1c"';
+            ctx.fillStyle = '#ffff00';
+            ctx.fillText('【ルール】', canvas.width/2, canvas.height/2 - 80);
+            
+            ctx.font = '18px "M PLUS Rounded 1c"';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('自分の部首と合体して、正しい漢字になる「つくり」を撃とう！', canvas.width/2, canvas.height/2 - 45);
+            ctx.fillText('デタラメな漢字になる「つくり」は、Nボタン(刀)で切り捨てろ！', canvas.width/2, canvas.height/2 - 15);
+            ctx.fillText('正しい漢字を逃がしたり、間違えて切ったりするとダメージだ！', canvas.width/2, canvas.height/2 + 15);
+            
+            ctx.font = '30px "M PLUS Rounded 1c"';
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frameCount * 0.05))})`;
+            ctx.fillText('画面をタップしてスタート！', canvas.width/2, canvas.height/2 + 100);
+
+        } else if (state === 'SELECT') {
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 36px "M PLUS Rounded 1c"';
+            ctx.fillText('じぶんの ぶしゅ を えらんでね', canvas.width/2, 100);
+
+            // 部首の選択パネルを描画 (縦長画面に合わせてサイズ調整)
+            const bushuKeys = Object.keys(KANJI_DATA);
+            const panelWidth = 90;
+            const panelHeight = 120;
+            const gap = 15;
+            const totalWidth = bushuKeys.length * panelWidth + (bushuKeys.length - 1) * gap;
+            const startX = (canvas.width - totalWidth) / 2 + panelWidth / 2;
+            const y = canvas.height / 2;
+
+            bushuKeys.forEach((bushu, index) => {
+                const x = startX + index * (panelWidth + gap);
+                
+                // パネル背景
+                ctx.fillStyle = '#0a2a4a';
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(x - panelWidth/2, y - panelHeight/2, panelWidth, panelHeight, 15);
+                ctx.fill();
+                ctx.stroke();
+
+                // 漢字
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 40px "M PLUS Rounded 1c"';
+                ctx.fillText(bushu, x, y - 20);
+
+                // 読み方
+                ctx.font = '16px "M PLUS Rounded 1c"';
+                ctx.fillStyle = '#aaaaaa';
+                ctx.fillText(BUSHU_LABELS[bushu], x, y + 35);
+
+                // クリック判定用に領域を保存しておく（簡略化のため描画時に計算）
+            });
+
+        } else if (state === 'PLAY') {
+            bullets.forEach(b => b.draw(ctx));
+            items.forEach(i => i.draw(ctx)); // アイテム描画
+            enemies.forEach(e => e.draw(ctx));
+            player.draw(ctx);
+            particles.forEach(p => p.draw(ctx));
+
+            // UI描画（スコアとライフ）
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.font = 'bold 30px "M PLUS Rounded 1c"';
+            ctx.fillText(`スコア: ${score}`, 20, 20);
+
+            // ライフ（ハート）
+            let heartStr = '';
+            for(let i=0; i<life; i++) heartStr += '❤️';
+            ctx.fillText(`ライフ: ${heartStr}`, 20, 60);
+
+            // 刀ボタン（右下）
+            const btnX = canvas.width - 60;
+            const btnY = canvas.height - 60;
+            ctx.fillStyle = player.slashCooldown > 0 ? 'rgba(100, 100, 100, 0.5)' : 'rgba(0, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(btnX, btnY, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = player.slashCooldown > 0 ? '#555' : '#0ff';
+            ctx.stroke();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 18px "M PLUS Rounded 1c"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('N(刀)', btnX, btnY);
+
+        } else if (state === 'GAMEOVER') {
+            bullets.forEach(b => b.draw(ctx));
+            items.forEach(i => i.draw(ctx)); // アイテム描画
+            enemies.forEach(e => e.draw(ctx));
+            particles.forEach(p => p.draw(ctx));
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff0000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 70px "M PLUS Rounded 1c"';
+            ctx.fillText('ゲームオーバー', canvas.width/2, canvas.height/2 - 60);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 40px "M PLUS Rounded 1c"';
+            ctx.fillText(`スコア: ${score}`, canvas.width/2, canvas.height/2 + 20);
+
+            ctx.font = '30px "M PLUS Rounded 1c"';
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frameCount * 0.05))})`;
+            ctx.fillText('画面をタップして もういちど', canvas.width/2, canvas.height/2 + 100);
+        }
+
+        ctx.restore(); // shakeTime用のrestore
+    }
+
+    function gameLoop(timestamp) {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // --- 入力ハンドリング ---
+
+    // 画面座標をCanvasの論理座標に変換
+    function getMousePos(evt) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX = evt.clientX;
+        let clientY = evt.clientY;
+        
+        if (evt.touches && evt.touches.length > 0) {
+            clientX = evt.touches[0].clientX;
+            clientY = evt.touches[0].clientY;
+        }
+
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function handleInput(x, y) {
+        if (state === 'TITLE') {
+            state = 'SELECT';
+        } else if (state === 'SELECT') {
+            const bushuKeys = Object.keys(KANJI_DATA);
+            const panelWidth = 90;
+            const panelHeight = 120;
+            const gap = 15;
+            const totalWidth = bushuKeys.length * panelWidth + (bushuKeys.length - 1) * gap;
+            const startX = (canvas.width - totalWidth) / 2 + panelWidth / 2;
+            const panelY = canvas.height / 2;
+
+            for (let i = 0; i < bushuKeys.length; i++) {
+                const panelX = startX + i * (panelWidth + gap);
+                // パネルの矩形内か判定
+                if (x > panelX - panelWidth/2 && x < panelX + panelWidth/2 &&
+                    y > panelY - panelHeight/2 && y < panelY + panelHeight/2) {
+                    
+                    resetGame();
+                    player = new Player(bushuKeys[i]);
+                    state = 'PLAY';
+                    break;
+                }
+            }
+        } else if (state === 'GAMEOVER') {
+            // 少し時間をあけてから再スタート可能にする（連打防止）
+            if (shakeTime <= 0) {
+                state = 'TITLE';
+            }
+        }
+    }
+
+    function checkSlashButton(x, y) {
+        if (state !== 'PLAY') return false;
+        const btnX = canvas.width - 60;
+        const btnY = canvas.height - 60;
+        const dist = Math.sqrt((x - btnX)**2 + (y - btnY)**2);
+        if (dist <= 40) {
+            pointer.slashInput = true;
+            return true;
+        }
+        return false;
+    }
+
+    // マウス・タッチイベント
+    canvas.addEventListener('mousedown', (e) => {
+        const pos = getMousePos(e);
+        if (checkSlashButton(pos.x, pos.y)) return;
+        pointer.x = pos.x;
+        pointer.y = pos.y;
+        pointer.active = true;
+        handleInput(pos.x, pos.y);
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if (pointer.active && state === 'PLAY') {
+            const pos = getMousePos(e);
+            pointer.x = pos.x;
+            pointer.y = pos.y;
+        }
+    });
+    window.addEventListener('mouseup', () => { pointer.active = false; });
+
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // スクロール防止
+        const pos = getMousePos(e);
+        if (checkSlashButton(pos.x, pos.y)) return;
+        pointer.x = pos.x;
+        pointer.y = pos.y;
+        pointer.active = true;
+        handleInput(pos.x, pos.y);
+    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (pointer.active && state === 'PLAY') {
+            const pos = getMousePos(e);
+            pointer.x = pos.x;
+            pointer.y = pos.y;
+        }
+    }, { passive: false });
+    window.addEventListener('touchend', () => { pointer.active = false; });
+
+    // キーボードイベント
+    window.addEventListener('keydown', (e) => {
+        if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.code)) {
+            keys[e.key] = true;
+            keys[e.code] = true;
+        }
+    });
+    window.addEventListener('keyup', (e) => {
+        if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.code)) {
+            keys[e.key] = false;
+            keys[e.code] = false;
+        }
+    });
+
+    // 初期化と開始
+    initStars();
+    requestAnimationFrame(gameLoop);
+
+</script>
+</body>
+</html>

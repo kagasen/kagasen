@@ -178,5 +178,15 @@ const appsData = [
         colorClass: "subject-red",
         image: "images/kannjibusyu-ta.jpg",
         link: "kannjibusyu-ta/kanjibusyu-ta.html"
+    },
+    {
+        title: "言葉さがし",
+        description: "10×10の文字の中にかくれた言葉をドラッグで見つけよう！たて・よこ・ななめ・逆さ読みもOK！1分間で何語見つけられるかな？",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/03/19",
+        colorClass: "subject-red",
+        image: "images/kotobasagashi.jpg",
+        link: "kotobasagashi/index.html"
     }
 ];

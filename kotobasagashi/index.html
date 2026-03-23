@@ -1,0 +1,2626 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>言葉さがしゲーム</title>
+  <style>
+    :root {
+      --primary: #FF6B9D;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --purple: #8B5CF6;
+      --bg: #FFF5FB;
+      /* グリッド10列＋ギャップ9本(3px)+パディング8px を画面幅に収める */
+      --cell: min(calc((100vw - 30px) / 10), 50px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html {
+      overscroll-behavior: none;   /* pull-to-refresh 無効 */
+      touch-action: pan-x pan-y;
+    }
+
+    body {
+      font-family: 'Hiragino Maru Gothic ProN', 'BIZ UDPGothic', 'Yu Gothic', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow: hidden;
+      overscroll-behavior: none;   /* pull-to-refresh 無効 */
+      touch-action: pan-x pan-y;
+    }
+
+    .screen { display: none; width: 100vw; height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ===== スタート画面 ===== */
+    #startScreen {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .title-emoji { font-size: clamp(3rem, 10vw, 5rem); }
+
+    .start-title {
+      font-size: clamp(2rem, 7vw, 3.5rem);
+      color: white;
+      text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+      margin: 8px 0 4px;
+    }
+
+    .start-sub {
+      font-size: clamp(0.9rem, 3vw, 1.2rem);
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 24px;
+    }
+
+    .rules-card {
+      background: white;
+      border-radius: 20px;
+      padding: 18px 22px;
+      max-width: 480px;
+      width: 92%;
+      margin-bottom: 28px;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .rules-card h3 {
+      color: var(--purple);
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .rules-card li {
+      list-style: none;
+      padding: 4px 0;
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .rules-card li::before { content: '✦ '; color: var(--primary); }
+
+    .start-btn {
+      font-size: 1.4rem;
+      padding: 14px 48px;
+      background: linear-gradient(135deg, #FF6B9D, #FF8E53);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255,107,157,0.45);
+      font-family: inherit;
+      transition: transform 0.15s;
+    }
+
+    .start-btn:active { transform: scale(0.94); }
+
+    /* ===== ゲーム画面 ===== */
+    #gameScreen {
+      flex-direction: column;
+      background: var(--bg);
+      touch-action: none;   /* スワイプバック・pull-to-refresh を CSS レベルで無効化 */
+    }
+
+    .game-header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 8px 14px 6px;
+      flex-shrink: 0;
+    }
+
+    .hdr-row1 {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hdr-timer  { text-align: center; }
+    .hdr-count  { text-align: left; }
+    .hdr-score  { text-align: right; }
+
+    .hdr-label {
+      font-size: clamp(0.6rem, 2vw, 0.72rem);
+      color: rgba(255,255,255,0.7);
+      display: block;
+    }
+
+    .hdr-timer-num {
+      font-size: clamp(1.6rem, 6.5vw, 2.4rem);
+      color: white;
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .hdr-timer-num.warn { color: #FF6B6B; animation: blink 0.5s infinite alternate; }
+
+    @keyframes blink { to { opacity: 0.35; } }
+
+    .hdr-count-num, .hdr-score-num {
+      font-size: clamp(1.2rem, 5vw, 1.9rem);
+      color: var(--accent);
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    /* ヒント行 */
+    .hdr-hint {
+      margin-top: 4px;
+      min-height: 22px;
+      text-align: center;
+    }
+
+    #hintText {
+      font-size: clamp(0.78rem, 2.5vw, 0.95rem);
+      color: var(--accent);
+      font-weight: bold;
+      animation: hintFade 0.3s ease;
+    }
+
+    @keyframes hintFade { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+
+    /* ゲームボディ（グリッドのみ・縦レイアウト） */
+    .game-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .grid-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 4px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(10, var(--cell));
+      grid-template-rows: repeat(10, var(--cell));
+      gap: 3px;
+      background: #c8bfe0;
+      border: 3px solid var(--purple);
+      border-radius: 12px;
+      padding: 4px;
+      touch-action: none;
+      flex-shrink: 0;
+    }
+
+    .cell {
+      width: var(--cell);
+      height: var(--cell);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(var(--cell) * 0.56);
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.08s;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .cell.selecting { background: var(--accent); color: #333; }
+    .cell.found     { background: var(--secondary); color: white; font-weight: bold; }
+    .cell.wrong     { background: #FF9B9B; color: white; }
+
+    /* ===== セルレベル色 ===== */
+    /* レベル1: 薄い黄緑（20pt/文字） */
+    .cell.level1 {
+      background: #c8f5a0;
+      color: #2a6300;
+      font-weight: 600;
+    }
+    /* レベル2: 薄い赤（30pt/文字） */
+    .cell.level2 {
+      background: #ffb3b3;
+      color: #8b0000;
+      font-weight: 600;
+    }
+    /* 選択中はレベル色の上からハイライト */
+    .cell.level1.selecting { background: #a0e060; color: #1a4200; }
+    .cell.level2.selecting { background: #ff7070; color: #ffffff; }
+
+    /* リフィルアニメーションのレベル別 */
+    @keyframes refillLevel1 {
+      0%   { opacity:0; transform: scale(0.5) rotate(-10deg); }
+      60%  { opacity:1; transform: scale(1.15) rotate(3deg); }
+      100% { opacity:1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes refillLevel2 {
+      0%   { opacity:0; transform: scale(0.5) rotate(10deg); }
+      60%  { opacity:1; transform: scale(1.2) rotate(-4deg); }
+      100% { opacity:1; transform: scale(1) rotate(0deg); }
+    }
+    .cell.refill-level1 { animation: refillLevel1 0.45s ease forwards; }
+    .cell.refill-level2 { animation: refillLevel2 0.45s ease forwards; }
+
+    @keyframes bounce {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .cell.found-anim { animation: bounce 0.35s ease; }
+
+    @keyframes refill {
+      from { opacity:0; transform: scale(0.6); }
+      to   { opacity:1; transform: scale(1); }
+    }
+    .cell.refill-anim { animation: refill 0.4s ease; }
+
+    /* ===== 見つけた言葉バー（下部横スクロール） ===== */
+    .found-bar {
+      flex-shrink: 0;
+      background: white;
+      border-top: 2px solid #e5e0f0;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      overflow: hidden;
+    }
+
+    .found-bar-label {
+      font-size: 0.72rem;
+      color: var(--purple);
+      font-weight: bold;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .found-list {
+      list-style: none;
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+      overflow-x: auto;
+      flex: 1;
+      padding-bottom: 2px;
+      /* スクロールバー非表示 */
+      scrollbar-width: none;
+    }
+    .found-list::-webkit-scrollbar { display: none; }
+
+    .found-list li {
+      font-size: 0.8rem;
+      color: #18a898;
+      background: #e8fafa;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ===== 爆発エフェクト ===== */
+
+    /* 画面フラッシュ */
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: white;
+      z-index: 480;
+      pointer-events: none;
+      animation: flashOut 0.38s ease-out forwards;
+    }
+    @keyframes flashOut { from { opacity:0.72; } to { opacity:0; } }
+
+    /* 衝撃波リング */
+    .explosion-ring {
+      position: fixed;
+      border-radius: 50%;
+      z-index: 490;
+      pointer-events: none;
+      transform: translate(-50%,-50%) scale(0);
+      animation: ringExpand 0.55s ease-out forwards;
+    }
+    @keyframes ringExpand {
+      from { transform: translate(-50%,-50%) scale(0);   opacity:0.85; }
+      to   { transform: translate(-50%,-50%) scale(4.5); opacity:0; }
+    }
+
+    /* パーティクル共通 */
+    .particle {
+      position: fixed;
+      z-index: 500;
+      pointer-events: none;
+      transform-origin: center center;
+    }
+    .p-circle { border-radius: 50%;  animation: pFly 0.9s ease-out forwards; }
+    .p-square { border-radius: 3px;  animation: pFly 0.9s ease-out 0.04s forwards; }
+    .p-star   {
+      clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+      animation: pFly 0.95s ease-out 0.02s forwards;
+    }
+    .p-diamond {
+      border-radius: 2px;
+      animation: pFly 0.88s ease-out 0.06s forwards;
+      transform-origin: center;
+    }
+
+    @keyframes pFly {
+      0%   { transform: translate(0,0) scale(1.1) rotate(0deg);   opacity:1; }
+      70%  { opacity: 0.85; }
+      100% { transform: translate(var(--tx),var(--ty)) scale(0) rotate(var(--rot)); opacity:0; }
+    }
+
+    .word-blast {
+      position: fixed;
+      top: 44%;
+      left: 50%;
+      font-size: clamp(2.6rem, 11vw, 5rem);
+      font-weight: bold;
+      color: var(--primary);
+      text-shadow: 4px 4px 0 #FF8E53, 7px 7px 0 rgba(0,0,0,0.14);
+      z-index: 400;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: wordBlast 1.1s cubic-bezier(0.17,0.67,0.52,1.0) forwards;
+    }
+
+    @keyframes wordBlast {
+      0%   { transform: translate(-50%,-50%) scale(0)    rotate(-18deg); opacity:0; }
+      22%  { transform: translate(-50%,-50%) scale(1.65) rotate(7deg);   opacity:1; }
+      55%  { transform: translate(-50%,-50%) scale(1.2)  rotate(-3deg);  opacity:1; }
+      100% { transform: translate(-50%,-90%) scale(0.9)  rotate(1deg);   opacity:0; }
+    }
+
+    .pts-blast {
+      position: fixed;
+      top: 62%;
+      left: 50%;
+      font-size: clamp(1.8rem, 8vw, 3.2rem);
+      font-weight: bold;
+      color: var(--accent);
+      text-shadow: 3px 3px 0 #FF8E53, 5px 5px 0 rgba(0,0,0,0.2);
+      z-index: 400;
+      pointer-events: none;
+      animation: ptsBlast 1s ease-out forwards;
+    }
+
+    @keyframes ptsBlast {
+      0%   { transform: translate(-50%,-50%) scale(0)    rotate(14deg);  opacity:0; }
+      35%  { transform: translate(-50%,-50%) scale(1.4)  rotate(-5deg);  opacity:1; }
+      100% { transform: translate(-50%,-110%) scale(0.85) rotate(0deg);  opacity:0; }
+    }
+
+    /* ===== ゲームオーバー ===== */
+    #gameOverScreen {
+      flex-direction: column;
+      align-items: center;
+      background: var(--bg);
+      overflow-y: auto;
+      padding: 24px 16px 40px;
+    }
+
+    .over-title {
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      color: var(--purple);
+      margin-bottom: 4px;
+    }
+
+    .over-score {
+      font-size: clamp(2.2rem, 9vw, 3.5rem);
+      color: var(--primary);
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .over-rank-label {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 14px;
+    }
+
+    /* ===== 階段ランキング ===== */
+    .rank-stairs {
+      width: 100%;
+      max-width: 460px;
+      margin-bottom: 28px;
+    }
+
+    /* バー部分（下揃えで階段状に） */
+    .stair-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 150px;
+      padding: 0 2px;
+    }
+
+    .stair-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      gap: 2px;
+    }
+
+    .stair-emoji {
+      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+      line-height: 1;
+    }
+
+    .stair-bar {
+      width: 100%;
+      background: #e0d8f0;
+      border-radius: 5px 5px 0 0;
+      transition: height 0.6s ease;
+    }
+
+    .stair-col.achieved .stair-bar  { background: #90ddd4; }
+    .stair-col.current  .stair-bar  {
+      background: linear-gradient(to top, #FF6B9D, #FF8E53);
+      box-shadow: 0 -4px 12px rgba(255,107,157,0.55);
+      animation: stairGlow 0.9s infinite alternate;
+    }
+    @keyframes stairGlow { to { box-shadow: 0 -6px 18px rgba(255,107,157,0.8); } }
+
+    /* ラベル部分 */
+    .stair-labels {
+      display: flex;
+      gap: 3px;
+      padding: 4px 2px 0;
+    }
+
+    .stair-label {
+      flex: 1;
+      text-align: center;
+      font-size: clamp(0.42rem, 1.1vw, 0.58rem);
+      color: #aaa;
+      line-height: 1.3;
+      word-break: keep-all;
+    }
+
+    .stair-label .sl-name { display: block; font-weight: 600; }
+    .stair-label .sl-pts  { display: block; opacity: 0.8; }
+
+    .stair-label.achieved .sl-name { color: #18a898; }
+    .stair-label.current  .sl-name { color: var(--primary); font-weight: bold; }
+    .stair-label.current  .sl-pts  { color: var(--accent); }
+
+    .result-section {
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 22px;
+    }
+
+    .result-heading {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--purple);
+      border-bottom: 2px solid var(--purple);
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+    }
+
+    .word-card {
+      background: white;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-left: 4px solid var(--secondary);
+    }
+
+    .word-card.new { border-left-color: var(--primary); }
+
+    .wc-top {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #333;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .wc-reading { font-size: 0.82rem; color: var(--secondary); font-weight: normal; }
+    .wc-meaning { font-size: 0.88rem; color: #555; margin-top: 3px; }
+
+    .retry-btn {
+      font-size: 1.2rem;
+      padding: 13px 44px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+      font-family: inherit;
+      margin-top: 10px;
+    }
+
+    .no-words { font-size: 0.95rem; color: #888; text-align: center; padding: 10px; }
+
+    /* モバイル */
+    @media (max-width: 480px) {
+      :root { --cell: min(calc((100vw - 24px) / 10), 44px); }
+      .found-bar { min-height: 38px; padding: 4px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== スタート画面 ===== -->
+<div id="startScreen" class="screen active">
+  <div class="title-emoji">🔍</div>
+  <h1 class="start-title">言葉さがし</h1>
+  <p class="start-sub">かくれた言葉をみつけよう！</p>
+  <div class="rules-card">
+    <h3>📖 あそびかた</h3>
+    <ul>
+      <li>もじをドラッグして言葉をえらぼう</li>
+      <li>たて・よこ・ななめ、どの方向もOK！</li>
+      <li>逆さ読みの言葉も正解だよ！</li>
+      <li>見つけた文字はあたらしい文字に変わるよ</li>
+      <li>10秒たつとヒントが出るよ</li>
+      <li>制限時間は <strong>1分</strong>！1文字 = <strong>10pt</strong>（4文字以上は <strong>2倍の20pt</strong>！）</li>
+    </ul>
+  </div>
+  <button class="start-btn" onclick="startGame()">🎮 スタート！</button>
+</div>
+
+<!-- ===== ゲーム画面 ===== -->
+<div id="gameScreen" class="screen">
+  <div class="game-header">
+    <div class="hdr-row1">
+      <div class="hdr-count">
+        <span class="hdr-label">みつけた</span>
+        <div id="countDisp" class="hdr-count-num">0語</div>
+      </div>
+      <div class="hdr-timer">
+        <span class="hdr-label">のこり</span>
+        <div id="timerDisp" class="hdr-timer-num">60</div>
+      </div>
+      <div class="hdr-score">
+        <span class="hdr-label">スコア</span>
+        <div id="scoreDisp" class="hdr-score-num">0</div>
+      </div>
+    </div>
+    <div class="hdr-hint">
+      <span id="hintText"></span>
+    </div>
+  </div>
+  <div class="game-body">
+    <div class="grid-wrap">
+      <div id="grid"></div>
+    </div>
+  </div>
+  <div class="found-bar">
+    <span class="found-bar-label">✅ みつけた</span>
+    <ul id="foundList" class="found-list"></ul>
+  </div>
+</div>
+
+<!-- ===== ゲームオーバー画面 ===== -->
+<div id="gameOverScreen" class="screen">
+  <h2 class="over-title">⏰ ゲームオーバー！</h2>
+  <div id="overScore" class="over-score">0 ポイント</div>
+  <div class="over-rank-label">あなたのランクは…</div>
+  <div id="pyramid" class="rank-table"></div>
+  <div class="result-section">
+    <div class="result-heading">🌟 見つけた言葉</div>
+    <div id="foundDetail"></div>
+  </div>
+  <div class="result-section">
+    <div class="result-heading">📚 新たに知ってほしい言葉</div>
+    <div id="newWords"></div>
+  </div>
+  <button class="retry-btn" onclick="backToStart()">🔄 もういちど！</button>
+</div>
+
+<!-- 辞書データ（しりとり用辞書を流用） -->
+<script src="../shiritori/dictionary_output.js"></script>
+
+<script>
+// ==============================
+// 「ん」で終わる言葉を補足追加
+// （しりとり辞書には「ん」終わりが含まれないため個別追加）
+// ==============================
+const _NWORDS_UNUSED = [
+  { r:'うどん', w:'', m:'' },
+  { r:'みかん',       w:'蜜柑',     m:'冬に食べる、オレンジ色の甘い果物。' },
+  { r:'にんじん',     w:'人参',     m:'オレンジ色の細長い野菜。目に良いといわれる。' },
+  { r:'らいおん',     w:'獅子',     m:'「百獣の王」とよばれる強い動物。' },
+  { r:'きりん',       w:'麒麟',     m:'首がとても長いアフリカの動物。' },
+  { r:'ほん',         w:'本',       m:'文字や絵が書かれた、紙をとじたもの。' },
+  { r:'えん',         w:'円',       m:'日本のお金の単位。' },
+  { r:'こうえん',     w:'公園',     m:'みんなで遊べる緑の多い広い場所。' },
+  { r:'あんしん',     w:'安心',     m:'心配がなく落ち着いた気持ち。' },
+  { r:'かんたん',     w:'簡単',     m:'むずかしくなく、やさしいこと。' },
+  { r:'にほん',       w:'日本',     m:'私たちが住んでいる国の名前。' },
+  { r:'しんぶん',     w:'新聞',     m:'毎日のニュースが書かれた大きな紙。' },
+  { r:'ごはん',       w:'ご飯',     m:'炊いたお米のこと。日本の主食。' },
+  { r:'あんぱん',     w:'あんパン', m:'あんこが入った丸いパン。' },
+  { r:'しんかんせん', w:'新幹線',   m:'日本を走る、とても速い電車。' },
+  { r:'やかん',       w:'薬缶',     m:'お湯をわかすための金属の道具。' },
+  { r:'しゃしん',     w:'写真',     m:'カメラでうつした絵のようなもの。' },
+  { r:'はんぶん',     w:'半分',     m:'ちょうど真ん中で二つに分けた一つ。' },
+  { r:'だいこん',     w:'大根',     m:'白くて長い冬の野菜。' },
+  { r:'きん',         w:'金',       m:'黄色くかがやく大切な金属。' },
+  { r:'ぎん',         w:'銀',       m:'白くかがやく金属。' },
+  { r:'てん',         w:'点',       m:'小さなしるし。また、得点のこと。' },
+  { r:'ふうせん',     w:'風船',     m:'ゴムを空気でふくらませたおもちゃ。' },
+  { r:'ひこうせん',   w:'飛行船',   m:'くうちゅうをゆっくり飛ぶ大きな乗り物。' },
+  { r:'おかあさん',   w:'お母さん', m:'自分を産んで育ててくれた女性。' },
+  { r:'おとうさん',   w:'お父さん', m:'家族の中のお父さんのこと。' },
+  { r:'おにいさん',   w:'お兄さん', m:'自分より年上の男のきょうだい。' },
+  { r:'おねえさん',   w:'お姉さん', m:'自分より年上の女のきょうだい。' },
+  { r:'じかん',       w:'時間',     m:'過去から未来へと流れるもの。' },
+  { r:'ばんごはん',   w:'晩ご飯',   m:'夜に食べる食事のこと。' },
+  { r:'あさごはん',   w:'朝ご飯',   m:'朝に食べる食事のこと。' },
+  { r:'ひるごはん',   w:'昼ご飯',   m:'昼に食べる食事のこと。' },
+  { r:'しつもん',     w:'質問',     m:'わからないことをたずねること。' },
+  { r:'いけん',       w:'意見',     m:'あることがらについての自分の考え。' },
+  { r:'ふとん',       w:'布団',     m:'中に綿が入った、寝るときに使うもの。' },
+  { r:'どうぶつえん', w:'動物園',   m:'たくさんの動物を飼育し見せる施設。' },
+  { r:'ようちえん',   w:'幼稚園',   m:'小学校に入る前の子どもが通う学校。' },
+  { r:'がっかん',     w:'学館',     m:'学習や勉強のための建物。' },
+  { r:'さんぽ',       w:'散歩',     m:'のんびりと歩くこと。' }, // ends in ぽ
+  { r:'えいがかん',   w:'映画館',   m:'映画を大きなスクリーンで見る建物。' },
+  { r:'にんぎょ',     w:'人魚',     m:'上半身が人で下半身が魚の伝説の生き物。' }, // ends in ょ
+  { r:'でんわ',       w:'電話',     m:'遠くにいる人と話せる道具。' }, // ends in わ
+  // 本当にんで終わるもの（再確認済）
+  { r:'さかん',       w:'盛ん',     m:'勢いが強く、活発なようす。' },
+  { r:'にんきん',     w:'人気んん', m:'' }, // remove
+  { r:'あいじょうえん', w:'',       m:'' }, // skip
+  { r:'きさん',       w:'帰参',     m:'主人のところへ帰ること。' },
+  { r:'ほっかいどうほんとうほん', w:'', m:'' }, // skip
+  // More simple ん-ending words
+  { r:'きゅうきゅうしゃ', w:'救急車', m:'けが人や病人を病院に運ぶ車。' }, // ends in ゃ - skip
+  { r:'おばあさん',   w:'お祖母さん',m:'父または母のお母さん。' },
+  { r:'おじいさん',   w:'お祖父さん',m:'父または母のお父さん。' },
+  { r:'かみなり',     w:'雷',       m:'大きな音と光を出す自然現象。' }, // ends in り - skip
+  { r:'まんぞく',     w:'満足',     m:'十分に満たされた気持ち。' }, // ends in く - skip
+  { r:'うんどう',     w:'運動',     m:'体を動かすこと。' }, // ends in う - skip
+  // Must double-check only ん-ending
+  { r:'でん',         w:'伝',       m:'伝えること。電のこと。' },
+  { r:'けん',         w:'剣',       m:'細くて長い刃物。武士が使う。' },
+  { r:'さん',         w:'三',       m:'2の次の数。みっつ。' },
+  { r:'へん',         w:'変',       m:'変わること。' },
+  { r:'はん',         w:'半',       m:'二つに分けた、一つ分のこと。' },
+  { r:'まん',         w:'万',       m:'10000のこと。数の単位。' },
+  { r:'ほんにん',     w:'本人',     m:'そのもの自身。当人のこと。' },
+  { r:'しんじん',     w:'新人',     m:'あるグループに新しく入った人。' },
+  { r:'べんとう',     w:'弁当',     m:'外で食べるために箱に詰めた食事。' }, // ends in う - skip
+  { r:'かんきん',     w:'監禁',     m:'' }, // skip too complex
+  { r:'もん',         w:'門',       m:'出入り口にある大きな扉。' },
+  { r:'えん',         w:'縁',       m:'人と人のつながりや関係のこと。' },
+  { r:'きん',         w:'筋',       m:'体を動かす筋肉のこと。' },
+  { r:'たん',         w:'炭',       m:'木を蒸し焼きにして作る燃料。' },
+  { r:'わん',         w:'湾',       m:'海岸が曲がって陸地に入り込んだところ。' },
+  { r:'はんさむ',     w:'ハンサム',  m:'' }, // ends in む - skip
+];
+
+// ん-ending のみ確実なもの再定義
+const N_ENDING = [
+  { r:'うどん',       w:'饂飩',      m:'もちもちとした太い麺料理。' },
+  { r:'みかん',       w:'蜜柑',      m:'冬に食べる、オレンジ色の甘い果物。' },
+  { r:'にんじん',     w:'人参',      m:'オレンジ色の細長い野菜。目に良いといわれる。' },
+  { r:'らいおん',     w:'獅子',      m:'「百獣の王」とよばれる強い動物。' },
+  { r:'きりん',       w:'麒麟',      m:'首がとても長いアフリカの動物。' },
+  { r:'ほん',         w:'本',        m:'文字や絵が書かれた、紙をとじたもの。' },
+  { r:'えん',         w:'円',        m:'日本のお金の単位。丸い形のこと。' },
+  { r:'こうえん',     w:'公園',      m:'みんなで遊べる緑の多い広い場所。' },
+  { r:'あんしん',     w:'安心',      m:'心配がなく落ち着いた気持ち。' },
+  { r:'かんたん',     w:'簡単',      m:'むずかしくなく、やさしいこと。' },
+  { r:'にほん',       w:'日本',      m:'私たちが住んでいる国の名前。' },
+  { r:'しんぶん',     w:'新聞',      m:'毎日のニュースが書かれた大きな紙。' },
+  { r:'ごはん',       w:'ご飯',      m:'炊いたお米のこと。日本の主食。' },
+  { r:'あんぱん',     w:'あんパン',  m:'あんこが入った丸いパン。' },
+  { r:'しんかんせん', w:'新幹線',    m:'日本を走る、とても速い電車。' },
+  { r:'やかん',       w:'薬缶',      m:'お湯をわかすための金属の道具。' },
+  { r:'しゃしん',     w:'写真',      m:'カメラでうつした絵のようなもの。' },
+  { r:'はんぶん',     w:'半分',      m:'ちょうど真ん中で二つに分けた一つ。' },
+  { r:'だいこん',     w:'大根',      m:'白くて長い冬の野菜。' },
+  { r:'きん',         w:'金',        m:'黄色くかがやく大切な金属。' },
+  { r:'ぎん',         w:'銀',        m:'白くかがやく金属。' },
+  { r:'てん',         w:'点',        m:'小さなしるし。また、得点のこと。' },
+  { r:'ふうせん',     w:'風船',      m:'ゴムを空気でふくらませたおもちゃ。' },
+  { r:'ひこうせん',   w:'飛行船',    m:'くうちゅうをゆっくり飛ぶ大きな乗り物。' },
+  { r:'おかあさん',   w:'お母さん',  m:'自分を産んで育ててくれた女性。' },
+  { r:'おとうさん',   w:'お父さん',  m:'家族の中のお父さんのこと。' },
+  { r:'おにいさん',   w:'お兄さん',  m:'自分より年上の男のきょうだい。' },
+  { r:'おねえさん',   w:'お姉さん',  m:'自分より年上の女のきょうだい。' },
+  { r:'おばあさん',   w:'お祖母さん',m:'父または母のお母さんのこと。' },
+  { r:'おじいさん',   w:'お祖父さん',m:'父または母のお父さんのこと。' },
+  { r:'じかん',       w:'時間',      m:'過去から未来へと流れるもの。' },
+  { r:'ばんごはん',   w:'晩ご飯',    m:'夜に食べる食事のこと。' },
+  { r:'あさごはん',   w:'朝ご飯',    m:'朝に食べる食事のこと。' },
+  { r:'ひるごはん',   w:'昼ご飯',    m:'昼に食べる食事のこと。' },
+  { r:'しつもん',     w:'質問',      m:'わからないことをたずねること。' },
+  { r:'いけん',       w:'意見',      m:'あることがらについての自分の考え。' },
+  { r:'ふとん',       w:'布団',      m:'中に綿が入った、寝るときに使うもの。' },
+  { r:'どうぶつえん', w:'動物園',    m:'たくさんの動物を飼育し見せる施設。' },
+  { r:'ようちえん',   w:'幼稚園',    m:'小学校に入る前の子どもが通う学校。' },
+  { r:'えいがかん',   w:'映画館',    m:'映画を大きなスクリーンで見る建物。' },
+  { r:'もん',         w:'門',        m:'出入り口にある大きな扉や門。' },
+  { r:'わん',         w:'湾',        m:'海岸が曲がって陸地に入り込んだところ。' },
+  { r:'けん',         w:'剣',        m:'細くて長い刃物。武士が使う。' },
+  { r:'さん',         w:'三',        m:'2の次の数。みっつ。' },
+  { r:'まん',         w:'万',        m:'10000のこと。数の単位。' },
+  { r:'ほんにん',     w:'本人',      m:'そのもの自身。当人のこと。' },
+  { r:'しんじん',     w:'新人',      m:'あるグループに新しく入った人。' },
+  { r:'さかん',       w:'盛ん',      m:'勢いが強く、活発なようす。' },
+  { r:'でん',         w:'伝',        m:'電気のこと。また伝えること。' },
+  { r:'たん',         w:'炭',        m:'木を蒸し焼きにして作る燃料。' },
+  { r:'かん',         w:'缶',        m:'金属でできた筒状の入れ物。' },
+  { r:'ぱん',         w:'パン',      m:'小麦粉をこねて焼いた食べ物。' },
+  { r:'ほん',         w:'本',        m:'文字や絵が書かれた、紙をとじたもの。' },
+  { r:'ほんばん',     w:'本番',      m:'練習ではなく、本当に行う時のこと。' },
+  { r:'はんたい',     w:'反対',      m:'正反対のこと。反対することを表す。' }, // ends in い skip
+  { r:'しんじん',     w:'新人',      m:'あるグループに新しく入った人。' },
+  { r:'はんにん',     w:'犯人',      m:'悪いことをした人のこと。' },
+  { r:'みんけん',     w:'民権',      m:'国民がもつ権利のこと。' },
+  { r:'せいかん',     w:'聖火',      m:'' }, // not ん-ending
+  // Clear ん-ending only
+  { r:'こうかん',     w:'交換',      m:'ものを取り替えること。' },
+  { r:'おうえん',     w:'応援',      m:'人を助けて力づけること。' },
+  { r:'かんどう',     w:'感動',      m:'心がふるえるほど深く動くこと。' }, // ends in う - skip
+  { r:'じしん',       w:'自信',      m:'自分を信じる気持ち。' },
+  { r:'しんぱい',     w:'心配',      m:'うまくいくかどうか気になること。' }, // ends in い - skip
+];
+
+// ==============================
+// 追加語彙（動詞・形容詞・副詞・生活語など）
+// ==============================
+const EXTRA_WORDS = [
+  // ===== 動詞 =====
+  { r:'あるく',     w:'歩く',      m:'足で進むこと。' },
+  { r:'はしる',     w:'走る',      m:'足を速く動かして進むこと。' },
+  { r:'とぶ',       w:'飛ぶ',      m:'空中に浮かんで移動すること。' },
+  { r:'およぐ',     w:'泳ぐ',      m:'水の中を体を動かして進むこと。' },
+  { r:'うたう',     w:'歌う',      m:'メロディをつけて声を出すこと。' },
+  { r:'かく',       w:'書く',      m:'文字や絵をえんぴつなどで記すこと。' },
+  { r:'よむ',       w:'読む',      m:'文字を目で追って意味をとらえること。' },
+  { r:'たべる',     w:'食べる',    m:'口に食べ物を入れてかみくだくこと。' },
+  { r:'のむ',       w:'飲む',      m:'液体を口から体の中に入れること。' },
+  { r:'ねる',       w:'寝る',      m:'目を閉じて眠ること。' },
+  { r:'おきる',     w:'起きる',    m:'眠りから覚めること。' },
+  { r:'あそぶ',     w:'遊ぶ',      m:'楽しいことをすること。' },
+  { r:'かつ',       w:'勝つ',      m:'競争や試合に勝ること。' },
+  { r:'まける',     w:'負ける',    m:'競争や試合に敗れること。' },
+  { r:'つかう',     w:'使う',      m:'道具などを役立てること。' },
+  { r:'かえる',     w:'帰る',      m:'元の場所に戻ること。' },
+  { r:'でる',       w:'出る',      m:'内側から外側へ移ること。' },
+  { r:'はいる',     w:'入る',      m:'外側から内側へ移ること。' },
+  { r:'おわる',     w:'終わる',    m:'何かが最後まで達すること。' },
+  { r:'はじまる',   w:'始まる',    m:'何かがスタートすること。' },
+  { r:'おもう',     w:'思う',      m:'心の中で考えること。' },
+  { r:'きく',       w:'聞く',      m:'耳で音や声をとらえること。' },
+  { r:'いう',       w:'言う',      m:'口から言葉を出すこと。' },
+  { r:'はなす',     w:'話す',      m:'言葉でつたえること。' },
+  { r:'もつ',       w:'持つ',      m:'手で何かをにぎること。' },
+  { r:'つくる',     w:'作る',      m:'何かを形にすること。' },
+  { r:'なく',       w:'泣く',      m:'悲しくて涙を流すこと。' },
+  { r:'わらう',     w:'笑う',      m:'楽しくて顔がほころぶこと。' },
+  { r:'おどる',     w:'踊る',      m:'音楽に合わせて体を動かすこと。' },
+  { r:'とまる',     w:'止まる',    m:'動きがやむこと。' },
+  { r:'すすむ',     w:'進む',      m:'前の方へ移っていくこと。' },
+  { r:'わかる',     w:'わかる',    m:'意味や内容を理解すること。' },
+  { r:'たすける',   w:'助ける',    m:'困っている人を救うこと。' },
+  { r:'なげる',     w:'投げる',    m:'ものを手から放して飛ばすこと。' },
+  { r:'きめる',     w:'決める',    m:'いくつかの中から選ぶこと。' },
+  { r:'おしえる',   w:'教える',    m:'知識などを相手に伝えること。' },
+  { r:'まなぶ',     w:'学ぶ',      m:'知識や技術を身につけること。' },
+  { r:'さがす',     w:'探す',      m:'見えないものをみつけようとすること。' },
+  { r:'みつける',   w:'見つける',  m:'さがしていたものを発見すること。' },
+  { r:'ひらく',     w:'開く',      m:'閉じているものをあけること。' },
+  { r:'とじる',     w:'閉じる',    m:'開いているものを閉めること。' },
+  { r:'うごく',     w:'動く',      m:'場所や姿勢が変わること。' },
+  { r:'まつ',       w:'待つ',      m:'来るまでの間そこにいること。' },
+  { r:'あつまる',   w:'集まる',    m:'ひとつの場所に人や物が集まること。' },
+  { r:'にげる',     w:'逃げる',    m:'追われて遠くへ走ること。' },
+  { r:'みがく',     w:'磨く',      m:'こすってきれいにすること。' },
+  { r:'えがく',     w:'描く',      m:'絵をかくこと。' },
+  { r:'やすむ',     w:'休む',      m:'活動をやめてリラックスすること。' },
+  { r:'きえる',     w:'消える',    m:'見えなくなること。' },
+  { r:'でかける',   w:'出かける',  m:'家の外へ行くこと。' },
+  { r:'かんがえる', w:'考える',    m:'あれこれと思いをめぐらすこと。' },
+  { r:'たのむ',     w:'頼む',      m:'お願いすること。' },
+  { r:'よろこぶ',   w:'喜ぶ',      m:'うれしくて心がはずむこと。' },
+  { r:'こたえる',   w:'答える',    m:'質問に返事をすること。' },
+  { r:'なおす',     w:'直す',      m:'壊れたものを元の状態に戻すこと。' },
+  { r:'そだてる',   w:'育てる',    m:'生き物を大きくなるよう世話すること。' },
+  { r:'みせる',     w:'見せる',    m:'相手に見えるようにすること。' },
+  { r:'もらう',     w:'もらう',    m:'人から物を受け取ること。' },
+  { r:'あげる',     w:'あげる',    m:'人に物をわたすこと。' },
+  { r:'かりる',     w:'借りる',    m:'一時的に使わせてもらうこと。' },
+  { r:'かす',       w:'貸す',      m:'一時的に使わせること。' },
+  { r:'ひっぱる',   w:'引っ張る',  m:'手前に力を入れて引くこと。' },
+  { r:'おす',       w:'押す',      m:'手で力を加えて前に動かすこと。' },
+  { r:'ふく',       w:'吹く',      m:'口から息を出すこと。' },
+  { r:'ける',       w:'蹴る',      m:'足で打つこと。' },
+  { r:'なでる',     w:'撫でる',    m:'手でやさしくさわること。' },
+  { r:'つかまえる', w:'捕まえる',  m:'手でしっかりとつかむこと。' },
+  { r:'おいかける', w:'追いかける',m:'前を行く人を追うこと。' },
+  { r:'ゆれる',     w:'揺れる',    m:'左右や上下にゆらゆら動くこと。' },
+  { r:'かがやく',   w:'輝く',      m:'光ってきらきら光ること。' },
+  // ===== い形容詞 =====
+  { r:'あかい',     w:'赤い',      m:'赤の色をしているようす。' },
+  { r:'あおい',     w:'青い',      m:'青の色をしているようす。' },
+  { r:'きいろい',   w:'黄色い',    m:'黄色の色をしているようす。' },
+  { r:'しろい',     w:'白い',      m:'白の色をしているようす。' },
+  { r:'くろい',     w:'黒い',      m:'黒の色をしているようす。' },
+  { r:'おおきい',   w:'大きい',    m:'サイズがとても大きいようす。' },
+  { r:'ちいさい',   w:'小さい',    m:'サイズがとても小さいようす。' },
+  { r:'たかい',     w:'高い',      m:'位置が上にあるようす。' },
+  { r:'やすい',     w:'安い',      m:'値段が少ないようす。' },
+  { r:'かわいい',   w:'かわいい',  m:'見た目がかわいくてすてきなようす。' },
+  { r:'たのしい',   w:'楽しい',    m:'心がうきうきするようす。' },
+  { r:'うれしい',   w:'嬉しい',    m:'幸せで気持ちがよいようす。' },
+  { r:'かなしい',   w:'悲しい',    m:'つらくて泣きたいようす。' },
+  { r:'こわい',     w:'怖い',      m:'おそろしいと感じるようす。' },
+  { r:'つめたい',   w:'冷たい',    m:'温度がとても低いようす。' },
+  { r:'ながい',     w:'長い',      m:'端から端までの距離が大きいようす。' },
+  { r:'みじかい',   w:'短い',      m:'端から端までの距離が小さいようす。' },
+  { r:'はやい',     w:'速い',      m:'速度が大きいようす。' },
+  { r:'おそい',     w:'遅い',      m:'速度が小さいようす。' },
+  { r:'おもい',     w:'重い',      m:'重さがあるようす。' },
+  { r:'かるい',     w:'軽い',      m:'重さが少ないようす。' },
+  { r:'かたい',     w:'硬い',      m:'力を加えても変形しにくいようす。' },
+  { r:'ふるい',     w:'古い',      m:'時間がたって古くなっているようす。' },
+  { r:'あたらしい', w:'新しい',    m:'できたばかりで新鮮なようす。' },
+  { r:'すごい',     w:'すごい',    m:'とても優れているようす。' },
+  { r:'いい',       w:'良い',      m:'よいようす。' },
+  { r:'わるい',     w:'悪い',      m:'よくないようす。' },
+  { r:'むずかしい', w:'難しい',    m:'理解したり解いたりするのが大変なようす。' },
+  { r:'やさしい',   w:'優しい',    m:'思いやりがあってにこやかなようす。' },
+  { r:'いそがしい', w:'忙しい',    m:'やることが多くてひまがないようす。' },
+  { r:'さむい',     w:'寒い',      m:'気温が低くてひんやりするようす。' },
+  { r:'あつい',     w:'暑い',      m:'気温が高くてじりじりするようす。' },
+  { r:'すずしい',   w:'涼しい',    m:'適度に冷えて気持ちのよいようす。' },
+  { r:'あたたかい', w:'温かい',    m:'温度がほどよく高くて心地よいようす。' },
+  { r:'まるい',     w:'丸い',      m:'球や円のような形をしているようす。' },
+  { r:'ひろい',     w:'広い',      m:'面積が大きいようす。' },
+  { r:'せまい',     w:'狭い',      m:'面積が小さいようす。' },
+  { r:'おいしい',   w:'おいしい',  m:'食べて口に合って気持ちよいようす。' },
+  { r:'つよい',     w:'強い',      m:'力がとても大きいようす。' },
+  { r:'よわい',     w:'弱い',      m:'力が少ないようす。' },
+  { r:'ふかい',     w:'深い',      m:'深さがとても大きいようす。' },
+  { r:'くらい',     w:'暗い',      m:'明かりが少なくて見えにくいようす。' },
+  { r:'あかるい',   w:'明るい',    m:'光があってよく見えるようす。' },
+  { r:'うるさい',   w:'うるさい',  m:'音がとても大きくてうっとうしいようす。' },
+  { r:'あぶない',   w:'危ない',    m:'けがをしそうでこわいようす。' },
+  { r:'やわらかい', w:'柔らかい',  m:'力を加えると変形しやすいようす。' },
+  { r:'ほしい',     w:'欲しい',    m:'もちたいと思うようす。' },
+  { r:'めずらしい', w:'珍しい',    m:'あまり見かけないようす。' },
+  { r:'すばらしい', w:'素晴らしい',m:'とてもすぐれていてすてきなようす。' },
+  { r:'たくましい', w:'たくましい',m:'体も心も強くてりりしいようす。' },
+  { r:'かしこい',   w:'賢い',      m:'頭がよくてものごとをよく理解できるようす。' },
+  // ===== な形容詞・名詞的形容 =====
+  { r:'げんき',     w:'元気',      m:'体や気持ちが活発でいきいきしているようす。' },
+  { r:'すてき',     w:'素敵',      m:'とてもよくてうっとりするようす。' },
+  { r:'きれい',     w:'きれい',    m:'美しくてよごれていないようす。' },
+  { r:'しずか',     w:'静か',      m:'音が少なくて落ち着いているようす。' },
+  { r:'にぎやか',   w:'賑やか',    m:'人や声が多くてにぎわっているようす。' },
+  { r:'べんり',     w:'便利',      m:'使いやすくて役に立つようす。' },
+  { r:'ふしぎ',     w:'不思議',    m:'なぜそうなるかわからないようす。' },
+  { r:'じゆう',     w:'自由',      m:'自分の思いどおりにできること。' },
+  { r:'あんぜん',   w:'安全',      m:'きけんがなくて安心なようす。' },
+  { r:'しあわせ',   w:'幸せ',      m:'満ち足りた幸福な気持ち。' },
+  { r:'にんき',     w:'人気',      m:'多くの人に好かれていること。' },
+  { r:'ていねい',   w:'丁寧',      m:'細かいところまで気をつけるようす。' },
+  { r:'じょうず',   w:'上手',      m:'技術がうまいようす。' },
+  { r:'へた',       w:'下手',      m:'技術がうまくないようす。' },
+  { r:'とくべつ',   w:'特別',      m:'普通とちがって特であること。' },
+  { r:'たいせつ',   w:'大切',      m:'なくしてはいけないほど重要なようす。' },
+  { r:'だいじ',     w:'大事',      m:'大切でとても重要なようす。' },
+  { r:'あんしょく', w:'暗色',      m:'暗い色のこと。' },
+  // ===== 副詞・その他 =====
+  { r:'ゆっくり',   w:'ゆっくり',  m:'急がずにのんびりとしているようす。' },
+  { r:'たくさん',   w:'たくさん',  m:'数や量がとても多いようす。' },
+  { r:'すこし',     w:'少し',      m:'数や量がわずかなようす。' },
+  { r:'もっと',     w:'もっと',    m:'今よりも更に程度が大きいようす。' },
+  { r:'とても',     w:'とても',    m:'程度がとても大きいようす。' },
+  { r:'きっと',     w:'きっと',    m:'必ずそうなると思うようす。' },
+  { r:'やっぱり',   w:'やっぱり',  m:'予想どおり、やはりそうだということ。' },
+  { r:'もちろん',   w:'もちろん',  m:'当然のこととしてそうだということ。' },
+  { r:'ずっと',     w:'ずっと',    m:'長い間続くようす。' },
+  { r:'どんどん',   w:'どんどん',  m:'勢いよく進むようす。' },
+  { r:'だんだん',   w:'だんだん',  m:'少しずつ変わっていくようす。' },
+  { r:'いっしょ',   w:'一緒',      m:'同じところにいること。' },
+  { r:'ほんとう',   w:'本当',      m:'うそでなく事実であること。' },
+  { r:'とっても',   w:'とっても',  m:'程度がとても大きいようす。' },
+  { r:'そっと',     w:'そっと',    m:'音をたてず静かにするようす。' },
+  // ===== 感情・気持ち =====
+  { r:'きもち',     w:'気持ち',    m:'心に感じることや感情のこと。' },
+  { r:'こころ',     w:'心',        m:'感情や思いがあるとされるところ。' },
+  { r:'ゆめ',       w:'夢',        m:'眠っているときに見る映像。または将来への願い。' },
+  { r:'ゆうき',     w:'勇気',      m:'おそろしいことにも立ち向かう強い気持ち。' },
+  { r:'きぼう',     w:'希望',      m:'よいことが起こることを願う気持ち。' },
+  { r:'えがお',     w:'笑顔',      m:'にっこりと笑っている顔のこと。' },
+  { r:'なかよし',   w:'仲良し',    m:'仲がよくて友達であること。' },
+  { r:'どりょく',   w:'努力',      m:'目標に向かって力を尽くすこと。' },
+  { r:'やるき',     w:'やる気',    m:'積極的にやろうとする気持ち。' },
+  // ===== 体・からだ =====
+  { r:'からだ',     w:'体',        m:'頭から足まで全部のこと。' },
+  { r:'あたま',     w:'頭',        m:'体の一番上にある部分。考えるところ。' },
+  { r:'あし',       w:'足',        m:'体の下についている、歩くための部分。' },
+  { r:'みみ',       w:'耳',        m:'音を聞くための体の部分。' },
+  { r:'はな',       w:'鼻',        m:'においをかいだり息をしたりする部分。' },
+  { r:'くち',       w:'口',        m:'食べたり話したりするための部分。' },
+  { r:'かみのけ',   w:'髪の毛',    m:'頭に生えている毛のこと。' },
+  { r:'ちから',     w:'力',        m:'物を動かしたりできる強さ。' },
+  // ===== 学校・生活 =====
+  { r:'じゅぎょう', w:'授業',      m:'学校で先生に教えてもらう時間。' },
+  { r:'きゅうしょく',w:'給食',     m:'学校で出る昼のごはん。' },
+  { r:'そうじ',     w:'掃除',      m:'ほうきや雑巾でよごれを取ること。' },
+  { r:'かんそう',   w:'感想',      m:'見たり聞いたりして感じたこと。' },
+  { r:'はっぴょう', w:'発表',      m:'みんなの前で自分の考えを言うこと。' },
+  { r:'まいにち',   w:'毎日',      m:'日々かかさずのこと。' },
+  { r:'あした',     w:'明日',      m:'今日の次の日のこと。' },
+  { r:'きのう',     w:'昨日',      m:'今日の前の日のこと。' },
+  { r:'きょう',     w:'今日',      m:'今この日のこと。' },
+  { r:'あさ',       w:'朝',        m:'夜が明けて明るくなったころの時間。' },
+  { r:'ひる',       w:'昼',        m:'太陽が高い時間帯。' },
+  { r:'よる',       w:'夜',        m:'暗くなった時間帯。' },
+  { r:'せかい',     w:'世界',      m:'地球全体、またはすべての人が生きる場所。' },
+  { r:'みらい',     w:'未来',      m:'これからやってくる時間のこと。' },
+  { r:'むかし',     w:'昔',        m:'ずっと前の時代のこと。' },
+  // ===== 自然・季節 =====
+  { r:'はる',       w:'春',        m:'冬の次の暖かい季節。花が咲く。' },
+  { r:'なつ',       w:'夏',        m:'一番暑い季節。' },
+  { r:'あき',       w:'秋',        m:'葉が赤や黄色になる季節。' },
+  { r:'ふゆ',       w:'冬',        m:'一番寒い季節。' },
+  { r:'あめ',       w:'雨',        m:'空から水のつぶが降ること。' },
+  { r:'かぜ',       w:'風',        m:'空気が動いて吹くこと。' },
+  { r:'くも',       w:'雲',        m:'空に浮かぶ白い水や氷の固まり。' },
+  { r:'そら',       w:'空',        m:'地面より上の広い空間。' },
+  { r:'うみ',       w:'海',        m:'広くて大きな塩水のかたまり。' },
+  { r:'やま',       w:'山',        m:'地面が高く盛り上がったところ。' },
+  { r:'かわ',       w:'川',        m:'山から海へと流れる水の流れ。' },
+  { r:'くさ',       w:'草',        m:'地面に生えている緑の植物。' },
+  { r:'むし',       w:'虫',        m:'小さくて足がたくさんある生き物。' },
+  { r:'さかな',     w:'魚',        m:'水の中に住む生き物。' },
+  { r:'とり',       w:'鳥',        m:'羽があって空を飛ぶ生き物。' },
+  { r:'こむぎ',     w:'小麦',      m:'パンや麺を作るもとになる植物の実。' },
+  { r:'たいよう',   w:'太陽',      m:'空にある大きく明るい星。' },
+  { r:'つき',       w:'月',        m:'夜空に光る丸い星。' },
+  { r:'ほし',       w:'星',        m:'夜空にきらきら光る天体。' },
+  { r:'こおり',     w:'氷',        m:'水が凍ってかたまったもの。' },
+  { r:'ゆき',       w:'雪',        m:'空から白くふわふわ降るもの。' },
+  // ===== 食べ物 =====
+  { r:'やさい',     w:'野菜',      m:'畑でとれる食べ物。' },
+  { r:'くだもの',   w:'果物',      m:'植物の実で甘い食べ物。' },
+  { r:'にく',       w:'肉',        m:'動物の体の食べられる部分。' },
+  { r:'たまご',     w:'卵',        m:'にわとりなどが産む丸い食べ物。' },
+  { r:'みず',       w:'水',        m:'川や海にある無色の液体。' },
+  { r:'おちゃ',     w:'お茶',      m:'茶葉から作る日本の飲み物。' },
+  { r:'すし',       w:'寿司',      m:'酢めしの上に魚などをのせた料理。' },
+  { r:'そば',       w:'蕎麦',      m:'そば粉で作った細長い麺料理。' },
+  { r:'すいか',     w:'西瓜',      m:'夏に食べる大きくて赤い果物。' },
+  { r:'もも',       w:'桃',        m:'ふわふわの皮でおおわれた甘い果物。' },
+  { r:'いちご',     w:'苺',        m:'赤くて小さくて甘酸っぱい果物。' },
+  { r:'ぶどう',     w:'葡萄',      m:'小さな実がたくさん集まった果物。' },
+  { r:'なし',       w:'梨',        m:'シャリシャリした食感の丸い果物。' },
+  { r:'やきそば',   w:'焼きそば',  m:'麺を野菜と一緒に炒めた料理。' },
+  { r:'おにぎり',   w:'おにぎり',  m:'ご飯を三角や丸に握ったもの。' },
+  { r:'とうふ',     w:'豆腐',      m:'大豆から作る白くてやわらかい食べ物。' },
+  { r:'みそしる',   w:'味噌汁',    m:'味噌をとかした日本のスープ。' },
+];
+
+// ==============================
+// 追加語彙2（動物・食べ物・場所・道具など大量追加）
+// ==============================
+const EXTRA_WORDS2 = [
+  // ===== 動物 =====
+  { r:'ぞう',       w:'象',       m:'鼻がとても長い大きな動物。' },
+  { r:'とら',       w:'虎',       m:'黄色と黒のしましまの大きなネコの仲間。' },
+  { r:'かば',       w:'河馬',     m:'水の中に住む大きくて太った動物。' },
+  { r:'さる',       w:'猿',       m:'木に登るのが得意な動物。人間に似ている。' },
+  { r:'しか',       w:'鹿',       m:'枝のような角を持つ動物。' },
+  { r:'いのしし',   w:'猪',       m:'山にいる野生のブタのような動物。' },
+  { r:'おおかみ',   w:'狼',       m:'犬の仲間で群れで生活する野生動物。' },
+  { r:'きつね',     w:'狐',       m:'赤みがかった毛色のすばしこい動物。' },
+  { r:'たぬき',     w:'狸',       m:'おなかが大きくてまるい動物。' },
+  { r:'りす',       w:'栗鼠',     m:'しっぽがふさふさで木の実を食べる小動物。' },
+  { r:'もぐら',     w:'土竜',     m:'地面の下にトンネルを掘って生活する動物。' },
+  { r:'こうもり',   w:'蝙蝠',     m:'夜に飛ぶ、翼のある哺乳類。' },
+  { r:'いるか',     w:'海豚',     m:'海に住む頭のいい哺乳類。よくジャンプする。' },
+  { r:'くじら',     w:'鯨',       m:'海にいる世界最大の動物。' },
+  { r:'かめ',       w:'亀',       m:'甲らを持つのんびりした爬虫類。' },
+  { r:'かに',       w:'蟹',       m:'横に歩く、はさみを持つ海の生き物。' },
+  { r:'えび',       w:'海老',     m:'長い触角を持つ海や川の生き物。' },
+  { r:'たこ',       w:'蛸',       m:'8本の足を持つ海の生き物。' },
+  { r:'いか',       w:'烏賊',     m:'10本の足を持つ海の生き物。' },
+  { r:'かわうそ',   w:'獺',       m:'川に住む、魚を食べるかわいい動物。' },
+  { r:'ぱんだ',     w:'パンダ',   m:'白と黒の模様の熊の仲間。笹を食べる。' },
+  { r:'ぺんぎん',   w:'ペンギン', m:'南極などに住む、泳ぎが得意な鳥。' },
+  { r:'うし',       w:'牛',       m:'乳やお肉を取るために飼う大きな動物。' },
+  { r:'うま',       w:'馬',       m:'速く走ることができる大きな動物。' },
+  { r:'ひつじ',     w:'羊',       m:'白いふわふわの毛を持つ動物。' },
+  { r:'やぎ',       w:'山羊',     m:'角があり山に住む動物。' },
+  { r:'にわとり',   w:'鶏',       m:'卵を産む鳥。' },
+  { r:'あひる',     w:'家鴨',     m:'水辺に住む白くてかわいい鳥。' },
+  { r:'はと',       w:'鳩',       m:'ぐるぐると飛ぶ平和の象徴の鳥。' },
+  { r:'からす',     w:'烏',       m:'真っ黒な頭のいい鳥。' },
+  { r:'つばめ',     w:'燕',       m:'春に来て巣を作るすばやい鳥。' },
+  { r:'すずめ',     w:'雀',       m:'小さくてちゅんちゅん鳴く鳥。' },
+  { r:'さぎ',       w:'鷺',       m:'水辺にいる首が長い白い鳥。' },
+  { r:'わし',       w:'鷲',       m:'空を高く飛ぶ大きな猛禽。' },
+  { r:'ふくろう',   w:'梟',       m:'夜に活動する丸い目の鳥。' },
+  { r:'あざらし',   w:'海豹',     m:'海に住むひれのある哺乳類。' },
+  { r:'くじゃく',   w:'孔雀',     m:'美しい羽を広げる大きな鳥。' },
+  { r:'かもめ',     w:'鴎',       m:'海岸に住む白い鳥。' },
+  { r:'たか',       w:'鷹',       m:'鋭い目で獲物を見つける猛禽。' },
+  // ===== 昆虫 =====
+  { r:'ちょう',     w:'蝶',       m:'美しい翅を持つ昆虫。花の蜜を吸う。' },
+  { r:'とんぼ',     w:'蜻蛉',     m:'細い体と4枚の翅を持つ昆虫。' },
+  { r:'くわがた',   w:'鍬形',     m:'大きなハサミのような角を持つ甲虫。' },
+  { r:'かぶとむし', w:'兜虫',     m:'角があって強い甲虫。子どもに人気。' },
+  { r:'みつばち',   w:'蜜蜂',     m:'花の蜜を集めてはちみつを作る昆虫。' },
+  { r:'ほたる',     w:'蛍',       m:'夜に光る小さな昆虫。' },
+  { r:'せみ',       w:'蝉',       m:'夏に大きな声で鳴く昆虫。' },
+  { r:'こおろぎ',   w:'蟋蟀',     m:'秋にきれいな声で鳴く昆虫。' },
+  { r:'あり',       w:'蟻',       m:'みんなで協力して働く小さな昆虫。' },
+  { r:'かたつむり', w:'蝸牛',     m:'殻を背負ってゆっくり動く生き物。' },
+  { r:'くも',       w:'蜘蛛',     m:'巣を張って虫をつかまえる生き物。' },
+  { r:'ばった',     w:'飛蝗',     m:'緑や茶色のジャンプが得意な昆虫。' },
+  { r:'かまきり',   w:'螳螂',     m:'鎌のような手を持つ昆虫。' },
+  { r:'いもむし',   w:'芋虫',     m:'芋のようにずんぐりとした幼虫。' },
+  { r:'さなぎ',     w:'蛹',       m:'チョウなどが羽化する前の状態。' },
+  // ===== 植物・花 =====
+  { r:'さくら',     w:'桜',       m:'春に咲くピンクのきれいな花。' },
+  { r:'たんぽぽ',   w:'蒲公英',   m:'黄色い丸い花が咲く野原の草。' },
+  { r:'すみれ',     w:'菫',       m:'紫色の小さな花。' },
+  { r:'ひまわり',   w:'向日葵',   m:'太陽に向かって咲く大きな黄色い花。' },
+  { r:'あさがお',   w:'朝顔',     m:'朝に咲くラッパ形の花。' },
+  { r:'つぼみ',     w:'蕾',       m:'まだ開いていない花のこと。' },
+  { r:'はっぱ',     w:'葉っぱ',   m:'植物の葉のこと。' },
+  { r:'たね',       w:'種',       m:'植物が育つためのもと。' },
+  { r:'たけ',       w:'竹',       m:'細くてまっすぐに伸びる植物。' },
+  { r:'こけ',       w:'苔',       m:'地面や岩に生える緑の植物。' },
+  { r:'わかめ',     w:'若布',     m:'海に生える緑の海藻。' },
+  { r:'うめ',       w:'梅',       m:'春に白やピンクの花が咲く木。' },
+  { r:'もみじ',     w:'紅葉',     m:'秋に赤く色づく木の葉。' },
+  { r:'たんぼ',     w:'田んぼ',   m:'お米を育てる水が張られた畑。' },
+  { r:'はたけ',     w:'畑',       m:'野菜などを育てる土地。' },
+  { r:'かぼちゃ',   w:'南瓜',     m:'オレンジ色の大きな実の野菜。' },
+  // ===== 食べ物（追加） =====
+  { r:'からあげ',   w:'唐揚げ',   m:'鶏肉を揚げた料理。' },
+  { r:'おでん',     w:'おでん',   m:'大根やちくわを煮込んだ冬の料理。' },
+  { r:'てんぷら',   w:'天ぷら',   m:'野菜や魚に衣をつけて揚げた料理。' },
+  { r:'ぎょうざ',   w:'餃子',     m:'肉や野菜を皮で包んで焼いた料理。' },
+  { r:'たこやき',   w:'たこ焼き', m:'たこが入ったまるい大阪の食べ物。' },
+  { r:'やきとり',   w:'焼き鳥',   m:'鶏肉を串に刺して焼いた料理。' },
+  { r:'ちゃはん',   w:'炒飯',     m:'ご飯を炒めた料理。' },
+  { r:'なっとう',   w:'納豆',     m:'大豆を発酵させたねばねばした食べ物。' },
+  { r:'ぱすた',     w:'パスタ',   m:'小麦粉で作った麺料理。イタリア料理。' },
+  { r:'とうもろこし',w:'玉蜀黍',  m:'黄色い粒がたくさんついた野菜。' },
+  { r:'じゃがいも', w:'馬鈴薯',   m:'土の中に育つでんぷんの多い野菜。' },
+  { r:'さつまいも', w:'薩摩芋',   m:'甘くておいしいオレンジ色の芋。' },
+  { r:'きゅうり',   w:'胡瓜',     m:'細長い緑色の野菜。サラダに使う。' },
+  { r:'なす',       w:'茄子',     m:'紫色のやわらかい野菜。' },
+  { r:'にんにく',   w:'蒜',       m:'独特の香りのある野菜。料理に使う。' },
+  { r:'しょうが',   w:'生姜',     m:'ピリッとした辛みのある根の野菜。' },
+  { r:'ごぼう',     w:'牛蒡',     m:'細長い茶色の根の野菜。' },
+  { r:'れんこん',   w:'蓮根',     m:'穴が開いた形の野菜。' },
+  { r:'とうがらし', w:'唐辛子',   m:'赤くて辛い野菜。' },
+  { r:'わさび',     w:'山葵',     m:'緑色のとても辛い食べ物。寿司に使う。' },
+  { r:'みそ',       w:'味噌',     m:'大豆から作る茶色い調味料。' },
+  { r:'しょうゆ',   w:'醤油',     m:'大豆から作る茶色い液体の調味料。' },
+  { r:'さとう',     w:'砂糖',     m:'甘さをつける白い調味料。' },
+  { r:'しお',       w:'塩',       m:'しょっぱい調味料。海水から作る。' },
+  { r:'はちみつ',   w:'蜂蜜',     m:'みつばちが作る甘い液体。' },
+  { r:'ぴざ',       w:'ピザ',     m:'丸いパンの上にチーズなどをのせて焼いた料理。' },
+  { r:'てれび',     w:'テレビ',   m:'映像と音声で情報を伝える機械。' },
+  { r:'ぶたにく',   w:'豚肉',     m:'ぶたの肉。料理によく使われる。' },
+  { r:'とりにく',   w:'鶏肉',     m:'にわとりの肉。ヘルシーで人気。' },
+  { r:'ぎゅうにく', w:'牛肉',     m:'牛の肉。ステーキなどに使う。' },
+  { r:'ほうれんそう',w:'ほうれん草',m:'緑色で鉄分が多い野菜。' },
+  { r:'こまつな',   w:'小松菜',   m:'緑色の葉野菜。炒め物に使う。' },
+  { r:'なのはな',   w:'菜の花',   m:'黄色い小さな花の野菜。春に食べる。' },
+  { r:'ぷりん',     w:'プリン',   m:'卵と牛乳で作る甘いデザート。' },
+  { r:'ぜりー',     w:'ゼリー',   m:'ぷるぷるとしたデザート。' },
+  { r:'ぱふぇ',     w:'パフェ',   m:'アイスやフルーツを重ねたデザート。' },
+  // ===== 飲み物 =====
+  { r:'こうちゃ',   w:'紅茶',     m:'茶葉から作る赤い飲み物。' },
+  { r:'むぎちゃ',   w:'麦茶',     m:'麦を焙煎して作った飲み物。夏に飲む。' },
+  { r:'まっちゃ',   w:'抹茶',     m:'緑色の粉で作った日本のお茶。' },
+  { r:'ここあ',     w:'ココア',   m:'カカオから作った温かい飲み物。' },
+  { r:'すいとう',   w:'水筒',     m:'飲み物を入れて持ち歩く容器。' },
+  // ===== 乗り物 =====
+  { r:'でんしゃ',   w:'電車',     m:'レールの上を走る乗り物。' },
+  { r:'ちかてつ',   w:'地下鉄',   m:'地下を走る電車。' },
+  { r:'じてんしゃ', w:'自転車',   m:'ペダルをこいで走る乗り物。' },
+  { r:'じどうしゃ', w:'自動車',   m:'エンジンで走る乗り物。' },
+  { r:'ひこうき',   w:'飛行機',   m:'空を飛ぶ乗り物。' },
+  { r:'ふね',       w:'船',       m:'水の上を進む乗り物。' },
+  { r:'きゅうきゅうしゃ', w:'救急車', m:'病人やけが人を病院に運ぶ車。' },
+  { r:'しょうぼうしゃ',   w:'消防車', m:'火事を消しに行く赤い車。' },
+  { r:'せんすいかん',     w:'潜水艦', m:'水の中に潜ることができる船。' },
+  { r:'うちゅうせん',     w:'宇宙船', m:'宇宙を飛ぶ乗り物。' },
+  { r:'ろけっと',   w:'ロケット', m:'火を噴き出して空へ飛ぶ乗り物。' },
+  { r:'ばす',       w:'バス',     m:'たくさんの人が乗れる大きな自動車。' },
+  { r:'とらっく',   w:'トラック', m:'荷物を運ぶ大きな車。' },
+  { r:'タクシー',   w:'',         m:'' },
+  { r:'たくしー',   w:'タクシー', m:'' },
+  // ===== 場所・建物 =====
+  { r:'びょういん',   w:'病院',     m:'病気やけがを治療してもらう場所。' },
+  { r:'ゆうびんきょく',w:'郵便局',  m:'手紙や荷物を送る場所。' },
+  { r:'ぎんこう',   w:'銀行',     m:'お金を預けたり引き出したりする場所。' },
+  { r:'としょかん', w:'図書館',   m:'本をかりて読める場所。' },
+  { r:'はくぶつかん',w:'博物館',  m:'歴史や科学の展示がある建物。' },
+  { r:'すいぞくかん',w:'水族館',  m:'海の生き物を見られる施設。' },
+  { r:'こうじょう', w:'工場',     m:'ものを作る建物。' },
+  { r:'えき',       w:'駅',       m:'電車が止まる場所。' },
+  { r:'くうこう',   w:'空港',     m:'飛行機が発着する場所。' },
+  { r:'みなと',     w:'港',       m:'船が出入りする場所。' },
+  { r:'じんじゃ',   w:'神社',     m:'神様をまつる日本の建物。' },
+  { r:'おてら',     w:'お寺',     m:'仏様をまつる日本の建物。' },
+  { r:'しろ',       w:'城',       m:'昔の武士が住んでいた建物。' },
+  { r:'とうだい',   w:'灯台',     m:'海岸にあって船に光で場所を知らせる塔。' },
+  { r:'こうばん',   w:'交番',     m:'警察官がいる地域の小さな建物。' },
+  // ===== 学校・文房具 =====
+  { r:'えんぴつ',   w:'鉛筆',     m:'文字を書く道具。' },
+  { r:'けしごむ',   w:'消しゴム', m:'鉛筆で書いた文字を消す道具。' },
+  { r:'ものさし',   w:'物差し',   m:'長さを測る道具。' },
+  { r:'はさみ',     w:'鋏',       m:'ものを切る道具。2つの刃がある。' },
+  { r:'のり',       w:'糊',       m:'ものをくっつける道具。' },
+  { r:'らんどせる', w:'ランドセル',m:'小学生が使う四角いかばん。' },
+  { r:'きょうかしょ',w:'教科書',  m:'学校の授業で使う本。' },
+  { r:'さんすう',   w:'算数',     m:'計算や数について学ぶ教科。' },
+  { r:'こくご',     w:'国語',     m:'日本語を学ぶ教科。' },
+  { r:'りか',       w:'理科',     m:'科学や自然について学ぶ教科。' },
+  { r:'しゃかい',   w:'社会',     m:'地理や歴史を学ぶ教科。' },
+  { r:'おんがく',   w:'音楽',     m:'歌やがっきを演奏する教科。' },
+  { r:'たいいく',   w:'体育',     m:'体を動かして学ぶ教科。' },
+  { r:'ずこう',     w:'図工',     m:'絵を描いたり工作をしたりする教科。' },
+  { r:'しゅくだい', w:'宿題',     m:'家でやる学校の課題。' },
+  { r:'テスト',     w:'',         m:'' },
+  { r:'てすと',     w:'テスト',   m:'勉強の理解を確かめる問題。' },
+  { r:'かんじ',     w:'漢字',     m:'中国から伝わった文字。' },
+  { r:'ひらがな',   w:'ひらがな', m:'日本語のやわらかい形の文字。' },
+  // ===== スポーツ・遊び =====
+  { r:'やきゅう',   w:'野球',     m:'バットでボールを打つスポーツ。' },
+  { r:'すもう',     w:'相撲',     m:'まわしをつけてたたかう日本の国技。' },
+  { r:'じゅうどう', w:'柔道',     m:'相手を投げたり押さえたりする武道。' },
+  { r:'からて',     w:'空手',     m:'手足で戦う日本の武道。' },
+  { r:'けんどう',   w:'剣道',     m:'竹刀で打ち合う日本の武道。' },
+  { r:'すいえい',   w:'水泳',     m:'水の中を泳ぐスポーツ。' },
+  { r:'たいそう',   w:'体操',     m:'体を動かして演技をするスポーツ。' },
+  { r:'おにごっこ', w:'鬼ごっこ', m:'鬼になって人をつかまえる遊び。' },
+  { r:'かくれんぼ', w:'隠れん坊', m:'隠れる人を見つける遊び。' },
+  { r:'なわとび',   w:'縄跳び',   m:'なわを跳んで遊ぶ。' },
+  { r:'しゃぼんだま',w:'石鹸玉',  m:'石けん液で作るふわふわの球。' },
+  { r:'たこあげ',   w:'凧揚げ',   m:'空に糸のついた凧を飛ばす遊び。' },
+  { r:'けんだま',   w:'剣玉',     m:'玉を棒の先に入れる遊び道具。' },
+  { r:'すけーと',   w:'スケート', m:'氷の上を滑る遊びやスポーツ。' },
+  { r:'すき',       w:'スキー',   m:'雪の上をすべるスポーツ。' },
+  { r:'さいくりんぐ',w:'サイクリング',m:'自転車で遠くまで走ること。' },
+  // ===== 体の部位 =====
+  { r:'かた',       w:'肩',       m:'首と腕のあいだの部分。' },
+  { r:'むね',       w:'胸',       m:'体の前のお腹より上の部分。' },
+  { r:'おなか',     w:'お腹',     m:'体の中心部分。食べ物が入る。' },
+  { r:'せなか',     w:'背中',     m:'体の後ろ側の部分。' },
+  { r:'こし',       w:'腰',       m:'背中の下の部分。' },
+  { r:'ひざ',       w:'膝',       m:'足の曲がる部分。' },
+  { r:'かかと',     w:'踵',       m:'足の後ろの部分。' },
+  { r:'つめ',       w:'爪',       m:'指の先にある固い部分。' },
+  { r:'まつげ',     w:'睫',       m:'目の縁に生えている短い毛。' },
+  { r:'まゆ',       w:'眉',       m:'目の上に生えている毛。' },
+  { r:'くび',       w:'首',       m:'頭と胴体をつなぐ部分。' },
+  { r:'ほほ',       w:'頬',       m:'顔の両側のふくらんだ部分。' },
+  // ===== 道具・もの =====
+  { r:'かがみ',     w:'鏡',       m:'自分の顔や姿を映すもの。' },
+  { r:'かさ',       w:'傘',       m:'雨の日にさして使うもの。' },
+  { r:'くつ',       w:'靴',       m:'足にはく外出用のもの。' },
+  { r:'くつした',   w:'靴下',     m:'足にはく布でできたもの。' },
+  { r:'ぼうし',     w:'帽子',     m:'頭にかぶるもの。' },
+  { r:'てぶくろ',   w:'手袋',     m:'手にはめる防寒具。' },
+  { r:'めがね',     w:'眼鏡',     m:'目が悪い人がかけるもの。' },
+  { r:'とけい',     w:'時計',     m:'時間を示す道具。' },
+  { r:'さいふ',     w:'財布',     m:'お金を入れる小さな入れ物。' },
+  { r:'かばん',     w:'鞄',       m:'ものを入れて持ち歩く入れ物。' },
+  { r:'はこ',       w:'箱',       m:'ものを入れる四角い容器。' },
+  { r:'ふくろ',     w:'袋',       m:'ものを入れる柔らかい容器。' },
+  { r:'くし',       w:'櫛',       m:'髪の毛をとかすための道具。' },
+  { r:'せっけん',   w:'石鹸',     m:'手を洗うときに使う泡立つもの。' },
+  { r:'たおる',     w:'タオル',   m:'体や手を拭くための布。' },
+  { r:'まくら',     w:'枕',       m:'眠るときに頭をのせるもの。' },
+  { r:'もうふ',     w:'毛布',     m:'暖かい厚い布。寒い時に使う。' },
+  { r:'ざぶとん',   w:'座布団',   m:'座るときに敷くクッション。' },
+  { r:'でんきゅう', w:'電球',     m:'電気で光るガラスの球。' },
+  { r:'えあこん',   w:'エアコン', m:'部屋の温度を調節する機械。' },
+  { r:'れいぞうこ', w:'冷蔵庫',   m:'食べ物や飲み物を冷やして保存する機械。' },
+  { r:'せんたくき', w:'洗濯機',   m:'服などを洗う機械。' },
+  { r:'そうじき',   w:'掃除機',   m:'床のごみを吸い取る機械。' },
+  // ===== 家・家具 =====
+  { r:'だいどころ', w:'台所',     m:'料理をする部屋。' },
+  { r:'おふろ',     w:'お風呂',   m:'体を洗ったり温まったりする場所。' },
+  { r:'げんかん',   w:'玄関',     m:'家の出入り口の部分。' },
+  { r:'かいだん',   w:'階段',     m:'上の階へ行くための段々。' },
+  { r:'まど',       w:'窓',       m:'外の光や風を入れるための開口部。' },
+  { r:'つくえ',     w:'机',       m:'勉強や仕事をするときに使う台。' },
+  { r:'いす',       w:'椅子',     m:'座るための道具。' },
+  { r:'たな',       w:'棚',       m:'ものをのせておく板。' },
+  // ===== 天気・自然現象 =====
+  { r:'たいふう',   w:'台風',     m:'強い風と雨を伴う大きな嵐。' },
+  { r:'かみなり',   w:'雷',       m:'大きな音と光を出す自然現象。' },
+  { r:'にじ',       w:'虹',       m:'雨のあとに空に出る七色の帯。' },
+  { r:'きり',       w:'霧',       m:'空気中に水分が漂って白くなる現象。' },
+  { r:'しも',       w:'霜',       m:'冬の朝に地面や葉が白くなるもの。' },
+  { r:'つゆ',       w:'梅雨',     m:'6月頃に雨が続く季節。' },
+  { r:'はれ',       w:'晴れ',     m:'空に雲が少なく太陽が見える天気。' },
+  { r:'くもり',     w:'曇り',     m:'雲が多くて太陽が見えない天気。' },
+  { r:'あらし',     w:'嵐',       m:'風と雨が強い悪天候。' },
+  { r:'たつまき',   w:'竜巻',     m:'渦を巻きながら進む強風。' },
+  { r:'じしん',     w:'地震',     m:'地面が揺れる自然現象。' },
+  { r:'かざん',     w:'火山',     m:'溶岩を噴き出す山。' },
+  { r:'みずうみ',   w:'湖',       m:'陸に囲まれた大きな水の溜まり。' },
+  { r:'たき',       w:'滝',       m:'岩の上から水が流れ落ちる場所。' },
+  { r:'さばく',     w:'砂漠',     m:'雨がほとんど降らない砂の多い土地。' },
+  { r:'もり',       w:'森',       m:'木がたくさん茂っている場所。' },
+  { r:'はやし',     w:'林',       m:'木が生えているが森より小さい場所。' },
+  { r:'みどり',     w:'緑',       m:'植物のような緑の色のこと。' },
+  // ===== 色 =====
+  { r:'あか',       w:'赤',       m:'血や火のような色。' },
+  { r:'あお',       w:'青',       m:'空や海のような色。' },
+  { r:'きいろ',     w:'黄色',     m:'ひまわりや太陽のような色。' },
+  { r:'むらさき',   w:'紫',       m:'赤と青をまぜたような色。' },
+  { r:'ちゃいろ',   w:'茶色',     m:'木の幹のような色。' },
+  { r:'だいだい',   w:'橙',       m:'オレンジのような赤みがかった黄色。' },
+  { r:'ぴんく',     w:'ピンク',   m:'桜のような薄い赤色。' },
+  { r:'はいいろ',   w:'灰色',     m:'灰のような黒と白の中間の色。' },
+  { r:'きんいろ',   w:'金色',     m:'金のようにかがやく色。' },
+  { r:'ぎんいろ',   w:'銀色',     m:'銀のようにかがやく色。' },
+  // ===== 曜日・月 =====
+  { r:'げつようび', w:'月曜日',   m:'週の最初の日。' },
+  { r:'かようび',   w:'火曜日',   m:'週の2番目の日。' },
+  { r:'すいようび', w:'水曜日',   m:'週の3番目の日。' },
+  { r:'もくようび', w:'木曜日',   m:'週の4番目の日。' },
+  { r:'きんようび', w:'金曜日',   m:'週の5番目の日。' },
+  { r:'どようび',   w:'土曜日',   m:'週の6番目の日。' },
+  { r:'にちようび', w:'日曜日',   m:'週の最後の日。お休みの日。' },
+  { r:'いちがつ',   w:'一月',     m:'年の最初の月。お正月がある。' },
+  { r:'にがつ',     w:'二月',     m:'年の2番目の月。節分がある。' },
+  { r:'さんがつ',   w:'三月',     m:'春が始まる月。ひな祭りがある。' },
+  { r:'しがつ',     w:'四月',     m:'桜が咲く月。入学式がある。' },
+  { r:'ごがつ',     w:'五月',     m:'こどもの日がある月。' },
+  { r:'ろくがつ',   w:'六月',     m:'梅雨の月。' },
+  { r:'しちがつ',   w:'七月',     m:'七夕がある月。' },
+  { r:'はちがつ',   w:'八月',     m:'夏休みがある月。' },
+  { r:'くがつ',     w:'九月',     m:'秋が始まる月。' },
+  { r:'じゅうがつ', w:'十月',     m:'運動会がある月。' },
+  { r:'じゅういちがつ',w:'十一月', m:'秋が深まる月。' },
+  { r:'じゅうにがつ',  w:'十二月', m:'クリスマスやお正月の準備をする月。' },
+  // ===== 感情・行動 =====
+  { r:'びっくり',   w:'びっくり', m:'突然のことに驚くようす。' },
+  { r:'どきどき',   w:'どきどき', m:'心臓が速く打つような緊張感。' },
+  { r:'わくわく',   w:'わくわく', m:'楽しみで気持ちが高ぶるようす。' },
+  { r:'ぞくぞく',   w:'ぞくぞく', m:'怖かったりして震えるようす。' },
+  { r:'いじわる',   w:'意地悪',   m:'わざと人を困らせること。' },
+  { r:'けんか',     w:'喧嘩',     m:'言い合いや争いをすること。' },
+  { r:'なかなおり', w:'仲直り',   m:'けんかのあとに仲直りをすること。' },
+  { r:'あいさつ',   w:'挨拶',     m:'会ったときや別れるときにする言葉や動作。' },
+  { r:'おれい',     w:'お礼',     m:'親切にしてもらったことへの感謝の言葉。' },
+  { r:'あやまる',   w:'謝る',     m:'悪いことをしたと認めて詫びること。' },
+  { r:'ゆるす',     w:'許す',     m:'悪いことをした人を受け入れること。' },
+  { r:'はげます',   w:'励ます',   m:'元気が出るように応援すること。' },
+  { r:'ほめる',     w:'褒める',   m:'よいことをした人を認めてたたえること。' },
+  { r:'しかる',     w:'叱る',     m:'悪いことをした人に注意すること。' },
+  { r:'まじめ',     w:'真面目',   m:'真剣でうそをつかないようす。' },
+  { r:'のんびり',   w:'のんびり', m:'急がずゆっくりするようす。' },
+  { r:'おとなしい', w:'おとなしい',m:'静かで控えめなようす。' },
+  // ===== 職業 =====
+  { r:'せんせい',   w:'先生',     m:'学校で教える人。' },
+  { r:'いしゃ',     w:'医者',     m:'病気やけがを治す人。' },
+  { r:'かんごし',   w:'看護師',   m:'病院で患者を助ける人。' },
+  { r:'けいさつかん',w:'警察官',  m:'治安を守る仕事の人。' },
+  { r:'しょうぼうし',w:'消防士',  m:'火事を消す仕事の人。' },
+  { r:'ほいくし',   w:'保育士',   m:'小さい子どもの世話をする人。' },
+  { r:'りょうし',   w:'漁師',     m:'海や川で魚をとる仕事の人。' },
+  { r:'のうか',     w:'農家',     m:'農業をする人や家。' },
+  { r:'だいく',     w:'大工',     m:'木で家を建てる職人。' },
+  { r:'うんてんし', w:'運転士',   m:'乗り物を運転する仕事の人。' },
+  { r:'がか',       w:'画家',     m:'絵を描く仕事をする人。' },
+  { r:'かしゅ',     w:'歌手',     m:'歌を歌う仕事をする人。' },
+  { r:'はいゆう',   w:'俳優',     m:'映画や舞台に出る仕事の人。' },
+  // ===== 動詞（追加） =====
+  { r:'さわる',     w:'触る',     m:'手でものに触れること。' },
+  { r:'たたく',     w:'叩く',     m:'手や棒で何かを打つこと。' },
+  { r:'つつく',     w:'突く',     m:'先の尖ったものでつつくこと。' },
+  { r:'ふむ',       w:'踏む',     m:'足で上から体重をかけること。' },
+  { r:'もぐる',     w:'潜る',     m:'水の中や地面に入ること。' },
+  { r:'のる',       w:'乗る',     m:'乗り物や高いところに上がること。' },
+  { r:'おりる',     w:'降りる',   m:'乗り物や高いところから下がること。' },
+  { r:'わたる',     w:'渡る',     m:'橋や川を越えること。' },
+  { r:'ころぶ',     w:'転ぶ',     m:'バランスを崩して倒れること。' },
+  { r:'たおれる',   w:'倒れる',   m:'立っていたものが横になること。' },
+  { r:'おちる',     w:'落ちる',   m:'高いところから下へ落ちること。' },
+  { r:'あがる',     w:'上がる',   m:'低いところから高いところへ移ること。' },
+  { r:'さがる',     w:'下がる',   m:'高いところから低いところへ移ること。' },
+  { r:'もどる',     w:'戻る',     m:'来た方向に引き返すこと。' },
+  { r:'まわる',     w:'回る',     m:'中心の周りをぐるぐる動くこと。' },
+  { r:'てつだう',   w:'手伝う',   m:'人の仕事を助けること。' },
+  { r:'わける',     w:'分ける',   m:'ひとつのものをいくつかにすること。' },
+  { r:'あわせる',   w:'合わせる', m:'2つ以上のものを一緒にすること。' },
+  { r:'くらべる',   w:'比べる',   m:'2つのものの違いを確かめること。' },
+  { r:'すべる',     w:'滑る',     m:'表面を滑らかに進むこと。' },
+  { r:'つかむ',     w:'掴む',     m:'手でしっかりとにぎること。' },
+  { r:'にぎる',     w:'握る',     m:'指を曲げてしっかりとつかむこと。' },
+  { r:'ふる',       w:'振る',     m:'何かを手で左右に動かすこと。' },
+  { r:'だく',       w:'抱く',     m:'腕で抱きしめること。' },
+  { r:'はかる',     w:'測る',     m:'長さや重さなどを計器で調べること。' },
+  { r:'しらべる',   w:'調べる',   m:'詳しく確かめること。' },
+  { r:'まとめる',   w:'まとめる', m:'バラバラなものを一つにすること。' },
+  { r:'つたえる',   w:'伝える',   m:'情報や気持ちを相手に知らせること。' },
+  { r:'むかえる',   w:'迎える',   m:'来た人を受け入れること。' },
+  { r:'おくる',     w:'送る',     m:'物や人を目的地に届けること。' },
+  { r:'よびかける', w:'呼びかける',m:'声をかけて注意を引くこと。' },
+  { r:'うつる',     w:'映る',     m:'映像が映し出されること。' },
+  { r:'ひかる',     w:'光る',     m:'光を出すこと。' },
+  { r:'もえる',     w:'燃える',   m:'火がついてもえること。' },
+  { r:'とける',     w:'溶ける',   m:'固体が液体になること。' },
+  { r:'こおる',     w:'凍る',     m:'液体が固体になること。' },
+  { r:'かわく',     w:'乾く',     m:'水分がなくなること。' },
+  { r:'ぬれる',     w:'濡れる',   m:'水分がついてしめること。' },
+  { r:'よごれる',   w:'汚れる',   m:'きれいでなくなること。' },
+  { r:'よごす',     w:'汚す',     m:'きれいなものを汚すこと。' },
+  { r:'たまる',     w:'溜まる',   m:'ものが少しずつ集まること。' },
+  { r:'ながれる',   w:'流れる',   m:'液体などが動いて移ること。' },
+  { r:'ひびく',     w:'響く',     m:'音がなり広がること。' },
+  { r:'さける',     w:'避ける',   m:'危険やものを近づかないようにすること。' },
+  // ===== 形容詞（追加） =====
+  { r:'まっすぐ',   w:'真っ直ぐ', m:'曲がらずにのびているようす。' },
+  { r:'ぐるぐる',   w:'ぐるぐる', m:'何度も回るようす。' },
+  { r:'ふわふわ',   w:'ふわふわ', m:'軽くてやわらかいようす。' },
+  { r:'ぴかぴか',   w:'ぴかぴか', m:'光り輝いているようす。' },
+  { r:'ぼろぼろ',   w:'ぼろぼろ', m:'傷んで崩れかけているようす。' },
+  { r:'ぼんやり',   w:'ぼんやり', m:'はっきりしないようす。' },
+  { r:'はっきり',   w:'はっきり', m:'明確でわかりやすいようす。' },
+  { r:'ずいぶん',   w:'ずいぶん', m:'かなり多かったり大きかったりするようす。' },
+  { r:'しっかり',   w:'しっかり', m:'確かで安定しているようす。' },
+  { r:'さっぱり',   w:'さっぱり', m:'すっきりと清潔なようす。' },
+  { r:'ねっしん',   w:'熱心',     m:'一生懸命に取り組むようす。' },
+  { r:'かんせい',   w:'完成',     m:'すべてが出来あがること。' },
+  { r:'せいかい',   w:'正解',     m:'答えが正しいこと。' },
+  { r:'まちがい',   w:'間違い',   m:'答えや行動が正しくないこと。' },
+  // ===== 行事・イベント =====
+  { r:'おまつり',   w:'お祭り',   m:'神社や季節の行事で人が集まる催し。' },
+  { r:'はなびたいかい',w:'花火大会',m:'夜空に花火を打ち上げるイベント。' },
+  { r:'うんどうかい',w:'運動会',  m:'学校でスポーツを行う行事。' },
+  { r:'えんそく',   w:'遠足',     m:'学校で遠くに出かける行事。' },
+  { r:'がくげいかい',w:'学芸会',  m:'劇や歌を発表する学校の行事。' },
+  { r:'そつぎょうしき',w:'卒業式', m:'学校を終えるときのお別れの式。' },
+  { r:'にゅうがくしき',w:'入学式', m:'学校に入るときの式。' },
+  { r:'たいかい',   w:'大会',     m:'多くの人が集まって行う競技や会。' },
+  { r:'たんじょうび',w:'誕生日',  m:'生まれた日のこと。毎年お祝いする。' },
+  { r:'きねんび',   w:'記念日',   m:'大切な出来事を記念する日。' },
+  // ===== その他もの・概念 =====
+  { r:'ひみつ',     w:'秘密',     m:'人に知られたくないこと。' },
+  { r:'ぼうけん',   w:'冒険',     m:'危険を承知でチャレンジすること。' },
+  { r:'たからもの', w:'宝物',     m:'大切にしているもの。' },
+  { r:'まほう',     w:'魔法',     m:'不思議な力でものを変えること。' },
+  { r:'ぬいぐるみ', w:'縫いぐるみ',m:'布で作ったやわらかいおもちゃ。' },
+  { r:'おもちゃ',   w:'おもちゃ', m:'子どもが遊ぶための道具。' },
+  { r:'えほん',     w:'絵本',     m:'絵が中心の子どものための本。' },
+  { r:'まんが',     w:'漫画',     m:'絵でお話を描いたもの。' },
+  { r:'あにめ',     w:'アニメ',   m:'絵で作られた映像作品。' },
+  { r:'うた',       w:'歌',       m:'メロディをつけて歌われる言葉。' },
+  { r:'がっき',     w:'楽器',     m:'音楽を演奏するための道具。' },
+  { r:'ぴあの',     w:'ピアノ',   m:'鍵盤を打つと音が出る楽器。' },
+  { r:'たいこ',     w:'太鼓',     m:'たたいて鳴らす打楽器。' },
+  { r:'ふえ',       w:'笛',       m:'吹くと音が出る管楽器。' },
+  { r:'ひかり',     w:'光',       m:'目に見える電磁波。太陽などから出る。' },
+  { r:'かげ',       w:'影',       m:'光が当たらない暗い部分。' },
+  { r:'におい',     w:'匂い',     m:'鼻で感じる感覚。' },
+  { r:'あじ',       w:'味',       m:'口で食べ物を感じること。' },
+  { r:'かたち',     w:'形',       m:'物の輪郭や形のこと。' },
+  { r:'なかみ',     w:'中身',     m:'容器の中にあるもの。' },
+  { r:'まわり',     w:'周り',     m:'ある点の周囲。' },
+  { r:'おおきさ',   w:'大きさ',   m:'物のサイズや体積のこと。' },
+  { r:'はやさ',     w:'速さ',     m:'動く速度の程度。' },
+  // ===== 接続・副詞 =====
+  { r:'それから',   w:'それから', m:'そのあと続いてのこと。' },
+  { r:'だから',     w:'だから',   m:'そういう理由でのこと。' },
+  { r:'しかし',     w:'しかし',   m:'前のことと反対のことを言うときに使う。' },
+  { r:'たとえば',   w:'例えば',   m:'例を示すときに使う。' },
+  { r:'つまり',     w:'つまり',   m:'まとめて言うときに使う。' },
+  { r:'さっき',     w:'さっき',   m:'少し前のこと。' },
+  { r:'あとで',     w:'後で',     m:'後ほどのこと。' },
+  { r:'まだ',       w:'まだ',     m:'まだ終わっていないことを示す。' },
+  { r:'たぶん',     w:'たぶん',   m:'おそらくそうだと思うこと。' },
+  { r:'ぜんぜん',   w:'全然',     m:'まったくのこと。' },
+  { r:'ほとんど',   w:'ほとんど', m:'ほぼ全部のこと。' },
+  { r:'なかなか',   w:'なかなか', m:'かなりのこと。または思い通りにいかないこと。' },
+  { r:'もしかして', w:'もしかして',m:'もしそうなら、という意味。' },
+];
+
+// ==============================
+// 追加語彙3（dictionary_output.jsから選んだ2文字語200語）
+// ==============================
+const EXTRA_WORDS3 = [
+  // ===== あ行 =====
+  { r:'あい', w:'愛',    m:'人や物をかわいがり、大切にする気持ち。' },
+  { r:'あせ', w:'汗',    m:'体が暑い時や運動した時に皮ふから出る水分。' },
+  { r:'あな', w:'穴',    m:'地面や壁にあいたくぼみ。' },
+  { r:'あに', w:'兄',    m:'自分より年上の男のきょうだい。' },
+  { r:'あね', w:'姉',    m:'自分より年上の女のきょうだい。' },
+  { r:'あわ', w:'泡',    m:'液体の中に空気が入ってできる小さな玉。' },
+  { r:'あみ', w:'網',    m:'糸を編んで作った目の粗い道具。魚を捕るのに使う。' },
+  { r:'あご', w:'顎',    m:'口の下にある、かむときに動く部分。' },
+  { r:'あゆ', w:'鮎',    m:'きれいな川に住む細長いお魚。' },
+  { r:'いえ', w:'家',    m:'人が住む建物のこと。' },
+  { r:'いき', w:'息',    m:'肺で空気を吸ったり吐いたりすること。' },
+  { r:'いけ', w:'池',    m:'地面がくぼんで水がたまった場所。' },
+  { r:'いし', w:'石',    m:'岩より小さく砂より大きい岩石のかたまり。' },
+  { r:'いた', w:'板',    m:'木などを平らに切ったもの。' },
+  { r:'いと', w:'糸',    m:'細長くのびたひものようなもの。' },
+  { r:'いね', w:'稲',    m:'お米が実る植物。田んぼで育てる。' },
+  { r:'いろ', w:'色',    m:'赤や青などのいろどりのこと。' },
+  { r:'いわ', w:'岩',    m:'大きくて固い石のかたまり。' },
+  { r:'いぬ', w:'犬',    m:'古くから人に飼われてきた動物。' },
+  { r:'うえ', w:'上',    m:'高い方向のこと。' },
+  { r:'うそ', w:'嘘',    m:'本当ではないことを言うこと。' },
+  { r:'うで', w:'腕',    m:'肩から手首までの体の部分。' },
+  { r:'うら', w:'裏',    m:'表の反対側の面のこと。' },
+  { r:'うり', w:'瓜',    m:'きゅうりやメロンのなかま。夏野菜。' },
+  { r:'うず', w:'渦',    m:'水などがぐるぐると回っている様子。' },
+  { r:'えさ', w:'餌',    m:'動物やペットにあげる食べ物。' },
+  { r:'えだ', w:'枝',    m:'木の幹から分かれて伸びている部分。' },
+  { r:'えり', w:'襟',    m:'服の首の周りの部分。' },
+  { r:'えみ', w:'笑み',  m:'にっこりと笑うこと。' },
+  { r:'えら', w:'鰓',    m:'魚が水の中で息をするための体の部分。' },
+  { r:'えい', w:'鱏',    m:'平らな体で海を泳ぐお魚。エイ。' },
+  { r:'おう', w:'王',    m:'国を治める一番えらい人。' },
+  { r:'おか', w:'丘',    m:'山より低くなだらかな高い土地。' },
+  { r:'おき', w:'沖',    m:'岸から遠く離れた海の場所。' },
+  { r:'おく', w:'奥',    m:'入り口から一番遠い場所。' },
+  { r:'おじ', w:'叔父',  m:'お父さんやお母さんの兄弟のこと。' },
+  { r:'おと', w:'音',    m:'耳に聞こえる空気の振動。' },
+  { r:'おに', w:'鬼',    m:'角のある想像上の怪物。鬼ごっこの鬼。' },
+  { r:'おば', w:'叔母',  m:'お父さんやお母さんの姉妹のこと。' },
+  { r:'おや', w:'親',    m:'父と母のこと。' },
+  { r:'おゆ', w:'お湯',  m:'熱く温めた水のこと。' },
+  // ===== か行 =====
+  { r:'かい', w:'貝',    m:'固い殻を持つ水の生き物。' },
+  { r:'かお', w:'顔',    m:'目や口がある頭の前面。' },
+  { r:'かき', w:'柿',    m:'秋に実るオレンジ色の果物。' },
+  { r:'かぎ', w:'鍵',    m:'鍵穴に差し込んで鍵を開け閉めする道具。' },
+  { r:'かぐ', w:'家具',  m:'机やタンスなど家の中で使う道具。' },
+  { r:'かじ', w:'火事',  m:'建物などが燃える災害。' },
+  { r:'かず', w:'数',    m:'物の個数や量を表すもの。' },
+  { r:'かた', w:'肩',    m:'首と腕のつなぎ目の部分。' },
+  { r:'かど', w:'角',    m:'建物や道路が曲がっている場所。' },
+  { r:'かな', w:'仮名',  m:'ひらがなやカタカナなどの日本の文字。' },
+  { r:'かね', w:'金',    m:'金属やお金のこと。' },
+  { r:'かべ', w:'壁',    m:'部屋を仕切る板状のもの。' },
+  { r:'かま', w:'鎌',    m:'草や稲を刈る三日月形の刃物。' },
+  { r:'かみ', w:'紙',    m:'字を書いたり絵を描いたりする薄いもの。' },
+  { r:'かも', w:'鴨',    m:'水辺に住む水鳥の仲間。' },
+  { r:'から', w:'空',    m:'中身が何もないこと。' },
+  { r:'かご', w:'籠',    m:'竹などを編んで作った入れ物。' },
+  { r:'かゆ', w:'粥',    m:'お米を多めの水でやわらかく煮た食べ物。' },
+  { r:'きく', w:'菊',    m:'秋に咲く花。いろんな色がある。' },
+  { r:'きじ', w:'記事',  m:'新聞や雑誌に書かれた文章のこと。' },
+  { r:'きず', w:'傷',    m:'体や物が傷ついたあとのこと。' },
+  { r:'きた', w:'北',    m:'南の反対の方角。地図では上の方向。' },
+  { r:'きぬ', w:'絹',    m:'かいこが作る繭から取れる光沢のある布。' },
+  { r:'きみ', w:'君',    m:'相手のことを呼ぶ言葉。あなた。' },
+  { r:'きし', w:'岸',    m:'海や川が陸地と接しているところ。' },
+  { r:'きば', w:'牙',    m:'動物の口にある鋭くとがった歯。' },
+  { r:'ぎむ', w:'義務',  m:'必ずしなければならないこと。' },
+  { r:'くぎ', w:'釘',    m:'木材を接合するための金属の針。' },
+  { r:'くせ', w:'癖',    m:'無意識に繰り返してしまう習慣。' },
+  { r:'くに', w:'国',    m:'一定の土地と人々によって成り立つ集団。国家。' },
+  { r:'くま', w:'熊',    m:'森に住む大きくて強い動物。' },
+  { r:'くり', w:'栗',    m:'秋においしいイガイガの中にある実。' },
+  { r:'くろ', w:'黒',    m:'墨や炭のような暗い色。' },
+  { r:'くわ', w:'鍬',    m:'畑を耕すときに使う農具。' },
+  { r:'くき', w:'茎',    m:'植物の根と葉をつなぐ部分。' },
+  { r:'くら', w:'蔵',    m:'大切なものやお米をしまっておく丈夫な建物。' },
+  { r:'けが', w:'怪我',  m:'体が傷ついたりすること。' },
+  { r:'げき', w:'劇',    m:'舞台の上で物語を演じて見せるもの。' },
+  { r:'けた', w:'桁',    m:'数字の位のこと。一の桁、十の桁など。' },
+  { r:'げた', w:'下駄',  m:'木でできた日本の伝統的な履物。' },
+  { r:'こい', w:'恋',    m:'誰かをとても好きになる気持ち。' },
+  { r:'こえ', w:'声',    m:'のどから出る音のこと。' },
+  { r:'こと', w:'琴',    m:'日本の弦楽器。横にして弦をはじいて鳴らす。' },
+  { r:'こな', w:'粉',    m:'細かく砕いた物。小麦粉や砂糖など。' },
+  { r:'こま', w:'独楽',  m:'くるくる回して遊ぶおもちゃ。' },
+  { r:'こめ', w:'米',    m:'日本人の主食となるご飯の元。' },
+  { r:'こや', w:'小屋',  m:'小さくて簡単な作りの建物。' },
+  // ===== さ行 =====
+  { r:'さか', w:'坂',    m:'傾いた道のこと。' },
+  { r:'さき', w:'先',    m:'前の方や未来のこと。' },
+  { r:'さく', w:'策',    m:'計画や考えのこと。' },
+  { r:'さつ', w:'札',    m:'紙のお金やカードのこと。' },
+  { r:'さと', w:'里',    m:'村や故郷のこと。' },
+  { r:'さば', w:'鯖',    m:'青い光沢がある海の魚。' },
+  { r:'さめ', w:'鮫',    m:'海に住む大きくてこわい魚。サメ。' },
+  { r:'さら', w:'皿',    m:'料理を盛る平たい食器。' },
+  { r:'さじ', w:'匙',    m:'スープなどをすくうスプーンのこと。' },
+  { r:'ささ', w:'笹',    m:'パンダが食べる細い葉の植物。七夕に使う。' },
+  { r:'しき', w:'式',    m:'儀式や計算式のこと。' },
+  { r:'した', w:'下',    m:'低い方向のこと。' },
+  { r:'しな', w:'品',    m:'商品や品物のこと。' },
+  { r:'しば', w:'芝',    m:'地面に生える短い草。公園によく生えている。' },
+  { r:'しま', w:'島',    m:'海に囲まれた陸地。' },
+  { r:'しみ', w:'染み',  m:'汚れがついてとれないあと。' },
+  { r:'しり', w:'尻',    m:'体の後ろ側の座る部分。おしり。' },
+  { r:'しる', w:'汁',    m:'料理のスープや出し汁のこと。' },
+  { r:'しろ', w:'白',    m:'雪のような明るい色。' },
+  { r:'じこ', w:'事故',  m:'思いがけず起きる悪い出来事。' },
+  { r:'じく', w:'軸',    m:'回転の中心となる棒のこと。' },
+  { r:'じつ', w:'実',    m:'本当のことや、植物の実のこと。' },
+  { r:'すき', w:'好き',  m:'気に入っていること。ラブ。' },
+  { r:'すぎ', w:'杉',    m:'まっすぐ高く育つ木。花粉が多い。' },
+  { r:'すな', w:'砂',    m:'細かい石の粒のこと。砂場に使う。' },
+  { r:'すみ', w:'墨',    m:'書道で使う黒い液体。' },
+  { r:'すえ', w:'末',    m:'終わりのこと。将来のこと。' },
+  { r:'せき', w:'咳',    m:'のどに刺激があって出る「コンコン」という音。' },
+  { r:'ぜひ', w:'是非',  m:'どうしてもやりたいという気持ち。' },
+  { r:'そこ', w:'底',    m:'一番下の部分。深いところ。' },
+  { r:'そと', w:'外',    m:'建物の中ではない場所。外側。' },
+  { r:'そり', w:'橇',    m:'雪や氷の上を滑る乗り物。' },
+  { r:'そで', w:'袖',    m:'服の腕を通す部分。' },
+  { r:'そふ', w:'祖父',  m:'おじいちゃんのこと。' },
+  { r:'そぼ', w:'祖母',  m:'おばあちゃんのこと。' },
+  // ===== た行 =====
+  { r:'たい', w:'鯛',    m:'お祝いの席で食べる赤いお魚。' },
+  { r:'たき', w:'滝',    m:'崖から勢いよく落ちる水のこと。' },
+  { r:'たつ', w:'竜',    m:'伝説上の体が長い生き物。ドラゴン。' },
+  { r:'たに', w:'谷',    m:'山と山のあいだのくぼんだ場所。' },
+  { r:'たび', w:'旅',    m:'遠くへ出かけること。旅行。' },
+  { r:'たま', w:'球',    m:'まるいボールのこと。' },
+  { r:'たる', w:'樽',    m:'お酒などを入れる木でできた丸い容器。' },
+  { r:'だし', w:'出汁',  m:'料理に使うおいしいスープの元。' },
+  { r:'ちえ', w:'知恵',  m:'賢い考えや工夫のこと。' },
+  { r:'ちか', w:'地下',  m:'地面より下のこと。' },
+  { r:'ちず', w:'地図',  m:'土地の様子を描いた地図のこと。マップ。' },
+  { r:'ちち', w:'父',    m:'お父さんのこと。' },
+  { r:'つえ', w:'杖',    m:'歩くのを助ける棒のこと。' },
+  { r:'つる', w:'鶴',    m:'首と足が長い白くてめでたい鳥。' },
+  { r:'つち', w:'土',    m:'地面の表面にある土のこと。' },
+  { r:'つな', w:'綱',    m:'太くて丈夫なロープのこと。' },
+  { r:'つの', w:'角',    m:'動物の頭にある固くとがったもの。' },
+  { r:'つば', w:'唾',    m:'口の中にある液体。' },
+  { r:'つぼ', w:'壺',    m:'口が狭い形の陶器の入れ物。' },
+  { r:'つぶ', w:'粒',    m:'小さくて丸いもの。米粒など。' },
+  { r:'つり', w:'釣り',  m:'竿と糸と針で魚を捕ること。' },
+  { r:'てき', w:'敵',    m:'戦ったりたたかったりする相手。' },
+  { r:'てつ', w:'鉄',    m:'固くて重い金属のこと。鉄製品に使う。' },
+  { r:'てら', w:'寺',    m:'仏様をまつる日本の建物。' },
+  { r:'とい', w:'問い',  m:'質問のこと。答えを求めること。' },
+  { r:'とう', w:'塔',    m:'高くそびえる建物のこと。タワー。' },
+  { r:'とき', w:'時',    m:'時間のこと。その時のこと。' },
+  { r:'とし', w:'年',    m:'一年のこと。年齢のこと。' },
+  { r:'とげ', w:'刺',    m:'植物や魚についている鋭い針。' },
+  { r:'どう', w:'銅',    m:'10円玉に使われる赤みがかった金属。' },
+  // ===== な行 =====
+  { r:'なか', w:'中',    m:'内側のこと。ものの真ん中。' },
+  { r:'なぞ', w:'謎',    m:'不思議で答えのわからないこと。' },
+  { r:'なみ', w:'波',    m:'海の水面が上下にゆれること。' },
+  { r:'なえ', w:'苗',    m:'植えかえる前の、まだ小さい植物。' },
+  { r:'にく', w:'肉',    m:'動物の食べられる部分。料理に使う。' },
+  { r:'にし', w:'西',    m:'太陽が沈む方角。' },
+  { r:'にじ', w:'虹',    m:'雨上がりに空に出る七色の橋。' },
+  { r:'にわ', w:'庭',    m:'家のまわりにある広い空き地。' },
+  { r:'にら', w:'韮',    m:'力が出る香りの強い緑の野菜。' },
+  { r:'ぬの', w:'布',    m:'糸を織って作るやわらかいもの。' },
+  { r:'ぬま', w:'沼',    m:'水がたまって湿った土地。' },
+  { r:'ねぎ', w:'葱',    m:'料理に使う細長い緑の野菜。' },
+  { r:'ねこ', w:'猫',    m:'ニャーと鳴くかわいいペット。' },
+  { r:'ねつ', w:'熱',    m:'体温が高くなること。または温度の高さ。' },
+  { r:'ねじ', w:'ネジ',  m:'回して固定する金属の道具。ボルト。' },
+  { r:'のど', w:'喉',    m:'首の前側にある食べ物や空気が通る部分。' },
+  { r:'のり', w:'海苔',  m:'おにぎりに巻く黒い海藻。' },
+  // ===== は行 =====
+  { r:'はし', w:'橋',    m:'川や谷の上にかけて渡れるようにした構造物。' },
+  { r:'はた', w:'旗',    m:'布を棒につけた目印のこと。フラッグ。' },
+  { r:'はだ', w:'肌',    m:'体の表面をおおう皮ふのこと。' },
+  { r:'はち', w:'蜂',    m:'針を持つ虫。はちみつを作るみつばちなど。' },
+  { r:'はね', w:'羽',    m:'鳥や虫が飛ぶための器官。フェザー。' },
+  { r:'はは', w:'母',    m:'お母さんのこと。' },
+  { r:'はま', w:'浜',    m:'海や湖の岸辺にある砂や小石の場所。' },
+  { r:'はら', w:'腹',    m:'おなかのこと。食べ物が入る場所。' },
+  { r:'はり', w:'針',    m:'先のとがった細長い金属。縫い針など。' },
+  { r:'はす', w:'蓮',    m:'泥の中から美しい花を咲かせる水生植物。' },
+  { r:'はけ', w:'刷毛',  m:'絵の具やペンキを塗るための毛の道具。' },
+  { r:'はば', w:'幅',    m:'横の広さのこと。' },
+  { r:'ひき', w:'匹',    m:'動物を数えるときに使う言葉。' },
+  { r:'ひげ', w:'髭',    m:'顔に生える毛のこと。' },
+  { r:'ひじ', w:'肘',    m:'腕の途中にある関節の部分。' },
+  { r:'ひと', w:'人',    m:'人間のこと。パーソン。' },
+  { r:'ひな', w:'雛',    m:'鳥の赤ちゃんのこと。' },
+  { r:'ひめ', w:'姫',    m:'お姫様のこと。プリンセス。' },
+  { r:'ひる', w:'昼',    m:'太陽が高い時間帯。昼間のこと。' },
+  { r:'ひく', w:'弾く',  m:'ピアノやギターなどを演奏すること。' },
+  { r:'ひれ', w:'鰭',    m:'魚が泳ぐときに動かす体の部分。' },
+  { r:'ふえ', w:'笛',    m:'口で吹いて音を出す楽器。' },
+  { r:'ふく', w:'服',    m:'体に着るもの。衣服。' },
+  { r:'ふぐ', w:'河豚',  m:'毒があるが美味しい丸いお魚。' },
+  { r:'ふた', w:'蓋',    m:'容器の口をふさぐもの。カバー。' },
+  { r:'ふき', w:'蕗',    m:'茎の部分を食べる山菜。' },
+  { r:'ふな', w:'鮒',    m:'川や池に住む小さな魚。' },
+  { r:'ふね', w:'船',    m:'水の上を進む乗り物。' },
+  { r:'ふゆ', w:'冬',    m:'一番寒い季節。' },
+  { r:'ふで', w:'筆',    m:'墨をつけて字を書く道具。' },
+  { r:'ふろ', w:'風呂',  m:'お湯に体をつけてきれいにする場所。' },
+  { r:'ふか', w:'孵化',  m:'卵から赤ちゃんが生まれること。' },
+  { r:'ふだ', w:'札',    m:'名前などを書く木や紙のカード。' },
+  { r:'ぶた', w:'豚',    m:'「ブーブー」と鳴く家畜の動物。' },
+  { r:'へい', w:'塀',    m:'家の周りを囲む壁のこと。' },
+  { r:'へた', w:'下手',  m:'上手ではないこと。' },
+  { r:'へび', w:'蛇',    m:'足がない長い体の爬虫類。スネーク。' },
+  { r:'へそ', w:'臍',    m:'おなかの真ん中にある小さなくぼみ。' },
+  { r:'べに', w:'紅',    m:'鮮やかな赤い色のこと。' },
+  { r:'ほし', w:'星',    m:'夜空にきらきら光る天体のこと。スター。' },
+  { r:'ほね', w:'骨',    m:'体の内側にある固い支えの部分。ボーン。' },
+  { r:'ほり', w:'堀',    m:'お城の周りを囲む水路のこと。' },
+  { r:'ほこ', w:'矛',    m:'昔の武器で先がとがった長い棒。' },
+  { r:'ほろ', w:'幌',    m:'車などの上についた布の屋根。' },
+  // ===== ま行 =====
+  { r:'まえ', w:'前',    m:'正面や過去のこと。フロント。' },
+  { r:'まご', w:'孫',    m:'自分の子どもの子どものこと。' },
+  { r:'まち', w:'町',    m:'人がたくさん住む場所。タウン。' },
+  { r:'まね', w:'真似',  m:'人のやることをそのままコピーすること。' },
+  { r:'まめ', w:'豆',    m:'だいずやあずきなどの植物の実。ビーンズ。' },
+  { r:'まり', w:'鞠',    m:'手でついて遊ぶ小さなボール。' },
+  { r:'まる', w:'丸',    m:'円や球のような形。サークル。' },
+  { r:'まき', w:'薪',    m:'燃やすための木のこと。' },
+  { r:'みぎ', w:'右',    m:'右側のこと。ライト。' },
+  { r:'みせ', w:'店',    m:'物を売る場所のこと。ショップ。' },
+  { r:'みち', w:'道',    m:'人が歩くための通り道。ロード。' },
+  { r:'みみ', w:'耳',    m:'音を聞くための体の部分。イヤー。' },
+  { r:'みき', w:'幹',    m:'木の中央にある太い部分。' },
+  { r:'みぞ', w:'溝',    m:'雨水が流れる細い水路のこと。' },
+  { r:'もじ', w:'文字',  m:'ひらがなや漢字などの文字のこと。' },
+  { r:'もち', w:'餅',    m:'もち米をついて作るやわらかい食べ物。' },
+  { r:'もと', w:'元',    m:'もともとのこと。始まりのこと。' },
+  { r:'もの', w:'物',    m:'形があるものすべてのこと。シング。' },
+  // ===== や行 =====
+  { r:'やく', w:'役',    m:'役割や仕事のこと。ロール。' },
+  { r:'やし', w:'椰子',  m:'南国に生える高い木。ヤシの木。' },
+  { r:'やど', w:'宿',    m:'泊まる場所や旅館のこと。' },
+  { r:'やね', w:'屋根',  m:'建物の上に乗っている雨を防ぐもの。ルーフ。' },
+  { r:'やみ', w:'闇',    m:'真っ暗なこと。ダークネス。' },
+  { r:'やり', w:'槍',    m:'先がとがった長い武器のこと。' },
+  { r:'ゆか', w:'床',    m:'部屋の足元の面のこと。フロア。' },
+  { r:'ゆき', w:'雪',    m:'空から降る白い氷の結晶。スノー。' },
+  { r:'ゆげ', w:'湯気',  m:'お湯から出る白いもわもわした蒸気。' },
+  { r:'ゆび', w:'指',    m:'手や足の先にある細長い部分。フィンガー。' },
+  { r:'ゆみ', w:'弓',    m:'矢を飛ばすための曲がった道具。' },
+  { r:'ゆり', w:'百合',  m:'大きな花びらの美しい花。リリー。' },
+  { r:'ゆず', w:'柚子',  m:'黄色くてよい香りの冬の果物。' },
+  { r:'よこ', w:'横',    m:'横方向のこと。サイド。' },
+  { r:'よみ', w:'読み',  m:'文字を声に出して読むこと。' },
+  { r:'よる', w:'夜',    m:'暗くなった時間帯のこと。ナイト。' },
+  // ===== ら行 =====
+  { r:'らく', w:'楽',    m:'簡単で楽なこと。気持ちがよいこと。' },
+  { r:'りく', w:'陸',    m:'海でない土地のこと。' },
+  { r:'りす', w:'栗鼠',  m:'しっぽがふさふさで木の実を食べる小動物。' },
+  { r:'るり', w:'瑠璃',  m:'美しい青色のこと。または宝石の名前。' },
+  { r:'れい', w:'礼',    m:'おじぎやお礼のこと。' },
+  { r:'ろう', w:'蝋',    m:'ろうそくの材料になる固形物のこと。' },
+  { r:'ろく', w:'六',    m:'数字の6のこと。' },
+  // ===== わ行 =====
+  { r:'わき', w:'脇',    m:'腕の下の部分のこと。' },
+  { r:'わく', w:'枠',    m:'周りを囲む枠のこと。フレーム。' },
+  { r:'わけ', w:'訳',    m:'理由のこと。わけを話す。' },
+  { r:'わた', w:'綿',    m:'ふわふわとした柔らかい植物の繊維。' },
+  { r:'わに', w:'鰐',    m:'大きな口を持つは虫類。ワニ。' },
+  { r:'わな', w:'罠',    m:'動物をつかまえるためのしかけ。' },
+  { r:'わら', w:'藁',    m:'稲を乾かした茎のこと。' },
+];
+
+// ==============================
+// 定数・データ初期化
+// ==============================
+const GRID_SIZE = 10;
+
+// ひらがな文字プール（73文字 + っ）
+const CHAR_POOL = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽゃゅょっ'.split('');
+const VALID_CHARS = new Set(CHAR_POOL);
+
+// 8方向
+const DIRS = [
+  {dr:0,  dc:1 },{dr:0,  dc:-1},{dr:1,  dc:0 },{dr:-1, dc:0 },
+  {dr:1,  dc:1 },{dr:1,  dc:-1},{dr:-1, dc:1 },{dr:-1, dc:-1},
+];
+
+// ランキング（0〜1000pt の10段階）
+const RANKS = [
+  { min:0,   max:99,       name:'見習い',   emoji:'🌱' },
+  { min:100, max:199,      name:'たまご',   emoji:'🥚' },
+  { min:200, max:299,      name:'旅人',     emoji:'🚶' },
+  { min:300, max:399,      name:'使い手',   emoji:'✋' },
+  { min:400, max:499,      name:'剣士',     emoji:'⚔️' },
+  { min:500, max:599,      name:'達人',     emoji:'🎯' },
+  { min:600, max:699,      name:'魔法士',   emoji:'🔮' },
+  { min:700, max:799,      name:'英雄',     emoji:'🦸' },
+  { min:800, max:899,      name:'伝説',     emoji:'⭐' },
+  { min:900, max:Infinity, name:'神',       emoji:'👑' },
+];
+
+// ==============================
+// 辞書の結合・インデックス構築
+// ==============================
+let WORD_SET = new Set();
+let WORD_MAP = {};
+let PLACEABLE = [];
+
+function buildDictionary() {
+  // DICTIONARY は dictionary_output.js で定義済み
+  const base = (typeof DICTIONARY !== 'undefined') ? DICTIONARY : [];
+
+  // ん-ending のみ確実なものを使用
+  const nWords = N_ENDING.filter(w => {
+    return w.w && w.m && w.r && w.r.endsWith('ん');
+  });
+
+  // 動詞・形容詞・副詞など（フィルタなしで全追加）
+  const extra  = EXTRA_WORDS.filter(w => w.r && w.w && w.m);
+  const extra2 = EXTRA_WORDS2.filter(w => w.r && w.w && w.m);
+  const extra3 = EXTRA_WORDS3.filter(w => w.r && w.w && w.m);
+
+  const all = [...extra3, ...base, ...nWords, ...extra, ...extra2];
+
+  WORD_SET = new Set();
+  WORD_MAP = {};
+
+  for (const w of all) {
+    if (!w.r || !w.w || !w.m) continue;
+    if (!WORD_SET.has(w.r)) {
+      WORD_SET.add(w.r);
+      WORD_MAP[w.r] = w;
+    }
+  }
+
+  // 配置可能な単語をフィルタ
+  // 条件: 2〜8文字, 文字がすべてCHAR_POOL内
+  PLACEABLE = all.filter(w => {
+    if (!w.r || !w.w || !w.m) return false;
+    if (w.r.length < 2 || w.r.length > 8) return false;
+    return [...w.r].every(c => VALID_CHARS.has(c));
+  });
+
+  // 重複除去
+  const seen = new Set();
+  PLACEABLE = PLACEABLE.filter(w => {
+    if (seen.has(w.r)) return false;
+    seen.add(w.r);
+    return true;
+  });
+}
+
+// ==============================
+// ゲーム状態
+// ==============================
+let grid        = [];
+let gridState   = []; // 0=白, 1=黄緑(20pt), 2=赤(30pt)
+let gameActive  = false; // ゲーム進行中フラグ
+let score       = 0;
+let timeLeft    = 60;
+let timerID     = null;
+let foundWordsArr = [];
+let foundCount  = 0;
+
+// ドラッグ
+let isDragging  = false;
+let dragStart   = null;
+let selCells    = [];
+
+// ヒントタイマー
+let lastFoundTime = 0;
+let hintWatchID   = null;
+let hintShowing   = false;
+
+// ==============================
+// 画面切替
+// ==============================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function backToStart() {
+  gameActive = false;
+  clearInterval(timerID);
+  clearInterval(hintWatchID);
+  stopBGM();
+  showScreen('startScreen');
+}
+
+// ==============================
+// ゲーム開始
+// ==============================
+function startGame() {
+  buildDictionary();
+
+  score         = 0;
+  timeLeft      = 60;
+  foundWordsArr = [];
+  foundCount    = 0;
+  isDragging    = false;
+  dragStart     = null;
+  selCells      = [];
+  lastFoundTime = Date.now();
+  hintShowing   = false;
+
+  generateGrid();
+  renderGrid();
+
+  document.getElementById('scoreDisp').textContent = '0';
+  document.getElementById('countDisp').textContent = '0語';
+  document.getElementById('timerDisp').textContent = '60';
+  document.getElementById('timerDisp').classList.remove('warn');
+  document.getElementById('hintText').textContent  = '';
+  document.getElementById('foundList').innerHTML   = '';
+
+  showScreen('gameScreen');
+
+  clearInterval(timerID);
+  clearInterval(hintWatchID);
+  timerID     = setInterval(tick, 1000);
+  hintWatchID = setInterval(checkHint, 1000);
+
+  gameActive = true;
+  startBGM();
+}
+
+// ==============================
+// グリッド生成
+// ==============================
+function generateGrid() {
+  grid      = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(''));
+  gridState = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(0));
+
+  // 短い言葉から優先して配置（2〜3文字が入りやすく、発見数が増える）
+  // 同じ長さの中はシャッフルしてランダム性を保つ
+  const sorted = [...PLACEABLE].sort((a, b) => {
+    if (a.r.length !== b.r.length) return a.r.length - b.r.length;
+    return Math.random() - 0.5;
+  });
+
+  let placed = 0;
+  for (const wordObj of sorted) {
+    if (placed >= 40) break;
+    if (tryPlace(wordObj.r)) placed++;
+  }
+
+  // 残りをランダム文字で埋める
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      if (!grid[r][c]) {
+        grid[r][c] = CHAR_POOL[Math.floor(Math.random() * CHAR_POOL.length)];
+      }
+    }
+  }
+}
+
+function tryPlace(word) {
+  const dirs = [...DIRS].sort(() => Math.random() - 0.5);
+  for (const d of dirs) {
+    let rMin = 0, rMax = GRID_SIZE - 1;
+    let cMin = 0, cMax = GRID_SIZE - 1;
+    if (d.dr ===  1) rMax = GRID_SIZE - word.length;
+    if (d.dr === -1) rMin = word.length - 1;
+    if (d.dc ===  1) cMax = GRID_SIZE - word.length;
+    if (d.dc === -1) cMin = word.length - 1;
+    if (rMax < rMin || cMax < cMin) continue;
+
+    // 全開始位置をリストアップしてシャッフル（ランダム20回より網羅的）
+    const positions = [];
+    for (let r = rMin; r <= rMax; r++) {
+      for (let c = cMin; c <= cMax; c++) positions.push({r, c});
+    }
+    positions.sort(() => Math.random() - 0.5);
+
+    for (const {r: sr, c: sc} of positions) {
+      let ok = true;
+      const pos = [];
+      for (let i = 0; i < word.length; i++) {
+        const r = sr + d.dr * i, c = sc + d.dc * i;
+        if (grid[r][c] !== '' && grid[r][c] !== word[i]) { ok = false; break; }
+        pos.push({r, c});
+      }
+      if (ok) {
+        pos.forEach(({r, c}, i) => { grid[r][c] = word[i]; });
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// ==============================
+// グリッド描画
+// ==============================
+function renderGrid() {
+  const el = document.getElementById('grid');
+  el.innerHTML = '';
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.textContent = grid[r][c];
+      applyLevelClass(cell, gridState[r][c]);
+      el.appendChild(cell);
+    }
+  }
+  // ※ イベントリスナーは setupEventListeners() で1回だけ登録する
+}
+
+function getCell(r, c) {
+  return document.querySelector(`#grid .cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+function applyLevelClass(el, level) {
+  el.classList.remove('level1', 'level2');
+  if (level === 1) el.classList.add('level1');
+  if (level === 2) el.classList.add('level2');
+}
+
+// ==============================
+// ドラッグ操作
+// ==============================
+function onMDown(e) {
+  if (!gameActive) return;
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  isDragging = true;
+  startDrag(+cell.dataset.r, +cell.dataset.c);
+}
+function onMOver(e) {
+  if (!gameActive || !isDragging) return;
+  const cell = e.target.closest('.cell');
+  if (cell) extendDrag(+cell.dataset.r, +cell.dataset.c);
+}
+function onMUp() {
+  if (!gameActive || !isDragging) return;
+  isDragging = false;
+  submitDrag();
+}
+function onTStart(e) {
+  e.preventDefault();
+  if (!gameActive) return;
+  const t = e.touches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  const cell = el && el.closest('.cell');
+  if (!cell) return;
+  isDragging = true;
+  startDrag(+cell.dataset.r, +cell.dataset.c);
+}
+function onTMove(e) {
+  e.preventDefault();
+  if (!gameActive || !isDragging) return;
+  const t = e.touches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  const cell = el && el.closest('.cell');
+  if (cell) extendDrag(+cell.dataset.r, +cell.dataset.c);
+}
+function onTEnd(e) {
+  e.preventDefault();
+  if (!gameActive || !isDragging) return;
+  isDragging = false;
+  submitDrag();
+}
+
+function startDrag(r, c) {
+  clearSel();
+  dragStart = {r, c};
+  selCells  = [{r, c}];
+  const el = getCell(r, c);
+  if (el) el.classList.add('selecting');
+}
+
+function extendDrag(r, c) {
+  if (!dragStart) return;
+  selCells.forEach(s => {
+    const el = getCell(s.r, s.c);
+    if (el && !el.classList.contains('found')) el.classList.remove('selecting');
+  });
+  const dr = r - dragStart.r, dc = c - dragStart.c;
+  if (dr === 0 && dc === 0) {
+    selCells = [{r: dragStart.r, c: dragStart.c}];
+    const el = getCell(dragStart.r, dragStart.c);
+    if (el) el.classList.add('selecting');
+    return;
+  }
+  let stepR, stepC;
+  if (dr === 0) { stepR = 0; stepC = Math.sign(dc); }
+  else if (dc === 0) { stepR = Math.sign(dr); stepC = 0; }
+  else if (Math.abs(dr) === Math.abs(dc)) { stepR = Math.sign(dr); stepC = Math.sign(dc); }
+  else {
+    selCells = [{r: dragStart.r, c: dragStart.c}];
+    const el = getCell(dragStart.r, dragStart.c);
+    if (el) el.classList.add('selecting');
+    return;
+  }
+  const steps = Math.max(Math.abs(dr), Math.abs(dc));
+  const newSel = [];
+  for (let i = 0; i <= steps; i++) {
+    const cr = dragStart.r + stepR * i, cc = dragStart.c + stepC * i;
+    if (cr < 0 || cr >= GRID_SIZE || cc < 0 || cc >= GRID_SIZE) break;
+    newSel.push({r: cr, c: cc});
+  }
+  selCells = newSel;
+  selCells.forEach(s => {
+    const el = getCell(s.r, s.c);
+    if (el) el.classList.add('selecting');
+  });
+}
+
+function clearSel() {
+  selCells.forEach(s => {
+    const el = getCell(s.r, s.c);
+    if (el && !el.classList.contains('found')) el.classList.remove('selecting');
+  });
+  selCells  = [];
+  dragStart = null;
+}
+
+// ==============================
+// 選択確認
+// ==============================
+function submitDrag() {
+  if (selCells.length < 2) { clearSel(); return; }
+
+  const forward  = selCells.map(s => grid[s.r][s.c]).join('');
+  const backward = forward.split('').reverse().join('');
+  const matched  = WORD_SET.has(forward) ? forward : (WORD_SET.has(backward) ? backward : null);
+
+  if (matched) {
+    const wordObj = WORD_MAP[matched];
+    const hitCells = [...selCells];
+
+    // セルの色に応じたポイント計算（白: 10pt/4文字以上20pt, 黄緑: 20pt, 赤: 30pt）
+    const basePer = matched.length >= 4 ? 20 : 10;
+    let pts = 0;
+    hitCells.forEach(s => {
+      const st = gridState[s.r][s.c];
+      pts += st === 2 ? 30 : st === 1 ? 20 : basePer;
+    });
+
+    // リフィルのレベル = 使ったセルの最大レベル + 1（最大2で固定）
+    const maxState  = Math.max(...hitCells.map(s => gridState[s.r][s.c]));
+    const newLevel  = Math.min(maxState + 1, 2);
+
+    score += pts;
+    foundCount++;
+    foundWordsArr.push(wordObj);
+
+    // セルを緑表示
+    hitCells.forEach(s => {
+      const el = getCell(s.r, s.c);
+      if (el) {
+        el.classList.remove('selecting', 'level1', 'level2');
+        el.classList.add('found', 'found-anim');
+        setTimeout(() => el.classList.remove('found-anim'), 380);
+      }
+    });
+    selCells  = [];
+    dragStart = null;
+
+    // 0.7秒後にランダム文字で補充（色レベル付き）
+    setTimeout(() => refillCells(hitCells, newLevel), 700);
+
+    document.getElementById('scoreDisp').textContent = score;
+    document.getElementById('countDisp').textContent = foundCount + '語';
+    addFoundWordToList(wordObj);
+    showExplosion(hitCells, matched, pts);
+    playBeep(true);
+
+    lastFoundTime = Date.now();
+    hideHint();
+  } else {
+    // 不正解
+    playBeep(false);
+    selCells.forEach(s => {
+      const el = getCell(s.r, s.c);
+      if (el && !el.classList.contains('found')) {
+        el.classList.add('wrong');
+        setTimeout(() => el.classList.remove('wrong'), 380);
+      }
+    });
+    clearSel();
+  }
+}
+
+function refillCells(cells, newLevel = 0) {
+  cells.forEach(({r, c}) => {
+    grid[r][c]      = CHAR_POOL[Math.floor(Math.random() * CHAR_POOL.length)];
+    gridState[r][c] = newLevel;
+    const el = getCell(r, c);
+    if (el) {
+      el.classList.remove('found', 'level1', 'level2');
+      el.textContent = grid[r][c];
+      applyLevelClass(el, newLevel);
+      // レベル別アニメーション
+      const aniClass = newLevel === 1 ? 'refill-level1' : newLevel === 2 ? 'refill-level2' : 'refill-anim';
+      el.classList.add(aniClass);
+      setTimeout(() => el.classList.remove(aniClass), 480);
+    }
+  });
+}
+
+function addFoundWordToList(wordObj) {
+  const li = document.createElement('li');
+  li.textContent = wordObj.r;
+  document.getElementById('foundList').prepend(li);
+}
+
+function showExplosion(cells, word, pts) {
+  const COLORS = ['#FF6B9D','#FFE66D','#4ECDC4','#A855F7','#FF8E53','#44CF6C','#38BDF8','#F97316','#EC4899'];
+  const PTYPES = ['p-circle','p-circle','p-circle','p-square','p-star','p-diamond'];
+
+  // 画面フラッシュ
+  const flash = document.createElement('div');
+  flash.className = 'flash-overlay';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 420);
+
+  cells.forEach(({r, c}) => {
+    const cellEl = getCell(r, c);
+    if (!cellEl) return;
+    const rect = cellEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top  + rect.height / 2;
+
+    // 衝撃波リング（2重）
+    [0, 80].forEach((delay, ri) => {
+      const ring = document.createElement('div');
+      ring.className = 'explosion-ring';
+      const sz = rect.width * (ri === 0 ? 1.2 : 0.8);
+      ring.style.cssText = `left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;` +
+        `border:${ri===0?4:2}px solid ${ri===0?'var(--primary)':'var(--accent)'};` +
+        `animation-delay:${delay}ms;`;
+      document.body.appendChild(ring);
+      setTimeout(() => ring.remove(), 620 + delay);
+    });
+
+    // パーティクル大量発射（1セルにつき20個）
+    const count = 20;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      const ptype = PTYPES[Math.floor(Math.random() * PTYPES.length)];
+      p.className = `particle ${ptype}`;
+      const angle  = (i / count) * 360 + Math.random() * 18;
+      const dist   = 55 + Math.random() * 90;
+      const sz     = 7 + Math.random() * 12;
+      const rotDeg = (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 360);
+      const tx = Math.cos(angle * Math.PI / 180) * dist;
+      const ty = Math.sin(angle * Math.PI / 180) * dist;
+      p.style.cssText = `
+        left:${cx}px; top:${cy}px;
+        width:${sz}px; height:${sz}px;
+        background:${COLORS[Math.floor(Math.random() * COLORS.length)]};
+        --tx:${tx}px; --ty:${ty}px; --rot:${rotDeg}deg;
+        animation-duration:${0.75 + Math.random() * 0.35}s;
+      `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1150);
+    }
+  });
+
+  // 言葉BIG表示
+  const pop = document.createElement('div');
+  pop.className = 'word-blast';
+  pop.textContent = word;
+  document.body.appendChild(pop);
+
+  const ptsEl = document.createElement('div');
+  ptsEl.className = 'pts-blast';
+  ptsEl.textContent = `+${pts}pt!!`;
+  document.body.appendChild(ptsEl);
+
+  setTimeout(() => { pop.remove(); ptsEl.remove(); }, 1150);
+
+  // 爆発音
+  playExplosionSound();
+}
+
+function playExplosionSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 低音ノイズ爆発
+    const bufLen = Math.floor(ctx.sampleRate * 0.5);
+    const buf  = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise  = ctx.createBufferSource();
+    noise.buffer = buf;
+
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = 'lowpass';
+    lpf.frequency.setValueAtTime(700, ctx.currentTime);
+    lpf.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.45);
+
+    const nGain = ctx.createGain();
+    nGain.gain.setValueAtTime(0.65, ctx.currentTime);
+    nGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+    noise.connect(lpf); lpf.connect(nGain); nGain.connect(ctx.destination);
+    noise.start(ctx.currentTime);
+
+    // 8ビット風ピッチダウン音
+    const osc  = ctx.createOscillator();
+    const oGain = ctx.createGain();
+    osc.connect(oGain); oGain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(520, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.28);
+    oGain.gain.setValueAtTime(0.3, ctx.currentTime);
+    oGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+
+    // 高音スパーク（キラキラ感）
+    const osc2  = ctx.createOscillator();
+    const oGain2 = ctx.createGain();
+    osc2.connect(oGain2); oGain2.connect(ctx.destination);
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(1200, ctx.currentTime + 0.02);
+    osc2.frequency.setValueAtTime(900, ctx.currentTime + 0.06);
+    osc2.frequency.setValueAtTime(1400, ctx.currentTime + 0.10);
+    oGain2.gain.setValueAtTime(0.15, ctx.currentTime + 0.02);
+    oGain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc2.start(ctx.currentTime + 0.02);
+    osc2.stop(ctx.currentTime + 0.22);
+  } catch(e) { /* 無視 */ }
+}
+
+// ==============================
+// ヒントシステム
+// ==============================
+function checkHint() {
+  if (hintShowing) return;
+  if (Date.now() - lastFoundTime >= 10000) {
+    const hint = findHintWord();
+    if (hint) {
+      showHint(`💡 ヒント：「${hint}」がかくれているよ！`);
+      lastFoundTime = Date.now(); // 次のヒントまでリセット
+    }
+  }
+}
+
+function findHintWord() {
+  const candidates = [];
+  const seen = new Set();
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      for (const d of DIRS) {
+        let word = '';
+        for (let i = 0; i < GRID_SIZE; i++) {
+          const rr = r + d.dr * i, cc = c + d.dc * i;
+          if (rr < 0 || rr >= GRID_SIZE || cc < 0 || cc >= GRID_SIZE) break;
+          word += grid[rr][cc];
+          if (i >= 1 && WORD_SET.has(word) && !seen.has(word)) {
+            candidates.push(word);
+            seen.add(word);
+          }
+        }
+      }
+    }
+  }
+  if (candidates.length === 0) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function showHint(msg) {
+  hintShowing = true;
+  const el = document.getElementById('hintText');
+  el.textContent = msg;
+  setTimeout(() => {
+    el.textContent = '';
+    hintShowing = false;
+  }, 6000);
+}
+
+function hideHint() {
+  hintShowing = false;
+  document.getElementById('hintText').textContent = '';
+}
+
+// ==============================
+// タイマー
+// ==============================
+function tick() {
+  timeLeft--;
+  const td = document.getElementById('timerDisp');
+  td.textContent = timeLeft;
+  if (timeLeft <= 10) td.classList.add('warn');
+  if (timeLeft <= 0) {
+    clearInterval(timerID);
+    clearInterval(hintWatchID);
+    endGame();
+  }
+}
+
+// ==============================
+// ゲームオーバー
+// ==============================
+function endGame() {
+  gameActive = false;
+  isDragging = false;
+  clearSel();
+  stopBGM();
+  document.getElementById('overScore').textContent = `${score} ポイント`;
+  renderPyramid();
+  renderFoundDetail();
+  renderNewWords();
+  showScreen('gameOverScreen');
+}
+
+function renderPyramid() {
+  const el = document.getElementById('pyramid');
+  el.innerHTML = '';
+  el.className = 'rank-stairs';
+
+  const rankIdx = RANKS.findIndex(r => score >= r.min && score <= r.max);
+
+  // バー部分（階段状：低ランクほど低いバー）
+  const chart = document.createElement('div');
+  chart.className = 'stair-chart';
+
+  // ラベル部分
+  const labels = document.createElement('div');
+  labels.className = 'stair-labels';
+
+  RANKS.forEach((r, i) => {
+    const isCurrent  = i === rankIdx;
+    const isAchieved = i < rankIdx;
+
+    // バー列
+    const col = document.createElement('div');
+    col.className = 'stair-col' + (isCurrent ? ' current' : isAchieved ? ' achieved' : '');
+    const barPct = ((i + 1) * 10);           // 10%〜100%
+    col.innerHTML = `
+      <div class="stair-emoji">${r.emoji}</div>
+      <div class="stair-bar" style="height:${barPct}%"></div>`;
+    chart.appendChild(col);
+
+    // ラベル列
+    const lbl = document.createElement('div');
+    lbl.className = 'stair-label' + (isCurrent ? ' current' : isAchieved ? ' achieved' : '');
+    const rangeText = r.max === Infinity ? `${r.min}〜` : `${r.min}〜${r.max}`;
+    lbl.innerHTML = `<span class="sl-name">${r.name}</span><span class="sl-pts">${rangeText}pt</span>`;
+    labels.appendChild(lbl);
+  });
+
+  el.appendChild(chart);
+  el.appendChild(labels);
+}
+
+function renderFoundDetail() {
+  const el = document.getElementById('foundDetail');
+  if (foundWordsArr.length === 0) {
+    el.innerHTML = '<p class="no-words">見つけた言葉はありませんでした。次はがんばろう！</p>';
+    return;
+  }
+  // 重複除去して表示
+  const unique = [...new Map(foundWordsArr.map(w => [w.r, w])).values()];
+  el.innerHTML = unique.map(w => `
+    <div class="word-card">
+      <div class="wc-top">${w.w} <span class="wc-reading">（${w.r}）</span></div>
+      <div class="wc-meaning">${w.m}</div>
+    </div>
+  `).join('');
+}
+
+function renderNewWords() {
+  const el = document.getElementById('newWords');
+  const foundSet = new Set(foundWordsArr.map(w => w.r));
+  const unfound  = PLACEABLE.filter(w => !foundSet.has(w.r)).sort(() => Math.random() - 0.5);
+  const picks    = unfound.slice(0, 3);
+  if (picks.length === 0) {
+    el.innerHTML = '<p class="no-words">全ての言葉を知っているね！さすが！</p>';
+    return;
+  }
+  el.innerHTML = picks.map(w => `
+    <div class="word-card new">
+      <div class="wc-top">${w.w} <span class="wc-reading">（${w.r}）</span></div>
+      <div class="wc-meaning">${w.m}</div>
+    </div>
+  `).join('');
+}
+
+// ==============================
+// サウンドエフェクト（正解・不正解）
+// ==============================
+function playBeep(success) {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (success) {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16);
+      osc.frequency.setValueAtTime(1046.5, ctx.currentTime + 0.24);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } else {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    }
+  } catch(e) { /* 無視 */ }
+}
+
+// ==============================
+// 16ビット風 BGM（Web Audio API チップチューン）
+// ==============================
+let bgmCtx = null;
+let bgmMaster = null;
+let bgmLoopTimer = null;
+
+// 音符周波数テーブル
+const N = {
+  r:0,
+  c3:130.81, d3:146.83, e3:164.81, f3:174.61, g3:196.00, a3:220.00, b3:246.94,
+  c4:261.63, d4:293.66, e4:329.63, f4:349.23, g4:392.00, a4:440.00, b4:493.88,
+  c5:523.25, d5:587.33, e5:659.25, f5:698.46, g5:783.99, a5:880.00, b5:987.77, c6:1046.50,
+};
+
+// テンポ 160BPM、8分音符 = 0.1875秒
+const EIGHTH = 60 / 160 / 2;
+
+// [周波数, 8分音符の個数]
+// ── メロディ（C メジャー）──
+const MEL = [
+  [N.e5,1],[N.g5,1],[N.c5,1],[N.g5,1],  // bar 1
+  [N.e5,1],[N.d5,1],[N.c5,2],            // bar 2
+  [N.d5,1],[N.f5,1],[N.a4,1],[N.f5,1],  // bar 3
+  [N.d5,1],[N.c5,1],[N.d5,2],            // bar 4
+  [N.e5,1],[N.g5,1],[N.a5,1],[N.g5,1],  // bar 5
+  [N.e5,1],[N.c5,1],[N.e5,2],            // bar 6
+  [N.g5,2],[N.e5,1],[N.d5,1],            // bar 7
+  [N.c5,4],                              // bar 8
+];
+
+// ── ハーモニー（3度上）──
+const HAR = [
+  [N.g5,1],[N.b5,1],[N.e5,1],[N.b5,1],
+  [N.g5,1],[N.f5,1],[N.e5,2],
+  [N.f5,1],[N.a5,1],[N.c5,1],[N.a5,1],
+  [N.f5,1],[N.e5,1],[N.f5,2],
+  [N.g5,1],[N.b5,1],[N.c6,1],[N.b5,1],
+  [N.g5,1],[N.e5,1],[N.g5,2],
+  [N.b5,2],[N.g5,1],[N.f5,1],
+  [N.e5,4],
+];
+
+// ── ベース ──
+const BAS = [
+  [N.c3,2],[N.g3,2],
+  [N.c3,2],[N.g3,2],
+  [N.f3,2],[N.c3,2],
+  [N.g3,2],[N.r, 2],
+  [N.a3,2],[N.e3,2],
+  [N.f3,2],[N.c3,2],
+  [N.g3,2],[N.d3,2],
+  [N.c3,4],
+];
+
+function schedBGMNote(ctx, dst, freq, t, durBeats, wave) {
+  if (freq <= 0) return;
+  const osc = ctx.createOscillator();
+  const env = ctx.createGain();
+  osc.connect(env); env.connect(dst);
+  osc.type = wave;
+  osc.frequency.value = freq;
+  const dur = durBeats * EIGHTH;
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(1.0, t + 0.006);
+  env.gain.setValueAtTime(1.0, t + dur * 0.82);
+  env.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.98);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
+function schedBGMLoop(startT) {
+  if (!bgmCtx) return;
+
+  // メロディチャンネル
+  const melGain = bgmCtx.createGain(); melGain.gain.value = 0.22;
+  melGain.connect(bgmMaster);
+  let mt = startT;
+  for (const [f, b] of MEL) { schedBGMNote(bgmCtx, melGain, f, mt, b, 'square'); mt += b * EIGHTH; }
+
+  // ハーモニーチャンネル
+  const harGain = bgmCtx.createGain(); harGain.gain.value = 0.12;
+  harGain.connect(bgmMaster);
+  let ht = startT;
+  for (const [f, b] of HAR) { schedBGMNote(bgmCtx, harGain, f, ht, b, 'square'); ht += b * EIGHTH; }
+
+  // ベースチャンネル
+  const basGain = bgmCtx.createGain(); basGain.gain.value = 0.18;
+  basGain.connect(bgmMaster);
+  let bt = startT;
+  for (const [f, b] of BAS) { schedBGMNote(bgmCtx, basGain, f, bt, b, 'triangle'); bt += b * EIGHTH; }
+
+  // ループ長を計算して次を予約
+  const loopBeats = MEL.reduce((s, [, b]) => s + b, 0);
+  const loopSec   = loopBeats * EIGHTH;
+  bgmLoopTimer = setTimeout(() => schedBGMLoop(startT + loopSec), (loopSec - 0.35) * 1000);
+}
+
+function startBGM() {
+  stopBGM();
+  try {
+    bgmCtx = new (window.AudioContext || window.webkitAudioContext)();
+    bgmMaster = bgmCtx.createGain();
+    bgmMaster.gain.value = 0.45;
+    bgmMaster.connect(bgmCtx.destination);
+    schedBGMLoop(bgmCtx.currentTime + 0.05);
+  } catch(e) { /* 非対応環境は無視 */ }
+}
+
+function stopBGM() {
+  clearTimeout(bgmLoopTimer);
+  bgmLoopTimer = null;
+  if (bgmCtx) {
+    try { bgmCtx.close(); } catch(e) {}
+    bgmCtx = null;
+    bgmMaster = null;
+  }
+}
+
+// ==============================
+// イベントリスナーを1回だけ登録（重複防止）
+// ==============================
+(function setupEventListeners() {
+  const gridEl = document.getElementById('grid');
+
+  gridEl.addEventListener('mousedown',  onMDown);
+  gridEl.addEventListener('mouseover',  onMOver);
+  document.addEventListener('mouseup',  onMUp);
+
+  gridEl.addEventListener('touchstart', onTStart, { passive: false });
+  gridEl.addEventListener('touchmove',  onTMove,  { passive: false });
+  gridEl.addEventListener('touchend',   onTEnd,   { passive: false });
+
+  // ゲーム画面全体で pull-to-refresh・スワイプバック・ページ遷移を防ぐ
+  const gameScreen = document.getElementById('gameScreen');
+  gameScreen.addEventListener('touchstart', (e) => {
+    e.preventDefault();  // 全タッチイベントのデフォルト動作（pull-to-refresh等）を阻止
+  }, { passive: false });
+  gameScreen.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+  }, { passive: false });
+  gameScreen.addEventListener('touchend', (e) => {
+    e.stopPropagation();
+  }, { passive: false });
+})();
+</script>
+</body>
+</html>

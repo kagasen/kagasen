@@ -2374,6 +2374,11 @@
             const pkNum = document.getElementById('pk-num'), pkSub = document.getElementById('pk-sub'), pkGo = document.getElementById('pk-go');
             const pkMaxIn = document.getElementById('pk-max'), pkNoRep = document.getElementById('pk-norep'), pkHist = document.getElementById('pk-hist'), pkRst = document.getElementById('pk-rst');
 
+            /** IME 変換確定の Enter は無視し、未変換の Enter のみ送信・確定に使う */
+            function isImeComposingKey(e) {
+                return e.isComposing || e.keyCode === 229 || e.which === 229;
+            }
+
             /* 状態管理 */
             let drawHistory = [], undoStack = [];
             const S = {
@@ -2754,7 +2759,14 @@
                 pushUndo(); const t = textInput.value, x = parseInt(textWrap.style.left) - TW, y = parseInt(textWrap.style.top);
                 drawHistory.push({ type: 'text', text: t, x, y: y + fs, color: S.penColor, fontSize: fs }); textWrap.style.display = 'none'; textInput.value = ''; redraw(); saveData()
             }
-            textInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitText() } if (e.key === 'Escape') { textWrap.style.display = 'none'; textInput.value = '' } });
+            textInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    if (isImeComposingKey(e)) return;
+                    e.preventDefault();
+                    commitText();
+                }
+                if (e.key === 'Escape') { textWrap.style.display = 'none'; textInput.value = '' }
+            });
             document.addEventListener('pointerdown', e => { if (textWrap.style.display !== 'none' && !textWrap.contains(e.target)) commitText() }, true);
 
             /* ===== タイマー ===== */
@@ -3047,7 +3059,7 @@
                 pollTotal.textContent = total > 0 ? `合計: ${total}票` : '';
             }
             document.getElementById('poll-add-btn').addEventListener('click', () => { const v = pollOptIn.value.trim(); if (!v) return; pollData.opts.push({ label: v, count: 0 }); pollOptIn.value = ''; renderPoll(); saveData() });
-            pollOptIn.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('poll-add-btn').click() });
+            pollOptIn.addEventListener('keydown', e => { if (e.key === 'Enter' && !isImeComposingKey(e)) document.getElementById('poll-add-btn').click() });
             pollQIn.addEventListener('input', () => { pollData.q = pollQIn.value; saveData() });
             document.getElementById('poll-reset').addEventListener('click', () => { pollData.opts.forEach(o => o.count = 0); renderPoll(); saveData() });
 
@@ -3068,7 +3080,7 @@
                 });
             }
             document.getElementById('todo-add-btn').addEventListener('click', () => { const v = todoInput.value.trim(); if (!v) return; todos.push({ text: v, done: false }); todoInput.value = ''; renderTodos(); saveData() });
-            todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('todo-add-btn').click() });
+            todoInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isImeComposingKey(e)) document.getElementById('todo-add-btn').click() });
             renderTodos();
 
             /* ===== カレンダー ===== */
@@ -3301,7 +3313,7 @@
                     saveData();
                 }
             });
-            statusCustomInp.addEventListener('keydown', e => { if (e.key === 'Enter') statusCustomAdd.click() });
+            statusCustomInp.addEventListener('keydown', e => { if (e.key === 'Enter' && !isImeComposingKey(e)) statusCustomAdd.click() });
 
             /* ===== 今日のめあて・課題 ===== */
             const goalTitle = document.getElementById('goal-title');

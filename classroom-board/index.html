@@ -1894,18 +1894,33 @@
             text-align: center
         }
 
-        .rubric-table td input {
+        .rubric-table td:not(:first-child) {
+            vertical-align: top
+        }
+
+        .rubric-table td textarea {
+            display: block;
             width: 100%;
+            min-height: 3.6em;
+            max-height: 12em;
             background: transparent;
             border: none;
             color: #f8fafc;
             font-size: 12px;
+            line-height: 1.45;
             outline: none;
             font-family: 'Noto Sans JP', sans-serif;
-            min-width: 0
+            min-width: 0;
+            box-sizing: border-box;
+            padding: 2px 0;
+            resize: vertical;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap
         }
 
-        .rubric-table td input::placeholder {
+        .rubric-table td textarea::placeholder {
             color: rgba(255, 255, 255, .3)
         }
 
@@ -3324,20 +3339,34 @@
                 rubricBody.innerHTML = '';
                 rubricData.forEach((row, i) => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="text-align:center"><button class="rubric-del" data-idx="${i}">×</button></td>
-                        <td><input type="text" value="${row.point}" placeholder="観点..." data-r="${i}" data-f="point"></td>
-                        <td><input type="text" value="${row.a}" placeholder="A..." data-r="${i}" data-f="a"></td>
-                        <td><input type="text" value="${row.b}" placeholder="B..." data-r="${i}" data-f="b"></td>
-                        <td><input type="text" value="${row.c}" placeholder="C..." data-r="${i}" data-f="c"></td>
-                    `;
-                    tr.querySelectorAll('input').forEach(inp => {
-                        inp.addEventListener('input', () => {
-                            rubricData[inp.dataset.r][inp.dataset.f] = inp.value;
+                    const tdDel = document.createElement('td');
+                    tdDel.style.textAlign = 'center';
+                    const delBtn = document.createElement('button');
+                    delBtn.type = 'button';
+                    delBtn.className = 'rubric-del';
+                    delBtn.textContent = '×';
+                    tdDel.appendChild(delBtn);
+                    tr.appendChild(tdDel);
+                    function addTextCell(field, placeholder) {
+                        const td = document.createElement('td');
+                        const ta = document.createElement('textarea');
+                        ta.rows = 3;
+                        ta.value = row[field] != null ? row[field] : '';
+                        ta.placeholder = placeholder;
+                        ta.dataset.r = String(i);
+                        ta.dataset.f = field;
+                        ta.addEventListener('input', () => {
+                            rubricData[+ta.dataset.r][ta.dataset.f] = ta.value;
                             saveData();
                         });
-                    });
-                    tr.querySelector('.rubric-del').addEventListener('click', () => {
+                        td.appendChild(ta);
+                        tr.appendChild(td);
+                    }
+                    addTextCell('point', '観点...');
+                    addTextCell('a', 'A...');
+                    addTextCell('b', 'B...');
+                    addTextCell('c', 'C...');
+                    delBtn.addEventListener('click', () => {
                         rubricData.splice(i, 1);
                         renderRubric();
                         saveData();

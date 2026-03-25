@@ -352,6 +352,29 @@ function App() {
         setRenamingPageId(null);
     };
 
+    const deletePage = (id) => {
+        if (pages.length <= 1) {
+            window.alert('ページが1枚だけのときは、さくじょできません。');
+            return;
+        }
+        const page = pages.find((p) => p.id === id);
+        const label = page?.name || 'このページ';
+        if (!window.confirm(`「${label}」をさくじょしていい？\n（うわがきされてももとに戻せません）`)) return;
+        const idx = pages.findIndex((p) => p.id === id);
+        const nextPages = pages.filter((p) => p.id !== id);
+        setPages(nextPages);
+        if (renamingPageId === id) setRenamingPageId(null);
+        if (activePageId === id) {
+            const newIdx = Math.min(Math.max(0, idx - 1), nextPages.length - 1);
+            const fallback = nextPages[newIdx] ?? nextPages[0];
+            setActivePageId(fallback.id);
+            setSelectedIds([]);
+            setEditingId(null);
+            setCurrentDrawingPath(null);
+            setSelectionBox(null);
+        }
+    };
+
     const fileInputRef = useRef(null);
     const viewRef = useRef(view);
     const itemsRef = useRef(items);
@@ -1234,6 +1257,18 @@ function App() {
                                             title="なまえをかえる"
                                         >
                                             <Pencil size={16} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deletePage(p.id);
+                                            }}
+                                            disabled={pages.length <= 1}
+                                            className={`shrink-0 p-2 rounded-xl ${pages.length <= 1 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-slate-100 hover:bg-red-100 text-red-600'}`}
+                                            title={pages.length <= 1 ? 'ページが1枚のときはさくじょできません' : 'このページをさくじょ'}
+                                        >
+                                            <Trash2 size={16} />
                                         </button>
                                     </>
                                 )}

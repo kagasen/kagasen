@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { THOUGHT_TOOL_LIST, THOUGHT_TOOL_PROMPTS } from './topicsData.js';
 
@@ -23,6 +23,50 @@ const HelpCircle = (p) => <LucideIcon {...p}><circle cx="12" cy="12" r="10" /><p
 const ZoomIn = (p) => <LucideIcon {...p}><circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" /><line x1="11" x2="11" y1="8" y2="14" /><line x1="8" x2="14" y1="11" y2="11" /></LucideIcon>;
 const ZoomOut = (p) => <LucideIcon {...p}><circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" /><line x1="8" x2="14" y1="11" y2="11" /></LucideIcon>;
 const Focus = (p) => <LucideIcon {...p}><circle cx="12" cy="12" r="3" /><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /></LucideIcon>;
+const Layers = (p) => <LucideIcon {...p}><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.18a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.18a2 2 0 0 1-1.66 0L2 12.65" /></LucideIcon>;
+const Pencil = (p) => <LucideIcon {...p}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></LucideIcon>;
+
+const STORAGE_KEY = 'sikou-tool-app-pages-v1';
+
+function createNewPage(name) {
+    return {
+        id: `page-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        name: name || 'ページ',
+        past: [],
+        present: [],
+        future: [],
+        connections: [],
+        view: { x: 0, y: 0, scale: 1 },
+        maxZIndex: 2,
+    };
+}
+
+function loadPersistedState() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!data.pages || !Array.isArray(data.pages) || data.pages.length === 0) return null;
+        const pages = data.pages.map((p, idx) => ({
+            id: p.id || `page-${idx}`,
+            name: typeof p.name === 'string' ? p.name : `ページ${idx + 1}`,
+            past: Array.isArray(p.past) ? p.past : [],
+            present: Array.isArray(p.present) ? p.present : [],
+            future: Array.isArray(p.future) ? p.future : [],
+            connections: Array.isArray(p.connections) ? p.connections : [],
+            view: p.view && typeof p.view === 'object'
+                ? { x: p.view.x ?? 0, y: p.view.y ?? 0, scale: p.view.scale ?? 1 }
+                : { x: 0, y: 0, scale: 1 },
+            maxZIndex: typeof p.maxZIndex === 'number' ? p.maxZIndex : 2,
+        }));
+        const activePageId = data.activePageId && pages.some((x) => x.id === data.activePageId)
+            ? data.activePageId
+            : pages[0].id;
+        return { pages, activePageId };
+    } catch {
+        return null;
+    }
+}
 
 // --- 定数とデータ ---
 const STICKY_COLORS = [
@@ -154,57 +198,122 @@ const TemplateSvg = ({ id }) => {
     }
 };
 
-// --- 履歴管理フック ---
-function useHistory(initialState) {
-    const [past, setPast] = useState([]);
-    const [present, setPresent] = useState(initialState);
-    const [future, setFuture] = useState([]);
-
-    const canUndo = past.length > 0;
-    const canRedo = future.length > 0;
-
-    const undo = () => {
-        if (!canUndo) return;
-        const previous = past[past.length - 1];
-        const newPast = past.slice(0, past.length - 1);
-        setPast(newPast);
-        setFuture([present, ...future]);
-        setPresent(previous);
-    };
-
-    const redo = () => {
-        if (!canRedo) return;
-        const next = future[0];
-        const newFuture = future.slice(1);
-        setPast([...past, present]);
-        setFuture(newFuture);
-        setPresent(next);
-    };
-
-    const set = (newPresent) => {
-        if (newPresent === present) return;
-        setPast([...past, present]);
-        setPresent(newPresent);
-        setFuture([]);
-    };
-
-    return { state: present, set, undo, redo, canUndo, canRedo };
-}
-
 // --- カスタムカーソル用URL定義 ---
 const penCursorUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>')}') 0 24, crosshair`;
 const eraserCursorUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>')}') 0 24, cell`;
 
 // --- メインアプリケーション ---
 function App() {
-    // itemsStateで履歴管理を行う
-    const { state: items, set: setItems, undo, redo, canUndo, canRedo } = useHistory([]);
-    const [connections, setConnections] = useState([]);
+    const persisted = loadPersistedState();
+    const initialPages = persisted?.pages ?? [createNewPage('ページ1')];
+    const initialActiveId = persisted?.activePageId ?? initialPages[0].id;
+
+    const [pages, setPages] = useState(initialPages);
+    const [activePageId, setActivePageId] = useState(initialActiveId);
+    const [renamingPageId, setRenamingPageId] = useState(null);
+    const cancelRenameBlurRef = useRef(false);
+
+    const activePageIdRef = useRef(activePageId);
+    useEffect(() => {
+        activePageIdRef.current = activePageId;
+    }, [activePageId]);
+
+    const activePage = pages.find((p) => p.id === activePageId) ?? pages[0];
+    const items = activePage.present;
+    const connections = activePage.connections;
+    const view = activePage.view;
+    const maxZIndex = activePage.maxZIndex;
+    const canUndo = activePage.past.length > 0;
+    const canRedo = activePage.future.length > 0;
+
+    const setItems = (arg) => {
+        const pid = activePageIdRef.current;
+        setPages((prev) =>
+            prev.map((p) => {
+                if (p.id !== pid) return p;
+                const nextPresent = typeof arg === 'function' ? arg(p.present) : arg;
+                if (nextPresent === p.present) return p;
+                return { ...p, past: [...p.past, p.present], present: nextPresent, future: [] };
+            }),
+        );
+    };
+
+    const setConnections = (arg) => {
+        const pid = activePageIdRef.current;
+        setPages((prev) =>
+            prev.map((p) => {
+                if (p.id !== pid) return p;
+                const next = typeof arg === 'function' ? arg(p.connections) : arg;
+                return { ...p, connections: next };
+            }),
+        );
+    };
+
+    const setView = (arg) => {
+        const pid = activePageIdRef.current;
+        setPages((prev) =>
+            prev.map((p) => {
+                if (p.id !== pid) return p;
+                const next = typeof arg === 'function' ? arg(p.view) : arg;
+                return { ...p, view: next };
+            }),
+        );
+    };
+
+    const setMaxZIndex = (arg) => {
+        const pid = activePageIdRef.current;
+        setPages((prev) =>
+            prev.map((p) => {
+                if (p.id !== pid) return p;
+                const next = typeof arg === 'function' ? arg(p.maxZIndex) : arg;
+                return { ...p, maxZIndex: next };
+            }),
+        );
+    };
+
+    const undo = useCallback(() => {
+        const pid = activePageIdRef.current;
+        setPages((prev) =>
+            prev.map((p) => {
+                if (p.id !== pid || p.past.length === 0) return p;
+                const previous = p.past[p.past.length - 1];
+                return {
+                    ...p,
+                    past: p.past.slice(0, -1),
+                    future: [p.present, ...p.future],
+                    present: previous,
+                };
+            }),
+        );
+    }, []);
+
+    const redo = useCallback(() => {
+        const pid = activePageIdRef.current;
+        setPages((prev) =>
+            prev.map((p) => {
+                if (p.id !== pid || p.future.length === 0) return p;
+                const next = p.future[0];
+                return {
+                    ...p,
+                    past: [...p.past, p.present],
+                    present: next,
+                    future: p.future.slice(1),
+                };
+            }),
+        );
+    }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ pages, activePageId }));
+        } catch (_) {
+            /* 容量不足など */
+        }
+    }, [pages, activePageId]);
+
     const [selectedIds, setSelectedIds] = useState([]);
     const [editingId, setEditingId] = useState(null);
-    const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
     const [isPanning, setIsPanning] = useState(false);
-    const [maxZIndex, setMaxZIndex] = useState(2);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [showTutorialModal, setShowTutorialModal] = useState(false);
     const [tutorialImage, setTutorialImage] = useState(null);
@@ -217,6 +326,31 @@ function App() {
     const [currentPrompt, setCurrentPrompt] = useState('');
     const [rouletteDisplay, setRouletteDisplay] = useState('');
     const [isRouletteRunning, setIsRouletteRunning] = useState(false);
+
+    const switchPage = (id) => {
+        if (id === activePageId) return;
+        setActivePageId(id);
+        setSelectedIds([]);
+        setEditingId(null);
+        setCurrentDrawingPath(null);
+        setSelectionBox(null);
+    };
+
+    const addPage = () => {
+        const newPage = createNewPage(`ページ${pages.length + 1}`);
+        setPages((prev) => [...prev, newPage]);
+        setActivePageId(newPage.id);
+        setSelectedIds([]);
+        setEditingId(null);
+        setCurrentDrawingPath(null);
+        setSelectionBox(null);
+    };
+
+    const renamePage = (id, name) => {
+        const t = (name || '').trim() || 'ページ';
+        setPages((prev) => prev.map((p) => (p.id === id ? { ...p, name: t } : p)));
+        setRenamingPageId(null);
+    };
 
     const fileInputRef = useRef(null);
     const viewRef = useRef(view);
@@ -1052,6 +1186,70 @@ function App() {
                     <div className="bg-orange-100 p-2 rounded-lg group-hover:scale-110 transition-transform flex items-center justify-center font-bold text-xl text-orange-600" style={{ width: '44px', height: '44px' }}>↺</div>
                     <span className="text-xs font-bold text-slate-600">もどる</span>
                 </button>
+                <div className="h-px bg-slate-200 my-1 w-full"></div>
+
+                <div className="flex flex-col gap-2 w-full max-w-[200px]">
+                    <div className="flex items-center justify-center gap-1 text-slate-600">
+                        <Layers size={18} />
+                        <span className="text-xs font-extrabold text-slate-600">ページ</span>
+                    </div>
+                    <div className="flex flex-col gap-1 max-h-44 overflow-y-auto pr-0.5">
+                        {pages.map((p) => (
+                            <div key={p.id} className="flex items-stretch gap-1">
+                                {renamingPageId === p.id ? (
+                                    <input
+                                        type="text"
+                                        defaultValue={p.name}
+                                        className="flex-1 min-w-0 text-xs font-bold px-2 py-2 rounded-lg border-2 border-emerald-400 bg-white text-slate-800"
+                                        autoFocus
+                                        onBlur={(e) => {
+                                            if (cancelRenameBlurRef.current) {
+                                                cancelRenameBlurRef.current = false;
+                                                return;
+                                            }
+                                            renamePage(p.id, e.target.value);
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') e.currentTarget.blur();
+                                            if (e.key === 'Escape') {
+                                                cancelRenameBlurRef.current = true;
+                                                setRenamingPageId(null);
+                                            }
+                                        }}
+                                    />
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => switchPage(p.id)}
+                                            className={`flex-1 min-w-0 text-left px-2 py-2 rounded-xl text-xs font-bold transition-colors truncate ${activePageId === p.id ? 'bg-emerald-200 text-emerald-900 ring-2 ring-emerald-400' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                            title={p.name}
+                                        >
+                                            {p.name}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRenamingPageId(p.id)}
+                                            className="shrink-0 p-2 rounded-xl bg-slate-100 hover:bg-amber-100 text-slate-600"
+                                            title="なまえをかえる"
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={addPage}
+                        className="flex items-center justify-center gap-1 w-full px-3 py-2.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-900 font-extrabold text-xs border border-sky-200"
+                    >
+                        <Plus size={18} />
+                        ページを追加
+                    </button>
+                </div>
+
                 <div className="h-px bg-slate-200 my-1 w-full"></div>
 
                 {/* ツールモード切替 */}

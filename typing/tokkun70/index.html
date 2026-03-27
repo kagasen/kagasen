@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>70のとっくん | キッズタイピングマスター</title>
+    <meta name="description" content="タイピング練習全70ステージ。レベルを選んでね。">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', 'Mochiy Pop One', sans-serif;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fcd34d 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: 'Mochiy Pop One', sans-serif;
+        }
+
+        .stage-btn {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .stage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .stage-boss {
+            background: linear-gradient(145deg, #312e81 0%, #1e1b4b 55%, #312e81 100%);
+            border: 3px solid #a78bfa;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.35);
+        }
+
+        .stage-boss:hover {
+            background: linear-gradient(145deg, #3730a3 0%, #1e1b4b 55%, #312e81 100%);
+        }
+
+        .stage-boss .stage-boss-head {
+            color: #f8fafc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+        }
+
+        /* 【ボス】の説明文：白パネル＋濃い字で読みやすく */
+        .stage-boss .stage-boss-detail {
+            display: block;
+            margin-top: 0.5rem;
+            padding: 0.65rem 0.85rem;
+            background: #ffffff;
+            color: #1e1b4b;
+            border-radius: 0.75rem;
+            border: 2px solid #c4b5fd;
+            font-weight: 800;
+            line-height: 1.45;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .stage-boss.stage-cleared .stage-boss-detail {
+            border-color: #fbbf24;
+        }
+
+        .stage-normal {
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+            border: 3px solid #6ee7b7;
+        }
+
+        .stage-normal:hover {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        }
+
+        .stage-cleared {
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.95), 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8 pb-16">
+
+    <div class="max-w-4xl mx-auto bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border-4 border-amber-300">
+
+        <header class="text-center mb-8">
+            <p class="text-amber-800 font-bold text-sm md:text-base mb-2">タイピング練習 全70ステージ</p>
+            <h1 class="title-font text-3xl md:text-4xl text-amber-700 drop-shadow-sm mb-2">
+                70のとっくん
+            </h1>
+            <p class="text-gray-600 text-sm md:text-base">レベルをタップして はじめよう</p>
+        </header>
+
+        <div
+            class="bg-amber-50 border-2 border-amber-200 text-amber-900 font-bold rounded-xl p-4 mb-8 text-center text-sm md:text-base">
+            <span class="text-lg mr-1">⌨️</span>
+            キーボードは「半角（はんかく）」にしてね！
+        </div>
+
+        <div id="stage-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <!-- JS で生成 -->
+        </div>
+
+        <div class="mt-10 text-center">
+            <a href="../index.html"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-full transition-colors border-2 border-gray-200">
+                <span>◀ もどる</span>
+            </a>
+        </div>
+    </div>
+
+    <script src="tokkun-storage.js"></script>
+    <script>
+        const STAGES = [
+            'ホームポジションを覚えよう（F）',
+            'ホームポジションを覚えよう（J）',
+            'ホームポジションを覚えよう（FとJ）',
+            'ホームポジションの練習',
+            'あいうえおを覚えよう',
+            'ホームポジションからあいうえお',
+            'あいうえおランダム',
+            'あいうえおの言葉',
+            '【ボス】あいうえおタイムアタック8秒以内でクリアせよ',
+            'かきくけこを覚えよう',
+            'ホームポジションからかきくけこ',
+            '【ボス】かきくけこタイムアタック16秒以内でクリアせよ',
+            'さしすせそを覚えよう',
+            'ホームポジションからさしすせそ',
+            '【ボス】さしすせそタイムアタック16秒以内でクリアせよ',
+            'か行とさ行の言葉',
+            'たちつてとを覚えよう',
+            'ホームポジションからたちつてと',
+            '【ボス】たちつてとタイムアタック16秒以内でクリアせよ',
+            'なにぬねのを覚えよう',
+            'ホームポジションからなにぬねの',
+            '【ボス】なにぬねのタイムアタック16秒以内でクリアせよ',
+            'た行とな行の言葉',
+            'はひふへほを覚えよう',
+            'ホームポジションからはひふへほ',
+            '【ボス】はひふへほタイムアタック15秒以内でクリアせよ',
+            'まみむめもを覚えよう',
+            'ホームポジションからまみむめも',
+            '【ボス】まみむめもタイムアタック15秒以内でクリアせよ',
+            'は行とま行の言葉',
+            'やゆよを覚えよう',
+            'ホームポジションからやゆよ',
+            '【ボス】やゆよタイムアタック10秒以内でクリアせよ',
+            'らりるれろを覚えよう',
+            'ホームポジションかららりるれろ',
+            '【ボス】らりるれろタイムアタック14秒以内でクリアせよ',
+            'わをんを覚えよう',
+            'ホームポジションからわをん',
+            '【ボス】わをんタイムアタック10秒以内でクリアせよ',
+            'や行とら行とわ行の言葉',
+            'がぎぐげごを覚えよう',
+            'ホームポジションからがぎぐげご',
+            '【ボス】がぎぐげごタイムアタック10秒以内でクリアせよ',
+            'ざじずぜぞを覚えよう',
+            'ホームポジションからざじずぜぞ',
+            '【ボス】ざじずぜぞタイムアタック10秒以内でクリアせよ',
+            'だぢづでどを覚えよう',
+            'ホームポジションからだぢづでど',
+            '【ボス】だぢづでど、タイムアタック10秒以内でクリアせよ',
+            'ばびぶべぼを覚えよう',
+            'ホームポジションからばびぶべぼ',
+            '【ボス】ばびぶべぼタイムアタック10秒以内でクリアせよ',
+            'ぱぴぷぺぽを覚えよう',
+            'ホームポジションからぱぴぷぺぽ',
+            'きゃきゅきょを覚えよう',
+            'しゃしゅしょを覚えよう',
+            'ちゃちゅちょを覚えよう',
+            'にゃにゅにょを覚えよう',
+            'ひゃひゅひょを覚えよう',
+            'みゃみゅみょを覚えよう',
+            'りゃりゅりょを覚えよう',
+            'ぎゃぎゅぎょを覚えよう',
+            'じゃじゅじょを覚えよう',
+            'びゃびゅびょを覚えよう',
+            'ぴゃぴゅぴょを覚えよう',
+            'ぁぃぅぇぉを覚えよう',
+            'っを覚えよう',
+            '小さいっの技',
+            '伸ばし棒を覚えよう',
+            '【ボス】あ〜んまでを60秒以内でクリアせよ'
+        ];
+
+        function renderStageGrid() {
+            var grid = document.getElementById('stage-grid');
+            grid.innerHTML = '';
+            var TS = window.TokkunStorage;
+            STAGES.forEach(function (label, i) {
+                var level = i + 1;
+                var isBoss = label.indexOf('【ボス】') === 0;
+                var cleared = TS && typeof TS.isLevelCleared === 'function' && TS.isLevelCleared(level);
+                var a = document.createElement('a');
+                a.href = level <= 70 ? ('level' + String(level).padStart(2, '0') + '.html') : '#';
+                a.className = 'stage-btn block rounded-2xl p-4 text-left text-white font-bold shadow-md min-h-[3.5rem] flex flex-col justify-center ' +
+                    (isBoss ? 'stage-boss' : 'stage-normal') +
+                    (cleared ? ' stage-cleared' : '');
+                a.setAttribute('aria-label', 'レベル' + level);
+                var badge = cleared
+                    ? '<span class="inline-flex items-center rounded-full bg-white/30 px-2 py-0.5 text-[11px] md:text-xs font-black tracking-wide">クリア🎉</span>'
+                    : '';
+                a.innerHTML =
+                    '<span class="text-xs md:text-sm mb-1 flex flex-wrap items-center gap-2 ' + (isBoss ? 'stage-boss-head opacity-100' : 'opacity-90') + '">' +
+                    '<span>レベル ' + level + '</span>' +
+                    badge +
+                    '</span>' +
+                    (isBoss
+                        ? '<span class="stage-boss-detail text-sm md:text-base leading-snug">' + label + '</span>'
+                        : '<span class="text-sm md:text-base leading-snug">' + label + '</span>');
+                grid.appendChild(a);
+            });
+        }
+
+        renderStageGrid();
+        window.addEventListener('pageshow', function () {
+            renderStageGrid();
+        });
+    </script>
+</body>
+
+</html>

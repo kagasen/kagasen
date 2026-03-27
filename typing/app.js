@@ -672,6 +672,724 @@ function App() {
     );
 }
 
+// --- 70のとっくん: single | sequence | kana ---
+// single: { key, total } / sequence: { pattern: 'fjfj...' } / kana: { kana: 'あい...', kanjiDisplay?: '...' }
+
+function TokkunDrillApp() {
+    const cfg = window.TOKKUN_DRILL_CONFIG || { key: 'f', total: 20, titleKanji: '', titleSub: '', backHref: 'index.html' };
+    const drillMode = (cfg.kana || (Array.isArray(cfg.words) && cfg.words.length > 0)) ? 'kana' : (cfg.pattern ? 'sequence' : 'single');
+    const kanaWordsMode = Array.isArray(cfg.words) && cfg.words.length > 0;
+    const pattern = String(cfg.pattern || '').toLowerCase();
+    const targetKeySingle = String(cfg.key || 'f').toLowerCase();
+
+    const total = drillMode === 'kana'
+        ? (kanaWordsMode
+            ? cfg.words.reduce((s, w) => s + (w.kana || '').length, 0)
+            : (cfg.kana || '').length)
+        : drillMode === 'sequence'
+            ? pattern.length
+            : Math.max(1, Number(cfg.total) || 20);
+
+    const levelNum = cfg.level != null ? Number(cfg.level) : NaN;
+    const nextLevelHref = (() => {
+        if (cfg.nextHref === false) return null;
+        if (typeof cfg.nextHref === 'string' && cfg.nextHref.length > 0) return cfg.nextHref;
+        if (!Number.isFinite(levelNum) || levelNum < 1 || levelNum >= 70) return null;
+        return `level${String(levelNum + 1).padStart(2, '0')}.html`;
+    })();
+
+    const isBoss = !!cfg.boss;
+    const timeLimitSec = Number(cfg.timeLimitSec) > 0 ? Number(cfg.timeLimitSec) : 0;
+    const bossSuccessMsg = cfg.bossSuccessMsg != null ? cfg.bossSuccessMsg : 'お主やるなぁ';
+    const bossFailMsg = cfg.bossFailMsg != null ? cfg.bossFailMsg : 'まだまだじゃな';
+
+    const [gameState, setGameState] = useState('playing');
+    const [progress, setProgress] = useState(0);
+    const [missCount, setMissCount] = useState(0);
+    const [isShaking, setIsShaking] = useState(false);
+    const [hintMsg, setHintMsg] = useState('');
+    const [burstFragments, setBurstFragments] = useState([]);
+    const fragClearRef = useRef(null);
+
+    const [wordIndex, setWordIndex] = useState(0);
+
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const c = typeof window !== 'undefined' ? window.TOKKUN_DRILL_CONFIG : null;
+        const t = c && c.timeLimitSec != null ? Number(c.timeLimitSec) : 0;
+        return t > 0 ? t : null;
+    });
+
+    const [kanaState, setKanaState] = useState(() => {
+        const c = typeof window !== 'undefined' ? window.TOKKUN_DRILL_CONFIG : null;
+        if (c && Array.isArray(c.words) && c.words.length) {
+            return { remainingKana: c.words[0].kana || '', currentInput: '', typedRomaji: '' };
+        }
+        return {
+            remainingKana: c && c.kana ? c.kana : '',
+            currentInput: '',
+            typedRomaji: ''
+        };
+    });
+
+    const restartGame = useCallback(() => {
+        initAudio();
+        setProgress(0);
+        setWordIndex(0);
+        setMissCount(0);
+        setGameState('playing');
+        setHintMsg('');
+        setBurstFragments([]);
+        if (fragClearRef.current) {
+            clearTimeout(fragClearRef.current);
+            fragClearRef.current = null;
+        }
+        const firstKana = Array.isArray(cfg.words) && cfg.words.length
+            ? (cfg.words[0].kana || '')
+            : (cfg.kana || '');
+        setKanaState({
+            remainingKana: firstKana,
+            currentInput: '',
+            typedRomaji: ''
+        });
+        setTimeLeft(timeLimitSec > 0 ? timeLimitSec : null);
+    }, [cfg.kana, cfg.words, timeLimitSec]);
+
+    useEffect(() => () => {
+        if (fragClearRef.current) clearTimeout(fragClearRef.current);
+    }, []);
+
+    useEffect(() => {
+        if (gameState !== 'playing' || !timeLimitSec) return;
+        const id = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev == null || prev <= 0) return prev;
+                const n = prev - 1;
+                if (n <= 0) {
+                    setGameState('bossTimeout');
+                    return 0;
+                }
+                return n;
+            });
+        }, 1000);
+        return () => clearInterval(id);
+    }, [gameState, timeLimitSec]);
+
+    useEffect(() => {
+        if (gameState !== 'bossTimeout') return;
+        initAudio();
+        playMissSound();
+    }, [gameState]);
+
+    const spawnBurstFragments = useCallback((burstChar) => {
+        const ch = String(burstChar || 'f').toLowerCase();
+        const ts = Date.now();
+        const count = 14;
+        const parts = Array.from({ length: count }, (_, i) => {
+            const a = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
+            const d = 48 + Math.random() * 92;
+            return {
+                id: `${ts}-${i}`,
+                tx: Math.cos(a) * d,
+                ty: Math.sin(a) * d,
+                rot: (Math.random() - 0.5) * 240,
+                s: 0.32 + Math.random() * 0.42,
+                hue: i % 3 === 0 ? '#ef4444' : (i % 3 === 1 ? '#f97316' : '#eab308')
+            };
+        });
+        setBurstFragments(parts);
+        if (fragClearRef.current) clearTimeout(fragClearRef.current);
+        fragClearRef.current = setTimeout(() => {
+            setBurstFragments([]);
+            fragClearRef.current = null;
+        }, 720);
+    }, []);
+
+    const handleKeyDown = useCallback((e) => {
+        if (gameState !== 'playing') return;
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.key === 'Shift' || e.key === 'Backspace' || e.key === 'Tab' || e.key === 'Enter') return;
+
+        let key = e.key.toLowerCase();
+
+        if (drillMode === 'kana') {
+            if (!/^[a-z0-9\-\,\.\?\!]$/.test(key)) {
+                if (key === '２') key = '2';
+                else if (key === '３') key = '3';
+                else if (key === '。') key = '.';
+                else if (key === '、') key = ',';
+                else return;
+            }
+
+            const { remainingKana, currentInput } = kanaState;
+            const newInput = currentInput + key;
+
+            const patterns = getValidFirstPatterns(remainingKana);
+            const validPatterns = patterns.filter(p => p.romaji.startsWith(newInput));
+
+            if (validPatterns.length > 0) {
+                initAudio();
+                playCorrectSound();
+                setHintMsg('');
+                const perfectMatch = validPatterns.find(p => p.romaji === newInput);
+
+                if (perfectMatch) {
+                    const newRemaining = remainingKana.slice(perfectMatch.len);
+                    if (newRemaining.length === 0) {
+                        if (kanaWordsMode && wordIndex < cfg.words.length - 1) {
+                            const wi = wordIndex + 1;
+                            setWordIndex(wi);
+                            setKanaState({
+                                remainingKana: cfg.words[wi].kana || '',
+                                currentInput: '',
+                                typedRomaji: ''
+                            });
+                        } else {
+                            setKanaState(prev => ({
+                                ...prev,
+                                remainingKana: '',
+                                typedRomaji: prev.typedRomaji + perfectMatch.romaji,
+                                currentInput: ''
+                            }));
+                            setGameState('result');
+                        }
+                    } else {
+                        setKanaState(prev => ({
+                            ...prev,
+                            remainingKana: newRemaining,
+                            typedRomaji: prev.typedRomaji + perfectMatch.romaji,
+                            currentInput: ''
+                        }));
+                    }
+                } else {
+                    setKanaState(prev => ({
+                        ...prev,
+                        currentInput: newInput
+                    }));
+                }
+            } else {
+                initAudio();
+                playMissSound();
+                setMissCount((m) => m + 1);
+                setIsShaking(true);
+                setTimeout(() => setIsShaking(false), 200);
+                setHintMsg('');
+            }
+            return;
+        }
+
+        if (drillMode === 'sequence') {
+            if (key.length !== 1 || !/^[a-z0-9\-]$/.test(key)) return;
+        } else if (key.length !== 1 || !/^[a-z0-9]$/.test(key)) return;
+
+        if (drillMode === 'sequence') {
+            const expect = pattern[progress];
+            if (key === expect) {
+                initAudio();
+                playCorrectSound();
+                setHintMsg('');
+                spawnBurstFragments(expect);
+                setProgress((p) => {
+                    const next = p + 1;
+                    if (next >= total) setGameState('result');
+                    return next;
+                });
+            } else {
+                initAudio();
+                playMissSound();
+                setMissCount((m) => m + 1);
+                setIsShaking(true);
+                setTimeout(() => setIsShaking(false), 200);
+                setHintMsg(cfg.hintWrong || 'つぎの キーを おしてね');
+            }
+            return;
+        }
+
+        if (key === targetKeySingle) {
+            initAudio();
+            playCorrectSound();
+            setHintMsg('');
+            spawnBurstFragments(targetKeySingle);
+            setProgress((p) => {
+                const next = p + 1;
+                if (next >= total) setGameState('result');
+                return next;
+            });
+        } else {
+            initAudio();
+            playMissSound();
+            setMissCount((m) => m + 1);
+            setIsShaking(true);
+            setTimeout(() => setIsShaking(false), 200);
+            setHintMsg(cfg.hintWrong || 'Fキーだよ。ゆっくりで だいじょうぶ！');
+        }
+    }, [gameState, drillMode, pattern, progress, total, cfg.hintWrong, spawnBurstFragments, kanaState, targetKeySingle, kanaWordsMode, wordIndex, cfg.words]);
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+
+    useEffect(() => {
+        if (gameState !== 'result') return;
+        const lvl = cfg.level;
+        if (lvl == null) return;
+        if (window.TokkunStorage && typeof window.TokkunStorage.setLevelCleared === 'function') {
+            window.TokkunStorage.setLevelCleared(lvl);
+        }
+    }, [gameState, cfg.level]);
+
+    useEffect(() => {
+        if (gameState !== 'result' && gameState !== 'bossTimeout') return;
+        const onResultShortcut = (e) => {
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+            const k = e.key.toLowerCase();
+            if (k !== 'f' && k !== 'j') return;
+            if (k === 'f') {
+                e.preventDefault();
+                restartGame();
+                return;
+            }
+            if (k === 'j' && nextLevelHref && gameState === 'result') {
+                e.preventDefault();
+                window.location.href = nextLevelHref;
+            }
+        };
+        window.addEventListener('keydown', onResultShortcut);
+        return () => window.removeEventListener('keydown', onResultShortcut);
+    }, [gameState, nextLevelHref, restartGame]);
+
+    const remain = drillMode === 'kana'
+        ? (kanaWordsMode
+            ? kanaState.remainingKana.length + (cfg.words || []).slice(wordIndex + 1).reduce((s, w) => s + (w.kana || '').length, 0)
+            : kanaState.remainingKana.length)
+        : Math.max(0, total - progress);
+
+    const seqCurrent = drillMode === 'sequence' && progress < pattern.length ? pattern[progress] : '';
+    const queueCellChar = (i) => (drillMode === 'sequence' ? pattern[i] : targetKeySingle);
+
+    let keyboardTarget = '';
+    if (drillMode === 'kana' && kanaState.remainingKana) {
+        const patterns = getValidFirstPatterns(kanaState.remainingKana);
+        const validPatterns = patterns.filter(p => p.romaji.startsWith(kanaState.currentInput));
+        if (validPatterns.length > 0) {
+            const r = validPatterns[0].romaji;
+            keyboardTarget = r[kanaState.currentInput.length] || '';
+        }
+    } else if (drillMode === 'sequence') {
+        keyboardTarget = seqCurrent;
+    } else {
+        keyboardTarget = targetKeySingle;
+    }
+
+    let kanaRomajiTail = null;
+    if (drillMode === 'kana' && kanaState.remainingKana) {
+        const patterns = getValidFirstPatterns(kanaState.remainingKana);
+        const validPatterns = patterns.filter(p => p.romaji.startsWith(kanaState.currentInput));
+        if (validPatterns.length > 0) {
+            const fullFirst = validPatterns[0].romaji;
+            const restAfterFirst = fullFirst.slice(kanaState.currentInput.length);
+            const restOfWhole = generateDefaultRomaji(kanaState.remainingKana).slice(fullFirst.length);
+            kanaRomajiTail = { restAfterFirst, restOfWhole };
+        }
+    }
+
+    return (
+        <div className={`min-h-screen flex items-center justify-center font-sans relative overflow-hidden ${isBoss ? 'bg-gradient-to-b from-slate-950 via-violet-950 to-black' : 'bg-blue-50'}`}>
+            {isBoss && (
+                <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_20%,#4c1d95_0%,transparent_55%)] opacity-70" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_90%,#1e1b4b_0%,transparent_45%)] opacity-90" />
+                    <div className="absolute bottom-0 left-0 right-0 h-2/5 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                    <div className="absolute bottom-6 right-4 sm:right-10 flex flex-col items-center gap-1 tokkun-demon-float">
+                        <span className="text-7xl sm:text-8xl drop-shadow-[0_0_24px_rgba(168,85,247,0.8)]" role="img" aria-label="タイピング魔人">👹</span>
+                        <span className="text-xs sm:text-sm font-black text-purple-300/90 tracking-widest">タイピング魔人</span>
+                    </div>
+                    <div className="absolute top-16 left-2 sm:left-8 text-5xl sm:text-6xl font-black text-violet-900/40 rotate-[-8deg] select-none">…</div>
+                </div>
+            )}
+            <style>{`
+        @keyframes shake {
+          0% { transform: translate(1px, 1px) rotate(0deg); }
+          10% { transform: translate(-3px, -2px) rotate(-1deg); }
+          20% { transform: translate(-3px, 0px) rotate(1deg); }
+          30% { transform: translate(3px, 2px) rotate(0deg); }
+          40% { transform: translate(1px, -1px) rotate(1deg); }
+          50% { transform: translate(-1px, 2px) rotate(-1deg); }
+          60% { transform: translate(-3px, 1px) rotate(0deg); }
+          70% { transform: translate(3px, 1px) rotate(-1deg); }
+          80% { transform: translate(-1px, -1px) rotate(1deg); }
+          90% { transform: translate(1px, 2px) rotate(0deg); }
+          100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake { animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both; }
+
+        @keyframes tokkun-core-burst {
+          0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 transparent); }
+          18% { transform: scale(0.42) rotate(-8deg); filter: drop-shadow(0 0 14px #f97316) drop-shadow(0 0 28px #fbbf24); }
+          50% { transform: scale(1.22) rotate(4deg); filter: drop-shadow(0 0 24px #fde047) drop-shadow(0 0 40px #fb923c); }
+          100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 transparent); }
+        }
+        .tokkun-core-burst {
+          display: inline-block;
+          transform-origin: center center;
+          animation: tokkun-core-burst 0.58s cubic-bezier(0.34, 1.45, 0.64, 1);
+        }
+
+        @keyframes tokkun-ring-pop {
+          0% { transform: translate(-50%, -50%) scale(0.35); opacity: 0.95; }
+          100% { transform: translate(-50%, -50%) scale(2.35); opacity: 0; }
+        }
+        .tokkun-burst-ring {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 7rem;
+          height: 7rem;
+          margin-left: 0;
+          margin-top: 0;
+          border-radius: 9999px;
+          border: 5px solid rgba(251, 146, 60, 0.85);
+          box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), inset 0 0 20px rgba(254, 243, 199, 0.5);
+          pointer-events: none;
+          animation: tokkun-ring-pop 0.55s ease-out forwards;
+        }
+
+        @keyframes tokkun-frag-fly {
+          0% {
+            transform: translate(-50%, -50%) scale(var(--frag-s, 0.9)) rotate(0deg);
+            opacity: 1;
+          }
+          25% { opacity: 1; }
+          100% {
+            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.12) rotate(var(--rot));
+            opacity: 0;
+          }
+        }
+        .tokkun-frag {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          font-family: ui-monospace, monospace;
+          font-weight: 900;
+          pointer-events: none;
+          animation: tokkun-frag-fly 0.68s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          text-shadow: 0 0 10px rgba(251, 191, 36, 0.9), 0 0 18px rgba(248, 113, 113, 0.6);
+        }
+
+        .tokkun-queue-track {
+          transition: transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1);
+        }
+
+        @keyframes tokkun-demon-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .tokkun-demon-float { animation: tokkun-demon-float 2.8s ease-in-out infinite; }
+      `}</style>
+
+            <div className={`w-full max-w-4xl p-2 sm:p-6 rounded-3xl shadow-2xl relative z-10 ${isBoss ? 'bg-gray-100 border-4 border-purple-900 shadow-[0_0_48px_rgba(76,29,149,0.55)]' : 'bg-white'} ${isShaking ? 'shake border-4 border-red-500' : isBoss ? '' : 'border-4 border-transparent'}`}>
+
+                {gameState === 'playing' && (
+                    <div>
+                        <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl border-2 ${isBoss ? 'bg-slate-900/90 border-purple-700' : 'bg-blue-100 border-blue-200'}`}>
+                            <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+                                <button
+                                    type="button"
+                                    onClick={() => { window.location.href = cfg.backHref || 'index.html'; }}
+                                    className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg shadow transform transition hover:scale-105 text-xs sm:text-base focus:outline-none"
+                                    tabIndex="-1"
+                                >
+                                    ◀ メニューへ
+                                </button>
+                                <div className={`text-base sm:text-2xl font-black ${isBoss ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]' : 'text-blue-800'}`}>
+                                    {drillMode === 'kana' ? (
+                                        <>あと <span className={isBoss ? 'text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]' : 'text-blue-600'}>{remain}</span> もじ</>
+                                    ) : (
+                                        <>クリアまで あと <span className={isBoss ? 'text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]' : 'text-blue-600'}>{remain}</span> かい</>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
+                                {timeLeft != null && (
+                                    <div
+                                        className={`text-xl sm:text-3xl font-black tabular-nums ${isBoss ? (timeLeft <= 3 ? 'text-red-400 animate-pulse drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]' : 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.55)]') : timeLeft <= 3 ? 'text-red-600 animate-pulse' : 'text-green-600'}`}
+                                        aria-live="polite"
+                                    >
+                                        ⏱ {timeLeft} びょう
+                                    </div>
+                                )}
+                                <div className={`text-base sm:text-xl font-bold ${isBoss ? 'text-zinc-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' : 'text-gray-600'}`}>
+                                    ミス: <span className={missCount > 0 ? 'text-orange-400' : isBoss ? 'text-zinc-200' : 'text-gray-400'}>{missCount}</span> かい
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`mb-2 text-center ${isBoss ? 'rounded-2xl bg-black/25 px-3 py-3 sm:py-4 border border-purple-500/40' : ''}`}>
+                            <p className={`text-sm sm:text-base font-bold ${isBoss ? 'text-zinc-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' : 'text-amber-800'}`}>
+                                70のとっくん · レベル{Number.isFinite(levelNum) ? levelNum : '？'}
+                            </p>
+                            <h1 className={`text-lg sm:text-2xl font-black leading-tight px-1 ${isBoss ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.75)]' : 'text-gray-800'}`}>{cfg.titleKanji}</h1>
+                            <p className={`text-base sm:text-lg font-bold mt-2 ${isBoss ? 'text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]' : 'text-gray-600'}`}>{cfg.titleSub}</p>
+                        </div>
+
+                        <div className={`rounded-2xl p-4 sm:p-8 text-center shadow-inner min-h-[180px] sm:min-h-[220px] flex flex-col justify-center items-center overflow-visible ${isBoss ? 'bg-slate-900/50 border-2 border-purple-800/80 shadow-[inset_0_0_24px_rgba(0,0,0,0.35)]' : 'bg-gray-50 border border-gray-200'}`}>
+                            {drillMode === 'kana' && kanaWordsMode ? (
+                                <>
+                                    <p className="text-sm text-gray-500 font-bold mb-3">ローマ字で ひらがなを うってね（半角）</p>
+                                    {cfg.words[wordIndex] ? (
+                                        <p className="text-xl sm:text-2xl font-black text-gray-800 mb-4 px-1">
+                                            {cfg.words[wordIndex].kanji}（{cfg.words[wordIndex].kana}）
+                                        </p>
+                                    ) : null}
+                                    <div className="w-full max-w-4xl mx-auto flex flex-col sm:flex-row gap-4 items-stretch justify-center">
+                                        <div className="flex-1 min-w-0 bg-white rounded-xl border-2 border-gray-300 shadow-inner p-5 sm:p-8 text-center">
+                                            <div className="text-4xl sm:text-6xl font-black text-gray-800 mb-5 sm:mb-6 tracking-wide break-all">
+                                                {cfg.words[wordIndex] ? cfg.words[wordIndex].kana : ''}
+                                            </div>
+                                            <div className="text-xl sm:text-3xl font-mono font-bold flex flex-wrap justify-center break-all border-t-2 border-dashed border-gray-200 pt-4">
+                                                <span className="text-gray-400">{kanaState.typedRomaji}</span>
+                                                <span className="text-gray-500">{kanaState.currentInput}</span>
+                                                {kanaRomajiTail && kanaRomajiTail.restAfterFirst.length > 0 && (
+                                                    <>
+                                                        <span className="text-red-500 underline decoration-2 underline-offset-4">{kanaRomajiTail.restAfterFirst[0]}</span>
+                                                        <span className="text-gray-800">{kanaRomajiTail.restAfterFirst.slice(1)}</span>
+                                                    </>
+                                                )}
+                                                {kanaRomajiTail && (
+                                                    <span className="text-gray-800">{kanaRomajiTail.restOfWhole}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {wordIndex + 1 < cfg.words.length ? (
+                                            <div className="w-full sm:w-48 flex-shrink-0 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/90 p-4 flex flex-col justify-center text-center shadow-sm">
+                                                <p className="text-xs font-bold text-amber-800 mb-2">つぎの たんご</p>
+                                                <p className="text-lg sm:text-xl font-black text-gray-800 leading-tight">
+                                                    {cfg.words[wordIndex + 1].kanji}（{cfg.words[wordIndex + 1].kana}）
+                                                </p>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </>
+                            ) : drillMode === 'kana' ? (
+                                <>
+                                    <p className="text-sm text-gray-500 font-bold mb-3">ローマ字で ひらがなを うってね（半角）</p>
+                                    {cfg.kanjiDisplay ? (
+                                        <p className="text-base sm:text-lg font-bold text-gray-800 mb-4 px-1 leading-relaxed">{cfg.kanjiDisplay}</p>
+                                    ) : null}
+                                    <div className="w-full max-w-3xl mx-auto bg-white/90 rounded-xl border-2 border-gray-200 p-4 sm:p-6 mb-4">
+                                        <div className="text-2xl sm:text-4xl font-black text-gray-700 mb-4 break-all leading-relaxed tracking-wide">
+                                            {kanaState.remainingKana || '　'}
+                                        </div>
+                                        <div className="text-lg sm:text-2xl font-mono font-bold flex flex-wrap justify-center break-all">
+                                            <span className="text-gray-400">{kanaState.typedRomaji}</span>
+                                            <span className="text-gray-500">{kanaState.currentInput}</span>
+                                            {kanaRomajiTail && kanaRomajiTail.restAfterFirst.length > 0 && (
+                                                <>
+                                                    <span className="text-red-500 underline decoration-2 underline-offset-4">{kanaRomajiTail.restAfterFirst[0]}</span>
+                                                    <span className="text-gray-800">{kanaRomajiTail.restAfterFirst.slice(1)}</span>
+                                                </>
+                                            )}
+                                            {kanaRomajiTail && (
+                                                <span className="text-gray-800">{kanaRomajiTail.restOfWhole}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className={`text-sm font-bold mb-2 ${isBoss ? 'text-purple-200' : 'text-gray-500'}`}>いま おすキー（小文字）· あとから すすんでいくよ</p>
+                                    <p className={`text-xs sm:text-sm font-bold mb-4 ${isBoss ? 'text-purple-300' : 'text-gray-400'}`}>
+                                        まんなかの <span className="text-red-500 font-black">{drillMode === 'sequence' ? seqCurrent : targetKeySingle}</span> を おしてね
+                                        {drillMode === 'sequence' ? '。みぎは つぎの もじ' : `。みぎは つぎの ${targetKeySingle}`}
+                                    </p>
+                                    <div className={`w-full max-w-3xl mx-auto overflow-hidden rounded-xl border-2 border-dashed py-6 pl-2 sm:pl-4 pr-1 ${isBoss ? 'border-purple-600/70 bg-slate-900/40' : 'border-gray-200 bg-white/80'}`}>
+                                        <div
+                                            className="tokkun-queue-track flex items-end gap-2"
+                                            style={{
+                                                transform: `translateX(calc(-1 * ${progress} * (3.5rem + 0.5rem)))`
+                                            }}
+                                        >
+                                            {Array.from({ length: total }).map((_, i) => {
+                                                const ch = queueCellChar(i);
+                                                const done = i < progress;
+                                                const current = i === progress;
+                                                const waiting = i > progress;
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className="w-14 flex-shrink-0 flex flex-col justify-end items-center relative overflow-visible min-h-[6.5rem] sm:min-h-[8rem]"
+                                                    >
+                                                        {done && (
+                                                            <span className="text-green-500 text-2xl sm:text-3xl font-black leading-none pb-1" aria-hidden="true">✓</span>
+                                                        )}
+                                                        {current && (
+                                                            <>
+                                                                {progress > 0 && (
+                                                                    <div key={progress} className="tokkun-burst-ring" aria-hidden="true" />
+                                                                )}
+                                                                {burstFragments.map((f) => (
+                                                                    <span
+                                                                        key={f.id}
+                                                                        className="tokkun-frag text-lg sm:text-xl z-[20]"
+                                                                        style={{
+                                                                            color: f.hue,
+                                                                            '--tx': `${f.tx}px`,
+                                                                            '--ty': `${f.ty}px`,
+                                                                            '--rot': `${f.rot}deg`,
+                                                                            '--frag-s': f.s
+                                                                        }}
+                                                                    >
+                                                                        {ch}
+                                                                    </span>
+                                                                ))}
+                                                                <div className="text-5xl sm:text-7xl font-mono font-black relative z-[10] leading-none">
+                                                                    <span
+                                                                        key={progress}
+                                                                        className={`text-red-500 underline decoration-red-300 decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8 inline-block ${progress > 0 ? 'tokkun-core-burst' : ''}`}
+                                                                    >
+                                                                        {ch}
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                        {waiting && (
+                                                            <span className={`text-2xl sm:text-4xl font-mono font-black select-none leading-none pb-1 ${isBoss ? 'text-slate-300' : 'text-slate-400'}`}>
+                                                                {ch}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {hintMsg ? (
+                                <p className="mt-6 text-base sm:text-lg font-bold text-orange-600 animate-pulse">{hintMsg}</p>
+                            ) : (
+                                <p className={`mt-6 text-sm font-bold ${isBoss ? 'text-purple-300/90' : 'text-gray-400'}`}>
+                                    {drillMode === 'kana' ? 'ローマ字の ルールに したがって うってね' : (cfg.fingerHint || `いまのキーは ${drillMode === 'sequence' ? seqCurrent : targetKeySingle}`)}
+                                </p>
+                            )}
+                        </div>
+
+                        <Keyboard targetKey={keyboardTarget} />
+                    </div>
+                )}
+
+                {gameState === 'result' && (
+                    <div className="text-center py-6 sm:py-10 flex flex-col items-center px-2">
+                        {isBoss && (
+                            <div className="w-full max-w-lg flex flex-row justify-end items-end gap-3 mb-4 px-1">
+                                <div className="bg-gray-900 text-amber-100 px-4 py-3 rounded-2xl rounded-br-sm border-2 border-purple-600 shadow-lg text-base sm:text-lg font-bold max-w-[85%]">
+                                    {bossSuccessMsg}
+                                </div>
+                                <span className="text-5xl sm:text-6xl shrink-0" aria-hidden="true">👹</span>
+                            </div>
+                        )}
+                        <p className="text-5xl sm:text-6xl mb-2">🎉</p>
+                        <h2 className={`text-2xl sm:text-4xl font-black mb-2 ${isBoss ? 'text-amber-300' : 'text-blue-600'}`}>クリア！</h2>
+                        <p className={`font-bold mb-6 text-base sm:text-lg ${isBoss ? 'text-purple-100' : 'text-gray-700'}`}>
+                            {drillMode === 'kana'
+                                ? 'かなを クリアできたね！'
+                                : drillMode === 'sequence'
+                                    ? 'もんだいを クリアできたね！'
+                                    : `${targetKeySingle.toUpperCase()} を ${total} かい できたね！`}
+                        </p>
+                        {missCount > 0 ? (
+                            <p className="text-sm sm:text-base text-gray-500 mb-6">ミスは {missCount} かい。つぎは もっと スムーズに いけるよ！</p>
+                        ) : (
+                            <p className="text-sm sm:text-base text-green-600 font-bold mb-6">ミス ゼロ！ すばらしい！</p>
+                        )}
+                        <div className="flex flex-col gap-3 w-full max-w-lg justify-center">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 justify-center">
+                                <button
+                                    type="button"
+                                    onClick={restartGame}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition hover:scale-105 text-base sm:text-lg"
+                                >
+                                    もう一度
+                                </button>
+                                {nextLevelHref ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => { window.location.href = nextLevelHref; }}
+                                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition hover:scale-105 text-base sm:text-lg"
+                                    >
+                                        次へ
+                                    </button>
+                                ) : null}
+                                <button
+                                    type="button"
+                                    onClick={() => { window.location.href = cfg.backHref || 'index.html'; }}
+                                    className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 px-6 rounded-full shadow-lg transform transition hover:scale-105 text-base sm:text-lg"
+                                >
+                                    ステージを選ぶ
+                                </button>
+                            </div>
+                        </div>
+                        <p className="mt-6 text-sm sm:text-base text-gray-500 font-bold leading-relaxed px-2">
+                            ⌨️ キーボードでも： <span className="text-blue-600">F</span>＝もう一度
+                            {nextLevelHref ? (
+                                <>　/　<span className="text-green-600">J</span>＝次へ</>
+                            ) : (
+                                <>（つぎのステージがないときは J は つかえません）</>
+                            )}
+                        </p>
+                    </div>
+                )}
+
+                {gameState === 'bossTimeout' && (
+                    <div className="text-center py-8 sm:py-10 flex flex-col items-center px-3">
+                        {isBoss && (
+                            <div className="w-full max-w-lg flex flex-row justify-end items-end gap-3 mb-6 px-1">
+                                <div className="bg-gray-900 text-red-200 px-4 py-3 rounded-2xl rounded-br-sm border-2 border-red-500/60 shadow-lg text-base sm:text-lg font-bold max-w-[85%] text-left">
+                                    {bossFailMsg}
+                                </div>
+                                <span className="text-5xl sm:text-6xl shrink-0" aria-hidden="true">👹</span>
+                            </div>
+                        )}
+                        <h2 className={`text-2xl sm:text-4xl font-black mb-3 ${isBoss ? 'text-red-300' : 'text-red-600'}`}>じかんぎれ</h2>
+                        {isBoss ? (
+                            <p className="text-purple-200 font-bold mb-6 text-sm sm:text-base">
+                                {timeLimitSec}びょうを こえたよ。もういちど！
+                            </p>
+                        ) : (
+                            <p className="text-gray-700 font-bold mb-6 text-sm sm:text-base">
+                                じかんないで おわらなかったね。もういちど！
+                            </p>
+                        )}
+                        <div className="flex flex-col gap-3 w-full max-w-lg justify-center">
+                            <button
+                                type="button"
+                                onClick={restartGame}
+                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition hover:scale-105 text-base sm:text-lg"
+                            >
+                                もう一度
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { window.location.href = cfg.backHref || 'index.html'; }}
+                                className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 px-6 rounded-full shadow-lg transform transition hover:scale-105 text-base sm:text-lg"
+                            >
+                                ステージを選ぶ
+                            </button>
+                        </div>
+                        <p className="mt-6 text-sm sm:text-base text-gray-500 font-bold leading-relaxed px-2">
+                            ⌨️ <span className="text-blue-600">F</span>＝もう一度
+                        </p>
+                    </div>
+                )}
+
+            </div>
+        </div>
+    );
+}
+
 // レンダリング
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+if (window.TOKKUN_DRILL_CONFIG) {
+    root.render(<TokkunDrillApp />);
+} else {
+    root.render(<App />);
+}

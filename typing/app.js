@@ -292,9 +292,19 @@ const HandsOverlay = ({ activeFinger }) => {
 };
 
 function App() {
-    // URLパラメータから ?mode=low or ?mode=high を取得
+    // URLパラメータから ?mode=low or ?mode=high を取得（2年・3年は短文のみのため常に high）
     const params = new URLSearchParams(window.location.search);
-    const initialCourse = params.get('mode') === 'high' ? 'high' : 'low';
+    const pathname = window.location.pathname || '';
+    const is2nenOr3nenTypingOnlyShort =
+        pathname.includes('/typing/2nen/') ||
+        pathname.endsWith('/typing/2nen/index.html') ||
+        pathname.includes('/typing/3nen/') ||
+        pathname.endsWith('/typing/3nen/index.html');
+    const initialCourse = is2nenOr3nenTypingOnlyShort
+        ? 'high'
+        : params.get('mode') === 'high'
+          ? 'high'
+          : 'low';
 
     const [gameState, setGameState] = useState('playing'); // 最初から 'playing'
     const [course, setCourse] = useState(initialCourse);

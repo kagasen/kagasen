@@ -1,0 +1,15 @@
+#!/bin/bash
+cd "$(dirname "$0")"
+PORT=8765
+echo ""
+echo "=========================================="
+echo "  かがせんアプリ用ローカルサーバ"
+echo "=========================================="
+echo ""
+echo "  ブラウザで次のアドレスを開いてください:"
+echo ""
+echo "    http://localhost:${PORT}/typing/"
+echo ""
+echo "  止めるときはこのウィンドウで Ctrl+C を押してください。"
+echo ""
+exec python3 -m http.server "$PORT"

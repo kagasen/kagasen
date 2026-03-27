@@ -1,4 +1,4 @@
-H// 5年生用タイピングデータ（単語＝WORDS_LOW、主語＋述語の短文＝WORDS_HIGH）
+// 5年生用タイピングデータ（単語＝WORDS_LOW、主語＋述語の短文＝WORDS_HIGH）
 window.WORDS_LOW = [
     { kanji: '気のいい', kana: 'きのいい' },
     { kanji: '愛想がよい', kana: 'あいそがよい' },

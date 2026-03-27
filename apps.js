@@ -188,5 +188,15 @@ const appsData = [
         colorClass: "subject-red",
         image: "images/kotobasagashi.jpg",
         link: "kotobasagashi/index.html"
+    },
+    {
+        title: "キッズタイピング",
+        description: "学年を選んでローマ字タイピングを練習しよう！短文タイピングや70のとっくんもあるよ。",
+        category: "others",
+        tagName: "その他",
+        date: "2026/03/27",
+        colorClass: "subject-purple",
+        image: "images/typing.jpg",
+        link: "typing/index.html"
     }
 ];

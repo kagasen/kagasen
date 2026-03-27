@@ -86,6 +86,38 @@ const KEYBOARD_LAYOUT = [
     ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '']
 ];
 
+/** 学年タイピング用：data.js 未読込時も落ちないようにする */
+const buildWordListForCourse = (course) => {
+    const low = typeof window !== 'undefined' ? window.WORDS_LOW : null;
+    const high = typeof window !== 'undefined' ? window.WORDS_HIGH : null;
+    const list = course === 'low' ? low : high;
+    if (!Array.isArray(list) || list.length === 0) {
+        return [{ kanji: 'じゅんびちゅう', kana: 'じゅんびちゅう' }];
+    }
+    return [...list].sort(() => Math.random() - 0.5);
+};
+
+const rotateFirstToCurrent = (wordList) => {
+    if (!wordList.length) {
+        return {
+            words: [],
+            currentText: { kanji: '', kana: '', remainingKana: '', typedRomaji: '', currentInput: '' }
+        };
+    }
+    const first = wordList[0];
+    const rotated = [...wordList.slice(1), first];
+    return {
+        words: rotated,
+        currentText: {
+            kanji: first.kanji,
+            kana: first.kana,
+            remainingKana: first.kana,
+            typedRomaji: '',
+            currentInput: ''
+        }
+    };
+};
+
 // --- ヘルパー関数 ---
 
 const getRank = (score) => {
@@ -312,49 +344,36 @@ function App() {
           ? 'high'
           : 'low';
 
-    const [gameState, setGameState] = useState('playing'); // 最初から 'playing'
+    const typingInitRef = useRef(null);
+    if (typingInitRef.current === null) {
+        typingInitRef.current = rotateFirstToCurrent(buildWordListForCourse(initialCourse));
+    }
+
+    const [gameState, setGameState] = useState('ready'); // スペースで playing へ
     const [course, setCourse] = useState(initialCourse);
     const [score, setScore] = useState(0);
     const [correctCount, setCorrectCount] = useState(0);
     const [missCount, setMissCount] = useState(0);
     const [timeLeft, setTimeLeft] = useState(60);
 
-    // マウント時に初期データをセット
-    const [words, setWords] = useState(() => {
-        const wordList = initialCourse === 'low' ? [...window.WORDS_LOW] : [...window.WORDS_HIGH];
-        wordList.sort(() => Math.random() - 0.5);
-        return wordList;
-    });
-
-    const [currentText, setCurrentText] = useState({
-        kanji: '',
-        kana: '',
-        remainingKana: '',
-        typedRomaji: '',
-        currentInput: ''
-    });
+    const [words, setWords] = useState(() => typingInitRef.current.words);
+    const [currentText, setCurrentText] = useState(() => typingInitRef.current.currentText);
 
     const [isShaking, setIsShaking] = useState(false);
     const pyramidRef = useRef(null);
     const currentRankRef = useRef(null);
 
-    // 初回だけ単語をセットして、音声コンテキストを初期化可能にしておく
-    useEffect(() => {
-        setNextWord(words, 0);
-        // 音声はユーザーの最初のキータッチで初期化される
-    }, []);
-
     const restartGame = () => {
         initAudio();
-        const wordList = course === 'low' ? [...window.WORDS_LOW] : [...window.WORDS_HIGH];
-        wordList.sort(() => Math.random() - 0.5);
-        setWords(wordList);
+        const wl = buildWordListForCourse(course);
+        const bundle = rotateFirstToCurrent(wl);
+        setWords(bundle.words);
+        setCurrentText(bundle.currentText);
         setScore(0);
         setCorrectCount(0);
         setMissCount(0);
         setTimeLeft(60);
-        setGameState('playing');
-        setNextWord(wordList, 0);
+        setGameState('ready');
     };
 
     const setNextWord = (wordList, index) => {
@@ -390,6 +409,11 @@ function App() {
         return () => clearInterval(timer);
     }, [gameState, timeLeft]);
 
+    const beginTypingPlay = useCallback(() => {
+        initAudio();
+        setGameState('playing');
+    }, []);
+
     // 結果画面で現在のランクへ自動スクロール
     useEffect(() => {
         if (gameState === 'result' && currentRankRef.current && pyramidRef.current) {
@@ -400,10 +424,19 @@ function App() {
     }, [gameState]);
 
     const handleKeyDown = useCallback((e) => {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+        if (gameState === 'ready') {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                beginTypingPlay();
+            }
+            return;
+        }
+
         if (gameState !== 'playing') return;
 
         // 無視するキー
-        if (e.ctrlKey || e.altKey || e.metaKey) return;
         if (e.key === 'Shift' || e.key === 'Backspace' || e.key === 'Tab' || e.key === 'Enter') return;
 
         let key = e.key.toLowerCase();
@@ -463,7 +496,7 @@ function App() {
             setIsShaking(true);
             setTimeout(() => setIsShaking(false), 200); // 揺れアニメーション時間
         }
-    }, [gameState, currentText, words]);
+    }, [gameState, currentText, words, beginTypingPlay]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -548,13 +581,14 @@ function App() {
 
                 {/* --- MENU SCREEN REMOVED --- */}
 
-                {/* --- PLAYING SCREEN --- */}
-                {gameState === 'playing' && (
-                    <div>
-                        {/* ヘッダー: スコアとタイマー */}
-                        <div className="flex justify-between items-center mb-4 sm:mb-6 bg-blue-100 p-3 sm:p-4 rounded-xl border-2 border-blue-200">
+                {/* --- READY / PLAYING SCREEN --- */}
+                {(gameState === 'ready' || gameState === 'playing') && (
+                    <>
+                        {/* ヘッダー: メニューはオーバーレイより上で常に押せる */}
+                        <div className="flex justify-between items-center mb-4 sm:mb-6 bg-blue-100 p-3 sm:p-4 rounded-xl border-2 border-blue-200 relative z-30">
                             <div className="flex items-center gap-3 sm:gap-6">
                                 <button
+                                    type="button"
                                     onClick={() => { window.location.href = '../index.html'; }}
                                     className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg shadow transform transition hover:scale-105 text-xs sm:text-base focus:outline-none"
                                     tabIndex="-1"
@@ -565,11 +599,27 @@ function App() {
                                     スコア: <span className={score < 0 ? 'text-red-500' : 'text-blue-600'}>{score}</span>
                                 </div>
                             </div>
-                            <div className={`text-2xl sm:text-4xl font-black ${timeLeft <= 10 ? 'text-red-600 animate-blink' : 'text-green-600'}`}>
-                                ⏳ {timeLeft}秒
+                            <div className={`text-2xl sm:text-4xl font-black ${gameState === 'ready' ? 'text-gray-400' : timeLeft <= 10 ? 'text-red-600 animate-blink' : 'text-green-600'}`}>
+                                ⏳ {timeLeft}秒{gameState === 'ready' ? <span className="block text-xs sm:text-sm font-bold text-gray-500 mt-1">スタートまち</span> : null}
                             </div>
                         </div>
 
+                        <div className="relative">
+                        {gameState === 'ready' && (
+                            <button
+                                type="button"
+                                className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-slate-900/45 backdrop-blur-[2px] cursor-pointer border-0 p-4"
+                                onClick={() => beginTypingPlay()}
+                                aria-label="スペースキーまたはタップでスタート"
+                            >
+                                <span className="text-white text-xl sm:text-3xl font-black text-center drop-shadow-md px-2">
+                                    スペースキーでスタート
+                                </span>
+                                <span className="text-white/90 text-sm sm:text-base font-bold mt-3">
+                                    （タップでもスタートできます）
+                                </span>
+                            </button>
+                        )}
                         {/* 問題表示エリア */}
                         <div className="bg-gray-50 rounded-2xl p-3 sm:p-6 text-center shadow-inner border border-gray-200 min-h-[150px] sm:min-h-[220px] flex flex-col justify-center items-center overflow-hidden w-full relative">
                             <div className={`${kanaClass} font-bold text-gray-500 mb-1 sm:mb-2 tracking-widest break-all w-full leading-tight`}>
@@ -603,7 +653,8 @@ function App() {
 
                         {/* キーボード UI */}
                         <Keyboard targetKey={targetKey} />
-                    </div>
+                        </div>
+                    </>
                 )}
 
                 {/* --- RESULT SCREEN --- */}
@@ -719,7 +770,7 @@ function TokkunDrillApp() {
     const bossSuccessMsg = cfg.bossSuccessMsg != null ? cfg.bossSuccessMsg : 'お主やるなぁ';
     const bossFailMsg = cfg.bossFailMsg != null ? cfg.bossFailMsg : 'まだまだじゃな';
 
-    const [gameState, setGameState] = useState('playing');
+    const [gameState, setGameState] = useState('ready');
     const [progress, setProgress] = useState(0);
     const [missCount, setMissCount] = useState(0);
     const [isShaking, setIsShaking] = useState(false);
@@ -752,7 +803,7 @@ function TokkunDrillApp() {
         setProgress(0);
         setWordIndex(0);
         setMissCount(0);
-        setGameState('playing');
+        setGameState('ready');
         setHintMsg('');
         setBurstFragments([]);
         if (fragClearRef.current) {
@@ -769,6 +820,11 @@ function TokkunDrillApp() {
         });
         setTimeLeft(timeLimitSec > 0 ? timeLimitSec : null);
     }, [cfg.kana, cfg.words, timeLimitSec]);
+
+    const beginDrillPlay = useCallback(() => {
+        initAudio();
+        setGameState('playing');
+    }, []);
 
     useEffect(() => () => {
         if (fragClearRef.current) clearTimeout(fragClearRef.current);
@@ -821,8 +877,17 @@ function TokkunDrillApp() {
     }, []);
 
     const handleKeyDown = useCallback((e) => {
-        if (gameState !== 'playing') return;
         if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+        if (gameState === 'ready') {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                beginDrillPlay();
+            }
+            return;
+        }
+
+        if (gameState !== 'playing') return;
         if (e.key === 'Shift' || e.key === 'Backspace' || e.key === 'Tab' || e.key === 'Enter') return;
 
         let key = e.key.toLowerCase();
@@ -938,7 +1003,7 @@ function TokkunDrillApp() {
             setTimeout(() => setIsShaking(false), 200);
             setHintMsg(cfg.hintWrong || 'Fキーだよ。ゆっくりで だいじょうぶ！');
         }
-    }, [gameState, drillMode, pattern, progress, total, cfg.hintWrong, spawnBurstFragments, kanaState, targetKeySingle, kanaWordsMode, wordIndex, cfg.words]);
+    }, [gameState, drillMode, pattern, progress, total, cfg.hintWrong, spawnBurstFragments, kanaState, targetKeySingle, kanaWordsMode, wordIndex, cfg.words, beginDrillPlay]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -1105,9 +1170,9 @@ function TokkunDrillApp() {
 
             <div className={`w-full max-w-4xl p-2 sm:p-6 rounded-3xl shadow-2xl relative z-10 ${isBoss ? 'bg-gray-100 border-4 border-purple-900 shadow-[0_0_48px_rgba(76,29,149,0.55)]' : 'bg-white'} ${isShaking ? 'shake border-4 border-red-500' : isBoss ? '' : 'border-4 border-transparent'}`}>
 
-                {gameState === 'playing' && (
-                    <div>
-                        <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl border-2 ${isBoss ? 'bg-slate-900/90 border-purple-700' : 'bg-blue-100 border-blue-200'}`}>
+                {(gameState === 'ready' || gameState === 'playing') && (
+                    <>
+                        <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl border-2 relative z-30 ${isBoss ? 'bg-slate-900/90 border-purple-700' : 'bg-blue-100 border-blue-200'}`}>
                             <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                                 <button
                                     type="button"
@@ -1128,10 +1193,11 @@ function TokkunDrillApp() {
                             <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
                                 {timeLeft != null && (
                                     <div
-                                        className={`text-xl sm:text-3xl font-black tabular-nums ${isBoss ? (timeLeft <= 3 ? 'text-red-400 animate-pulse drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]' : 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.55)]') : timeLeft <= 3 ? 'text-red-600 animate-pulse' : 'text-green-600'}`}
+                                        className={`text-xl sm:text-3xl font-black tabular-nums ${gameState === 'ready' ? (isBoss ? 'text-zinc-500' : 'text-gray-400') : isBoss ? (timeLeft <= 3 ? 'text-red-400 animate-pulse drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]' : 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.55)]') : timeLeft <= 3 ? 'text-red-600 animate-pulse' : 'text-green-600'}`}
                                         aria-live="polite"
                                     >
                                         ⏱ {timeLeft} びょう
+                                        {gameState === 'ready' ? <span className="block text-xs sm:text-sm font-bold mt-1 text-center opacity-90">スタートまち</span> : null}
                                     </div>
                                 )}
                                 <div className={`text-base sm:text-xl font-bold ${isBoss ? 'text-zinc-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' : 'text-gray-600'}`}>
@@ -1148,6 +1214,22 @@ function TokkunDrillApp() {
                             <p className={`text-base sm:text-lg font-bold mt-2 ${isBoss ? 'text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]' : 'text-gray-600'}`}>{cfg.titleSub}</p>
                         </div>
 
+                        <div className="relative">
+                        {gameState === 'ready' && (
+                            <button
+                                type="button"
+                                className={`absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl border-0 p-4 cursor-pointer ${isBoss ? 'bg-violet-950/55 backdrop-blur-sm' : 'bg-slate-900/45 backdrop-blur-[2px]'}`}
+                                onClick={() => beginDrillPlay()}
+                                aria-label="スペースキーまたはタップでスタート"
+                            >
+                                <span className={`text-xl sm:text-3xl font-black text-center drop-shadow-md px-2 ${isBoss ? 'text-amber-100' : 'text-white'}`}>
+                                    スペースキーでスタート
+                                </span>
+                                <span className={`text-sm sm:text-base font-bold mt-3 ${isBoss ? 'text-purple-200' : 'text-white/90'}`}>
+                                    （タップでもスタートできます）
+                                </span>
+                            </button>
+                        )}
                         <div className={`rounded-2xl p-4 sm:p-8 text-center shadow-inner min-h-[180px] sm:min-h-[220px] flex flex-col justify-center items-center overflow-visible ${isBoss ? 'bg-slate-900/50 border-2 border-purple-800/80 shadow-[inset_0_0_24px_rgba(0,0,0,0.35)]' : 'bg-gray-50 border border-gray-200'}`}>
                             {drillMode === 'kana' && kanaWordsMode ? (
                                 <>
@@ -1290,7 +1372,8 @@ function TokkunDrillApp() {
                         </div>
 
                         <Keyboard targetKey={keyboardTarget} />
-                    </div>
+                        </div>
+                    </>
                 )}
 
                 {gameState === 'result' && (

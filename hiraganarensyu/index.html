@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ひらがなれんしゅう</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,#FFF9E6,#FFE8CC 50%,#FFDDB0);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.screen{display:none;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0}
+.screen.active{display:flex}
+.screen[hidden]{display:none!important}
+
+#titleScreen{justify-content:center;gap:24px}
+#titleScreen h1{font-size:clamp(28px,8vw,56px);color:#E8552E;text-shadow:3px 3px 0 #FFD166,5px 5px 0 rgba(0,0,0,.08);letter-spacing:.1em;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.mbtn{width:clamp(180px,50vw,280px);padding:16px 0;border:none;border-radius:20px;font-family:'Zen Maru Gothic',sans-serif;font-size:clamp(20px,5vw,32px);font-weight:700;cursor:pointer;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.15),0 8px 20px rgba(0,0,0,.1);transition:transform .1s}
+.mbtn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.mbtn-p{background:#4ECDC4}.mbtn-t{background:#FF6B6B}
+.title-note{
+  max-width:min(340px,90vw);
+  padding:0 12px;
+  font-size:clamp(12px,3.2vw,16px);
+  font-weight:700;
+  color:#888;
+  text-align:center;
+  line-height:1.5;
+}
+
+#charSelect{
+  padding:6px 8px max(8px,env(safe-area-inset-bottom,0px));
+  min-height:0;
+  height:100%;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  align-items:center;
+  justify-items:center;
+  width:100%;
+  max-height:100%;
+  box-sizing:border-box;
+  gap:4px;
+}
+#charSelect h2{
+  font-size:clamp(14px,3.8vw,24px);
+  color:#E8552E;
+  margin:0;
+  text-align:center;
+  grid-row:1;
+}
+#charSelect .b1{grid-row:3;margin:0}
+.cgrid-outer{
+  grid-row:2;
+  min-height:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 4px;
+  overflow:hidden;
+  container-type:size;
+  container-name:gojuon;
+}
+.cgrid{
+  --gap:clamp(2px,0.55vmin,5px);
+  --pad:6px;
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  grid-template-rows:repeat(5,1fr);
+  width:min(96vw,calc(min(100svh,100dvh) * 0.92));
+  aspect-ratio:2/1;
+  max-height:min(58vh,50vmin);
+  height:auto;
+  gap:var(--gap);
+  padding:var(--pad);
+  box-sizing:border-box;
+  overflow:hidden;
+  background:#e8e8e8;
+  border-radius:12px;
+}
+.cc{
+  min-width:0;
+  min-height:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  border-radius:8px;
+  font-size:clamp(10px,3vmin,26px);
+  font-weight:700;
+  color:#333;
+  cursor:pointer;
+  border:1px solid #e53935;
+  transition:transform .1s,background .1s;
+}
+@supports (width:1cqw){
+  .cgrid{
+    width:min(100cqw,calc(100cqh * 2));
+    max-height:100cqh;
+    max-width:100%;
+  }
+  .cc{font-size:clamp(10px,calc(100cqmin * 0.09),26px)}
+}
+.cc:active{transform:scale(.93)}.cc:hover{background:#FFF3E0;border-color:#FF9800}
+.cc-blank{background:#fff;border:1px solid #e53935;pointer-events:none;cursor:default}
+
+.top-bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:480px;padding:4px 10px}
+.lbl{font-size:clamp(20px,6vw,36px);font-weight:900;color:#E8552E}
+.sbox{font-size:clamp(14px,3.5vw,22px);font-weight:700;color:#333;background:#fff;padding:4px 14px;border-radius:10px}
+.sinfo{font-size:clamp(11px,2.5vw,14px);color:#888;margin:2px 0}
+.nb{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap;justify-content:center}
+.b{padding:10px 20px;border:none;border-radius:14px;font-family:'Zen Maru Gothic',sans-serif;font-size:clamp(13px,3.2vw,18px);font-weight:700;cursor:pointer;color:#fff;transition:transform .08s}
+.b:active{transform:scale(.94)}
+.b1{background:#999}.b2{background:#FF9800}.b3{background:#4ECDC4}.b4{background:#FF6B6B}.b5{background:#9C27B0}
+
+.cw{position:relative;margin:4px auto}
+.cw canvas{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px}
+.cbg{z-index:1}.cgu{z-index:2}.cdr{z-index:3;cursor:crosshair}
+
+/* markers */
+.marker{position:absolute;z-index:10;width:32px;height:32px;border-radius:50%;pointer-events:none;display:none;align-items:center;justify-content:center;animation:pul 1.4s ease-in-out infinite}
+.marker span{font-size:7px;font-weight:900;white-space:nowrap}
+.marker-start{border:3px solid #4CAF50;background:rgba(76,175,80,.2)}
+.marker-start span{color:#4CAF50}
+.marker-end{border:3px solid #2196F3;background:rgba(33,150,243,.2)}
+.marker-end span{color:#2196F3}
+@keyframes pul{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.6}}
+
+.exa{display:flex;align-items:center;gap:8px;margin:4px 0}
+.exsvg{width:68px;height:68px;border:2px solid #ccc;border-radius:8px;background:#fff;overflow:hidden}
+.exsvg svg{width:100%;height:100%}
+
+.score-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;flex-direction:column;align-items:center;justify-content:center}
+.score-overlay.show{display:flex}
+.score-anim-num{font-size:clamp(60px,18vw,120px);font-weight:900;color:#FFD166;text-shadow:4px 4px 0 #E8552E;opacity:0;transform:scale(0);transition:all .6s cubic-bezier(.17,.67,.25,1.2)}
+.score-anim-num.pop{opacity:1;transform:scale(1)}
+.score-comment{font-size:clamp(16px,4.5vw,28px);font-weight:700;color:#fff;margin-top:10px;opacity:0;transition:opacity .5s .5s;text-align:center;padding:0 20px;max-width:400px;line-height:1.5}
+.score-comment.show{opacity:1}
+.score-emoji{font-size:clamp(40px,12vw,80px);margin-bottom:10px;opacity:0;transition:opacity .4s .2s}
+.score-emoji.show{opacity:1}
+.score-close{margin-top:20px;padding:12px 36px;border:none;border-radius:16px;background:#4ECDC4;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-size:clamp(14px,3.5vw,20px);font-weight:700;cursor:pointer;opacity:0;transition:opacity .4s .8s}
+.score-close.show{opacity:1}
+
+.mbg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.mbg.show{display:flex}
+.md{background:#fff;border-radius:24px;padding:24px 28px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2);max-width:92vw;max-height:90vh;overflow-y:auto}
+.md h2{font-size:clamp(20px,5vw,32px);color:#E8552E;margin-bottom:8px}
+.md .big{font-size:clamp(40px,10vw,72px);font-weight:900;color:#4ECDC4}
+.md p{font-size:clamp(13px,3vw,17px);color:#666;margin:6px 0;white-space:pre-line}
+.mclose{margin-top:12px;padding:12px 36px;border:none;border-radius:16px;background:#4ECDC4;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-size:clamp(14px,3.5vw,20px);font-weight:700;cursor:pointer}
+.cmp{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.cmp-item{text-align:center}.cmp-row{display:flex;gap:4px;align-items:center;justify-content:center}
+.cmp-row canvas,.cmp-row .cmp-svg{width:70px;height:70px;border-radius:8px}
+.cmp-row canvas{border:2px solid #4ECDC4}.cmp-svg{border:2px solid #ccc;overflow:hidden;background:#fff}
+.cmp-svg svg{width:100%;height:100%}
+.cmp-item p{font-size:clamp(10px,2.5vw,13px);color:#555;font-weight:700;margin-top:2px}
+.cmp-arrow{font-size:16px;color:#999}
+.tprompt{font-size:clamp(16px,4vw,26px);font-weight:700;color:#333}
+.tprompt em{color:#E8552E;font-style:normal;font-size:1.4em}
+</style>
+</head>
+<body>
+
+<div id="titleScreen" class="screen active">
+  <h1>ひらがなれんしゅう</h1>
+  <button class="mbtn mbtn-p" onclick="goCharSelect()">れんしゅう</button>
+  <button class="mbtn mbtn-t" onclick="goTest()">テスト</button>
+  <p class="title-note">ねっとせつぞくができるところでやってね</p>
+</div>
+
+<div id="charSelect" class="screen" hidden>
+  <h2>もじをえらんでね</h2>
+  <div class="cgrid-outer">
+    <div class="cgrid" id="cGrid"></div>
+  </div>
+  <button class="b b1" onclick="goTitle()">もどる</button>
+</div>
+
+<div id="practiceScreen" class="screen" hidden>
+  <div class="top-bar"><div class="lbl" id="pL">あ</div><div class="sbox" id="pS">てん：—</div></div>
+  <div class="sinfo" id="pI">かくすう：1/3</div>
+  <div class="cw" id="pW">
+    <canvas class="cbg" id="pBg"></canvas><canvas class="cgu" id="pGu"></canvas><canvas class="cdr" id="pDr"></canvas>
+    <div class="marker marker-start" id="pMs"><span>スタート</span></div>
+    <div class="marker marker-end" id="pMe"><span>ゴール</span></div>
+  </div>
+  <div class="exa"><div class="exsvg" id="pEx"></div><button class="b b3" onclick="playDemo()">▶ おてほん</button></div>
+  <div class="nb">
+    <button class="b b1" onclick="nav(-1)">まえ</button>
+    <button class="b b2" onclick="resetP()">けす</button>
+    <button class="b b5" onclick="calcAndShowScore('practice')">かんせい</button>
+    <button class="b b3" onclick="nav(1)">つぎ</button>
+    <button class="b b1" onclick="goCharSelect()">もどる</button>
+  </div>
+</div>
+
+<div id="testScreen" class="screen" hidden>
+  <div class="top-bar"><div class="tprompt">かいてみよう → <em id="tL">あ</em></div><div class="sbox" id="tS">てん：—</div></div>
+  <div class="sinfo" id="tI">かくすう：1/3</div>
+  <div class="cw" id="tW">
+    <canvas class="cbg" id="tBg"></canvas><canvas class="cgu" id="tGu"></canvas><canvas class="cdr" id="tDr"></canvas>
+    <div class="marker marker-start" id="tMs"><span>スタート</span></div>
+    <div class="marker marker-end" id="tMe"><span>ゴール</span></div>
+  </div>
+  <div class="nb">
+    <button class="b b2" onclick="resetT()">けす</button>
+    <button class="b b5" onclick="finishTestChar()">かんせい</button>
+    <button class="b b1" onclick="goTitle()">もどる</button>
+  </div>
+</div>
+
+<div class="score-overlay" id="scoreOverlay">
+  <div class="score-emoji" id="scoreEmoji">🌟</div>
+  <div class="score-anim-num" id="scoreAnimNum">100</div>
+  <div class="score-comment" id="scoreComment">すごい！</div>
+  <button class="score-close" id="scoreCloseBtn" onclick="closeScoreOverlay()">つぎへ</button>
+</div>
+
+<div class="mbg" id="resultModal">
+  <div class="md">
+    <h2 id="rT">テストのけっか</h2>
+    <div class="big" id="rB">100</div>
+    <p id="rM"></p>
+    <div class="cmp" id="rC"></div>
+    <button class="mclose" onclick="closeResult()">とじる</button>
+  </div>
+</div>
+
+<script>
+const CHARS='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split('');
+/** 50音表：左→右が「わ列…あ列」、各列は上→下が「あいうえお」。空文字は空マス（や・わ列のい・え） */
+const GOJUON_GRID=[
+  ['わ','ら','や','ま','は','な','た','さ','か','あ'],
+  ['','り','','み','ひ','に','ち','し','き','い'],
+  ['を','る','ゆ','む','ふ','ぬ','つ','す','く','う'],
+  ['','れ','','め','へ','ね','て','せ','け','え'],
+  ['ん','ろ','よ','も','ほ','の','と','そ','こ','お']
+];
+const CDN='https://cdn.jsdelivr.net/npm/kana-svg-data/dist/hiragana/';
+const cache={};
+async function loadCh(ch){
+  if(cache[ch])return cache[ch];
+  try{const r=await fetch(CDN+encodeURIComponent(ch)+'.json');const d=await r.json();cache[ch]=d;return d;}
+  catch(e){console.error(e);return null;}
+}
+async function preload(){await Promise.all(CHARS.map(c=>loadCh(c)));}
+
+// ======= DATA HELPERS =======
+function getStrokeGroups(data){
+  if(!data)return[];
+  const map=new Map();
+  data.strokes.forEach(s=>{
+    const num=s.id.replace(/[a-z]/g,'');
+    if(!map.has(num))map.set(num,{shapes:[],medians:[],clips:[]});
+    map.get(num).shapes.push(s.value);
+  });
+  data.medians.forEach(m=>{
+    const num=m.id.replace(/[a-z]/g,'');
+    if(!map.has(num))return;
+    map.get(num).medians.push({id:m.id,pts:m.value||[]});
+  });
+  data.clipPaths.forEach(c=>{
+    const num=c.id.replace(/[a-z]/g,'');
+    if(!map.has(num))return;
+    map.get(num).clips.push({id:c.id,value:c.value||''});
+  });
+  const result=[];
+  for(const[num,g] of map){
+    let mainMedian=[];
+    if(g.medians.length===1){mainMedian=g.medians[0].pts;}
+    else if(g.medians.length>1){
+      for(const m of g.medians){
+        if(m.pts.length>0&&m.pts[0][0]>=0&&m.pts[0][1]>=0){mainMedian=m.pts;break;}
+      }
+      if(!mainMedian.length)mainMedian=g.medians[0].pts;
+    }
+    result.push({num,shapes:g.shapes,median:mainMedian});
+  }
+  return result;
+}
+
+// ======= STATE =======
+let curCh='あ',chIdx=0,curSt=0,cSize=300;
+let drawing=false,lastPt=null;
+// Per-stroke recorded points
+let strokeTraces=[]; // array of arrays of {x,y} in 1024 space
+let currentTrace=[];
+
+// Test
+let testChars=[],tIdx=0,tScores=[],tDrawings=[],tCurSt=0;
+let scoreOverlayCallback=null;
+
+// ======= SCREENS =======
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+    s.setAttribute('hidden','');
+  });
+  const el=document.getElementById(id);
+  el.removeAttribute('hidden');
+  el.classList.add('active');
+}
+function goTitle(){show('titleScreen');}
+function goCharSelect(){show('charSelect');buildGrid();}
+function buildGrid(){
+  const g=document.getElementById('cGrid');
+  g.innerHTML='';
+  GOJUON_GRID.forEach(row=>{
+    row.forEach(cell=>{
+      if(cell){
+        const d=document.createElement('div');
+        d.className='cc';
+        d.textContent=cell;
+        const idx=CHARS.indexOf(cell);
+        d.onclick=()=>startP(cell,idx);
+        g.appendChild(d);
+      }else{
+        const d=document.createElement('div');
+        d.className='cc cc-blank';
+        d.setAttribute('aria-hidden','true');
+        g.appendChild(d);
+      }
+    });
+  });
+}
+
+// ======= CANVAS =======
+function sizeC(wId,bgId,guId,drId){
+  const w=document.getElementById(wId),p=w.parentElement;
+  const maxW=Math.min(p.clientWidth*.9,420);
+  let usedH=0;Array.from(p.children).forEach(el=>{if(el!==w)usedH+=el.offsetHeight;});
+  const maxH=p.clientHeight-usedH-20;
+  cSize=Math.max(200,Math.floor(Math.min(maxW,maxH,420)));
+  w.style.width=cSize+'px';w.style.height=cSize+'px';
+  [bgId,guId,drId].forEach(id=>{const c=document.getElementById(id);c.width=cSize;c.height=cSize;});
+}
+function drawBg(id){
+  const c=document.getElementById(id),ctx=c.getContext('2d'),s=c.width;
+  ctx.clearRect(0,0,s,s);ctx.fillStyle='#FFF';ctx.fillRect(0,0,s,s);
+  ctx.strokeStyle='#888';ctx.lineWidth=3;ctx.strokeRect(2,2,s-4,s-4);
+  ctx.strokeStyle='rgba(180,180,180,.45)';ctx.lineWidth=1;ctx.setLineDash([8,6]);
+  ctx.beginPath();ctx.moveTo(s/2,4);ctx.lineTo(s/2,s-4);ctx.moveTo(4,s/2);ctx.lineTo(s-4,s/2);ctx.stroke();ctx.setLineDash([]);
+}
+function drawGuide(id,data,visible){
+  const c=document.getElementById(id),ctx=c.getContext('2d'),s=c.width;
+  ctx.clearRect(0,0,s,s);if(!data)return;
+  const sc=s/1024,groups=getStrokeGroups(data);
+  groups.forEach((g,gi)=>{
+    g.shapes.forEach(d=>{
+      if(!d)return;const p=new Path2D(d);ctx.save();ctx.scale(sc,sc);
+      ctx.fillStyle=visible?'rgba(200,200,200,.5)':'rgba(255,255,255,.01)';
+      ctx.fill(p);ctx.restore();
+    });
+    if(visible&&g.median.length>0){
+      ctx.fillStyle='rgba(100,100,100,.55)';
+      ctx.font=`bold ${Math.max(s*.04,14)}px 'Zen Maru Gothic',sans-serif`;
+      ctx.fillText(`${gi+1}`,g.median[0][0]*sc-12,g.median[0][1]*sc-8);
+    }
+  });
+}
+function drawCharSVG(el,data){
+  el.innerHTML='';if(!data)return;
+  const colors=['#E8552E','#2E86E8','#4ECDC4','#FF9800','#9C27B0','#795548'];
+  const groups=getStrokeGroups(data);
+  let h='<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">';
+  h+='<line x1="512" y1="0" x2="512" y2="1024" stroke="#ddd" stroke-width="3" stroke-dasharray="20,15"/>';
+  h+='<line x1="0" y1="512" x2="1024" y2="512" stroke="#ddd" stroke-width="3" stroke-dasharray="20,15"/>';
+  groups.forEach((g,i)=>{g.shapes.forEach(d=>{if(d)h+=`<path d="${d}" fill="${colors[i%colors.length]}" opacity=".85"/>`;});});
+  h+='</svg>';el.innerHTML=h;
+}
+
+// ======= MARKERS =======
+function showMarkers(startId,endId,wrapId,data,si){
+  const ms=document.getElementById(startId),me=document.getElementById(endId);
+  if(!data){ms.style.display='none';me.style.display='none';return;}
+  const groups=getStrokeGroups(data);
+  if(si>=groups.length||groups[si].median.length<2){ms.style.display='none';me.style.display='none';return;}
+  const pts=groups[si].median;
+  const sc=cSize/1024;
+  // Start
+  const sp=pts[0];
+  ms.style.left=(sp[0]*sc-16)+'px';ms.style.top=(sp[1]*sc-16)+'px';ms.style.display='flex';
+  // End
+  const ep=pts[pts.length-1];
+  me.style.left=(ep[0]*sc-16)+'px';me.style.top=(ep[1]*sc-16)+'px';me.style.display='flex';
+}
+function hideMarkers(startId,endId){
+  document.getElementById(startId).style.display='none';
+  document.getElementById(endId).style.display='none';
+}
+
+// ======= SCORE COMMENTS =======
+function getComment(s){
+  if(s===100)return{emoji:'🌟',text:'かんぺき！！\nてんさいだね！！！'};
+  if(s>=95)return{emoji:'✨',text:'すっごーい！\nほぼかんぺき！'};
+  if(s>=90)return{emoji:'😄',text:'じょうず！\nとってもいいね！'};
+  if(s>=80)return{emoji:'👏',text:'よくできました！\nそのちょうし！'};
+  if(s>=70)return{emoji:'😊',text:'いいかんじ！\nもうちょっとがんばろう！'};
+  if(s>=60)return{emoji:'💪',text:'まあまあだね！\nれんしゅうすればもっとうまくなるよ！'};
+  if(s>=50)return{emoji:'📝',text:'がんばったね！\nゆっくりていねいにかいてみよう！'};
+  if(s>=30)return{emoji:'😅',text:'もうすこし\nせんをよくみてかこうね！'};
+  if(s>=10)return{emoji:'😤',text:'はみだしすぎだよ〜！\nもういっかいやってみよう！'};
+  if(s>0)return{emoji:'🫣',text:'せんのうえをなぞってね！\nおてほんをよくみてね！'};
+  return{emoji:'😂',text:'ちゃんとかいてよ〜！\nおてほんボタンをおしてみてね！'};
+}
+function showScoreAnim(sc,callback){
+  scoreOverlayCallback=callback;
+  const ov=document.getElementById('scoreOverlay'),numEl=document.getElementById('scoreAnimNum'),emEl=document.getElementById('scoreEmoji'),cmEl=document.getElementById('scoreComment'),clBtn=document.getElementById('scoreCloseBtn');
+  const c=getComment(sc);
+  numEl.textContent=sc+'てん';emEl.textContent=c.emoji;cmEl.textContent=c.text;
+  clBtn.textContent='つぎへ';
+  numEl.classList.remove('pop');emEl.classList.remove('show');cmEl.classList.remove('show');clBtn.classList.remove('show');
+  ov.classList.add('show');
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    emEl.classList.add('show');
+    setTimeout(()=>numEl.classList.add('pop'),200);
+    setTimeout(()=>cmEl.classList.add('show'),600);
+    setTimeout(()=>clBtn.classList.add('show'),900);
+  });});
+}
+function closeScoreOverlay(){
+  document.getElementById('scoreOverlay').classList.remove('show');
+  if(scoreOverlayCallback){const cb=scoreOverlayCallback;scoreOverlayCallback=null;cb();}
+}
+
+// ======= SCORING CALCULATION =======
+function isPointInShapes(sx,sy,shapes){
+  const tc=document.createElement('canvas');tc.width=1024;tc.height=1024;
+  const tctx=tc.getContext('2d');
+  for(const d of shapes){
+    if(!d)continue;
+    const p=new Path2D(d);
+    if(tctx.isPointInPath(p,sx,sy))return true;
+  }
+  return false;
+}
+
+function calcScore(){
+  const data=cache[curCh];
+  if(!data)return 0;
+  const groups=getStrokeGroups(data);
+  const totalStrokes=groups.length;
+  if(totalStrokes===0)return 0;
+
+  // Collect all shapes for "any shape" check
+  let allShapes=[];
+  groups.forEach(g=>{allShapes=allShapes.concat(g.shapes);});
+
+  let totalScore=0;
+
+  for(let si=0;si<totalStrokes;si++){
+    const g=groups[si];
+    const median=g.median;
+    const trace=strokeTraces[si]; // user's trace for this stroke
+
+    if(!trace||trace.length<3){
+      // Stroke not drawn or barely touched -> 0 points
+      totalScore+=0;
+      continue;
+    }
+
+    // --- 1) Inside ratio (60 points) ---
+    // What % of user's trace points are inside this stroke's shapes?
+    let insideCount=0;
+    for(const pt of trace){
+      if(isPointInShapes(pt.x,pt.y,g.shapes))insideCount++;
+    }
+    const insideRatio=insideCount/trace.length;
+    const insideScore=Math.round(insideRatio*60);
+
+    // --- 2) Start accuracy (20 points) ---
+    // How close is the first drawn point to the median's start?
+    let startScore=0;
+    if(median.length>=2){
+      const mStart=median[0];
+      const uStart=trace[0];
+      const startDist=Math.hypot(uStart.x-mStart[0],uStart.y-mStart[1]);
+      // Within 60px (1024 space) = full marks, linearly decreases to 0 at 200px
+      startScore=Math.round(Math.max(0,Math.min(20, 20*(1-Math.max(0,startDist-60)/140))));
+    }
+
+    // --- 3) End accuracy (20 points) ---
+    let endScore=0;
+    if(median.length>=2){
+      const mEnd=median[median.length-1];
+      const uEnd=trace[trace.length-1];
+      const endDist=Math.hypot(uEnd.x-mEnd[0],uEnd.y-mEnd[1]);
+      endScore=Math.round(Math.max(0,Math.min(20, 20*(1-Math.max(0,endDist-60)/140))));
+    }
+
+    totalScore+=insideScore+startScore+endScore;
+  }
+
+  // Extra penalty: if user drew extra strokes beyond the character's strokes
+  // Check traces beyond totalStrokes
+  for(let si=totalStrokes;si<strokeTraces.length;si++){
+    const trace=strokeTraces[si];
+    if(!trace||trace.length<3)continue;
+    // How much of this extra trace is outside ALL shapes?
+    let outsideCount=0;
+    for(const pt of trace){
+      if(!isPointInShapes(pt.x,pt.y,allShapes))outsideCount++;
+    }
+    const outsideRatio=outsideCount/trace.length;
+    totalScore-=Math.round(outsideRatio*15); // penalty per extra stroke
+  }
+
+  // Average across expected strokes, clamp 0-100
+  const avg=Math.round(totalScore/totalStrokes);
+  return Math.max(0,Math.min(100,avg));
+}
+
+// ======= PRACTICE =======
+async function startP(ch,idx){
+  show('practiceScreen');curCh=ch;chIdx=idx;curSt=0;
+  strokeTraces=[];currentTrace=[];
+  const data=await loadCh(ch);
+  sizeC('pW','pBg','pGu','pDr');drawBg('pBg');drawGuide('pGu',data,true);
+  drawCharSVG(document.getElementById('pEx'),data);
+  setupInput('pDr','practice');updatePUI(data);
+  showMarkers('pMs','pMe','pW',data,0);
+}
+function updatePUI(data){
+  document.getElementById('pL').textContent=curCh;
+  document.getElementById('pS').textContent='てん：—';
+  if(data){const t=getStrokeGroups(data).length;document.getElementById('pI').textContent=`かくすう：${Math.min(curSt+1,t)}/${t}`;}
+}
+function resetP(){
+  curSt=0;strokeTraces=[];currentTrace=[];
+  const c=document.getElementById('pDr');c.getContext('2d').clearRect(0,0,c.width,c.height);
+  const d=cache[curCh];updatePUI(d);showMarkers('pMs','pMe','pW',d,0);
+}
+async function nav(dir){chIdx+=dir;if(chIdx<0)chIdx=CHARS.length-1;if(chIdx>=CHARS.length)chIdx=0;await startP(CHARS[chIdx],chIdx);}
+
+function calcAndShowScore(mode){
+  const s=calcScore();
+  if(mode==='practice'){
+    document.getElementById('pS').textContent=`てん：${s}`;
+    // お手本を重ねて表示
+    overlayGuide('pGu');
+    showScoreAnim(s,()=>nav(1));
+  }
+}
+
+function overlayGuide(guideId){
+  const data=cache[curCh];if(!data)return;
+  const guideC=document.getElementById(guideId);
+  const gctx=guideC.getContext('2d');
+  const sz=guideC.width;
+  gctx.clearRect(0,0,sz,sz);
+  const sc=sz/1024;
+  const colors=['#E8552E','#2E86E8','#4ECDC4','#FF9800','#9C27B0','#795548'];
+  const groups=getStrokeGroups(data);
+  groups.forEach((g,gi)=>{
+    g.shapes.forEach(d=>{
+      if(!d)return;
+      const p=new Path2D(d);
+      gctx.save();gctx.scale(sc,sc);
+      gctx.fillStyle=colors[gi%colors.length];
+      gctx.globalAlpha=0.35;
+      gctx.fill(p);gctx.restore();
+    });
+    if(g.median.length>1){
+      gctx.beginPath();
+      gctx.moveTo(g.median[0][0]*sc,g.median[0][1]*sc);
+      for(let i=1;i<g.median.length;i++) gctx.lineTo(g.median[i][0]*sc,g.median[i][1]*sc);
+      gctx.strokeStyle=colors[gi%colors.length];
+      gctx.globalAlpha=0.7;
+      gctx.lineWidth=Math.max(sz*0.02,3);
+      gctx.lineCap='round';gctx.lineJoin='round';
+      gctx.stroke();gctx.globalAlpha=1.0;
+      const r=Math.max(sz*0.015,4);
+      gctx.beginPath();gctx.arc(g.median[0][0]*sc,g.median[0][1]*sc,r,0,Math.PI*2);
+      gctx.fillStyle='#4CAF50';gctx.globalAlpha=0.9;gctx.fill();
+      gctx.beginPath();gctx.arc(g.median[g.median.length-1][0]*sc,g.median[g.median.length-1][1]*sc,r,0,Math.PI*2);
+      gctx.fillStyle='#2196F3';gctx.globalAlpha=0.9;gctx.fill();
+      gctx.globalAlpha=1.0;
+    }
+  });
+}
+
+// ======= DEMO =======
+let demoRun=false;
+async function playDemo(){
+  if(demoRun)return;demoRun=true;
+  const data=cache[curCh];if(!data){demoRun=false;return;}
+  const el=document.getElementById('pEx');
+  const groups=getStrokeGroups(data);
+  const colors=['#E8552E','#2E86E8','#4ECDC4','#FF9800','#9C27B0','#795548'];
+  for(let si=0;si<groups.length;si++){
+    let svg='<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">';
+    svg+='<line x1="512" y1="0" x2="512" y2="1024" stroke="#ddd" stroke-width="3" stroke-dasharray="20,15"/>';
+    svg+='<line x1="0" y1="512" x2="1024" y2="512" stroke="#ddd" stroke-width="3" stroke-dasharray="20,15"/>';
+    for(let p=0;p<si;p++){groups[p].shapes.forEach(d=>{if(d)svg+=`<path d="${d}" fill="${colors[p%colors.length]}" opacity=".85"/>`;});}
+    groups[si].shapes.forEach(d=>{if(d)svg+=`<path d="${d}" fill="${colors[si%colors.length]}" opacity=".25"/>`;});
+    const pts=groups[si].median;
+    if(pts.length>1){
+      let pathD='M'+pts[0][0]+','+pts[0][1];
+      for(let i=1;i<pts.length;i++)pathD+=' L'+pts[i][0]+','+pts[i][1];
+      let len=0;for(let i=1;i<pts.length;i++){len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);}
+      svg+=`<path d="${pathD}" fill="none" stroke="${colors[si%colors.length]}" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${Math.ceil(len)}" stroke-dashoffset="${Math.ceil(len)}"><animate attributeName="stroke-dashoffset" from="${Math.ceil(len)}" to="0" dur="0.8s" fill="freeze"/></path>`;
+      // Start dot green
+      svg+=`<circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="40" fill="#4CAF50" opacity=".7"/>`;
+      // End dot blue
+      svg+=`<circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="40" fill="#2196F3" opacity=".7"/>`;
+    }
+    svg+='</svg>';el.innerHTML=svg;
+    await new Promise(r=>setTimeout(r,1100));
+  }
+  drawCharSVG(el,data);demoRun=false;
+}
+
+// ======= TEST =======
+async function goTest(){
+  show('testScreen');
+  testChars=[...CHARS].sort(()=>Math.random()-.5).slice(0,5);
+  tIdx=0;tScores=[];tDrawings=[];
+  await Promise.all(testChars.map(c=>loadCh(c)));
+  loadTC();
+}
+function loadTC(){
+  if(tIdx>=testChars.length){showTestResult();return;}
+  curCh=testChars[tIdx];tCurSt=0;
+  strokeTraces=[];currentTrace=[];
+  const data=cache[curCh];
+  sizeC('tW','tBg','tGu','tDr');drawBg('tBg');drawGuide('tGu',data,false);
+  document.getElementById('tDr').getContext('2d').clearRect(0,0,cSize,cSize);
+  setupInput('tDr','test');
+  document.getElementById('tL').textContent=curCh;
+  document.getElementById('tS').textContent='てん：—';
+  if(data){const t=getStrokeGroups(data).length;document.getElementById('tI').textContent=`かくすう：${Math.min(tCurSt+1,t)}/${t}`;}
+  showMarkers('tMs','tMe','tW',data,0);
+}
+function resetT(){
+  tCurSt=0;strokeTraces=[];currentTrace=[];
+  const c=document.getElementById('tDr');c.getContext('2d').clearRect(0,0,c.width,c.height);
+  document.getElementById('tS').textContent='てん：—';
+  const d=cache[curCh];if(d){const t=getStrokeGroups(d).length;document.getElementById('tI').textContent=`かくすう：1/${t}`;}
+  showMarkers('tMs','tMe','tW',d,0);
+}
+function finishTestChar(){
+  const c=document.getElementById('tDr');
+  const s=calcScore();
+  tScores.push(s);
+  document.getElementById('tS').textContent=`てん：${s}`;
+
+  // お手本をガイドキャンバスに半透明カラーで重ねて表示
+  overlayGuide('tGu');
+
+  // Save drawing snapshot
+  tDrawings.push(c.toDataURL());
+
+  showScoreAnim(s,()=>{tIdx++;if(tIdx>=testChars.length)showTestResult();else loadTC();});
+}
+function showTestResult(){
+  const avg=tScores.length?Math.round(tScores.reduce((a,b)=>a+b,0)/tScores.length):0;
+  const c=getComment(avg);
+  document.getElementById('rT').textContent='テストのけっか';
+  document.getElementById('rB').textContent=avg+'てん';
+  document.getElementById('rM').textContent=c.emoji+' '+c.text;
+  const comp=document.getElementById('rC');comp.innerHTML='';
+  testChars.forEach((ch,i)=>{
+    const data=cache[ch];
+    const item=document.createElement('div');item.className='cmp-item';
+    const row=document.createElement('div');row.className='cmp-row';
+    const uc=document.createElement('canvas');uc.width=70;uc.height=70;uc.style.width='70px';uc.style.height='70px';
+    uc.style.border='2px solid '+(tScores[i]>=70?'#4ECDC4':'#FF6B6B');uc.style.borderRadius='8px';
+    const uctx=uc.getContext('2d');uctx.fillStyle='#fff';uctx.fillRect(0,0,70,70);
+    if(tDrawings[i]){const img=new Image();img.onload=()=>uctx.drawImage(img,0,0,70,70);img.src=tDrawings[i];}
+    const arrow=document.createElement('div');arrow.className='cmp-arrow';arrow.textContent='↔';
+    const mdiv=document.createElement('div');mdiv.className='cmp-svg';
+    if(data){const groups=getStrokeGroups(data);let svgH='<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">';groups.forEach(g=>{g.shapes.forEach(d=>{if(d)svgH+=`<path d="${d}" fill="#aaa"/>`;});});svgH+='</svg>';mdiv.innerHTML=svgH;}
+    row.appendChild(uc);row.appendChild(arrow);row.appendChild(mdiv);
+    const lbl=document.createElement('p');lbl.textContent=`${ch}：${tScores[i]}てん`;
+    item.appendChild(row);item.appendChild(lbl);comp.appendChild(item);
+  });
+  document.getElementById('resultModal').classList.add('show');
+}
+function closeResult(){document.getElementById('resultModal').classList.remove('show');goTitle();}
+
+// ======= DRAWING INPUT =======
+function setupInput(canvasId,mode){
+  const old=document.getElementById(canvasId);
+  const c=old.cloneNode(true);old.parentNode.replaceChild(c,old);
+  const ctx=c.getContext('2d');
+
+  const getPos=e=>{
+    const r=c.getBoundingClientRect();let cx,cy;
+    if(e.touches){cx=e.touches[0].clientX-r.left;cy=e.touches[0].clientY-r.top;}
+    else{cx=e.clientX-r.left;cy=e.clientY-r.top;}
+    return{x:cx*(c.width/r.width),y:cy*(c.height/r.height)};
+  };
+  const getSI=()=>mode==='test'?tCurSt:curSt;
+  const setSI=v=>{if(mode==='test')tCurSt=v;else curSt=v;};
+
+  // Real-time color feedback
+  function ptInAnyShape(px,py){
+    const data=cache[curCh];if(!data)return false;
+    const si=getSI();
+    const groups=getStrokeGroups(data);
+    // Check current stroke shapes, or all shapes if past last stroke
+    let shapes=[];
+    if(si<groups.length){shapes=groups[si].shapes;}
+    else{groups.forEach(g=>{shapes=shapes.concat(g.shapes);});}
+    return isPointInShapes(px,py,shapes);
+  }
+
+  const onStart=e=>{
+    e.preventDefault();drawing=true;lastPt=getPos(e);
+    currentTrace=[];
+    const sc=1024/cSize;
+    currentTrace.push({x:lastPt.x*sc,y:lastPt.y*sc});
+    hideMarkers(mode==='test'?'tMs':'pMs',mode==='test'?'tMe':'pMe');
+    ctx.beginPath();ctx.moveTo(lastPt.x,lastPt.y);
+  };
+
+  const onMove=e=>{
+    e.preventDefault();if(!drawing)return;
+    const pos=getPos(e);
+    const sc=1024/cSize;
+    const sx=pos.x*sc,sy=pos.y*sc;
+    currentTrace.push({x:sx,y:sy});
+
+    const inside=ptInAnyShape(sx,sy);
+    ctx.lineWidth=Math.max(cSize*.045,8);ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.strokeStyle=inside?'#333':'#FF4444';
+    ctx.lineTo(pos.x,pos.y);ctx.stroke();ctx.beginPath();ctx.moveTo(pos.x,pos.y);
+    lastPt=pos;
+  };
+
+  const onEnd=e=>{
+    e.preventDefault();if(!drawing)return;drawing=false;
+    // Save trace for this stroke
+    strokeTraces.push([...currentTrace]);
+    currentTrace=[];
+    const si=getSI();
+    const data=cache[curCh];if(!data)return;
+    const total=getStrokeGroups(data).length;
+    setSI(si+1);
+    if(mode==='practice'){
+      updatePUI(data);
+      if(si+1<total)showMarkers('pMs','pMe','pW',data,si+1);
+    }else{
+      document.getElementById('tI').textContent=`かくすう：${Math.min(si+2,total)}/${total}`;
+      if(si+1<total)showMarkers('tMs','tMe','tW',data,si+1);
+    }
+  };
+
+  c.addEventListener('mousedown',onStart);c.addEventListener('mousemove',onMove);
+  c.addEventListener('mouseup',onEnd);c.addEventListener('mouseleave',onEnd);
+  c.addEventListener('touchstart',onStart,{passive:false});c.addEventListener('touchmove',onMove,{passive:false});
+  c.addEventListener('touchend',onEnd,{passive:false});c.addEventListener('touchcancel',onEnd,{passive:false});
+}
+
+document.addEventListener('touchmove',e=>{const a=document.querySelector('.screen.active');if(a&&(a.id==='practiceScreen'||a.id==='testScreen'))e.preventDefault();},{passive:false});
+window.addEventListener('load',()=>{preload();});
+</script>
+</body>
+</html>

@@ -1,5 +1,15 @@
 const appsData = [
     {
+        title: "ひらがなれんしゅう",
+        description: "ひらがなをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/04/03",
+        colorClass: "subject-red",
+        image: "images/hiraganarensyu.jpg",
+        link: "hiraganarensyu/index.html"
+    },
+    {
         title: "心マトリクス",
         description: "今の心の状態をマトリクスで可視化して言葉にしよう。アクションの後の変化も記録できる、メタ認知をうながすアプリ。",
         category: "others",

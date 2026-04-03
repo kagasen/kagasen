@@ -221,6 +221,17 @@ const playBeep = (frequency, type, duration, vol = 0.1) => {
 const playCorrectSound = () => playBeep(880, 'sine', 0.1, 0.2);
 const playMissSound = () => playBeep(150, 'sawtooth', 0.15, 0.3);
 
+/** レベルクリア・タイムアップなど結果表示時のファンファーレ（短い上昇音） */
+const playClearSound = () => {
+    initAudio();
+    if (!audioCtx) return;
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    const stepMs = 95;
+    notes.forEach((freq, i) => {
+        setTimeout(() => playBeep(freq, 'sine', 0.18, 0.2), i * stepMs);
+    });
+};
+
 // --- コンポーネント ---
 
 const KeyboardRow = ({ row, targetKey }) => (
@@ -244,7 +255,7 @@ const KeyboardRow = ({ row, targetKey }) => (
 
 const Keyboard = ({ targetKey }) => {
     return (
-        <div className="relative p-2 sm:p-4 bg-gray-100 rounded-xl shadow-inner mt-4 overflow-hidden">
+        <div className="relative p-2 sm:p-3 bg-gray-100 rounded-xl shadow-inner mt-2 sm:mt-3 overflow-hidden">
             {KEYBOARD_LAYOUT.map((row, i) => (
                 <KeyboardRow key={i} row={row} targetKey={targetKey} />
             ))}
@@ -421,6 +432,11 @@ function App() {
                 currentRankRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100); // 描画直後に実行させるため少し遅延させる
         }
+    }, [gameState]);
+
+    useEffect(() => {
+        if (gameState !== 'result') return;
+        playClearSound();
     }, [gameState]);
 
     const handleKeyDown = useCallback((e) => {
@@ -909,9 +925,14 @@ function TokkunDrillApp() {
 
             if (validPatterns.length > 0) {
                 initAudio();
-                playCorrectSound();
-                setHintMsg('');
                 const perfectMatch = validPatterns.find(p => p.romaji === newInput);
+                const willLevelClear =
+                    perfectMatch &&
+                    remainingKana.slice(perfectMatch.len).length === 0 &&
+                    !(kanaWordsMode && wordIndex < cfg.words.length - 1);
+                if (willLevelClear) playClearSound();
+                else playCorrectSound();
+                setHintMsg('');
 
                 if (perfectMatch) {
                     const newRemaining = remainingKana.slice(perfectMatch.len);
@@ -966,7 +987,8 @@ function TokkunDrillApp() {
             const expect = pattern[progress];
             if (key === expect) {
                 initAudio();
-                playCorrectSound();
+                if (progress + 1 >= total) playClearSound();
+                else playCorrectSound();
                 setHintMsg('');
                 spawnBurstFragments(expect);
                 setProgress((p) => {
@@ -987,7 +1009,8 @@ function TokkunDrillApp() {
 
         if (key === targetKeySingle) {
             initAudio();
-            playCorrectSound();
+            if (progress + 1 >= total) playClearSound();
+            else playCorrectSound();
             setHintMsg('');
             spawnBurstFragments(targetKeySingle);
             setProgress((p) => {
@@ -1075,7 +1098,7 @@ function TokkunDrillApp() {
     }
 
     return (
-        <div className={`min-h-screen flex items-center justify-center font-sans relative overflow-hidden ${isBoss ? 'bg-gradient-to-b from-slate-950 via-violet-950 to-black' : 'bg-blue-50'}`}>
+        <div className={`min-h-[100dvh] flex items-start justify-center py-2 sm:py-4 font-sans relative overflow-x-hidden ${isBoss ? 'bg-gradient-to-b from-slate-950 via-violet-950 to-black' : 'bg-blue-50'}`}>
             {isBoss && (
                 <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_20%,#4c1d95_0%,transparent_55%)] opacity-70" />
@@ -1168,11 +1191,11 @@ function TokkunDrillApp() {
         .tokkun-demon-float { animation: tokkun-demon-float 2.8s ease-in-out infinite; }
       `}</style>
 
-            <div className={`w-full max-w-4xl p-2 sm:p-6 rounded-3xl shadow-2xl relative z-10 ${isBoss ? 'bg-gray-100 border-4 border-purple-900 shadow-[0_0_48px_rgba(76,29,149,0.55)]' : 'bg-white'} ${isShaking ? 'shake border-4 border-red-500' : isBoss ? '' : 'border-4 border-transparent'}`}>
+            <div className={`w-full max-w-4xl p-2 sm:p-4 rounded-3xl shadow-2xl relative z-10 ${isBoss ? 'bg-gray-100 border-4 border-purple-900 shadow-[0_0_48px_rgba(76,29,149,0.55)]' : 'bg-white'} ${isShaking ? 'shake border-4 border-red-500' : isBoss ? '' : 'border-4 border-transparent'}`}>
 
                 {(gameState === 'ready' || gameState === 'playing') && (
                     <>
-                        <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl border-2 relative z-30 ${isBoss ? 'bg-slate-900/90 border-purple-700' : 'bg-blue-100 border-blue-200'}`}>
+                        <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2 sm:mb-3 p-3 sm:p-4 rounded-xl border-2 relative z-30 ${isBoss ? 'bg-slate-900/90 border-purple-700' : 'bg-blue-100 border-blue-200'}`}>
                             <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                                 <button
                                     type="button"
@@ -1206,12 +1229,11 @@ function TokkunDrillApp() {
                             </div>
                         </div>
 
-                        <div className={`mb-2 text-center ${isBoss ? 'rounded-2xl bg-black/25 px-3 py-3 sm:py-4 border border-purple-500/40' : ''}`}>
+                        <div className={`mb-1 text-center ${isBoss ? 'rounded-2xl bg-black/25 px-3 py-2 sm:py-3 border border-purple-500/40' : ''}`}>
                             <p className={`text-sm sm:text-base font-bold ${isBoss ? 'text-zinc-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' : 'text-amber-800'}`}>
                                 70のとっくん · レベル{Number.isFinite(levelNum) ? levelNum : '？'}
                             </p>
                             <h1 className={`text-lg sm:text-2xl font-black leading-tight px-1 ${isBoss ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.75)]' : 'text-gray-800'}`}>{cfg.titleKanji}</h1>
-                            <p className={`text-base sm:text-lg font-bold mt-2 ${isBoss ? 'text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]' : 'text-gray-600'}`}>{cfg.titleSub}</p>
                         </div>
 
                         <div className="relative">
@@ -1230,7 +1252,7 @@ function TokkunDrillApp() {
                                 </span>
                             </button>
                         )}
-                        <div className={`rounded-2xl p-4 sm:p-8 text-center shadow-inner min-h-[180px] sm:min-h-[220px] flex flex-col justify-center items-center overflow-visible ${isBoss ? 'bg-slate-900/50 border-2 border-purple-800/80 shadow-[inset_0_0_24px_rgba(0,0,0,0.35)]' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className={`rounded-2xl p-3 sm:p-5 text-center shadow-inner min-h-0 sm:min-h-[140px] flex flex-col justify-center items-center overflow-visible ${isBoss ? 'bg-slate-900/50 border-2 border-purple-800/80 shadow-[inset_0_0_24px_rgba(0,0,0,0.35)]' : 'bg-gray-50 border border-gray-200'}`}>
                             {drillMode === 'kana' && kanaWordsMode ? (
                                 <>
                                     <p className="text-sm text-gray-500 font-bold mb-3">ローマ字で ひらがなを うってね（半角）</p>
@@ -1295,12 +1317,7 @@ function TokkunDrillApp() {
                                 </>
                             ) : (
                                 <>
-                                    <p className={`text-sm font-bold mb-2 ${isBoss ? 'text-purple-200' : 'text-gray-500'}`}>いま おすキー（小文字）· あとから すすんでいくよ</p>
-                                    <p className={`text-xs sm:text-sm font-bold mb-4 ${isBoss ? 'text-purple-300' : 'text-gray-400'}`}>
-                                        まんなかの <span className="text-red-500 font-black">{drillMode === 'sequence' ? seqCurrent : targetKeySingle}</span> を おしてね
-                                        {drillMode === 'sequence' ? '。みぎは つぎの もじ' : `。みぎは つぎの ${targetKeySingle}`}
-                                    </p>
-                                    <div className={`w-full max-w-3xl mx-auto overflow-hidden rounded-xl border-2 border-dashed py-6 pl-2 sm:pl-4 pr-1 ${isBoss ? 'border-purple-600/70 bg-slate-900/40' : 'border-gray-200 bg-white/80'}`}>
+                                    <div className={`w-full max-w-3xl mx-auto overflow-hidden rounded-xl border-2 border-dashed py-3 sm:py-4 pl-2 sm:pl-4 pr-1 ${isBoss ? 'border-purple-600/70 bg-slate-900/40' : 'border-gray-200 bg-white/80'}`}>
                                         <div
                                             className="tokkun-queue-track flex items-end gap-2"
                                             style={{
@@ -1315,7 +1332,7 @@ function TokkunDrillApp() {
                                                 return (
                                                     <div
                                                         key={i}
-                                                        className="w-14 flex-shrink-0 flex flex-col justify-end items-center relative overflow-visible min-h-[6.5rem] sm:min-h-[8rem]"
+                                                        className="w-14 flex-shrink-0 flex flex-col justify-end items-center relative overflow-visible min-h-[5rem] sm:min-h-[6.5rem]"
                                                     >
                                                         {done && (
                                                             <span className="text-green-500 text-2xl sm:text-3xl font-black leading-none pb-1" aria-hidden="true">✓</span>
@@ -1363,9 +1380,9 @@ function TokkunDrillApp() {
                                 </>
                             )}
                             {hintMsg ? (
-                                <p className="mt-6 text-base sm:text-lg font-bold text-orange-600 animate-pulse">{hintMsg}</p>
+                                <p className="mt-3 text-base sm:text-lg font-bold text-orange-600 animate-pulse">{hintMsg}</p>
                             ) : (
-                                <p className={`mt-6 text-sm font-bold ${isBoss ? 'text-purple-300/90' : 'text-gray-400'}`}>
+                                <p className={`mt-3 text-sm font-bold ${isBoss ? 'text-purple-300/90' : 'text-gray-400'}`}>
                                     {drillMode === 'kana' ? 'ローマ字の ルールに したがって うってね' : (cfg.fingerHint || `いまのキーは ${drillMode === 'sequence' ? seqCurrent : targetKeySingle}`)}
                                 </p>
                             )}

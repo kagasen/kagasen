@@ -268,9 +268,14 @@
 
             const favs = getFavorites();
 
+            // 体育（pe）はその他（others）に含める
+            const PE_CATEGORIES = ['pe'];
+            const othersCategories = ['others', ...PE_CATEGORIES];
+
             let filtered = appsData.filter(app => {
                 const matchCategory = currentCategory === 'all' ||
                     (currentCategory === 'favorites' && favs.includes(app.title)) ||
+                    (currentCategory === 'others' && othersCategories.includes(app.category)) ||
                     app.category === currentCategory;
                 const matchSearch = app.title.toLowerCase().includes(searchQuery) ||
                     app.description.toLowerCase().includes(searchQuery);

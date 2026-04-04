@@ -6,14 +6,14 @@
     <title>漢字部首シューティング！</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap');
         
         body {
             margin: 0;
             padding: 0;
             background-color: #111;
             color: white;
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
             overflow: hidden;
             touch-action: none; /* タッチスクロール防止 */
         }
@@ -46,37 +46,214 @@
     const ctx = canvas.getContext('2d');
 
     // --- ゲームデータ ---
-    // 合体後の漢字を表示するためのマップを作成（小・中学校で習う漢字を大幅に追加！）
+    // 漢検10級〜2級の配当漢字のうち、木へん・にんべん・さんずい・ごんべんは IDS（CJKVI ids.txt）の⿰左側で網羅。口へんは教材向けの手動リスト。つくりは分解記号を除いた連結。バリアントはネストが浅い方を採用。出題は10級〜5級を優先（KANKEN_LEVEL_BY_KANJI で重み付け）。
     const KANJI_MAP = {
-        '木': {
-            '寸':'村', '交':'校', '几':'机', '支':'枝', '反':'板', '公':'松', '毎':'梅', '白':'柏', '目':'相', '冬':'柊',
-            '才':'材', '主':'柱', '不':'杯', '艮':'根', '卒':'枠', '直':'植', '莫':'模', '朱':'株', '各':'格', '丙':'柄',
-            '同':'桐', '兆':'桃', '曹':'槽', '僉':'検', '倉':'槍', '票':'標', '幾':'機', '喬':'橋', '亟':'極', '冓':'構', '雚':'権'
+        "木": {
+            "乚": "札",
+            "几": "机",
+            "丂": "朽",
+            "才": "材",
+            "寸": "村",
+            "不": "杯",
+            "公": "松",
+            "反": "板",
+            "木": "林",
+            "攵": "枚",
+            "支": "枝",
+            "古": "枯",
+            "丙": "柄",
+            "主": "柱",
+            "𠂆万": "栃",
+            "交": "校",
+            "朱": "株",
+            "由": "柚",
+            "艮": "根",
+            "各": "格",
+            "兆": "桃",
+            "𭕄女": "桜",
+            "毎": "梅",
+            "戒": "械",
+            "奉": "棒",
+            "直": "植",
+            "㑒": "検",
+            "亟": "極",
+            "冓": "構",
+            "𣴎": "様",
+            "票": "標",
+            "莫": "模",
+            "𮥶": "権",
+            "黄": "横",
+            "尌": "樹",
+            "喬": "橋",
+            "幾": "機",
+            "䦨": "欄",
+            "目": "相"
         },
-        '亻': {
-            '木':'休', '本':'体', '主':'住', '士':'仕', '言':'信', '中':'仲', '云':'伝', '乍':'作', '半':'伴', '門':'們',
-            '也':'他', 'ム':'仏', '弋':'代', '氐':'低', '吏':'使', '呆':'保', '亭':'停', '象':'像', '到':'倒', '責':'債',
-            '意':'億', '西':'価', '扁':'偏', '旁':'傍', '則':'側', '寺':'侍', '圭':'佳', '禺':'偶', '侖':'倫', '白':'伯',
-            '昔':'借', '直':'値', '反':'仮', '可':'何', '系':'係', '固':'個', '故':'做', '非':'俳', '十':'什', '千':'仟',
-            '弗':'佛', '建':'健'
+        "亻": {
+            "二": "仁",
+            "厶": "仏",
+            "士": "仕",
+            "也": "他",
+            "寸": "付",
+            "弋": "代",
+            "反": "仮",
+            "卬": "仰",
+            "中": "仲",
+            "牛": "件",
+            "壬": "任",
+            "木": "休",
+            "云": "伝",
+            "司": "伺",
+            "以": "似",
+            "立": "位",
+            "氐": "低",
+            "主": "住",
+            "左": "佐",
+            "本": "体",
+            "可": "何",
+            "乍": "作",
+            "吏": "使",
+            "列": "例",
+            "共": "供",
+            "衣": "依",
+            "覀": "価",
+            "𠬶": "侵",
+            "更": "便",
+            "系": "係",
+            "谷": "俗",
+            "呆": "保",
+            "言": "信",
+            "非": "俳",
+            "表": "俵",
+            "固": "個",
+            "咅": "倍",
+            "到": "倒",
+            "昔": "借",
+            "直": "値",
+            "韋": "偉",
+            "亭": "停",
+            "建": "健",
+            "則": "側",
+            "旁": "傍",
+            "𤰇": "備",
+            "𬀷": "傷",
+            "頃": "傾",
+            "動": "働",
+            "象": "像",
+            "曽": "僧",
+            "義": "儀",
+            "意": "億",
+            "憂": "優",
+            "匕": "化"
         },
-        '氵': {
-            '毎':'海', '永':'泳', '也':'池', '台':'治', '立':'泣', '皮':'波', '主':'注', '羊':'洋', '舌':'活', '去':'法',
-            '夬':'決', '昜':'湯', '昷':'温', '先':'洗', '原':'源', '寅':'演', '則':'測', '斉':'済', '昆':'混', '魚':'漁',
-            '莫':'漠', '啇':'滴', '冘':'沈', '工':'江', '尼':'泥', '白':'泊', '十':'汁', '干':'汗', '于':'汚', '朝':'潮',
-            '帯':'滞', '容':'溶', '炎':'淡', '少':'沙', '咸':'減', '戔':'浅', '㐬':'流', '曼':'漫', '妻':'凄'
+        "氵": {
+            "干": "汗",
+            "亐": "汚",
+            "也": "池",
+            "夬": "決",
+            "气": "汽",
+            "冘": "沈",
+            "中": "沖",
+            "尺": "沢",
+            "可": "河",
+            "由": "油",
+            "台": "治",
+            "召": "沼",
+            "㕣": "沿",
+            "兄": "況",
+            "白": "泊",
+            "去": "法",
+            "皮": "波",
+            "立": "泣",
+            "主": "注",
+            "永": "泳",
+            "羊": "洋",
+            "先": "洗",
+            "舌": "活",
+            "𠂢": "派",
+            "㐬": "流",
+            "㦮": "浅",
+            "兵": "浜",
+            "孚": "浮",
+            "谷": "浴",
+            "毎": "海",
+            "𠬶": "浸",
+            "肖": "消",
+            "戻": "涙",
+            "夜": "液",
+            "炎": "淡",
+            "罙": "深",
+            "昆": "混",
+            "忝": "添",
+            "青": "清",
+            "斉": "済",
+            "咸": "減",
+            "度": "渡",
+            "昷": "温",
+            "則": "測",
+            "巷": "港",
+            "胡": "湖",
+            "昜": "湯",
+            "艹両": "満",
+            "原": "源",
+            "容": "溶",
+            "兹": "滋",
+            "啇": "滴",
+            "魚": "漁",
+            "寅": "演",
+            "𦰩": "漢",
+            "曼": "漫",
+            "絜": "潔",
+            "舄": "潟",
+            "朝": "潮",
+            "登": "澄",
+            "敫": "激",
+            "蜀": "濁",
+            "農": "濃",
+            "酉": "酒"
         },
-        '言': {
-            '吾':'語', '舌':'話', '売':'読', '己':'記', '寺':'詩', '尺':'訳', '寸':'討', '川':'訓', '式':'試', '成':'誠',
-            '丁':'訂', '司':'詞', '忍':'認', '義':'議', '侖':'論', '某':'謀', '迷':'謎', '秀':'誘', '果':'課', '炎':'談',
-            '射':'謝', '兌':'説', '冓':'講', '殳':'設', '志':'誌', '兆':'誂', '夸':'誇', '羊':'詳', '平':'評', '方':'訪',
-            '午':'許', '正':'証', '乍':'詐', '永':'詠', '襄':'譲', '隹':'誰', '胃':'謂', '普':'譜', '呉':'誤', '若':'諾'
+        "言": {
+            "十": "計",
+            "寸": "討",
+            "川": "訓",
+            "己": "記",
+            "方": "訪",
+            "殳": "設",
+            "午": "許",
+            "尺": "訳",
+            "斥": "訴",
+            "正": "証",
+            "平": "評",
+            "司": "詞",
+            "式": "試",
+            "寺": "詩",
+            "吉": "詰",
+            "舌": "話",
+            "羊": "詳",
+            "夸": "誇",
+            "志": "誌",
+            "忍": "認",
+            "延": "誕",
+            "吾": "語",
+            "成": "誠",
+            "吳": "誤",
+            "兑": "説",
+            "売": "読",
+            "果": "課",
+            "周": "調",
+            "炎": "談",
+            "侖": "論",
+            "者": "諸",
+            "冓": "講",
+            "射": "謝",
+            "䍃": "謡",
+            "戠": "識",
+            "義": "議",
+            "蒦": "護"
         },
         '口': {
-            '未':'味', '乎':'呼', '及':'吸', '欠':'吹', '关':'咲', '土':'吐', '昌':'唱', '鳥':'鳴', '十':'叶', '貝':'唄',
-            '丩':'叫', '今':'吟', '隹':'唯', '垂':'唾', '曷':'喝', '奐':'喚', '契':'喫', '赫':'嚇', '属':'嘱', '宣':'喧',
-            '臭':'嗅', '朝':'嘲', '尊':'噂', '燕':'嚥', '交':'咬', '乞':'吃', '可':'呵', '犬':'吠', '勿':'吻', '虚':'嘘', 
-            '歯':'噛', '兪':'喩', '兄':'呪'
+            '未':'味', '乎':'呼', '及':'吸', '欠':'吹', '关':'咲', '土':'吐', '昌':'唱', '鳥':'鳴', '丩':'叫',
+            '貝':'員', '夕':'名', '十':'古', '又':'右', '夂':'各', '門':'問', '口口口':'品'
         }
     };
 
@@ -97,12 +274,62 @@
     // 全ての「つくり」のリストを作成（重複なし）
     const ALL_TSUKURI = [...new Set(Object.values(KANJI_DATA).flat())];
 
+
+    /** mimneko/kanji-data の漢検級（数値は10級=10…1級=1）。辞書に無い成字は小学校帯に寄せて優先扱い */
+    const KANKEN_LEVEL_BY_KANJI = {"仁":5,"仏":6,"仕":8,"他":8,"付":7,"代":8,"仮":6,"仰":4,"仲":7,"件":6,"任":6,"休":10,"伝":7,"伺":4,"似":6,"位":7,"低":7,"住":8,"佐":7,"体":9,"何":9,"作":9,"使":8,"例":7,"供":5,"依":4,"価":6,"侵":4,"便":7,"係":8,"俗":4,"保":6,"信":7,"俳":5,"俵":5,"個":6,"倍":8,"倒":4,"借":7,"値":5,"偉":4,"停":6,"健":7,"側":7,"傍":4,"備":6,"傷":5,"傾":4,"働":7,"像":6,"僧":4,"儀":4,"億":7,"優":5,"化":8,"古":9,"叫":4,"右":10,"各":7,"名":10,"吐":4,"吸":5,"吹":4,"味":8,"呼":5,"咲":4,"品":8,"員":8,"唱":7,"問":8,"札":7,"机":5,"朽":4,"材":7,"村":10,"杯":4,"松":7,"板":8,"林":10,"枚":5,"枝":6,"枯":4,"柄":4,"柚":1,"柱":8,"栃":7,"校":10,"株":5,"根":8,"格":6,"桃":4,"桜":6,"梅":7,"械":7,"棒":5,"植":8,"検":6,"極":7,"構":6,"様":8,"標":7,"模":5,"権":5,"横":8,"樹":5,"橋":8,"機":7,"欄":4,"汗":4,"汚":4,"池":9,"決":8,"汽":9,"沈":4,"沖":7,"沢":4,"河":6,"油":8,"治":7,"沼":4,"沿":5,"況":4,"泊":4,"法":7,"波":8,"泣":7,"注":8,"泳":8,"洋":8,"洗":5,"活":9,"派":5,"流":8,"浅":7,"浜":4,"浮":4,"浴":7,"海":9,"浸":4,"消":8,"涙":4,"液":6,"淡":4,"深":8,"混":6,"添":4,"清":7,"済":5,"減":6,"渡":4,"温":8,"測":6,"港":8,"湖":8,"湯":8,"満":7,"源":5,"溶":4,"滋":7,"滴":4,"漁":7,"演":6,"漢":8,"漫":4,"潔":6,"潟":7,"潮":5,"澄":4,"激":5,"濁":4,"濃":4,"相":8,"計":9,"討":5,"訓":7,"記":9,"訪":5,"設":6,"許":6,"訳":5,"訴":4,"証":6,"評":6,"詞":5,"試":7,"詩":8,"詰":4,"話":9,"詳":4,"誇":4,"誌":5,"認":5,"誕":5,"語":9,"誠":5,"誤":5,"説":7,"読":9,"課":7,"調":8,"談":8,"論":5,"諸":5,"講":6,"謝":6,"謡":4,"識":6,"議":7,"護":6,"酒":8,"鳴":9};
+    const FONT_FAMILY = '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif';
+    function pickWeightedTsukuri(bushu, list) {
+        const primary = [];
+        const secondary = [];
+        for (const t of list) {
+            const result = KANJI_MAP[bushu] && KANJI_MAP[bushu][t];
+            const lvl = result ? KANKEN_LEVEL_BY_KANJI[result] : undefined;
+            const primaryTier = (lvl === undefined) || (lvl >= 5 && lvl <= 10);
+            if (primaryTier) primary.push(t);
+            else secondary.push(t);
+        }
+        if (primary.length === 0 && secondary.length === 0) return list[0];
+        if (primary.length === 0) return secondary[Math.floor(Math.random() * secondary.length)];
+        if (secondary.length === 0) return primary[Math.floor(Math.random() * primary.length)];
+        const pool = Math.random() < 0.82 ? primary : secondary;
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    /** 合体漢字の主な読み（ひらがな）。kanjiapi.dev をベースに熟字訓を整形 */
+    const KANJI_YOMI = {"仁":"じん","仏":"ほとけ","仕":"つかえる","他":"ほか","付":"つき","代":"かえる","仮":"かり","仰":"あおぐ","仲":"なか","件":"けん","任":"にん","休":"きゅう","伝":"でん","伺":"うかがう","似":"にる","位":"くらい","低":"ひくい","住":"すむ","佐":"さ","体":"たい","何":"なに","作":"さく","使":"つかう","例":"れい","供":"そなえる","依":"よる","価":"か","侵":"おかす","便":"たより","係":"かかり","俗":"ぞく","保":"ほ","信":"しん","俳":"はい","俵":"たわら","個":"こ","倍":"ばい","倒":"とう","借":"かりる","値":"あたい","偉":"えらい","停":"とまる","健":"すこやか","側":"がわ","傍":"そば","備":"そなえる","傷":"きず","傾":"かたむく","働":"はたらく","像":"ぞう","僧":"そう","儀":"ぎ","億":"おく","優":"ゆう","化":"か","古":"ふる","叫":"さけぶ","右":"みぎ","各":"かく","名":"な","吐":"はく","吸":"すう","吹":"ふく","味":"あじ","呼":"よぶ","咲":"さく","品":"しな","員":"いん","唱":"となえる","問":"とい","札":"ふだ","机":"つくえ","朽":"くちる","材":"ざい","村":"むら","杯":"さかずき","松":"まつ","板":"いた","林":"はやし","枚":"まい","枝":"えだ","枯":"かれる","柄":"がら","柚":"ゆず","柱":"はしら","栃":"とち","校":"こう","株":"かぶ","根":"ね","格":"かく","桃":"もも","桜":"さくら","梅":"うめ","械":"かい","棒":"ぼう","植":"うえる","検":"けん","極":"きょく","構":"こう","様":"さま","標":"ひょう","模":"ぼ","権":"けん","横":"よこ","樹":"き","橋":"はし","機":"き","欄":"らん","汗":"あせ","汚":"きたない","池":"いけ","決":"きまる","汽":"き","沈":"しずむ","沖":"おき","沢":"さわ","河":"かわ","油":"あぶら","治":"なおる","沼":"ぬま","沿":"そう","況":"きょう","泊":"とまる","法":"ほう","波":"なみ","泣":"なく","注":"ちゅう","泳":"およぐ","洋":"よう","洗":"あらう","活":"かつ","派":"は","流":"ながす","浅":"あさい","浜":"はま","浮":"うかぶ","浴":"あびる","海":"うみ","浸":"つかる","消":"きえる","涙":"なみだ","液":"えき","淡":"あわい","深":"ふかい","混":"こむ","添":"そう","清":"せい","済":"すむ","減":"げん","渡":"わたす","温":"おん","測":"はかる","港":"みなと","湖":"みずうみ","湯":"ゆ","満":"まん","源":"みなもと","溶":"とかす","滋":"じ","滴":"てき","漁":"ぎょ","演":"えん","漢":"かん","漫":"まん","潔":"けつ","潟":"がた","潮":"しお","澄":"すます","激":"はげしい","濁":"にごす","濃":"こい","相":"あい","計":"けい","討":"うつ","訓":"くん","記":"き","訪":"おとずれる","設":"もうける","許":"きょ","訳":"わけ","訴":"うったえる","証":"あかし","評":"ひょう","詞":"し","試":"こころみる","詩":"し","詰":"つまる","話":"はなす","詳":"くわしい","誇":"ほこる","誌":"し","認":"みとめる","誕":"たん","語":"ご","誠":"まこと","誤":"あやまる","説":"とく","読":"よむ","課":"か","調":"しらべる","談":"だん","論":"ろん","諸":"しょ","講":"こう","謝":"あやまる","謡":"うたう","識":"しき","議":"ぎ","護":"ご","酒":"さけ","鳴":"なく"};
+
+
     // --- ゲーム状態変数 ---
     let state = 'TITLE'; // TITLE, SELECT, PLAY, GAMEOVER
     let score = 0;
     let life = 5;
     let frameCount = 0;
     let shakeTime = 0;
+    /** PLAY開始からの経過で判定（ハートは開始20秒間は出さない） */
+    let playStartTime = 0;
+    const HEART_SPAWN_DELAY_MS = 20000;
+    /** この時間経過後から敵の出現を少しずつ増やす（スポーン間隔を短くする） */
+    const ENEMY_RAMP_START_MS = 30000;
+    /** 上記以降、この秒数ごとにスポーン間隔を1フレーム短く（敵がわずかに増える） */
+    const ENEMY_RAMP_INTERVAL_MS = 2500;
+    /** 時間経過ランプ後も維持するスポーン間隔の下限（これ以下にはしない） */
+    const ENEMY_SPAWN_MIN_FRAMES = 18;
+    /** 合体できるつくりを選ぶ初期確率（0〜1）。30秒まではこれを維持 */
+    const TSUKURI_CORRECT_CHANCE_START = 0.8;
+    /** 30秒以降のランプで下げる先の下限（合体しない敵の割合の上限に相当） */
+    const TSUKURI_CORRECT_CHANCE_MIN = 0.42;
+    /** ENEMY_RAMP と同じステップごとに、上記確率をこの分だけ減らす */
+    const TSUKURI_CORRECT_DROP_PER_STEP = 0.026;
+
+    /** PLAY 経過時間に応じ、部首と合体できるつくりの出現率を返す */
+    function getCorrectTsukuriChance() {
+        const elapsedMs = performance.now() - playStartTime;
+        if (playStartTime <= 0 || elapsedMs < ENEMY_RAMP_START_MS) {
+            return TSUKURI_CORRECT_CHANCE_START;
+        }
+        const steps = Math.floor((elapsedMs - ENEMY_RAMP_START_MS) / ENEMY_RAMP_INTERVAL_MS);
+        return Math.max(TSUKURI_CORRECT_CHANCE_MIN, TSUKURI_CORRECT_CHANCE_START - steps * TSUKURI_CORRECT_DROP_PER_STEP);
+    }
 
     let player = null;
     let bullets = [];
@@ -110,6 +337,161 @@
     let items = []; // ハートなどのアイテム用配列を追加
     let particles = [];
     let stars = [];
+    /** BGM 開始/停止のための直前状態 */
+    let prevStateForAudio = 'TITLE';
+
+    // --- Web Audio（16bit風インベーダー調BGM・効果音） ---
+    const GameAudio = (function () {
+        let ctx = null;
+        let master = null;
+        let bgmTimer = null;
+        let noteIndex = 0;
+
+        function getCtx() {
+            if (!ctx) {
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
+                master = ctx.createGain();
+                master.gain.value = 0.38;
+                master.connect(ctx.destination);
+            }
+            return ctx;
+        }
+
+        function out() {
+            getCtx();
+            return master;
+        }
+
+        function resume() {
+            const c = getCtx();
+            if (c.state === 'suspended') return c.resume();
+            return Promise.resolve();
+        }
+
+        function playShoot() {
+            const c = getCtx();
+            const t0 = c.currentTime;
+            const osc = c.createOscillator();
+            const g = c.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1100, t0);
+            osc.frequency.exponentialRampToValueAtTime(320, t0 + 0.06);
+            g.gain.setValueAtTime(0.11, t0);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.07);
+            osc.connect(g);
+            g.connect(out());
+            osc.start(t0);
+            osc.stop(t0 + 0.075);
+        }
+
+        function playSlash() {
+            const c = getCtx();
+            const t0 = c.currentTime;
+            const osc = c.createOscillator();
+            const g = c.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(420, t0);
+            osc.frequency.exponentialRampToValueAtTime(85, t0 + 0.1);
+            g.gain.setValueAtTime(0.1, t0);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14);
+            osc.connect(g);
+            g.connect(out());
+            osc.start(t0);
+            osc.stop(t0 + 0.14);
+        }
+
+        function playEnemyDestroyed() {
+            const c = getCtx();
+            const t0 = c.currentTime;
+            const dur = 0.11;
+            const bufSize = Math.floor(c.sampleRate * dur);
+            const buffer = c.createBuffer(1, bufSize, c.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+            }
+            const noise = c.createBufferSource();
+            noise.buffer = buffer;
+            const filter = c.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1400, t0);
+            filter.frequency.exponentialRampToValueAtTime(100, t0 + dur);
+            const g = c.createGain();
+            g.gain.setValueAtTime(0.13, t0);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+            noise.connect(filter);
+            filter.connect(g);
+            g.connect(out());
+            noise.start(t0);
+            noise.stop(t0 + dur);
+
+            const osc2 = c.createOscillator();
+            const g2 = c.createGain();
+            osc2.type = 'square';
+            osc2.frequency.setValueAtTime(180, t0);
+            osc2.frequency.exponentialRampToValueAtTime(45, t0 + 0.18);
+            g2.gain.setValueAtTime(0.07, t0);
+            g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+            osc2.connect(g2);
+            g2.connect(out());
+            osc2.start(t0);
+            osc2.stop(t0 + 0.18);
+        }
+
+        const bassPattern = [130.81, 98.0, 130.81, 82.41];
+        const beatMs = 158;
+
+        function startBgm() {
+            stopBgm();
+            const c = getCtx();
+            noteIndex = 0;
+            bgmTimer = setInterval(function () {
+                if (document.hidden) return;
+                const freq = bassPattern[noteIndex % bassPattern.length];
+                noteIndex++;
+                const t0 = c.currentTime;
+                const step = beatMs / 1000;
+                const osc = c.createOscillator();
+                const g = c.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, t0);
+                g.gain.setValueAtTime(0.052, t0);
+                g.gain.exponentialRampToValueAtTime(0.001, t0 + step * 0.9);
+                osc.connect(g);
+                g.connect(out());
+                osc.start(t0);
+                osc.stop(t0 + step * 0.95);
+                if (noteIndex % 4 === 0) {
+                    const h = c.createOscillator();
+                    const hg = c.createGain();
+                    h.type = 'triangle';
+                    h.frequency.setValueAtTime(Math.min(freq * 2, 900), t0);
+                    hg.gain.setValueAtTime(0.022, t0);
+                    hg.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+                    h.connect(hg);
+                    hg.connect(out());
+                    h.start(t0);
+                    h.stop(t0 + 0.09);
+                }
+            }, beatMs);
+        }
+
+        function stopBgm() {
+            if (bgmTimer) {
+                clearInterval(bgmTimer);
+                bgmTimer = null;
+            }
+        }
+
+        return {
+            resume: resume,
+            playShoot: playShoot,
+            playSlash: playSlash,
+            playEnemyDestroyed: playEnemyDestroyed,
+            startBgm: startBgm,
+            stopBgm: stopBgm
+        };
+    })();
 
     // キー入力状態
     const keys = {
@@ -185,6 +567,7 @@
                 this.slashTimer = 10; // 斬撃エフェクト持続時間
                 this.slashCooldown = 30; // クールダウン
                 pointer.slashInput = false; // 入力を消費
+                GameAudio.playSlash();
             }
 
             // タッチ中またはスペースキー押下時のみ射撃
@@ -196,6 +579,7 @@
         }
 
         shoot() {
+            GameAudio.playShoot();
             if (this.bushu === '氵') {
                 // 5方向散弾
                 for(let i = -2; i <= 2; i++) {
@@ -269,7 +653,7 @@
 
             // 部首テキスト
             ctx.fillStyle = '#ffffff';
-            ctx.font = '24px "M PLUS Rounded 1c"';
+            ctx.font = '24px ' + FONT_FAMILY;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(this.bushu, 0, 0);
@@ -346,7 +730,7 @@
 
             if (this.bushu === '言') {
                 ctx.fillStyle = '#ffaa00';
-                ctx.font = 'bold 40px "M PLUS Rounded 1c"';
+                ctx.font = 'bold 40px ' + FONT_FAMILY;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(this.text, 0, 0);
@@ -405,14 +789,13 @@
             this.angle2 = Math.random() * Math.PI * 2;
             this.angleSpeed2 = 0.02 + Math.random() * 0.04;
 
-            // つくりを決定する
-            // 40%の確率で、プレイヤーの部首にとって正解となるつくりを選ぶ
-            if (Math.random() < 0.4 && player) {
+            // つくりを決定する（30秒以降は経過とともに合体しないつくりの割合も増える）
+            const correctChance = getCorrectTsukuriChance();
+            if (Math.random() < correctChance && player) {
                 const correctList = KANJI_DATA[player.bushu];
-                this.tsukuri = correctList[Math.floor(Math.random() * correctList.length)];
+                this.tsukuri = pickWeightedTsukuri(player.bushu, correctList);
             } else {
-                // 残りは完全ランダム
-                this.tsukuri = ALL_TSUKURI[Math.floor(Math.random() * ALL_TSUKURI.length)];
+                this.tsukuri = pickWeightedTsukuri(player.bushu, ALL_TSUKURI);
             }
         }
 
@@ -463,7 +846,7 @@
 
             // つくりテキスト
             ctx.fillStyle = '#ffffff';
-            ctx.font = '24px "M PLUS Rounded 1c"';
+            ctx.font = '24px ' + FONT_FAMILY;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(this.tsukuri, 0, 0);
@@ -502,7 +885,7 @@
             const scale = 1 + Math.sin(frameCount * 0.1) * 0.15;
             ctx.scale(scale, scale);
             
-            ctx.font = '30px "M PLUS Rounded 1c"';
+            ctx.font = '30px ' + FONT_FAMILY;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             // 文字の影で光らせる
@@ -515,11 +898,12 @@
     }
 
     class Particle {
-        constructor(x, y, type, text = '') {
+        constructor(x, y, type, text = '', yomi = '') {
             this.x = x;
             this.y = y;
             this.type = type; // 'maru', 'batsu', 'explosion', 'score', 'kanji'
             this.text = text;
+            this.yomi = yomi;
             this.life = 60;
             this.maxLife = 60;
             this.vx = (Math.random() - 0.5) * 4;
@@ -557,18 +941,23 @@
                 ctx.moveTo(s, -s); ctx.lineTo(-s, s);
                 ctx.stroke();
             } else if (this.type === 'kanji') {
-                // 合体した漢字の表示
+                // 合体した漢字と読み（ひらがな）
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#ffff00';
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#ffff00';
-                ctx.font = 'bold 50px "M PLUS Rounded 1c"';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(this.text, 0, 0);
+                ctx.font = 'bold 50px ' + FONT_FAMILY;
+                ctx.fillText(this.text, 0, this.yomi ? -10 : 0);
                 ctx.shadowBlur = 0;
+                if (this.yomi) {
+                    ctx.fillStyle = '#ffffaa';
+                    ctx.font = '22px ' + FONT_FAMILY;
+                    ctx.fillText(this.yomi, 0, 26);
+                }
             } else if (this.type === 'score') {
                 ctx.fillStyle = '#ffff00';
-                ctx.font = 'bold 24px "M PLUS Rounded 1c"';
+                ctx.font = 'bold 24px ' + FONT_FAMILY;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(this.text, 0, 0);
@@ -642,6 +1031,7 @@
         score = 0;
         life = 5;
         frameCount = 0;
+        playStartTime = 0;
         bullets = [];
         enemies = [];
         items = []; // アイテムもリセット
@@ -660,8 +1050,8 @@
             bullets = bullets.filter(b => !b.markedForDeletion);
 
             // --- アイテムの生成と更新 ---
-            // 約0.2%の確率（平均して数秒〜十数秒に1回）でハートが出現
-            if (Math.random() < 0.002) {
+            // 開始から20秒間はハートなし。20秒以降は毎フレーム約0.2%の確率でランダム出現
+            if (performance.now() - playStartTime >= HEART_SPAWN_DELAY_MS && Math.random() < 0.002) {
                 items.push(new Heart());
             }
 
@@ -681,8 +1071,13 @@
             });
             items = items.filter(i => !i.markedForDeletion);
 
-            // 敵の生成（徐々に早く）
+            // 敵の生成（スコアで徐々に早く＋開始30秒以降は経過時間でも少しずつ増える）
             let spawnRate = Math.max(30, 100 - Math.floor(score / 50));
+            const elapsedMs = performance.now() - playStartTime;
+            if (elapsedMs >= ENEMY_RAMP_START_MS) {
+                const rampSteps = Math.floor((elapsedMs - ENEMY_RAMP_START_MS) / ENEMY_RAMP_INTERVAL_MS);
+                spawnRate = Math.max(ENEMY_SPAWN_MIN_FRAMES, spawnRate - rampSteps);
+            }
             if (frameCount % spawnRate === 0) {
                 enemies.push(new Enemy());
             }
@@ -699,6 +1094,7 @@
                     // 前方半円内にいるか
                     if (dist < player.slashRadius + enemy.width/2 && dy < 10) {
                         enemy.markedForDeletion = true;
+                        GameAudio.playEnemyDestroyed();
                         
                         if (isValidKanji(player.bushu, enemy.tsukuri)) {
                             // ペナルティ：正解の漢字を切ってしまった
@@ -730,13 +1126,15 @@
                             }
                             
                             enemy.markedForDeletion = true;
+                            GameAudio.playEnemyDestroyed();
                             
                             if (isValidKanji(player.bushu, enemy.tsukuri)) {
                                 // 正解！
                                 score += 100;
                                 // 〇と得点の代わりに合体漢字を表示
                                 const combinedKanji = KANJI_MAP[player.bushu][enemy.tsukuri];
-                                particles.push(new Particle(enemy.x, enemy.y, 'kanji', combinedKanji));
+                                const yomi = (KANJI_YOMI[combinedKanji] || '');
+                                particles.push(new Particle(enemy.x, enemy.y, 'kanji', combinedKanji, yomi));
                                 spawnExplosion(enemy.x, enemy.y);
                             } else {
                                 // 不正解！
@@ -756,6 +1154,7 @@
                 // プレイヤーと敵の衝突判定
                 if (!enemy.markedForDeletion && checkCollision(player, enemy)) {
                     enemy.markedForDeletion = true;
+                    GameAudio.playEnemyDestroyed();
                     life -= 1;
                     shakeTime = 15;
                     particles.push(new Particle(player.x, player.y, 'batsu'));
@@ -794,29 +1193,29 @@
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             
-            ctx.font = 'bold 50px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 50px ' + FONT_FAMILY;
             ctx.fillStyle = '#00ffff';
             ctx.fillText('漢字部首シューティング', canvas.width/2, canvas.height/2 - 150);
             
             // ルール説明を追加
-            ctx.font = 'bold 24px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 24px ' + FONT_FAMILY;
             ctx.fillStyle = '#ffff00';
             ctx.fillText('【ルール】', canvas.width/2, canvas.height/2 - 80);
             
-            ctx.font = '18px "M PLUS Rounded 1c"';
+            ctx.font = '18px ' + FONT_FAMILY;
             ctx.fillStyle = '#ffffff';
             ctx.fillText('自分の部首と合体して、正しい漢字になる「つくり」を撃とう！', canvas.width/2, canvas.height/2 - 45);
             ctx.fillText('デタラメな漢字になる「つくり」は、Nボタン(刀)で切り捨てろ！', canvas.width/2, canvas.height/2 - 15);
             ctx.fillText('正しい漢字を逃がしたり、間違えて切ったりするとダメージだ！', canvas.width/2, canvas.height/2 + 15);
             
-            ctx.font = '30px "M PLUS Rounded 1c"';
+            ctx.font = '30px ' + FONT_FAMILY;
             ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frameCount * 0.05))})`;
             ctx.fillText('画面をタップしてスタート！', canvas.width/2, canvas.height/2 + 100);
 
         } else if (state === 'SELECT') {
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            ctx.font = 'bold 36px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 36px ' + FONT_FAMILY;
             ctx.fillText('じぶんの ぶしゅ を えらんでね', canvas.width/2, 100);
 
             // 部首の選択パネルを描画 (縦長画面に合わせてサイズ調整)
@@ -842,11 +1241,11 @@
 
                 // 漢字
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 40px "M PLUS Rounded 1c"';
+                ctx.font = 'bold 40px ' + FONT_FAMILY;
                 ctx.fillText(bushu, x, y - 20);
 
                 // 読み方
-                ctx.font = '16px "M PLUS Rounded 1c"';
+                ctx.font = '16px ' + FONT_FAMILY;
                 ctx.fillStyle = '#aaaaaa';
                 ctx.fillText(BUSHU_LABELS[bushu], x, y + 35);
 
@@ -864,7 +1263,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
-            ctx.font = 'bold 30px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 30px ' + FONT_FAMILY;
             ctx.fillText(`スコア: ${score}`, 20, 20);
 
             // ライフ（ハート）
@@ -883,7 +1282,7 @@
             ctx.strokeStyle = player.slashCooldown > 0 ? '#555' : '#0ff';
             ctx.stroke();
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 18px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 18px ' + FONT_FAMILY;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('N(刀)', btnX, btnY);
@@ -900,14 +1299,14 @@
             ctx.fillStyle = '#ff0000';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = 'bold 70px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 70px ' + FONT_FAMILY;
             ctx.fillText('ゲームオーバー', canvas.width/2, canvas.height/2 - 60);
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 40px "M PLUS Rounded 1c"';
+            ctx.font = 'bold 40px ' + FONT_FAMILY;
             ctx.fillText(`スコア: ${score}`, canvas.width/2, canvas.height/2 + 20);
 
-            ctx.font = '30px "M PLUS Rounded 1c"';
+            ctx.font = '30px ' + FONT_FAMILY;
             ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frameCount * 0.05))})`;
             ctx.fillText('画面をタップして もういちど', canvas.width/2, canvas.height/2 + 100);
         }
@@ -917,6 +1316,13 @@
 
     function gameLoop(timestamp) {
         update();
+        if (prevStateForAudio === 'PLAY' && state !== 'PLAY') {
+            GameAudio.stopBgm();
+        }
+        if (prevStateForAudio !== 'PLAY' && state === 'PLAY') {
+            GameAudio.resume().then(function () { GameAudio.startBgm(); });
+        }
+        prevStateForAudio = state;
         draw();
         requestAnimationFrame(gameLoop);
     }
@@ -963,6 +1369,7 @@
                     resetGame();
                     player = new Player(bushuKeys[i]);
                     state = 'PLAY';
+                    playStartTime = performance.now();
                     break;
                 }
             }
@@ -988,6 +1395,7 @@
 
     // マウス・タッチイベント
     canvas.addEventListener('mousedown', (e) => {
+        GameAudio.resume();
         const pos = getMousePos(e);
         if (checkSlashButton(pos.x, pos.y)) return;
         pointer.x = pos.x;
@@ -1006,6 +1414,7 @@
 
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault(); // スクロール防止
+        GameAudio.resume();
         const pos = getMousePos(e);
         if (checkSlashButton(pos.x, pos.y)) return;
         pointer.x = pos.x;
@@ -1025,6 +1434,7 @@
 
     // キーボードイベント
     window.addEventListener('keydown', (e) => {
+        GameAudio.resume();
         if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.code)) {
             keys[e.key] = true;
             keys[e.code] = true;

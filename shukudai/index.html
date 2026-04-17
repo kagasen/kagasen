@@ -244,6 +244,8 @@
 
         let html5QrCodeScanner;
         let submissionData = {};
+        let currentDateStr = ''; // 現在の日付を追跡（日付変更検知用）
+        let dateCheckTimer = null;
 
         function initializeApp() {
             tabStatusBtn.addEventListener('click', () => switchTab('status'));
@@ -283,11 +285,49 @@
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(submissionData));
         }
 
+        function getTodayString() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        }
+
+        function startDateAutoUpdate() {
+            // 次の0時0分0秒までのミリ秒を計算してタイマーをセット
+            function scheduleNextCheck() {
+                const now = new Date();
+                const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+                const msUntilMidnight = tomorrow - now;
+
+                dateCheckTimer = setTimeout(() => {
+                    const newDate = getTodayString();
+                    if (newDate !== currentDateStr) {
+                        currentDateStr = newDate;
+                        submissionDateInput.value = newDate;
+                        renderSubmissionTable();
+                    }
+                    scheduleNextCheck(); // 次の日の分もセット
+                }, msUntilMidnight);
+            }
+            scheduleNextCheck();
+
+            // スリープ復帰対策：ページが再表示されたときにも日付をチェック
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    const newDate = getTodayString();
+                    if (newDate !== currentDateStr) {
+                        currentDateStr = newDate;
+                        submissionDateInput.value = newDate;
+                        renderSubmissionTable();
+                    }
+                }
+            });
+        }
+
         function initializeStatusTab() {
             loadSubmissionData();
-            const today = new Date().toISOString().split('T')[0];
-            submissionDateInput.value = today;
+            currentDateStr = getTodayString();
+            submissionDateInput.value = currentDateStr;
             submissionDateInput.addEventListener('change', renderSubmissionTable);
+            startDateAutoUpdate();
 
             while (submissionTableHeadRow.children.length > 1) {
                 submissionTableHeadRow.removeChild(submissionTableHeadRow.lastChild);

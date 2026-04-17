@@ -70,6 +70,16 @@
             color: #065f46; /* Tailwind green-800 */
             font-weight: bold;
         }
+        .submission-table td.forgot {
+            background-color: #fef2f2; /* Tailwind red-50 */
+            color: #991b1b; /* Tailwind red-800 */
+            font-weight: bold;
+        }
+        .submission-table td.rest {
+            background-color: #eff6ff; /* Tailwind blue-50 */
+            color: #1e40af; /* Tailwind blue-800 */
+            font-weight: bold;
+        }
         .submission-table tr.total-row td { /* Style for the total row */
             font-weight: bold;
             background-color: #eef2ff; /* Tailwind indigo-50 */
@@ -202,12 +212,11 @@
 
     <script>
         // --- 定数 ---
-        const HOMEWORK_TYPES = [ // MODIFIED: Added "休み"
+        const HOMEWORK_TYPES = [
             { name: "漢ド", code: "K1" }, { name: "計ド", code: "K2" },
             { name: "音読", code: "O" },  { name: "自勉強", code: "J" },
             { name: "その他1", code: "E1" },{ name: "その他2", code: "E2" },
-            { name: "その他3", code: "E3" },{ name: "忘れ", code: "W1" },
-            { name: "休み", code: "Y1" } // Added "休み"
+            { name: "その他3", code: "E3" }
         ];
         const MAX_STUDENTS = 42;
         const LOCAL_STORAGE_KEY = 'homeworkSubmissionData';
@@ -392,34 +401,59 @@
             }
             if (!submissionData[selectedDate]) submissionData[selectedDate] = {};
             const cellKey = `s${studentId}-h${homeworkIndex}`;
-            submissionData[selectedDate][cellKey] = !submissionData[selectedDate][cellKey]; 
+            const currentState = submissionData[selectedDate][cellKey];
+
+            // サイクル: 空 → ✔ → 忘 → 休 → 空
+            if (!currentState || currentState === false) {
+                submissionData[selectedDate][cellKey] = "check";
+            } else if (currentState === "check" || currentState === true) {
+                submissionData[selectedDate][cellKey] = "forgot";
+            } else if (currentState === "forgot") {
+                submissionData[selectedDate][cellKey] = "rest";
+            } else {
+                submissionData[selectedDate][cellKey] = false;
+            }
+
             saveSubmissionData();
-            renderSubmissionTable(); 
+            renderSubmissionTable();
         }
 
         function renderSubmissionTable() {
             const selectedDate = submissionDateInput.value;
-            if (!selectedDate) return; 
+            if (!selectedDate) return;
             const dailyData = submissionData[selectedDate] || {};
 
             // Render student rows
             for (let i = 1; i <= MAX_STUDENTS; i++) {
-                HOMEWORK_TYPES.forEach((hwType, index) => { 
+                HOMEWORK_TYPES.forEach((hwType, index) => {
                     const cellKey = `s${i}-h${index}`;
                     const cell = document.getElementById(cellKey);
                     if (cell) {
-                        cell.textContent = dailyData[cellKey] ? '✔' : '';
-                        cell.classList.toggle('submitted', !!dailyData[cellKey]);
+                        const state = dailyData[cellKey];
+                        cell.classList.remove('submitted', 'forgot', 'rest');
+                        if (state === "check" || state === true) {
+                            cell.textContent = '✔';
+                            cell.classList.add('submitted');
+                        } else if (state === "forgot") {
+                            cell.textContent = '忘';
+                            cell.classList.add('forgot');
+                        } else if (state === "rest") {
+                            cell.textContent = '休';
+                            cell.classList.add('rest');
+                        } else {
+                            cell.textContent = '';
+                        }
                     }
                 });
             }
 
-            // Calculate and render totals
+            // Calculate and render totals (✔のみカウント)
             HOMEWORK_TYPES.forEach((hwType, index) => {
                 let count = 0;
                 for (let i = 1; i <= MAX_STUDENTS; i++) {
                     const cellKey = `s${i}-h${index}`;
-                    if (dailyData[cellKey]) {
+                    const state = dailyData[cellKey];
+                    if (state === "check" || state === true) {
                         count++;
                     }
                 }
@@ -460,7 +494,7 @@
                             }
                             if (!submissionData[selectedDate]) submissionData[selectedDate] = {};
                             const cellKey = `s${studentId}-h${homeworkIndex}`;
-                            submissionData[selectedDate][cellKey] = true; 
+                            submissionData[selectedDate][cellKey] = "check";
                             saveSubmissionData();
                             renderSubmissionTable();
                             qrScanStatus.textContent = `出席番号${studentId}の「${homeworkName}」を記録しました。`;

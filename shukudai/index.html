@@ -62,8 +62,11 @@
         .submission-table th {
             background-color: #f9fafb; /* Tailwind gray-50 */
         }
-        .submission-table td.submission-cell { 
-            cursor: pointer; 
+        .submission-table td.submission-cell {
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .submission-table td.submitted {
             background-color: #d1fae5; /* Tailwind green-100 */
@@ -392,7 +395,11 @@
                     td.classList.add('submission-cell'); 
                     td.dataset.studentId = i; 
                     td.dataset.homeworkIndex = index; 
-                    td.addEventListener('click', handleManualCheck); 
+                    td.addEventListener('click', handleManualCheck);
+                    td.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        handleManualCheck({ currentTarget: this });
+                    });
                     tr.appendChild(td);
                 });
                 submissionTableBody.appendChild(tr);

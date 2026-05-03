@@ -112,7 +112,7 @@ const rotateFirstToCurrent = (wordList) => {
     if (!wordList.length) {
         return {
             words: [],
-            currentText: { kanji: '', kana: '', remainingKana: '', typedRomaji: '', currentInput: '' }
+            currentText: { kanji: '', kana: '', remainingKana: '', altRemainingKana: null, typedRomaji: '', currentInput: '' }
         };
     }
     const first = wordList[0];
@@ -123,6 +123,7 @@ const rotateFirstToCurrent = (wordList) => {
             kanji: first.kanji,
             kana: first.kana,
             remainingKana: first.kana,
+            altRemainingKana: first.altKana || null,
             typedRomaji: '',
             currentInput: ''
         }
@@ -414,6 +415,7 @@ function App() {
             kanji: word.kanji,
             kana: word.kana,
             remainingKana: word.kana,
+            altRemainingKana: word.altKana || null,
             typedRomaji: '',
             currentInput: ''
         });
@@ -483,50 +485,67 @@ function App() {
             else return;
         }
 
-        const { remainingKana, currentInput } = currentText;
+        const { remainingKana, altRemainingKana, currentInput } = currentText;
         const newInput = currentInput + key;
 
-        const patterns = getValidFirstPatterns(remainingKana);
-        const validPatterns = patterns.filter(p => p.romaji.startsWith(newInput));
+        // メインパスとaltパスの両方でマッチング
+        const p1Patterns = getValidFirstPatterns(remainingKana);
+        const p1Valid = p1Patterns.filter(p => p.romaji.startsWith(newInput));
+        const p2Patterns = altRemainingKana != null ? getValidFirstPatterns(altRemainingKana) : [];
+        const p2Valid = p2Patterns.filter(p => p.romaji.startsWith(newInput));
 
-        if (validPatterns.length > 0) {
-            initAudio(); // 最初のキー入力時に音声を初期化
-            playCorrectSound();
-            setScore(s => s + 1);
-            setCorrectCount(c => c + 1);
-
-            // 完全一致するパターンを探す
-            const perfectMatch = validPatterns.find(p => p.romaji === newInput);
-
-            if (perfectMatch) {
-                // 確定
-                const newRemaining = remainingKana.slice(perfectMatch.len);
-                if (newRemaining.length === 0) {
-                    // 単語クリア
-                    setNextWord(words, 0);
-                } else {
-                    setCurrentText(prev => ({
-                        ...prev,
-                        remainingKana: newRemaining,
-                        typedRomaji: prev.typedRomaji + perfectMatch.romaji,
-                        currentInput: ''
-                    }));
-                }
-            } else {
-                // 途中まで一致
-                setCurrentText(prev => ({
-                    ...prev,
-                    currentInput: newInput
-                }));
-            }
-        } else {
+        if (p1Valid.length === 0 && p2Valid.length === 0) {
             // ミス
-            initAudio(); // 最初のキー入力時に音声を初期化
+            initAudio();
             playMissSound();
             setScore(s => s - 1);
             setMissCount(m => m + 1);
             setIsShaking(true);
-            setTimeout(() => setIsShaking(false), 200); // 揺れアニメーション時間
+            setTimeout(() => setIsShaking(false), 200);
+        } else {
+            initAudio();
+            playCorrectSound();
+            setScore(s => s + 1);
+            setCorrectCount(c => c + 1);
+
+            const pm1 = p1Valid.find(p => p.romaji === newInput);
+            const pm2 = p2Valid.find(p => p.romaji === newInput);
+
+            // 無効になったパスを除外（null=無効）
+            let newRemainingKana = p1Valid.length > 0 ? remainingKana : null;
+            let newAltRemainingKana = p2Valid.length > 0 ? altRemainingKana : null;
+            let newTypedRomaji = currentText.typedRomaji;
+            let newCurrentInput = newInput;
+
+            if (pm1 || pm2) {
+                const pm = pm1 || pm2;
+                newTypedRomaji = currentText.typedRomaji + pm.romaji;
+                newCurrentInput = '';
+                if (pm1 && newRemainingKana !== null) {
+                    newRemainingKana = remainingKana.slice(pm1.len);
+                }
+                if (pm2 && newAltRemainingKana !== null) {
+                    newAltRemainingKana = altRemainingKana.slice(pm2.len);
+                }
+            }
+
+            // どちらかのパスが完了したら単語クリア
+            if (newRemainingKana === '' || newAltRemainingKana === '') {
+                setNextWord(words, 0);
+            } else {
+                // displayのため、メインパスが無効ならaltをメインに昇格
+                if (newRemainingKana === null && newAltRemainingKana !== null) {
+                    newRemainingKana = newAltRemainingKana;
+                    newAltRemainingKana = null;
+                }
+                setCurrentText(prev => ({
+                    ...prev,
+                    remainingKana: newRemainingKana,
+                    altRemainingKana: newAltRemainingKana,
+                    typedRomaji: newTypedRomaji,
+                    currentInput: newCurrentInput
+                }));
+            }
         }
     }, [gameState, currentText, words, beginTypingPlay]);
 

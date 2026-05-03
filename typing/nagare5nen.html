@@ -816,8 +816,10 @@ function spawnWord() {
         wordPoolIndex = 0;
     }
     const data = wordPool[wordPoolIndex++];
-    const allPatterns   = generateAllRomaji(data.kana);
-    const defaultRomaji = allPatterns[0] || data.kana;
+    const allPatterns1  = generateAllRomaji(data.kana);
+    const allPatterns2  = data.altKana ? generateAllRomaji(data.altKana) : [];
+    const allPatterns   = [...new Set([...allPatterns1, ...allPatterns2])];
+    const defaultRomaji = allPatterns1[0] || data.kana;
     const id = idCounter++;
 
     const el = document.createElement('div');

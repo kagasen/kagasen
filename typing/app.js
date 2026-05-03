@@ -266,11 +266,16 @@ const KeyboardRow = ({ row, targetKey }) => (
 
 const Keyboard = ({ targetKey }) => {
     return (
-        <div className="relative p-2 sm:p-3 bg-gray-100 rounded-xl shadow-inner mt-2 sm:mt-3 overflow-hidden">
-            {KEYBOARD_LAYOUT.map((row, i) => (
-                <KeyboardRow key={i} row={row} targetKey={targetKey} />
-            ))}
-            <HandsOverlay activeFinger={FINGER_MAP[targetKey]} />
+        <div>
+            <p className="text-center text-xs sm:text-sm font-bold text-indigo-500 mt-1 mb-1 sm:mb-2">
+                👈 左手人差し指を <span className="font-black text-indigo-700 bg-indigo-50 px-1 rounded">F</span>、右手人差し指を <span className="font-black text-indigo-700 bg-indigo-50 px-1 rounded">J</span> においてね 👉
+            </p>
+            <div className="relative p-2 sm:p-3 bg-gray-100 rounded-xl shadow-inner overflow-hidden">
+                {KEYBOARD_LAYOUT.map((row, i) => (
+                    <KeyboardRow key={i} row={row} targetKey={targetKey} />
+                ))}
+                <HandsOverlay activeFinger={FINGER_MAP[targetKey]} />
+            </div>
         </div>
     );
 };

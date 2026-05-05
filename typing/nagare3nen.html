@@ -85,20 +85,15 @@
         }
         #typing-area {
             width: 100%; background: white; border-radius: 14px;
-            padding: 8px 18px 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 3px solid #ffcc80;
+            padding: 12px 18px 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 3px solid #ffcc80;
         }
         #current-word-display { text-align: center; margin-bottom: 5px; }
-        #current-kanji { font-size: 1.35rem; color: #5d4037; font-weight: bold; font-family: 'Mochiy Pop One', sans-serif; }
-        #romaji-display { font-family: monospace; font-size: 1.15rem; letter-spacing: 0.1em; margin-top: 4px; }
+        #current-kanji { font-size: 2.1rem; color: #5d4037; font-weight: bold; font-family: 'Mochiy Pop One', sans-serif; }
+        #romaji-display { font-family: monospace; font-size: 1.6rem; letter-spacing: 0.1em; margin-top: 6px; }
         #input-box {
-            width: 100%; font-size: 1.25rem; font-family: monospace;
-            padding: 8px 14px; border: 3px solid #ffb74d; border-radius: 12px; outline: none;
-            background: #fff8e1; color: #3e2723; text-align: center; letter-spacing: 0.12em;
-            -webkit-tap-highlight-color: transparent;
+            position: absolute; width: 0; height: 0; opacity: 0; overflow: hidden;
+            padding: 0; border: none; outline: none; pointer-events: none;
         }
-        #input-box:focus  { border-color: #ff9800; }
-        #input-box.wrong  { border-color: #f44336; background: #ffebee; animation: shake 0.3s; }
-        #input-box.correct{ border-color: #4caf50; background: #f1f8e9; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
 
         #sub-info { display: flex; align-items: center; justify-content: space-between; width: 100%; }

@@ -20,6 +20,16 @@ const appsData = [
         link: "hiraganarensyu/index.html"
     },
     {
+        title: "カタカナれんしゅう",
+        description: "カタカナをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/05/05",
+        colorClass: "subject-blue",
+        image: "images/katakanarensyu.jpg",
+        link: "katakanarensyu/index.html"
+    },
+    {
         title: "心マトリクス",
         description: "今の心の状態をマトリクスで可視化して言葉にしよう。アクションの後の変化も記録できる、メタ認知をうながすアプリ。",
         category: "others",

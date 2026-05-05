@@ -1,5 +1,15 @@
 const appsData = [
     {
+        title: "はんたいの言葉",
+        description: "写真と言葉を見て、反対の意味を4択から選ぶ低学年向けの国語ゲームです。",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/05/05",
+        colorClass: "subject-red",
+        image: "images/hantai-no-kotoba.svg",
+        link: "hantai-no-kotoba/index.html"
+    },
+    {
         title: "ひらがなれんしゅう",
         description: "ひらがなをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
         category: "japanese",

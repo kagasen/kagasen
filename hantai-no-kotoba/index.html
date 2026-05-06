@@ -917,18 +917,26 @@
     }
 
     function setPhoto(item) {
-      photoCard.classList.remove("has-photo");
-      photoImg.removeAttribute("src");
       photoImg.alt = `${item.word}の写真`;
 
-      if (!item.image) return;
+      if (!item.image) {
+        photoImg.style.opacity = "";
+        photoCard.classList.remove("has-photo");
+        photoImg.removeAttribute("src");
+        return;
+      }
+
+      // 先に has-photo を付けてシーンを隠し、画像ロード完了まで透明にする
+      photoCard.classList.add("has-photo");
+      photoImg.style.opacity = "0";
 
       photoImg.onerror = () => {
+        photoImg.style.opacity = "";
         photoCard.classList.remove("has-photo");
         photoImg.removeAttribute("src");
       };
       photoImg.onload = () => {
-        photoCard.classList.add("has-photo");
+        photoImg.style.opacity = "1";
       };
       photoImg.src = item.image;
     }

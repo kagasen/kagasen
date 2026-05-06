@@ -553,6 +553,63 @@
       line-height: 1.45;
     }
 
+    .judge-mark {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      place-items: center;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .judge-mark.show {
+      display: grid;
+    }
+
+    .judge-symbol {
+      display: grid;
+      place-items: center;
+      width: min(58vw, 300px);
+      height: min(58vw, 300px);
+      border: 14px solid currentColor;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: clamp(8rem, 32vw, 16rem);
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+      box-shadow: 0 20px 55px rgba(40, 24, 8, 0.24);
+      animation: judgePop 0.72s ease both;
+    }
+
+    .judge-mark.correct .judge-symbol {
+      color: #18a65f;
+    }
+
+    .judge-mark.wrong .judge-symbol {
+      color: #e54f45;
+      border-radius: 8px;
+    }
+
+    @keyframes judgePop {
+      0% {
+        opacity: 0;
+        transform: scale(0.36) rotate(-8deg);
+      }
+      42% {
+        opacity: 1;
+        transform: scale(1.12) rotate(3deg);
+      }
+      70% {
+        transform: scale(0.96) rotate(0deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
     .controls {
       display: flex;
       gap: 10px;
@@ -722,7 +779,7 @@
 
     <section class="mode-panel" aria-label="出題数を選ぶ">
       <div class="mode-info">
-        <span id="bankCount">150</span>問からランダムに出題。写真は <strong>hantai-no-kotoba/images/</strong> に入れると表示されます。
+        <span id="bankCount">150</span>問からランダムに出題。
       </div>
       <div class="mode-buttons">
         <button class="mode-button active" type="button" data-count="10">10問</button>
@@ -760,6 +817,10 @@
       </div>
     </section>
   </main>
+
+  <div class="judge-mark" id="judgeMark" aria-hidden="true">
+    <div class="judge-symbol" id="judgeSymbol">○</div>
+  </div>
 
   <div class="result" id="result">
     <div class="result-card">
@@ -814,6 +875,8 @@
     const resultText = document.getElementById("resultText");
     const againButton = document.getElementById("againButton");
     const modeButtons = document.querySelectorAll(".mode-button");
+    const judgeMark = document.getElementById("judgeMark");
+    const judgeSymbol = document.getElementById("judgeSymbol");
 
     const questionBank = window.HANTAI_WORDS || [];
     const allChoiceWords = [...new Set(questionBank.flatMap((item) => [item.word, item.answer]))];
@@ -873,6 +936,7 @@
     function renderQuestion() {
       const item = questions[current];
       answered = false;
+      judgeMark.classList.remove("show", "correct", "wrong");
       progressEl.textContent = `${current + 1}もんめ / ${questions.length}もん`;
       photoCard.dataset.scene = item.scene;
       sceneEl.innerHTML = scenes[item.scene] || scenes.big;
@@ -893,12 +957,27 @@
       });
     }
 
+    function showJudge(isCorrect) {
+      judgeMark.classList.remove("show", "correct", "wrong");
+      judgeSymbol.textContent = isCorrect ? "○" : "×";
+      judgeMark.classList.add(isCorrect ? "correct" : "wrong");
+
+      window.requestAnimationFrame(() => {
+        judgeMark.classList.add("show");
+      });
+
+      window.setTimeout(() => {
+        judgeMark.classList.remove("show");
+      }, 900);
+    }
+
     function checkAnswer(button, choice) {
       if (answered) return;
 
       const item = questions[current];
       answered = true;
       const isCorrect = choice === item.answer;
+      showJudge(isCorrect);
 
       if (isCorrect) {
         score += 1;

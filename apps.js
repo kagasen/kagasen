@@ -6,7 +6,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/05/05",
         colorClass: "subject-red",
-        image: "images/hantai-no-kotoba.svg",
+        image: "images/hantainokotoba.jpg",
         link: "hantai-no-kotoba/index.html"
     },
     {

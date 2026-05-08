@@ -942,16 +942,8 @@ function showTimeBonusPopup(text) {
 // ============================================================
 // 入力処理
 // ============================================================
-inputBox.addEventListener('keydown', e => {
-    if (e.isComposing || e.key === 'Process') return;
-    if (e.key.length !== 1) return;
-    if (gameState !== 'playing') return;
-    e.preventDefault();
-
-    const ch = e.key.toLowerCase();
-    if (!/[a-z0-9\-]/.test(ch)) return;
+function processChar(ch) {
     keyCount++;
-
     const cw = words.find(w => w.id === currentWordId);
     if (!cw) return;
 
@@ -988,6 +980,27 @@ inputBox.addEventListener('keydown', e => {
         cw.el.classList.add('wrong-flash');
         setTimeout(() => cw.el.classList.remove('wrong-flash'), 300);
     }
+}
+
+inputBox.addEventListener('keydown', e => {
+    if (e.isComposing || e.key === 'Process') return;
+    if (e.key.length !== 1) return;
+    if (gameState !== 'playing') return;
+    e.preventDefault();
+
+    const ch = e.key.toLowerCase();
+    if (!/[a-z0-9\-]/.test(ch)) return;
+    processChar(ch);
+});
+
+// iPad対応: keydownがcomposingで素通りした場合のフォールバック
+inputBox.addEventListener('input', e => {
+    inputBox.value = '';
+    if (gameState !== 'playing') return;
+    if (!e.data) return;
+    const ch = e.data.toLowerCase();
+    if (!/[a-z0-9\-]/.test(ch)) return;
+    processChar(ch);
 });
 
 // ============================================================

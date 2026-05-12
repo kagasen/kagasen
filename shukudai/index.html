@@ -286,9 +286,7 @@
         let submissionData = {};
         let currentDateStr = ''; // 現在の日付を追跡（日付変更検知用）
         let dateCheckTimer = null;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        const TOUCH_MOVE_THRESHOLD = 10; // スクロール判定の移動ピクセル数
+        let isTouchScrolling = false;
 
         function initializeApp() {
             tabStatusBtn.addEventListener('click', () => switchTab('status'));
@@ -400,13 +398,13 @@
                     td.dataset.homeworkIndex = index; 
                     td.addEventListener('click', handleManualCheck);
                     td.addEventListener('touchstart', function(e) {
-                        touchStartX = e.touches[0].clientX;
-                        touchStartY = e.touches[0].clientY;
+                        isTouchScrolling = false;
+                    }, { passive: true });
+                    td.addEventListener('touchmove', function(e) {
+                        isTouchScrolling = true;
                     }, { passive: true });
                     td.addEventListener('touchend', function(e) {
-                        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-                        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-                        if (dx > TOUCH_MOVE_THRESHOLD || dy > TOUCH_MOVE_THRESHOLD) return;
+                        if (isTouchScrolling) return;
                         e.preventDefault();
                         handleManualCheck({ currentTarget: this });
                     });

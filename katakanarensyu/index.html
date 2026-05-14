@@ -860,7 +860,7 @@ function setupInput(canvasId,mode){
     if(pe.pointerType!=='touch')return false;
     const w=pe.width||0,h=pe.height||0;
     if(w<=0&&h<=0)return false;
-    return w>38||h>38;
+    return w>80&&h>80;
   }
 
   const getSI=()=>mode==='test'?tCurSt:curSt;

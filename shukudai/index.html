@@ -83,6 +83,11 @@
             color: #1e40af; /* Tailwind blue-800 */
             font-weight: bold;
         }
+        .submission-table td.morning {
+            background-color: #fff7ed; /* Tailwind orange-50 */
+            color: #c2410c; /* Tailwind orange-700 */
+            font-weight: bold;
+        }
         .submission-table tr.total-row td { /* Style for the total row */
             font-weight: bold;
             background-color: #eef2ff; /* Tailwind indigo-50 */
@@ -446,12 +451,14 @@
             const cellKey = `s${studentId}-h${homeworkIndex}`;
             const currentState = submissionData[selectedDate][cellKey];
 
-            // サイクル: 空 → ✔ → 忘 → 休 → 空
+            // サイクル: 空 → ✔ → 忘 → 朝 → 休 → 空
             if (!currentState || currentState === false) {
                 submissionData[selectedDate][cellKey] = "check";
             } else if (currentState === "check" || currentState === true) {
                 submissionData[selectedDate][cellKey] = "forgot";
             } else if (currentState === "forgot") {
+                submissionData[selectedDate][cellKey] = "morning";
+            } else if (currentState === "morning") {
                 submissionData[selectedDate][cellKey] = "rest";
             } else {
                 submissionData[selectedDate][cellKey] = false;
@@ -473,13 +480,16 @@
                     const cell = document.getElementById(cellKey);
                     if (cell) {
                         const state = dailyData[cellKey];
-                        cell.classList.remove('submitted', 'forgot', 'rest');
+                        cell.classList.remove('submitted', 'forgot', 'rest', 'morning');
                         if (state === "check" || state === true) {
                             cell.textContent = '✔';
                             cell.classList.add('submitted');
                         } else if (state === "forgot") {
                             cell.textContent = '忘';
                             cell.classList.add('forgot');
+                        } else if (state === "morning") {
+                            cell.textContent = '朝';
+                            cell.classList.add('morning');
                         } else if (state === "rest") {
                             cell.textContent = '休';
                             cell.classList.add('rest');

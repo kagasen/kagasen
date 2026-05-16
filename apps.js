@@ -1,5 +1,6 @@
 const appsData = [
     {
+        id: "hantai-no-kotoba",
         title: "はんたいの言葉",
         description: "写真と言葉を見て、反対の意味を4択から選ぶ低学年向けの国語ゲームです。",
         category: "japanese",
@@ -10,6 +11,7 @@ const appsData = [
         link: "hantai-no-kotoba/index.html"
     },
     {
+        id: "hiraganarensyu",
         title: "ひらがなれんしゅう",
         description: "ひらがなをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
         category: "japanese",
@@ -20,6 +22,7 @@ const appsData = [
         link: "hiraganarensyu/index.html"
     },
     {
+        id: "katakanarensyu",
         title: "カタカナれんしゅう",
         description: "カタカナをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
         category: "japanese",
@@ -30,6 +33,7 @@ const appsData = [
         link: "katakanarensyu/index.html"
     },
     {
+        id: "shinmatorikusu",
         title: "心マトリクス",
         description: "今の心の状態をマトリクスで可視化して言葉にしよう。アクションの後の変化も記録できる、メタ認知をうながすアプリ。",
         category: "others",
@@ -40,6 +44,7 @@ const appsData = [
         link: "shinmatorikusu/index.html"
     },
     {
+        id: "vision-training",
         title: "ビジョントレーニング",
         description: "目を動かす練習をして、見つける力や集中力を高めよう！色々なトレーニングを選べるよ。",
         category: "others",
@@ -50,6 +55,7 @@ const appsData = [
         link: "vision-training/index.html"
     },
     {
+        id: "marumarusaitekikai",
         title: "〇〇な最適解",
         description: "みんなの答えを予想してお題に一番合う「最適解」を見つけるゲーム！",
         category: "management",
@@ -60,6 +66,7 @@ const appsData = [
         link: "marumarusaitekikai/index.html"
     },
     {
+        id: "shukudai",
         title: "宿題提出ポスト",
         description: "先生の仕事を減らす!? QRコードで提出状況が一瞬でわかるよ。",
         category: "teacher",       // 先生用
@@ -70,6 +77,7 @@ const appsData = [
         link: "shukudai/index.html"
     },
     {
+        id: "taiikusakusennbo-do",
         title: "体育作戦ボード",
         description: "体育の試合や練習で使える！マグネットみたいに動かせるよ。",
         category: "others",        // 体育は「その他」に分類
@@ -80,6 +88,7 @@ const appsData = [
         link: "taiikusakusennbo-do/index.html"
     },
     {
+        id: "taiikuti-muwake",
         title: "体育チーム分け",
         description: "体育の授業などで使える！スムーズにチーム分けができるよ。",
         category: "others",        // 体育は「その他」に分類
@@ -90,6 +99,7 @@ const appsData = [
         link: "taiikuti-muwake/index.html"
     },
     {
+        id: "shiritori",
         title: "しりとり魔神",
         description: "最強しりとり魔神と何回ラリーできるかな？。",
         category: "japanese",
@@ -100,6 +110,7 @@ const appsData = [
         link: "shiritori/index.html"
     },
     {
+        id: "kyushoku-kuji",
         title: "給食おかわりくじ",
         description: "給食のおかわりを誰がするか、楽しくくじ引きで決めよう！",
         category: "teacher",       // 先生用カテゴリー
@@ -110,6 +121,7 @@ const appsData = [
         link: "kyushoku-kuji/index.html"
     },
     {
+        id: "taiiku-tournament",
         title: "体育トーナメントメーカー",
         description: "4〜41チームのトーナメント表を自動作成！試合タイマーつきで本番も万全。",
         category: "others",        // 体育は「その他」に分類
@@ -120,6 +132,7 @@ const appsData = [
         link: "taiiku-tournament/index.html"
     },
     {
+        id: "taiiku-league",
         title: "体育リーグ戦メーカー",
         description: "総当たりのリーグ戦スケジュールを自動作成！コート数も指定できて順位表も自動計算。",
         category: "others",        // 体育は「その他」に分類
@@ -130,6 +143,7 @@ const appsData = [
         link: "taiiku-league/index.html"
     },
     {
+        id: "mainitimondai",
         title: "毎日問題",
         description: "1年生から6年生まで、毎日チャレンジできる謎解き問題！学年を選んでスタート！",
         category: "others",        // その他に分類
@@ -140,6 +154,7 @@ const appsData = [
         link: "mainitimondai/index.html"
     },
     {
+        id: "taiiku-relay",
         title: "体育リレーチーム編成メーカー",
         description: "タイムを入力するだけで公平なリレーチームを自動作成！ドラッグ＆ドロップで手動調整も可能。",
         category: "others",        // 体育は「その他」に分類
@@ -150,6 +165,7 @@ const appsData = [
         link: "taiiku-relay/index.html"
     },
     {
+        id: "group-maker",
         title: "スポーツグループ分け",
         description: "スキルレベルを考慮してバランスの良いグループを自動作成！ドラッグ＆ドロップで微調整も可能。",
         category: "teacher",       // 先生用
@@ -160,6 +176,7 @@ const appsData = [
         link: "group-maker/index.html"
     },
     {
+        id: "sekigae",
         title: "教室の席替えツール",
         description: "教室のサイズや席の種類を設定し、ランダムに席替え！ドラッグ＆ドロップで微調整も可能。",
         category: "teacher",       // 先生用
@@ -170,6 +187,7 @@ const appsData = [
         link: "sekigae/index.html"
     },
     {
+        id: "classroom-board",
         title: "教室サポートボード",
         description: "タイマーや時間割、お絵かきツールなど、授業をサポートする機能が一つになった電子黒板アプリです。",
         category: "teacher",       // 先生用
@@ -180,6 +198,7 @@ const appsData = [
         link: "classroom-board/index.html"
     },
     {
+        id: "sikou-tool-app",
         title: "思考ツール",
         description: "考えを整理しよう！ふせんや図解・テンプレートを自由に配置できるボードアプリです。",
         category: "others",        // その他
@@ -190,6 +209,7 @@ const appsData = [
         link: "sikou-tool-app/index.html"
     },
     {
+        id: "sakkanojikan",
         title: "作家の時間",
         description: "しつもんに答えるだけで、キミだけの本ができる！お話づくりサポートアプリです。",
         category: "japanese",      // 国語
@@ -200,6 +220,7 @@ const appsData = [
         link: "sakkanojikan/index.html"
     },
     {
+        id: "kannjibusyu-ta",
         title: "漢字部首シューティング",
         description: "部首とつくりを組み合わせて漢字を作ろう！シューティングゲームで楽しく漢字を覚えられるよ。",
         category: "japanese",
@@ -210,6 +231,7 @@ const appsData = [
         link: "kannjibusyu-ta/kanjibusyu-ta.html"
     },
     {
+        id: "kotobasagashi",
         title: "言葉さがし",
         description: "10×10の文字の中にかくれた言葉をドラッグで見つけよう！たて・よこ・ななめ・逆さ読みもOK！1分間で何語見つけられるかな？",
         category: "japanese",
@@ -220,6 +242,7 @@ const appsData = [
         link: "kotobasagashi/index.html"
     },
     {
+        id: "typing",
         title: "キッズタイピング",
         description: "学年を選んでローマ字タイピングを練習しよう！短文タイピングや70のとっくんもあるよ。",
         category: "others",

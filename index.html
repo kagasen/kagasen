@@ -195,9 +195,81 @@
         </div>
     </footer>
 
+    <!-- Firebase CDN (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
     <script src="apps.js"></script>
 
     <script>
+        // Firebase 初期化
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhM5WJn8ub-OOuJKoSFaa8Pceki-SzlQ4",
+            authDomain: "kagasenapplication.firebaseapp.com",
+            projectId: "kagasenapplication",
+            storageBucket: "kagasenapplication.firebasestorage.app",
+            messagingSenderId: "1082992889425",
+            appId: "1:1082992889425:web:c18a56904f358d750fb270"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // クリックカウント管理
+        let appCounts = {};
+
+        function getTodayStr() {
+            return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        }
+
+        function hasCountedToday(appId) {
+            return !!localStorage.getItem(`kagasen_click_${appId}_${getTodayStr()}`);
+        }
+
+        function markCountedToday(appId) {
+            localStorage.setItem(`kagasen_click_${appId}_${getTodayStr()}`, '1');
+        }
+
+        async function incrementCount(appId) {
+            if (hasCountedToday(appId)) return;
+            if (!auth.currentUser) {
+                await auth.signInAnonymously();
+            }
+            markCountedToday(appId);
+            const ref = db.collection('appClicks').doc(appId);
+            await ref.set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            appCounts[appId] = (appCounts[appId] || 0) + 1;
+        }
+
+        async function loadCounts() {
+            try {
+                const snapshot = await db.collection('appClicks').get();
+                snapshot.forEach(doc => {
+                    appCounts[doc.id] = doc.data().count || 0;
+                });
+                updateCountDisplay();
+            } catch (e) {
+                console.error('カウント読み込みエラー:', e);
+            }
+        }
+
+        function updateCountDisplay() {
+            if (typeof appsData === 'undefined') return;
+            appsData.forEach(app => {
+                const el = document.getElementById(`count-${app.id}`);
+                if (el) {
+                    const count = appCounts[app.id] || 0;
+                    el.textContent = `👁 ${count}回`;
+                }
+            });
+        }
+
+        // 匿名認証してカウントを読み込む
+        auth.signInAnonymously()
+            .then(() => loadCounts())
+            .catch(e => console.error('認証エラー:', e));
+
         // 状態管理
         let currentCategory = 'all';
         let currentSort = 'new';
@@ -335,13 +407,29 @@
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded mb-2 ${tagColorClass}">${app.tagName}</span>
                             <h3 class="text-lg text-natural-brown mb-2 border-b-2 border-${app.colorClass}/30 pb-1 px-4 font-pop">${app.title}</h3>
                             <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">${app.description}</p>
-                            <div class="w-full flex justify-end items-center text-[10px] text-gray-400 mt-2 mb-3 px-2">
+                            <div class="w-full flex justify-between items-center text-[10px] text-gray-400 mt-2 mb-3 px-2">
+                                <span id="count-${app.id}">👁 ---</span>
                                 <span>📅 ${app.date}</span>
                             </div>
                             <span class="bg-${app.colorClass} text-natural-brown py-1.5 px-6 rounded-lg text-sm shadow-sm group-hover:opacity-80 transition tracking-widest border border-black/5">OPEN</span>
                         </div>
                     `;
                     appGrid.appendChild(card);
+
+                    // カードクリック時にカウント+1して遷移
+                    card.addEventListener('click', async (e) => {
+                        if (e.target.closest('.fav-btn')) return;
+                        e.preventDefault();
+                        try {
+                            await Promise.race([
+                                incrementCount(app.id),
+                                new Promise(resolve => setTimeout(resolve, 1500))
+                            ]);
+                        } catch (err) {
+                            console.error(err);
+                        }
+                        window.location.href = app.link;
+                    });
                 });
 
                 // ★ボタンのクリックイベント
@@ -355,6 +443,9 @@
 
                 // lucide アイコンの再描画
                 lucide.createIcons();
+
+                // カウント表示を更新（キャッシュ済みデータで即時反映）
+                updateCountDisplay();
             }
         }
     </script>

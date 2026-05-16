@@ -236,9 +236,9 @@
             if (!auth.currentUser) {
                 await auth.signInAnonymously();
             }
-            markCountedToday(appId);
             const ref = db.collection('appClicks').doc(appId);
             await ref.set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            markCountedToday(appId); // Firestore書き込み成功後にマーク
             appCounts[appId] = (appCounts[appId] || 0) + 1;
         }
 

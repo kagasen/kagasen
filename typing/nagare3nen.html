@@ -307,7 +307,7 @@
     <div id="stats">
         <div class="stat-box">
             <div class="stat-label">スコア</div>
-            <div class="stat-value" id="score-display">0<span style="font-size:0.52rem">円</span></div>
+            <div class="stat-value" id="score-display">0<span style="font-size:0.52rem">pt</span></div>
         </div>
         <div class="stat-box">
             <div class="stat-label">のこり</div>
@@ -374,7 +374,7 @@
     <div class="overlay-card" id="start-card">
         <div style="font-size:2.4rem;margin-bottom:5px;">⌨️</div>
         <h2>流れる単語タイピング 3年</h2>
-        <p>3年生で習う言葉が右から流れてくるよ！<br>完成したら <b>100円</b> ゲット！</p>
+        <p>3年生で習う言葉が右から流れてくるよ！<br>1文字うつごとに <b>1ポイント</b>！</p>
         <p style="margin-bottom:2px;">30文字れんぞく→<b>+1秒</b>　60文字→<b>+2秒</b></p>
         <p style="margin-bottom:14px;">90文字以降30文字ごと→<b>+3秒</b></p>
         <p style="font-size:0.74rem;color:#ef9a9a;margin-bottom:16px;">⚠️ キーボードを「半角英数」にしてね</p>
@@ -388,7 +388,7 @@
         <h2>けっか発表！</h2>
         <div class="result-main">
             <div class="result-big">
-                <div class="big-val"><span id="final-score">0</span><span class="big-unit">円</span></div>
+                <div class="big-val"><span id="final-score">0</span><span class="big-unit">pt</span></div>
                 <div class="big-label">スコア</div>
             </div>
             <div class="result-big">
@@ -420,7 +420,7 @@
         </div>
         <div id="rank-list-scroll"></div>
         <div class="rank-modal-footer">
-            <div class="score-info" id="rank-modal-score-info">スコア: 0円</div>
+            <div class="score-info" id="rank-modal-score-info">スコア: 0pt</div>
             <button class="btn-secondary" id="close-rank-modal-btn">とじる</button>
         </div>
     </div>
@@ -439,42 +439,42 @@
 //   最高称号 = ⚡ 神 (5000円)
 // ============================================================
 const RANK_TABLE = [
-    { min: 5000, name: '⚡ 神' },
-    { min: 4800, name: '👑 伝説の覇者' },
-    { min: 4600, name: '💎 ダイヤの王者' },
-    { min: 4400, name: '🌟 超銀河タイパー' },
-    { min: 4200, name: '💫 流れ星の申し子' },
-    { min: 4000, name: '🚀 宇宙の果てへ' },
-    { min: 3800, name: '🌈 虹の向こう側' },
-    { min: 3600, name: '🏯 難攻不落の城主' },
-    { min: 3400, name: '🔮 古の魔法使い' },
-    { min: 3200, name: '🥷 影に潜む忍者' },
-    { min: 3000, name: '🗡️ 鋼鉄の侍' },
-    { min: 2800, name: '🏔️ 孤高の山の主' },
-    { min: 2600, name: '🌪️ 嵐を呼ぶ者' },
-    { min: 2400, name: '⚡ いなずまの速さ' },
-    { min: 2200, name: '🔥 炎のタイパー' },
-    { min: 2000, name: '⭐ 星のきらめき' },
-    { min: 1900, name: '🌊 波乗り名人' },
-    { min: 1800, name: '🐉 龍のうろこ' },
-    { min: 1700, name: '🦅 タカの目' },
-    { min: 1600, name: '🐬 イルカのジャンプ' },
-    { min: 1500, name: '🐻 クマの手招き' },
-    { min: 1400, name: '🦁 ライオンの子ども' },
-    { min: 1300, name: '🐯 トラの見習い' },
-    { min: 1200, name: '🦆 カモのスイスイ' },
-    { min: 1100, name: '🐧 ペンギンの行進' },
-    { min: 1000, name: '🦝 アライグマの好奇心' },
-    { min:  900, name: '🐨 コアラのひとやすみ' },
-    { min:  800, name: '🦊 コギツネの知恵' },
-    { min:  700, name: '🐇 ウサギのダッシュ' },
-    { min:  600, name: '🐓 にわとりデビュー' },
-    { min:  500, name: '🐥 ひよこのよちよち' },
-    { min:  400, name: '🐣 たまごわれた！' },
-    { min:  300, name: '🦋 まゆの中でひみつ' },
-    { min:  200, name: '🐛 いもむし大作戦' },
-    { min:  100, name: '🐌 のろのろタイパー' },
-    { min:    0, name: '🌱 はじまりのいっぽ' },
+    { min: 300, name: '⚡ 神' },
+    { min: 280, name: '👑 伝説の覇者' },
+    { min: 260, name: '💎 ダイヤの王者' },
+    { min: 240, name: '🌟 超銀河タイパー' },
+    { min: 220, name: '💫 流れ星の申し子' },
+    { min: 200, name: '🚀 宇宙の果てへ' },
+    { min: 185, name: '🌈 虹の向こう側' },
+    { min: 170, name: '🏯 難攻不落の城主' },
+    { min: 155, name: '🔮 古の魔法使い' },
+    { min: 140, name: '🥷 影に潜む忍者' },
+    { min: 130, name: '🗡️ 鋼鉄の侍' },
+    { min: 120, name: '🏔️ 孤高の山の主' },
+    { min: 110, name: '🌪️ 嵐を呼ぶ者' },
+    { min: 100, name: '⚡ いなずまの速さ' },
+    { min:  90, name: '🔥 炎のタイパー' },
+    { min:  80, name: '⭐ 星のきらめき' },
+    { min:  72, name: '🌊 波乗り名人' },
+    { min:  64, name: '🐉 龍のうろこ' },
+    { min:  57, name: '🦅 タカの目' },
+    { min:  50, name: '🐬 イルカのジャンプ' },
+    { min:  44, name: '🐻 クマの手招き' },
+    { min:  38, name: '🦁 ライオンの子ども' },
+    { min:  33, name: '🐯 トラの見習い' },
+    { min:  28, name: '🦆 カモのスイスイ' },
+    { min:  24, name: '🐧 ペンギンの行進' },
+    { min:  20, name: '🦝 アライグマの好奇心' },
+    { min:  17, name: '🐨 コアラのひとやすみ' },
+    { min:  14, name: '🦊 コギツネの知恵' },
+    { min:  11, name: '🐇 ウサギのダッシュ' },
+    { min:   8, name: '🐓 にわとりデビュー' },
+    { min:   6, name: '🐥 ひよこのよちよち' },
+    { min:   4, name: '🐣 たまごわれた！' },
+    { min:   3, name: '🦋 まゆの中でひみつ' },
+    { min:   2, name: '🐛 いもむし大作戦' },
+    { min:   1, name: '🐌 のろのろタイパー' },
+    { min:   0, name: '🌱 はじまりのいっぽ' },
 ];
 
 function getRankObj(s) {
@@ -704,7 +704,6 @@ function updateKeyboard() {
 // ============================================================
 const GAME_TIME    = 60;
 const WORD_SPEED   = 80;   // px/秒
-const YEN_PER_WORD = 100;
 
 function bonusSec(m) { return Math.min(m / 30, 3); }
 
@@ -744,7 +743,7 @@ function initGame() {
     words=[]; currentWordId=null; typedSoFar=''; activePatterns=[];
     idCounter=0; lastFrameTime=null;
 
-    scoreDisplay.innerHTML = '0<span style="font-size:0.52rem">円</span>';
+    scoreDisplay.innerHTML = '0<span style="font-size:0.52rem">pt</span>';
     timerDisplay.textContent = GAME_TIME;
     timerDisplay.style.color = '#fff176';
     missDisplay.textContent = '0';
@@ -956,6 +955,9 @@ function processChar(ch) {
         typedSoFar     = candidate;
         activePatterns = narrowed;
         consecutiveCorrect++;
+        score += 1;
+        scoreDisplay.innerHTML = `${score}<span style="font-size:0.52rem">pt</span>`;
+        rankNameEl.textContent = getRankObj(score).name;
         checkTimeBonus();
 
         const disp = activePatterns[0];
@@ -1009,11 +1011,9 @@ inputBox.addEventListener('input', e => {
 // 単語完成 → 即座に次の言葉を出す
 // ============================================================
 function completeWord(word) {
-    score += YEN_PER_WORD;
+    const wordPts = typedSoFar.length;
     wordsCompleted++;
-    scoreDisplay.innerHTML = `${score}<span style="font-size:0.52rem">円</span>`;
-    rankNameEl.textContent = getRankObj(score).name;
-    showScorePopup(word.el);
+    showScorePopup(word.el, wordPts);
 
     removeWord(word.id);
     currentWordId=null; typedSoFar=''; activePatterns=[];
@@ -1023,10 +1023,10 @@ function completeWord(word) {
     updateCurrentTarget();
 }
 
-function showScorePopup(refEl) {
+function showScorePopup(refEl, pts) {
     const rect = refEl.getBoundingClientRect();
     const p = document.createElement('div');
-    p.className = 'score-popup'; p.textContent = `+${YEN_PER_WORD}円 ✓`;
+    p.className = 'score-popup'; p.textContent = `+${pts}pt ✓`;
     p.style.color = '#ff9800'; p.style.textShadow = '0 2px 4px rgba(0,0,0,0.2)';
     p.style.left = (rect.left + rect.width/2 - 40) + 'px';
     p.style.top  = (rect.top - 10) + 'px';
@@ -1042,6 +1042,9 @@ function endGame() {
     cancelAnimationFrame(rafId);
     updateKeyboard();
 
+    const prevTotal = parseInt(localStorage.getItem('typing_total_points') || '0');
+    localStorage.setItem('typing_total_points', prevTotal + Math.max(0, score));
+
     const rObj = getRankObj(score);
     const nObj = getNextRankObj(rObj);
     document.getElementById('final-score').textContent    = score;
@@ -1050,7 +1053,7 @@ function endGame() {
     document.getElementById('final-keycount').textContent = keyCount;
     document.getElementById('final-rank-name').textContent = rObj.name;
     document.getElementById('final-next-rank').textContent =
-        nObj ? `次の称号まで あと ${nObj.min - score}円` : '最高称号達成！🎉';
+        nObj ? `次の称号まで あと ${nObj.min - score}pt` : '最高称号達成！🎉';
 
     startCard.style.display  = 'none';
     resultCard.style.display = 'block';
@@ -1066,7 +1069,7 @@ function openRankModal() {
     const currentR  = getRankObj(score);
     const nextR     = getNextRankObj(currentR);
 
-    scoreInfo.textContent = `現在: ${score}円　称号: ${currentR.name}`;
+    scoreInfo.textContent = `現在: ${score}pt　称号: ${currentR.name}`;
     scroll.innerHTML = '';
 
     RANK_TABLE.forEach((r, idx) => {
@@ -1078,10 +1081,10 @@ function openRankModal() {
 
         const numTxt  = `<span class="ri-num">${RANK_TABLE.length - idx}</span>`;
         const nameTxt = `<span class="ri-name">${r.name}</span>`;
-        const thrTxt  = `<span class="ri-threshold">${r.min.toLocaleString()}円〜</span>`;
+        const thrTxt  = `<span class="ri-threshold">${r.min.toLocaleString()}pt〜</span>`;
         let extra = '';
         if (isCurrent)    extra = '<span class="ri-badge">いまここ</span>';
-        else if (isNext)  extra = `<span class="ri-next">あと${(r.min - score).toLocaleString()}円</span>`;
+        else if (isNext)  extra = `<span class="ri-next">あと${(r.min - score).toLocaleString()}pt</span>`;
 
         item.innerHTML = numTxt + nameTxt + thrTxt + extra;
         scroll.appendChild(item);

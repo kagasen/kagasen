@@ -455,7 +455,9 @@ function App() {
     useEffect(() => {
         if (gameState !== 'result') return;
         playClearSound();
-    }, [gameState]);
+        const prevTotal = parseInt(localStorage.getItem('typing_total_points') || '0');
+        localStorage.setItem('typing_total_points', prevTotal + Math.max(0, score));
+    }, [gameState, score]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;

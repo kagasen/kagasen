@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ペットショップ — タイピングポイントで育てよう</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fef9f0;
+    --bg-card: #ffffff;
+    --ink: #2d2a26;
+    --ink-soft: #6b6357;
+    --line: #e8dfd0;
+    --accent: #ff6b35;
+    --accent-soft: #ffe5d9;
+    --gold: #f4b942;
+    --gold-soft: #fdf3d6;
+    --green: #7ab648;
+    --green-soft: #e8f3da;
+    --warm: #ff8c42;
+    --warm-soft: #ffe0cc;
+    --feed: #4a90c2;
+    --feed-soft: #d6e9f7;
+    --play: #b87cc4;
+    --play-soft: #ecdcf2;
+  }
+
+  body {
+    font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 16px 16px 80px;
+    line-height: 1.6;
+  }
+
+  .app { max-width: 940px; margin: 0 auto; }
+
+  /* === ヘッダー === */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  header h1 span { color: var(--accent); }
+  .points {
+    background: var(--gold-soft);
+    border: 2px solid var(--gold);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .points .coin {
+    display: inline-block;
+    width: 22px; height: 22px;
+    background: var(--gold);
+    border: 2px solid #c08d10;
+    border-radius: 50%;
+    font-size: 13px;
+    text-align: center;
+    line-height: 18px;
+    color: #fff;
+    font-weight: 800;
+  }
+
+  /* === タブ === */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tab {
+    flex: 1;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .tab:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+  .tab.active {
+    background: var(--accent);
+    color: white;
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  /* === パネル === */
+  .panel {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+  .panel-sub {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* === ショップ === */
+  .eggs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .egg-card {
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .egg-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .egg-card .egg-svg { width: 80px; height: 90px; margin: 0 auto 8px; }
+  .egg-card .name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .egg-card .desc {
+    font-size: 11px;
+    color: var(--ink-soft);
+    min-height: 30px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .egg-card .price {
+    background: var(--gold-soft);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+  .buy-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .buy-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+  /* === ペットエリア === */
+  .pet-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .pet-card {
+    background: var(--bg);
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    padding: 16px;
+    text-align: center;
+  }
+  .pet-svg { width: 110px; height: 110px; margin: 0 auto 8px; }
+  .pet-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .pet-stage {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 999px;
+    padding: 3px 10px;
+    display: inline-block;
+  }
+  .progress-bar {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    height: 14px;
+    overflow: hidden;
+    margin-bottom: 6px;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s;
+  }
+  .progress-fill.warm { background: var(--warm); }
+  .progress-fill.feed { background: var(--feed); }
+  .progress-fill.play { background: var(--play); }
+  .progress-fill.done { background: var(--gold); }
+  .progress-label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .pet-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .action-btn {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.05s;
+  }
+  .action-btn:hover { transform: translateY(-1px); }
+  .action-btn.warm { background: var(--warm-soft); border-color: var(--warm); }
+  .action-btn.feed { background: var(--feed-soft); border-color: var(--feed); }
+  .action-btn.play { background: var(--play-soft); border-color: var(--play); }
+  .action-btn.done {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    cursor: default;
+  }
+  .empty-msg {
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 30px;
+    font-size: 15px;
+  }
+
+  /* === 図鑑 === */
+  .dex-info {
+    background: var(--gold-soft);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .dex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .dex-card {
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+    position: relative;
+  }
+  .dex-card.locked {
+    background: #f3eee5;
+    opacity: 0.7;
+  }
+  .dex-card.locked .pet-svg {
+    filter: grayscale(1) brightness(0.4);
+    opacity: 0.4;
+  }
+  .dex-num {
+    position: absolute;
+    top: 6px; left: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--ink-soft);
+  }
+  .dex-card .pet-svg { width: 90px; height: 90px; }
+  .dex-card .name { font-size: 13px; font-weight: 700; }
+  .dex-card .badge {
+    font-size: 10px;
+    color: var(--gold);
+    font-weight: 800;
+    margin-top: 2px;
+  }
+  .dex-card.locked .name { color: var(--ink-soft); }
+
+  /* === トースト === */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-weight: 700;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    max-width: 90%;
+  }
+  .toast.show { opacity: 1; }
+  .toast.good { background: var(--green); }
+  .toast.bad { background: #e74c3c; }
+  .toast.special {
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 18px;
+    padding: 18px 32px;
+  }
+
+  /* === デバッグ === */
+  .debug-panel {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    z-index: 200;
+    width: 260px;
+    display: none;
+  }
+  .debug-panel.show { display: block; }
+  .debug-panel h3 {
+    font-size: 14px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .debug-panel .close-x {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    padding: 0;
+    line-height: 1;
+  }
+  .debug-panel p {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .debug-panel input {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    font-family: inherit;
+    margin-bottom: 8px;
+    outline: none;
+  }
+  .debug-panel input:focus { border-color: var(--accent); }
+  .debug-panel .row { display: flex; gap: 6px; }
+  .debug-panel .row button {
+    flex: 1;
+    background: var(--accent);
+    color: white;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .debug-panel .row button.secondary {
+    background: white;
+    color: var(--ink);
+  }
+
+  .back-link {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--ink);
+    color: white;
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 3px 3px 0 var(--accent);
+    z-index: 50;
+  }
+  .back-link:hover { background: var(--accent); }
+
+  .keybuf {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    background: rgba(45, 42, 38, 0.06);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family: monospace;
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .keybuf.show { opacity: 1; }
+
+  /* アニメ */
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .bounce { animation: bounce 0.6s ease; }
+
+  @keyframes sparkle {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .sparkle { animation: sparkle 0.8s ease; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* 育成フロー説明 */
+  .flow-guide {
+    background: var(--green-soft);
+    border: 2px solid var(--green);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .flow-guide .step {
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .flow-guide b { color: var(--ink); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>ペット<span>ショップ</span> 🥚</h1>
+      <div class="points">
+        <span class="coin">P</span>
+        <span id="points-display">0</span>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-view="shop">🛒 ショップ</button>
+      <button class="tab" data-view="pets">🐣 マイペット</button>
+      <button class="tab" data-view="dex">📖 ずかん</button>
+    </div>
+
+    <!-- ========== ショップ画面 ========== -->
+    <div class="view active" id="view-shop">
+      <div class="panel">
+        <h2>🛒 たまごショップ</h2>
+        <p class="panel-sub">タイピングで貯めたポイントでたまごを買おう！<br>
+          高いたまごほどレアな生き物が生まれるよ。</p>
+        <div class="eggs-grid" id="eggs-grid"></div>
+      </div>
+    </div>
+
+    <!-- ========== ペット画面 ========== -->
+    <div class="view" id="view-pets">
+      <div class="panel">
+        <h2>🐣 マイペット</h2>
+        <div class="flow-guide">
+          <span class="step">🥚 <b>あたためる</b>(3P)</span>→
+          <span class="step">🐣 <b>エサ</b>(5P)</span>→
+          <span class="step">🐥 <b>あそぶ</b>(10P)</span>→
+          <span class="step">⭐ <b>大人になって図鑑へ！</b></span>
+        </div>
+        <div id="pet-list-container"></div>
+      </div>
+    </div>
+
+    <!-- ========== 図鑑画面 ========== -->
+    <div class="view" id="view-dex">
+      <div class="panel">
+        <h2>📖 ペット図鑑</h2>
+        <div class="dex-info" id="dex-info">
+          コレクション：<span id="dex-count">0</span> / <span id="dex-total">8</span>
+        </div>
+        <div class="dex-grid" id="dex-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- デバッグ用ポイント入力パネル -->
+  <div class="debug-panel" id="debug-panel">
+    <h3>
+      🛠️ ポイント入力（テスト用）
+      <button class="close-x" id="debug-close">×</button>
+    </h3>
+    <p>シミュレーション用です。本番ではタイピングアプリから引き継いだポイントが入ります。</p>
+    <input type="number" id="debug-input" placeholder="ポイント数を入力" min="0" />
+    <div class="row">
+      <button id="debug-add">追加する</button>
+      <button class="secondary" id="debug-set">上書き</button>
+    </div>
+    <div class="row" style="margin-top:6px;">
+      <button class="secondary" id="debug-reset" style="font-size:11px;">全リセット</button>
+    </div>
+  </div>
+
+  <div class="keybuf" id="keybuf"></div>
+
+  <a class="back-link" href="./index.html">← タイピングに戻る</a>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  // ============================================
+  // ストレージキー
+  //   typing_total_points : タイピングアプリと共有のポイント残高
+  //   typing-pet-save-v2  : ペット・図鑑データ専用
+  // ============================================
+  const TYPING_POINTS_KEY = 'typing_total_points';
+  const PET_SAVE_KEY      = 'typing-pet-save-v2';
+
+  // ============================================
+  // 育成コスト設計
+  //   あたためる: 3P × 80回 = 240P で孵化（egg → baby）
+  //   エサ:       5P × 50回 = 250P で成長（baby → teen）
+  //   あそぶ:    10P × 50回 = 500P で進化（teen → adult）
+  // ============================================
+  const COST_WARM = 3,  WARM_NEEDED = 80;
+  const COST_FEED = 5,  FEED_NEEDED = 50;
+  const COST_PLAY = 10, PLAY_NEEDED = 50;
+
+  // ============================================
+  // たまごの種類（全8種類）
+  // ============================================
+  const EGG_TYPES = {
+    chick:    { id: 'chick',    name: 'ヒヨコ',   eggName: 'ヒヨコのたまご',     desc: 'いちばん人気の小鳥さん',         price: 100,  color: '#fff8dc', spots: '#ffd966', species: 'chick' },
+    penguin:  { id: 'penguin',  name: 'ペンギン', eggName: 'ペンギンのたまご',   desc: 'タキシードの紳士',               price: 100,  color: '#e8f1f8', spots: '#2c3e50', species: 'penguin' },
+    bunny:    { id: 'bunny',    name: 'ウサギ',   eggName: 'ウサギのたまご',     desc: 'ふわふわでやさしい',             price: 500,  color: '#fce4ec', spots: '#f48fb1', species: 'bunny' },
+    fox:      { id: 'fox',      name: 'キツネ',   eggName: 'キツネのたまご',     desc: 'すばしっこい森の住人',           price: 500,  color: '#fff0e0', spots: '#e67e22', species: 'fox' },
+    cat:      { id: 'cat',      name: 'ネコ',     eggName: 'ネコのたまご',       desc: 'いたずら好きな仲間',             price: 1000, color: '#e1d5f5', spots: '#9c7cc4', species: 'cat' },
+    owl:      { id: 'owl',      name: 'フクロウ', eggName: 'フクロウのたまご',   desc: 'もの知りな夜のけんじゃ',         price: 1000, color: '#f0e1c8', spots: '#a47651', species: 'owl' },
+    dino:     { id: 'dino',     name: 'キョウリュウ', eggName: 'キョウリュウのたまご', desc: 'たくさん育ててみよう！',     price: 2500, color: '#d4edda', spots: '#7ab648', species: 'dino' },
+    dragon:   { id: 'dragon',   name: 'ドラゴン', eggName: 'ドラゴンのたまご',   desc: 'でんせつの生き物！',             price: 5000, color: '#ffe0e0', spots: '#e74c3c', species: 'dragon' }
+  };
+
+  // ============================================
+  // 状態管理
+  //   ポイントはタイピングアプリと共有のlocalStorageキーで管理
+  //   ペット・図鑑データは専用キーで保存
+  // ============================================
+  let state = { points: 0, pets: [], dex: [] };
+
+  function loadState() {
+    // ペット・図鑑データを読み込む
+    try {
+      const raw = localStorage.getItem(PET_SAVE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        state.pets = saved.pets || [];
+        state.dex  = saved.dex  || [];
+      }
+    } catch (e) { console.warn(e); }
+    if (!state.dex) state.dex = [];
+    // ポイントはタイピングアプリと共有のキーから読む
+    state.points = parseInt(localStorage.getItem(TYPING_POINTS_KEY) || '0');
+  }
+
+  function saveState() {
+    try {
+      // ペット・図鑑を専用キーに保存
+      localStorage.setItem(PET_SAVE_KEY, JSON.stringify({ pets: state.pets, dex: state.dex }));
+      // ポイント残高をタイピングアプリと共有のキーに書き戻す
+      localStorage.setItem(TYPING_POINTS_KEY, String(state.points));
+    } catch (e) { console.warn(e); }
+  }
+
+  function addPoints(n) { state.points += n; updatePointsUI(); saveState(); }
+  function spendPoints(n) {
+    if (state.points < n) return false;
+    state.points -= n; updatePointsUI(); saveState();
+    return true;
+  }
+  function updatePointsUI() {
+    document.getElementById('points-display').textContent = state.points.toLocaleString();
+  }
+
+  function toast(msg, kind = '') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + kind;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { el.className = 'toast'; }, kind === 'special' ? 2800 : 1800);
+  }
+
+  // ============================================
+  // SVG（たまご・各種ペット）
+  // ============================================
+  function svgEgg(eggType) {
+    const c = eggType.color, s = eggType.spots;
+    return `<svg class="egg-svg" viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="50" rx="28" ry="36" fill="${c}" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="30" cy="40" r="4" fill="${s}"/>
+      <circle cx="48" cy="55" r="3" fill="${s}"/>
+      <circle cx="35" cy="65" r="3.5" fill="${s}"/>
+      <ellipse cx="30" cy="35" rx="6" ry="3" fill="white" opacity="0.6"/>
+    </svg>`;
+  }
+
+  function svgEggLarge(eggType) {
+    const c = eggType.color, s = eggType.spots;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="62" rx="36" ry="44" fill="${c}" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="42" cy="50" r="5" fill="${s}"/>
+      <circle cx="64" cy="68" r="4" fill="${s}"/>
+      <circle cx="48" cy="80" r="4.5" fill="${s}"/>
+      <ellipse cx="42" cy="42" rx="8" ry="4" fill="white" opacity="0.7"/>
+    </svg>`;
+  }
+
+  function svgPet(species, stage) {
+    if (stage === 'egg') return svgEggLarge(EGG_TYPES[species]);
+    const fn = {
+      chick: svgChick, penguin: svgPenguin, bunny: svgBunny, fox: svgFox,
+      cat: svgCat, owl: svgOwl, dino: svgDino, dragon: svgDragon
+    }[species];
+    return fn ? fn(stage) : '';
+  }
+
+  // --- ヒヨコ ---
+  function svgChick(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="65" rx="30" ry="28" fill="#ffd966" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="55" cy="40" r="22" fill="#ffd966" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="48" cy="38" r="3" fill="#2d2a26"/>
+      <circle cx="62" cy="38" r="3" fill="#2d2a26"/>
+      <polygon points="52,46 58,46 55,52" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="40" cy="88" rx="6" ry="3" fill="#ff8c00"/>
+      <ellipse cx="70" cy="88" rx="6" ry="3" fill="#ff8c00"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="68" rx="35" ry="32" fill="#ffd966" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="55" cy="35" r="24" fill="#ffd966" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="47" cy="33" r="3.5" fill="#2d2a26"/>
+      <circle cx="63" cy="33" r="3.5" fill="#2d2a26"/>
+      <circle cx="48" cy="32" r="1" fill="white"/>
+      <circle cx="64" cy="32" r="1" fill="white"/>
+      <polygon points="51,42 59,42 55,49" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <path d="M 25 60 Q 15 70 25 80" fill="#ffd966" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 85 60 Q 95 70 85 80" fill="#ffd966" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="42" cy="98" rx="6" ry="3" fill="#ff8c00"/>
+      <ellipse cx="68" cy="98" rx="6" ry="3" fill="#ff8c00"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="58" cy="68" rx="38" ry="30" fill="#fff8dc" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="38" cy="40" r="20" fill="#fff8dc" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 30 22 L 35 12 L 40 22 L 45 12 L 50 22 Z" fill="#e74c3c" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="34" cy="38" r="3" fill="#2d2a26"/>
+      <polygon points="20,42 30,42 25,49" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <path d="M 35 48 Q 30 55 35 60" fill="#e74c3c" stroke="#2d2a26" stroke-width="1.5"/>
+      <path d="M 88 50 Q 100 60 92 80 Q 95 70 88 65" fill="#fff8dc" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="48" cy="98" rx="6" ry="3" fill="#ff8c00"/>
+      <ellipse cx="72" cy="98" rx="6" ry="3" fill="#ff8c00"/>
+    </svg>`;
+  }
+
+  // --- ペンギン ---
+  function svgPenguin(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="62" rx="28" ry="32" fill="#5d6d7e" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="68" rx="18" ry="22" fill="white"/>
+      <circle cx="48" cy="48" r="3" fill="#2d2a26"/>
+      <circle cx="62" cy="48" r="3" fill="#2d2a26"/>
+      <polygon points="50,55 60,55 55,62" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="40" cy="92" rx="6" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="70" cy="92" rx="6" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="60" rx="30" ry="36" fill="#2c3e50" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="68" rx="20" ry="26" fill="white"/>
+      <ellipse cx="26" cy="65" rx="6" ry="14" fill="#2c3e50" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="84" cy="65" rx="6" ry="14" fill="#2c3e50" stroke="#2d2a26" stroke-width="2.5"/>
+      <circle cx="46" cy="44" r="3.5" fill="white" stroke="#2d2a26" stroke-width="1.5"/>
+      <circle cx="64" cy="44" r="3.5" fill="white" stroke="#2d2a26" stroke-width="1.5"/>
+      <circle cx="46" cy="44" r="2" fill="#2d2a26"/>
+      <circle cx="64" cy="44" r="2" fill="#2d2a26"/>
+      <polygon points="50,52 60,52 55,60" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="40" cy="96" rx="7" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="70" cy="96" rx="7" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="58" rx="32" ry="40" fill="#2c3e50" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="68" rx="22" ry="30" fill="white"/>
+      <path d="M 35 40 Q 55 30 75 40 Q 70 48 55 48 Q 40 48 35 40 Z" fill="#fdd835" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="24" cy="62" rx="7" ry="18" fill="#2c3e50" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="86" cy="62" rx="7" ry="18" fill="#2c3e50" stroke="#2d2a26" stroke-width="2.5"/>
+      <circle cx="46" cy="38" r="4" fill="white" stroke="#2d2a26" stroke-width="1.5"/>
+      <circle cx="64" cy="38" r="4" fill="white" stroke="#2d2a26" stroke-width="1.5"/>
+      <circle cx="47" cy="39" r="2" fill="#2d2a26"/>
+      <circle cx="65" cy="39" r="2" fill="#2d2a26"/>
+      <polygon points="48,46 62,46 55,56" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="40" cy="100" rx="8" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="70" cy="100" rx="8" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+  }
+
+  // --- ウサギ ---
+  function svgBunny(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="25" rx="6" ry="14" fill="#fce4ec" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="60" cy="25" rx="6" ry="14" fill="#fce4ec" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="40" cy="26" rx="2.5" ry="9" fill="#f48fb1"/>
+      <ellipse cx="60" cy="26" rx="2.5" ry="9" fill="#f48fb1"/>
+      <circle cx="50" cy="55" r="28" fill="#fce4ec" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="42" cy="50" r="3" fill="#2d2a26"/>
+      <circle cx="58" cy="50" r="3" fill="#2d2a26"/>
+      <ellipse cx="50" cy="62" rx="4" ry="3" fill="#f48fb1"/>
+      <path d="M 50 62 Q 50 68 46 70 M 50 62 Q 50 68 54 70" stroke="#2d2a26" stroke-width="1.5" fill="none"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="38" cy="20" rx="7" ry="18" fill="#fce4ec" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="62" cy="20" rx="7" ry="18" fill="#fce4ec" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="38" cy="22" rx="3" ry="12" fill="#f48fb1"/>
+      <ellipse cx="62" cy="22" rx="3" ry="12" fill="#f48fb1"/>
+      <circle cx="50" cy="58" r="32" fill="#fce4ec" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="40" cy="53" r="3.5" fill="#2d2a26"/>
+      <circle cx="60" cy="53" r="3.5" fill="#2d2a26"/>
+      <circle cx="41" cy="51" r="1" fill="white"/>
+      <circle cx="61" cy="51" r="1" fill="white"/>
+      <ellipse cx="50" cy="66" rx="5" ry="3.5" fill="#f48fb1"/>
+      <path d="M 50 66 Q 50 72 45 74 M 50 66 Q 50 72 55 74" stroke="#2d2a26" stroke-width="1.5" fill="none"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="34" cy="18" rx="8" ry="20" fill="#fce4ec" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="66" cy="18" rx="8" ry="20" fill="#fce4ec" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="34" cy="20" rx="3.5" ry="14" fill="#f48fb1"/>
+      <ellipse cx="66" cy="20" rx="3.5" ry="14" fill="#f48fb1"/>
+      <circle cx="50" cy="60" r="36" fill="#fce4ec" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="38" cy="55" r="4" fill="#2d2a26"/>
+      <circle cx="62" cy="55" r="4" fill="#2d2a26"/>
+      <circle cx="39" cy="53" r="1.3" fill="white"/>
+      <circle cx="63" cy="53" r="1.3" fill="white"/>
+      <ellipse cx="50" cy="70" rx="6" ry="4" fill="#f48fb1"/>
+      <path d="M 50 70 Q 50 78 43 80 M 50 70 Q 50 78 57 80" stroke="#2d2a26" stroke-width="2" fill="none"/>
+      <path d="M 30 70 L 25 65 M 70 70 L 75 65" stroke="#2d2a26" stroke-width="1.5"/>
+      <path d="M 26 70 L 21 70 M 74 70 L 79 70" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+  }
+
+  // --- キツネ ---
+  function svgFox(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="55" cy="60" r="32" fill="#e67e22" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="32,35 28,18 42,28" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="78,35 82,18 68,28" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="34,32 32,22 40,28" fill="#fbeee0"/>
+      <polygon points="76,32 78,22 70,28" fill="#fbeee0"/>
+      <ellipse cx="55" cy="68" rx="20" ry="16" fill="#fbeee0"/>
+      <circle cx="45" cy="58" r="3.5" fill="#2d2a26"/>
+      <circle cx="65" cy="58" r="3.5" fill="#2d2a26"/>
+      <circle cx="46" cy="57" r="1" fill="white"/>
+      <circle cx="66" cy="57" r="1" fill="white"/>
+      <ellipse cx="55" cy="68" rx="3" ry="2" fill="#2d2a26"/>
+      <path d="M 55 70 Q 55 74 52 75 M 55 70 Q 55 74 58 75" stroke="#2d2a26" stroke-width="1.5" fill="none"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 80 70 Q 100 70 102 88 Q 96 80 84 80 Z" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="98" cy="84" rx="6" ry="5" fill="white"/>
+      <ellipse cx="48" cy="68" rx="28" ry="22" fill="#e67e22" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="48" cy="75" rx="14" ry="10" fill="#fbeee0"/>
+      <ellipse cx="36" cy="90" rx="5" ry="6" fill="#2d2a26"/>
+      <ellipse cx="58" cy="90" rx="5" ry="6" fill="#2d2a26"/>
+      <circle cx="42" cy="40" r="22" fill="#e67e22" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="28,22 22,5 36,16" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="58,22 64,5 50,16" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="30,20 28,10 34,18" fill="#fbeee0"/>
+      <polygon points="56,20 58,10 52,18" fill="#fbeee0"/>
+      <ellipse cx="42" cy="48" rx="16" ry="12" fill="#fbeee0"/>
+      <circle cx="34" cy="38" r="3.5" fill="#2d2a26"/>
+      <circle cx="50" cy="38" r="3.5" fill="#2d2a26"/>
+      <circle cx="35" cy="37" r="1" fill="white"/>
+      <circle cx="51" cy="37" r="1" fill="white"/>
+      <ellipse cx="42" cy="48" rx="2.5" ry="2" fill="#2d2a26"/>
+      <path d="M 42 50 Q 42 54 39 55 M 42 50 Q 42 54 45 55" stroke="#2d2a26" stroke-width="1.5" fill="none"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 78 65 Q 102 55 106 75 Q 98 68 88 75 Z" fill="#e67e22" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="102" cy="68" rx="5" ry="4" fill="white"/>
+      <path d="M 80 70 Q 105 80 100 95 Q 96 84 86 82 Z" fill="#d35400" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="100" cy="90" rx="5" ry="4" fill="white"/>
+      <path d="M 78 78 Q 95 95 80 102 Q 84 90 76 88 Z" fill="#e67e22" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="46" cy="68" rx="30" ry="22" fill="#e67e22" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="46" cy="76" rx="16" ry="10" fill="#fbeee0"/>
+      <ellipse cx="34" cy="92" rx="6" ry="6" fill="#2d2a26"/>
+      <ellipse cx="58" cy="92" rx="6" ry="6" fill="#2d2a26"/>
+      <circle cx="40" cy="36" r="24" fill="#e67e22" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="24,18 16,-2 32,12" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="56,18 64,-2 48,12" fill="#e67e22" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="26,16 22,4 30,14" fill="#fbeee0"/>
+      <polygon points="54,16 58,4 50,14" fill="#fbeee0"/>
+      <ellipse cx="40" cy="46" rx="18" ry="14" fill="#fbeee0"/>
+      <ellipse cx="31" cy="34" rx="3.5" ry="4.5" fill="#fff200" stroke="#2d2a26" stroke-width="1"/>
+      <ellipse cx="49" cy="34" rx="3.5" ry="4.5" fill="#fff200" stroke="#2d2a26" stroke-width="1"/>
+      <ellipse cx="31" cy="34" rx="1.2" ry="2.5" fill="#2d2a26"/>
+      <ellipse cx="49" cy="34" rx="1.2" ry="2.5" fill="#2d2a26"/>
+      <ellipse cx="40" cy="46" rx="3" ry="2.5" fill="#2d2a26"/>
+      <path d="M 40 48 Q 40 54 36 55 M 40 48 Q 40 54 44 55" stroke="#2d2a26" stroke-width="1.5" fill="none"/>
+      <path d="M 22 48 L 12 46 M 22 50 L 12 51 M 58 48 L 68 46 M 58 50 L 68 51" stroke="#2d2a26" stroke-width="1"/>
+    </svg>`;
+  }
+
+  // --- ネコ ---
+  function svgCat(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="55" cy="55" r="32" fill="#e1d5f5" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="32,30 38,15 45,30" fill="#e1d5f5" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="65,30 72,15 78,30" fill="#e1d5f5" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="36,28 40,22 43,28" fill="#9c7cc4"/>
+      <polygon points="68,28 72,22 75,28" fill="#9c7cc4"/>
+      <ellipse cx="45" cy="55" rx="3" ry="4" fill="#2d2a26"/>
+      <ellipse cx="65" cy="55" rx="3" ry="4" fill="#2d2a26"/>
+      <polygon points="51,63 59,63 55,68" fill="#f48fb1"/>
+      <path d="M 55 68 Q 55 72 50 73 M 55 68 Q 55 72 60 73" stroke="#2d2a26" stroke-width="1.5" fill="none"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="70" rx="28" ry="22" fill="#e1d5f5" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="55" cy="45" r="26" fill="#e1d5f5" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="32,28 40,10 47,28" fill="#e1d5f5" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="63,28 70,10 78,28" fill="#e1d5f5" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="37,26 41,18 44,26" fill="#9c7cc4"/>
+      <polygon points="66,26 70,18 73,26" fill="#9c7cc4"/>
+      <ellipse cx="45" cy="45" rx="3.5" ry="5" fill="#2d2a26"/>
+      <ellipse cx="65" cy="45" rx="3.5" ry="5" fill="#2d2a26"/>
+      <circle cx="46" cy="43" r="1" fill="white"/>
+      <circle cx="66" cy="43" r="1" fill="white"/>
+      <polygon points="51,54 59,54 55,59" fill="#f48fb1"/>
+      <path d="M 35 55 L 25 58 M 35 58 L 25 60 M 75 55 L 85 58 M 75 58 L 85 60" stroke="#2d2a26" stroke-width="1"/>
+      <path d="M 85 80 Q 95 70 90 60" stroke="#2d2a26" stroke-width="3" fill="#e1d5f5"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="72" rx="34" ry="24" fill="#e1d5f5" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="55" cy="42" r="28" fill="#e1d5f5" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="30,25 38,5 47,25" fill="#e1d5f5" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="63,25 72,5 80,25" fill="#e1d5f5" stroke="#2d2a26" stroke-width="2.5"/>
+      <polygon points="35,22 40,12 44,22" fill="#9c7cc4"/>
+      <polygon points="66,22 71,12 75,22" fill="#9c7cc4"/>
+      <ellipse cx="44" cy="42" rx="4" ry="6" fill="#2d2a26"/>
+      <ellipse cx="66" cy="42" rx="4" ry="6" fill="#2d2a26"/>
+      <circle cx="45" cy="40" r="1.5" fill="white"/>
+      <circle cx="67" cy="40" r="1.5" fill="white"/>
+      <polygon points="50,52 60,52 55,58" fill="#f48fb1"/>
+      <path d="M 32 52 L 20 55 M 32 56 L 20 58 M 78 52 L 90 55 M 78 56 L 90 58" stroke="#2d2a26" stroke-width="1"/>
+      <path d="M 88 90 Q 102 80 95 60 Q 95 55 98 50" stroke="#2d2a26" stroke-width="3" fill="#e1d5f5"/>
+    </svg>`;
+  }
+
+  // --- フクロウ ---
+  function svgOwl(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="62" rx="32" ry="34" fill="#a47651" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="70" rx="20" ry="20" fill="#d4b896"/>
+      <circle cx="42" cy="50" r="10" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="68" cy="50" r="10" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="42" cy="51" r="5" fill="#2d2a26"/>
+      <circle cx="68" cy="51" r="5" fill="#2d2a26"/>
+      <circle cx="43" cy="49" r="1.5" fill="white"/>
+      <circle cx="69" cy="49" r="1.5" fill="white"/>
+      <polygon points="52,60 58,60 55,66" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="65" rx="32" ry="38" fill="#a47651" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="26" cy="68" rx="7" ry="20" fill="#7d5a3c" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="84" cy="68" rx="7" ry="20" fill="#7d5a3c" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="55" cy="75" rx="20" ry="22" fill="#d4b896"/>
+      <path d="M 46 72 Q 50 76 54 72 M 56 72 Q 60 76 64 72 M 46 82 Q 50 86 54 82 M 56 82 Q 60 86 64 82" stroke="#7d5a3c" stroke-width="1.2" fill="none"/>
+      <polygon points="32,28 28,12 38,22" fill="#a47651" stroke="#2d2a26" stroke-width="2"/>
+      <polygon points="78,28 82,12 72,22" fill="#a47651" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="42" cy="42" r="11" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="68" cy="42" r="11" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="42" cy="43" r="6" fill="#ffa726"/>
+      <circle cx="68" cy="43" r="6" fill="#ffa726"/>
+      <circle cx="42" cy="43" r="3.5" fill="#2d2a26"/>
+      <circle cx="68" cy="43" r="3.5" fill="#2d2a26"/>
+      <circle cx="43" cy="42" r="1.2" fill="white"/>
+      <circle cx="69" cy="42" r="1.2" fill="white"/>
+      <polygon points="51,54 59,54 55,62" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="45" cy="100" rx="5" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="65" cy="100" rx="5" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 20 50 Q 5 50 0 80 Q 10 70 24 72 Z" fill="#7d5a3c" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 90 50 Q 105 50 110 80 Q 100 70 86 72 Z" fill="#7d5a3c" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="55" cy="62" rx="34" ry="40" fill="#a47651" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="72" rx="22" ry="24" fill="#d4b896"/>
+      <path d="M 44 68 Q 49 72 54 68 M 56 68 Q 61 72 66 68 M 42 78 Q 47 82 52 78 M 54 78 Q 59 82 64 78 M 44 88 Q 49 92 54 88 M 56 88 Q 61 92 66 88" stroke="#7d5a3c" stroke-width="1.3" fill="none"/>
+      <polygon points="30,24 24,5 38,18" fill="#a47651" stroke="#2d2a26" stroke-width="2"/>
+      <polygon points="80,24 86,5 72,18" fill="#a47651" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="40" cy="40" r="13" fill="white" stroke="#2d2a26" stroke-width="2.5"/>
+      <circle cx="70" cy="40" r="13" fill="white" stroke="#2d2a26" stroke-width="2.5"/>
+      <circle cx="40" cy="41" r="8" fill="#ffa726"/>
+      <circle cx="70" cy="41" r="8" fill="#ffa726"/>
+      <circle cx="40" cy="41" r="4.5" fill="#2d2a26"/>
+      <circle cx="70" cy="41" r="4.5" fill="#2d2a26"/>
+      <circle cx="42" cy="39" r="1.8" fill="white"/>
+      <circle cx="72" cy="39" r="1.8" fill="white"/>
+      <line x1="55" y1="32" x2="55" y2="56" stroke="#7d5a3c" stroke-width="1.5"/>
+      <polygon points="50,54 60,54 55,64" fill="#ff8c00" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="42" cy="102" rx="6" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="68" cy="102" rx="6" ry="3" fill="#ff8c00" stroke="#2d2a26" stroke-width="1.5"/>
+    </svg>`;
+  }
+
+  // --- 恐竜 ---
+  function svgDino(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="72" rx="32" ry="22" fill="#7ab648" stroke="#2d2a26" stroke-width="3"/>
+      <circle cx="55" cy="48" r="26" fill="#7ab648" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="32,46 28,38 36,42" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="78,46 82,38 74,42" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <circle cx="46" cy="46" r="5" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="64" cy="46" r="5" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="47" cy="47" r="2.5" fill="#2d2a26"/>
+      <circle cx="65" cy="47" r="2.5" fill="#2d2a26"/>
+      <path d="M 48 58 Q 55 62 62 58" stroke="#2d2a26" stroke-width="2" fill="#c0392b"/>
+      <ellipse cx="32" cy="68" rx="5" ry="4" fill="#7ab648" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="78" cy="68" rx="5" ry="4" fill="#7ab648" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="42" cy="92" rx="7" ry="4" fill="#5a8e2f" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="68" cy="92" rx="7" ry="4" fill="#5a8e2f" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="55" cy="76" rx="14" ry="9" fill="#a8d878" opacity="0.6"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 78 78 Q 100 80 102 92 Q 92 86 80 84 Z" fill="#7ab648" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="50" cy="72" rx="28" ry="20" fill="#7ab648" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 38 85 Q 36 95 42 98 L 50 98 Q 52 88 48 85 Z" fill="#5a8e2f" stroke="#2d2a26" stroke-width="2"/>
+      <path d="M 58 85 Q 56 95 62 98 L 70 98 Q 72 88 68 85 Z" fill="#5a8e2f" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="42" cy="42" rx="24" ry="20" fill="#7ab648" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="42,22 38,12 46,18" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="54,28 50,18 58,24" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="66,40 62,30 70,36" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="74,52 70,42 78,48" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <circle cx="36" cy="38" r="4" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="50" cy="38" r="4" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="37" cy="39" r="2" fill="#2d2a26"/>
+      <circle cx="51" cy="39" r="2" fill="#2d2a26"/>
+      <path d="M 26 48 Q 35 54 50 50" stroke="#2d2a26" stroke-width="2" fill="none"/>
+      <circle cx="26" cy="44" r="1" fill="#2d2a26"/>
+      <ellipse cx="32" cy="65" rx="4" ry="3" fill="#7ab648" stroke="#2d2a26" stroke-width="2"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 80 70 Q 108 65 108 90 Q 95 78 82 78 Z" fill="#7ab648" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 38 80 Q 34 96 42 100 L 52 100 Q 54 88 50 80 Z" fill="#5a8e2f" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 58 80 Q 54 96 62 100 L 72 100 Q 74 88 70 80 Z" fill="#5a8e2f" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="50" cy="66" rx="32" ry="20" fill="#7ab648" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="50" cy="70" rx="20" ry="10" fill="#a8d878" opacity="0.5"/>
+      <path d="M 18 35 Q 15 50 25 55 Q 50 58 55 40 Q 50 22 30 25 Z" fill="#7ab648" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="38,22 33,12 43,18" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="50,26 45,14 55,22" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="62,32 58,20 68,28" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <polygon points="74,42 70,30 80,38" fill="#5a8e2f" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="35" cy="34" rx="4" ry="3" fill="#fff200" stroke="#2d2a26" stroke-width="1.5"/>
+      <ellipse cx="35" cy="34" rx="1.5" ry="2.5" fill="#2d2a26"/>
+      <path d="M 18 42 Q 22 52 40 52 L 50 48" stroke="#2d2a26" stroke-width="2.5" fill="#c0392b"/>
+      <polygon points="22,48 24,53 26,48" fill="white" stroke="#2d2a26" stroke-width="1"/>
+      <polygon points="30,49 32,55 34,49" fill="white" stroke="#2d2a26" stroke-width="1"/>
+      <polygon points="38,49 40,54 42,49" fill="white" stroke="#2d2a26" stroke-width="1"/>
+      <ellipse cx="22" cy="36" rx="1.5" ry="2" fill="#2d2a26"/>
+      <ellipse cx="32" cy="60" rx="5" ry="3" fill="#7ab648" stroke="#2d2a26" stroke-width="2"/>
+    </svg>`;
+  }
+
+  // --- ドラゴン ---
+  function svgDragon(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 22 55 Q 12 50 14 42 Q 22 50 28 52 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <path d="M 88 55 Q 98 50 96 42 Q 88 50 82 52 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="55" cy="68" rx="28" ry="22" fill="#e74c3c" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="74" rx="15" ry="8" fill="#ff9a8a" opacity="0.6"/>
+      <circle cx="55" cy="44" r="24" fill="#e74c3c" stroke="#2d2a26" stroke-width="3"/>
+      <polygon points="42,22 38,12 46,20" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <polygon points="68,22 72,12 64,20" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="46" cy="44" r="6" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="64" cy="44" r="6" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="47" cy="45" r="3.5" fill="#fff200"/>
+      <circle cx="65" cy="45" r="3.5" fill="#fff200"/>
+      <circle cx="47" cy="45" r="2" fill="#2d2a26"/>
+      <circle cx="65" cy="45" r="2" fill="#2d2a26"/>
+      <path d="M 48 56 Q 55 60 62 56" stroke="#2d2a26" stroke-width="2" fill="none"/>
+      <ellipse cx="42" cy="92" rx="6" ry="4" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="68" cy="92" rx="6" ry="4" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 22 60 Q 5 45 6 28 Q 14 48 30 52 Q 18 42 18 30 Q 24 48 32 54 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 88 60 Q 105 45 104 28 Q 96 48 80 52 Q 92 42 92 30 Q 86 48 78 54 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="55" cy="72" rx="28" ry="22" fill="#e74c3c" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="78" rx="16" ry="8" fill="#ff9a8a" opacity="0.6"/>
+      <ellipse cx="55" cy="38" rx="25" ry="22" fill="#e74c3c" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 40 18 Q 35 6 44 14 Q 46 22 42 24 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <path d="M 70 18 Q 75 6 66 14 Q 64 22 68 24 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="46" cy="38" rx="4.5" ry="5" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="64" cy="38" rx="4.5" ry="5" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="47" cy="39" r="3" fill="#fff200"/>
+      <circle cx="65" cy="39" r="3" fill="#fff200"/>
+      <ellipse cx="47" cy="39" rx="1.3" ry="2.5" fill="#2d2a26"/>
+      <ellipse cx="65" cy="39" rx="1.3" ry="2.5" fill="#2d2a26"/>
+      <path d="M 46 50 Q 55 56 64 50" stroke="#2d2a26" stroke-width="2" fill="#c0392b"/>
+      <ellipse cx="42" cy="92" rx="6" ry="4" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="68" cy="92" rx="6" ry="4" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 18 58 Q -2 38 2 16 Q 10 44 28 50 Q 12 38 14 22 Q 22 46 32 52 Q 22 38 28 26 Q 28 48 36 54 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 92 58 Q 112 38 108 16 Q 100 44 82 50 Q 98 38 96 22 Q 88 46 78 52 Q 88 38 82 26 Q 82 48 74 54 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="55" cy="74" rx="30" ry="22" fill="#e74c3c" stroke="#2d2a26" stroke-width="3"/>
+      <ellipse cx="55" cy="80" rx="18" ry="9" fill="#ff9a8a" opacity="0.7"/>
+      <ellipse cx="55" cy="34" rx="28" ry="24" fill="#e74c3c" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 38 14 Q 30 -2 42 8 Q 46 18 42 22 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 72 14 Q 80 -2 68 8 Q 64 18 68 22 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2.5"/>
+      <ellipse cx="44" cy="32" rx="5" ry="6" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="66" cy="32" rx="5" ry="6" fill="white" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="45" cy="33" r="3.5" fill="#fff200"/>
+      <circle cx="67" cy="33" r="3.5" fill="#fff200"/>
+      <ellipse cx="45" cy="33" rx="1.3" ry="3" fill="#2d2a26"/>
+      <ellipse cx="67" cy="33" rx="1.3" ry="3" fill="#2d2a26"/>
+      <path d="M 42 46 Q 55 54 68 46 L 70 50 Q 55 58 40 50 Z" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="50" cy="94" rx="7" ry="4" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="70" cy="94" rx="7" ry="4" fill="#c0392b" stroke="#2d2a26" stroke-width="2"/>
+    </svg>`;
+  }
+
+  // ============================================
+  // ショップ
+  // ============================================
+  function renderShop() {
+    const grid = document.getElementById('eggs-grid');
+    grid.innerHTML = '';
+    const eggs = Object.values(EGG_TYPES).slice().sort((a, b) => a.price - b.price);
+    eggs.forEach(egg => {
+      const div = document.createElement('div');
+      div.className = 'egg-card';
+      const canBuy = state.points >= egg.price;
+      div.innerHTML = `
+        ${svgEgg(egg)}
+        <div class="name">${egg.eggName}</div>
+        <div class="desc">${egg.desc}</div>
+        <div class="price">💰 ${egg.price.toLocaleString()} P</div>
+        <button class="buy-btn" data-egg="${egg.id}" ${canBuy ? '' : 'disabled'}>
+          ${canBuy ? '買う！' : 'ポイントが たりない'}
+        </button>
+      `;
+      grid.appendChild(div);
+    });
+    grid.querySelectorAll('.buy-btn').forEach(btn => {
+      btn.addEventListener('click', () => buyEgg(btn.dataset.egg));
+    });
+  }
+
+  function buyEgg(eggId) {
+    const egg = EGG_TYPES[eggId];
+    if (!spendPoints(egg.price)) {
+      toast('ポイントが たりないよ！', 'bad');
+      return;
+    }
+    const pet = {
+      id: 'pet-' + Date.now() + Math.random().toString(36).slice(2, 6),
+      eggType: eggId, stage: 'egg',
+      warmCount: 0, feedCount: 0, playCount: 0,
+      birthAt: Date.now()
+    };
+    state.pets.push(pet);
+    saveState();
+    toast(`${egg.eggName}を かったよ！マイペットを見てね`, 'good');
+    renderShop();
+    renderPets();
+  }
+
+  // ============================================
+  // ペット育成
+  // ============================================
+  function renderPets() {
+    const container = document.getElementById('pet-list-container');
+    if (state.pets.length === 0) {
+      container.innerHTML = `<div class="empty-msg">
+        まだペットがいません。<br>
+        ショップでたまごを買ってみよう！🥚
+      </div>`;
+      return;
+    }
+    container.innerHTML = '<div class="pet-list" id="pet-list"></div>';
+    const list = document.getElementById('pet-list');
+    state.pets.forEach(pet => list.appendChild(renderPetCard(pet)));
+  }
+
+  function renderPetCard(pet) {
+    const egg = EGG_TYPES[pet.eggType];
+    const div = document.createElement('div');
+    div.className = 'pet-card';
+    div.dataset.petId = pet.id;
+
+    let stageLabel = '', progressLabel = '', progressPct = 0, fillClass = '', actionsHTML = '';
+
+    if (pet.stage === 'egg') {
+      stageLabel = '🥚 たまご';
+      progressLabel = `あたためる：${pet.warmCount} / ${WARM_NEEDED}`;
+      progressPct = (pet.warmCount / WARM_NEEDED) * 100;
+      fillClass = 'warm';
+      actionsHTML = `<button class="action-btn warm" data-act="warm" data-pet="${pet.id}">
+        🔥 あたためる<br><small>${COST_WARM}P</small></button>`;
+    } else if (pet.stage === 'baby') {
+      stageLabel = '🐣 ヒナ';
+      progressLabel = `エサ：${pet.feedCount} / ${FEED_NEEDED}`;
+      progressPct = (pet.feedCount / FEED_NEEDED) * 100;
+      fillClass = 'feed';
+      actionsHTML = `<button class="action-btn feed" data-act="feed" data-pet="${pet.id}">
+        🍴 エサをあげる<br><small>${COST_FEED}P</small></button>`;
+    } else if (pet.stage === 'teen') {
+      stageLabel = '🐥 こども';
+      progressLabel = `あそぶ：${pet.playCount} / ${PLAY_NEEDED}`;
+      progressPct = (pet.playCount / PLAY_NEEDED) * 100;
+      fillClass = 'play';
+      actionsHTML = `<button class="action-btn play" data-act="play" data-pet="${pet.id}">
+        🎾 あそぶ<br><small>${COST_PLAY}P</small></button>`;
+    } else {
+      stageLabel = '⭐ 大人になった！';
+      progressLabel = `図鑑に登録ずみ！`;
+      progressPct = 100;
+      fillClass = 'done';
+      actionsHTML = `<button class="action-btn done">📖 図鑑にいるよ</button>`;
+    }
+
+    div.innerHTML = `
+      ${svgPet(egg.species, pet.stage)}
+      <div class="pet-name">${egg.name}</div>
+      <div class="pet-stage">${stageLabel}</div>
+      <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${Math.min(100, progressPct)}%"></div></div>
+      <div class="progress-label">${progressLabel}</div>
+      <div class="pet-actions">${actionsHTML}</div>
+    `;
+
+    div.querySelectorAll('.action-btn[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => petAction(btn.dataset.act, btn.dataset.pet));
+    });
+    return div;
+  }
+
+  function petAction(act, petId) {
+    const pet = state.pets.find(p => p.id === petId);
+    if (!pet) return;
+    const egg = EGG_TYPES[pet.eggType];
+    const costs = { warm: COST_WARM, feed: COST_FEED, play: COST_PLAY };
+    if (!spendPoints(costs[act])) {
+      toast('ポイントが たりない！', 'bad');
+      return;
+    }
+
+    let evolved = false;
+
+    if (act === 'warm' && pet.stage === 'egg') {
+      pet.warmCount++;
+      if (pet.warmCount >= WARM_NEEDED) {
+        pet.stage = 'baby';
+        toast(`🎉 ${egg.name}が生まれたよ！`, 'special');
+        evolved = true;
+      } else toast('ぽかぽか…💕', 'good');
+    } else if (act === 'feed' && pet.stage === 'baby') {
+      pet.feedCount++;
+      if (pet.feedCount >= FEED_NEEDED) {
+        pet.stage = 'teen';
+        toast(`✨ おおきくなった！`, 'special');
+        evolved = true;
+      } else toast('もぐもぐ🍴', 'good');
+    } else if (act === 'play' && pet.stage === 'teen') {
+      pet.playCount++;
+      if (pet.playCount >= PLAY_NEEDED) {
+        pet.stage = 'adult';
+        if (!state.dex.includes(pet.eggType)) {
+          state.dex.push(pet.eggType);
+          setTimeout(() => toast(`📖 ずかんに「${egg.name}」を登録！`, 'special'), 1900);
+        }
+        toast(`🌟 大人になった！すごい！`, 'special');
+        evolved = true;
+      } else toast('たのしいね！🎾', 'good');
+    }
+
+    saveState();
+    const card = document.querySelector(`[data-pet-id="${pet.id}"]`);
+    if (card) {
+      const svg = card.querySelector('svg');
+      if (svg) {
+        svg.classList.add(evolved ? 'sparkle' : 'bounce');
+        setTimeout(() => svg.classList.remove('sparkle', 'bounce'), 800);
+      }
+    }
+    renderPets();
+    if (evolved) renderDex();
+  }
+
+  // ============================================
+  // 図鑑
+  // ============================================
+  function renderDex() {
+    const grid = document.getElementById('dex-grid');
+    grid.innerHTML = '';
+    const eggs = Object.values(EGG_TYPES).slice().sort((a, b) => a.price - b.price);
+    let count = 0;
+    eggs.forEach((egg, i) => {
+      const unlocked = state.dex.includes(egg.id);
+      if (unlocked) count++;
+      const div = document.createElement('div');
+      div.className = 'dex-card' + (unlocked ? '' : ' locked');
+      div.innerHTML = `
+        <div class="dex-num">No.${String(i + 1).padStart(2, '0')}</div>
+        ${unlocked ? svgPet(egg.species, 'adult') : svgEggLarge(egg)}
+        <div class="name">${unlocked ? egg.name : '？？？'}</div>
+        ${unlocked ? '<div class="badge">⭐ コンプリート</div>' : '<div class="badge" style="color:#aaa;">未登録</div>'}
+      `;
+      grid.appendChild(div);
+    });
+    document.getElementById('dex-count').textContent = count;
+    document.getElementById('dex-total').textContent = eggs.length;
+  }
+
+  // ============================================
+  // タブ切り替え
+  // ============================================
+  function switchView(name) {
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.view === name);
+    });
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.toggle('active', v.id === 'view-' + name);
+    });
+    if (name === 'shop') renderShop();
+    if (name === 'pets') renderPets();
+    if (name === 'dex') renderDex();
+  }
+
+  // ============================================
+  // 隠しコマンド：「petshopping」
+  // ============================================
+  const SECRET = 'petshopping';
+  let keyBuffer = '';
+  let keyBufTimer = null;
+
+  function openDebugPanel() {
+    document.getElementById('debug-panel').classList.add('show');
+    document.getElementById('debug-input').focus();
+    keyBuffer = '';
+    updateKeyBufDisplay('');
+  }
+  function closeDebugPanel() {
+    document.getElementById('debug-panel').classList.remove('show');
+  }
+  function updateKeyBufDisplay(text) {
+    const el = document.getElementById('keybuf');
+    if (text) {
+      el.textContent = '入力中: ' + text;
+      el.classList.add('show');
+      clearTimeout(updateKeyBufDisplay._t);
+      updateKeyBufDisplay._t = setTimeout(() => el.classList.remove('show'), 1500);
+    } else {
+      el.classList.remove('show');
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+      keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-SECRET.length);
+      updateKeyBufDisplay(keyBuffer);
+      clearTimeout(keyBufTimer);
+      keyBufTimer = setTimeout(() => { keyBuffer = ''; updateKeyBufDisplay(''); }, 3000);
+      if (keyBuffer === SECRET) {
+        openDebugPanel();
+        keyBuffer = '';
+      }
+    }
+  });
+
+  // ============================================
+  // 初期化
+  // ============================================
+  function init() {
+    loadState();
+    updatePointsUI();
+
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => switchView(t.dataset.view));
+    });
+
+    document.getElementById('debug-close').addEventListener('click', closeDebugPanel);
+    document.getElementById('debug-add').addEventListener('click', () => {
+      const v = parseInt(document.getElementById('debug-input').value, 10);
+      if (isNaN(v) || v < 0) { toast('数字を入れてね', 'bad'); return; }
+      addPoints(v);
+      toast(`+${v.toLocaleString()} ポイント追加`, 'good');
+      document.getElementById('debug-input').value = '';
+      renderShop();
+    });
+    document.getElementById('debug-set').addEventListener('click', () => {
+      const v = parseInt(document.getElementById('debug-input').value, 10);
+      if (isNaN(v) || v < 0) { toast('数字を入れてね', 'bad'); return; }
+      state.points = v;
+      updatePointsUI(); saveState();
+      toast(`${v.toLocaleString()} ポイントに設定`, 'good');
+      document.getElementById('debug-input').value = '';
+      renderShop();
+    });
+    document.getElementById('debug-reset').addEventListener('click', () => {
+      if (!confirm('ポイントとペットと図鑑を全部リセットしますか？')) return;
+      state = { points: 0, pets: [], dex: [] };
+      localStorage.setItem(TYPING_POINTS_KEY, '0');
+      localStorage.removeItem(PET_SAVE_KEY);
+      updatePointsUI();
+      renderShop(); renderPets(); renderDex();
+      closeDebugPanel();
+      toast('リセットしました', 'good');
+    });
+
+    renderShop();
+    renderPets();
+    renderDex();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

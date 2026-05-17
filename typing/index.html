@@ -124,6 +124,21 @@
             <p class="text-blue-800 font-bold text-lg md:text-xl">きみは何年生？ モードをえらんでね！</p>
         </header>
 
+        <!-- ポイント合計表示 -->
+        <div class="text-center mb-6">
+            <div class="inline-block bg-amber-50 border-2 border-amber-400 rounded-2xl px-8 py-3 shadow-sm">
+                <div class="text-amber-600 font-bold text-sm mb-1">⭐ これまでのポイント合計</div>
+                <div class="text-4xl font-black text-amber-500 title-font" id="total-pts-val">0</div>
+                <div class="text-amber-600 text-sm font-bold">pt</div>
+            </div>
+        </div>
+        <script>
+            (function() {
+                var pts = parseInt(localStorage.getItem('typing_total_points') || '0');
+                document.getElementById('total-pts-val').textContent = pts.toLocaleString();
+            })();
+        </script>
+
         <!-- 注意書き -->
         <div
             class="bg-red-50 border-2 border-red-200 text-red-600 font-bold rounded-xl p-4 mb-10 text-center max-w-2xl mx-auto shadow-sm">
@@ -224,8 +239,18 @@
 
         </div>
 
+        <!-- ショップボタン -->
+        <div class="mt-8 text-center">
+            <a href="./shop.html"
+                class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-xl title-font text-white shadow-lg transition-all hover:scale-[1.03]"
+                style="background:linear-gradient(135deg,#ff6b35,#f4b942); border: 3px solid #2d2a26; box-shadow: 4px 4px 0 #2d2a26;">
+                🛒 ポイントショップ
+            </a>
+            <p class="text-amber-700 text-sm font-bold mt-2">ポイントをつかってペットをそだてよう！</p>
+        </div>
+
         <!-- アプリのホームへ戻る -->
-        <div class="mt-12 text-center">
+        <div class="mt-6 text-center">
             <a href="../index.html"
                 class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-full transition-colors">
                 <span>◀ ホームにもどる</span>

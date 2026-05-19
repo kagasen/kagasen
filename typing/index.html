@@ -259,6 +259,40 @@
 
     </div>
 
+    <!-- Firebase カウント（直接URL訪問時も計測） -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+        (function () {
+            const APP_ID = 'typing';
+            function getTodayStr() { return new Date().toISOString().split('T')[0]; }
+            function hasCountedToday() { return !!localStorage.getItem('kagasen_click_' + APP_ID + '_' + getTodayStr()); }
+            function markCountedToday() { localStorage.setItem('kagasen_click_' + APP_ID + '_' + getTodayStr(), '1'); }
+
+            if (hasCountedToday()) return;
+
+            firebase.initializeApp({
+                apiKey: "AIzaSyAhM5WJn8ub-OOuJKoSFaa8Pceki-SzlQ4",
+                authDomain: "kagasenapplication.firebaseapp.com",
+                projectId: "kagasenapplication",
+                storageBucket: "kagasenapplication.firebasestorage.app",
+                messagingSenderId: "1082992889425",
+                appId: "1:1082992889425:web:c18a56904f358d750fb270"
+            });
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+
+            auth.signInAnonymously().then(function () {
+                return db.collection('appClicks').doc(APP_ID).set(
+                    { count: firebase.firestore.FieldValue.increment(1) },
+                    { merge: true }
+                );
+            }).then(function () {
+                markCountedToday();
+            }).catch(function () {});
+        })();
+    </script>
 </body>
 
 </html>

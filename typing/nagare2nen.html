@@ -790,7 +790,7 @@ function updateComboBar() {
 function startGame() {
     gameState = 'playing';
     overlay.style.display = 'none';
-    inputBox.focus();
+    focusInput();
 
     spawnWord(); // 最初の1問を出す
 
@@ -986,7 +986,13 @@ function processChar(ch) {
     }
 }
 
-inputBox.addEventListener('keydown', e => {
+// タッチデバイス（iPad等）かどうかを判定
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+// デスクトップではinputBoxにフォーカスしない（IME予測変換を防ぐ）
+function focusInput() { if (isTouch) inputBox.focus(); }
+
+// デスクトップはdocumentで捕捉（IMEをバイパス）、iPadはinputBoxで捕捉
+(isTouch ? inputBox : document).addEventListener('keydown', e => {
     if (e.isComposing || e.key === 'Process') return;
     if (e.key.length !== 1) return;
     if (gameState !== 'playing') return;
@@ -1006,6 +1012,10 @@ inputBox.addEventListener('input', e => {
     if (!/[a-z0-9\-]/.test(ch)) return;
     processChar(ch);
 });
+
+// IME変換が開始・終了しても入力をクリア（念のため）
+inputBox.addEventListener('compositionstart', () => { inputBox.value = ''; });
+inputBox.addEventListener('compositionend',   () => { inputBox.value = ''; });
 
 // ============================================================
 // 単語完成 → 即座に次の言葉を出す
@@ -1099,7 +1109,7 @@ function openRankModal() {
 
 function closeRankModal() {
     document.getElementById('rank-modal').classList.remove('open');
-    if (gameState === 'playing') inputBox.focus();
+    if (gameState === 'playing') focusInput();
 }
 
 // ============================================================
@@ -1118,7 +1128,7 @@ document.getElementById('close-rank-modal-btn').addEventListener('click', closeR
 
 document.addEventListener('click', e => {
     if (gameState === 'playing' && !e.target.closest('#rank-modal') && !e.target.closest('#overlay'))
-        inputBox.focus();
+        focusInput();
 });
 
 // iPad: タッチでも入力フォーカス維持

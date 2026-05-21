@@ -383,6 +383,8 @@ function App() {
     const drawColorRef = useRef(drawColor);
     const rouletteIntervalRef = useRef(null);
     const rouletteTimeoutRef = useRef(null);
+    const activePointers = useRef(new Map());
+    const isPinchingRef = useRef(false);
 
     useEffect(() => { viewRef.current = view; }, [view]);
     useEffect(() => { drawColorRef.current = drawColor; }, [drawColor]);
@@ -502,11 +504,11 @@ function App() {
             id: `summary-${Date.now()}`,
             type: 'summary',
             content: '',
-            x: center.x - 500 + offset, y: center.y - 140 + offset,
-            width: 1000, height: 280,
+            x: center.x - 250 + offset, y: center.y - 100 + offset,
+            width: 500, height: 200,
             zIndex: newZ,
             isLocked: false,
-            fontSize: 22
+            fontSize: 16
         }]);
     };
 
@@ -515,12 +517,18 @@ function App() {
         const center = getCanvasCenter();
         const newZ = maxZIndexRef.current + 1;
         setMaxZIndex(newZ);
+        // 100%ズーム時に画面内に収まるようサイズを調整（左サイドバー約120px分を除く）
+        const availW = window.innerWidth - 140;
+        const availH = window.innerHeight - 60;
+        const fitScale = Math.min(availW / tpl.width, availH / tpl.height, 1);
+        const w = Math.round(tpl.width * fitScale);
+        const h = Math.round(tpl.height * fitScale);
         setItems([...items, {
             id: `tpl-${Date.now()}`,
             type: 'template',
             content: tpl.id,
-            x: center.x - tpl.width / 2, y: center.y - tpl.height / 2,
-            width: tpl.width, height: tpl.height,
+            x: center.x - w / 2, y: center.y - h / 2,
+            width: w, height: h,
             zIndex: newZ,
             isLocked: false
         }]);
@@ -617,6 +625,51 @@ function App() {
     };
 
     const handleCanvasPointerDown = (e) => {
+        // 全ポインターを追跡（ピンチズーム検出のため）
+        activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        // 2本指ピンチズーム
+        if (activePointers.current.size === 2) {
+            isPinchingRef.current = true;
+            setIsPanning(false);
+
+            const ptrs = [...activePointers.current.values()];
+            let lastDist = Math.hypot(ptrs[0].x - ptrs[1].x, ptrs[0].y - ptrs[1].y);
+
+            const handlePinchMove = (moveEvent) => {
+                activePointers.current.set(moveEvent.pointerId, { x: moveEvent.clientX, y: moveEvent.clientY });
+                if (activePointers.current.size < 2) return;
+                const pts = [...activePointers.current.values()];
+                const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                const midX = (pts[0].x + pts[1].x) / 2;
+                const midY = (pts[0].y + pts[1].y) / 2;
+                if (lastDist > 0) {
+                    const ratio = dist / lastDist;
+                    const curView = viewRef.current;
+                    const newScale = Math.min(5, Math.max(0.1, curView.scale * ratio));
+                    const newX = midX - (midX - curView.x) * (newScale / curView.scale);
+                    const newY = midY - (midY - curView.y) * (newScale / curView.scale);
+                    setView({ x: newX, y: newY, scale: newScale });
+                }
+                lastDist = dist;
+            };
+
+            const handlePinchUp = (upEvent) => {
+                activePointers.current.delete(upEvent.pointerId);
+                if (activePointers.current.size < 2) {
+                    isPinchingRef.current = false;
+                    document.removeEventListener('pointermove', handlePinchMove);
+                    document.removeEventListener('pointerup', handlePinchUp);
+                    document.removeEventListener('pointercancel', handlePinchUp);
+                }
+            };
+
+            document.addEventListener('pointermove', handlePinchMove);
+            document.addEventListener('pointerup', handlePinchUp);
+            document.addEventListener('pointercancel', handlePinchUp);
+            return;
+        }
+
         if (e.target.closest('[data-item]') && toolMode !== 'draw') return;
 
         if (toolMode !== 'draw') {
@@ -625,7 +678,6 @@ function App() {
         }
 
         if (toolMode === 'select') {
-            // ... selection logic ...
             const startX = e.clientX;
             const startY = e.clientY;
             const startViewX = viewRef.current.x;
@@ -636,6 +688,7 @@ function App() {
             const canvasStartY = (startY - startViewY) / scale;
 
             const handlePointerMove = (moveEvent) => {
+                if (isPinchingRef.current) return;
                 const currentX = (moveEvent.clientX - startViewX) / scale;
                 const currentY = (moveEvent.clientY - startViewY) / scale;
 
@@ -659,7 +712,8 @@ function App() {
                 setSelectedIds(newSelectedIds);
             };
 
-            const handlePointerUp = () => {
+            const handlePointerUp = (upEvent) => {
+                activePointers.current.delete(upEvent.pointerId);
                 setSelectionBox(null);
                 document.removeEventListener('pointermove', handlePointerMove);
                 document.removeEventListener('pointerup', handlePointerUp);
@@ -676,12 +730,14 @@ function App() {
             const startViewY = viewRef.current.y;
 
             const handlePointerMove = (moveEvent) => {
+                if (isPinchingRef.current) return;
                 const dx = moveEvent.clientX - startX;
                 const dy = moveEvent.clientY - startY;
                 setView({ ...viewRef.current, x: startViewX + dx, y: startViewY + dy });
             };
 
-            const handlePointerUp = () => {
+            const handlePointerUp = (upEvent) => {
+                activePointers.current.delete(upEvent.pointerId);
                 setIsPanning(false);
                 document.removeEventListener('pointermove', handlePointerMove);
                 document.removeEventListener('pointerup', handlePointerUp);
@@ -705,13 +761,15 @@ function App() {
             setCurrentDrawingPath({ id: newId, path: pathData, color: currentDrawColor, x: 0, y: 0 });
 
             const handlePointerMove = (moveEvent) => {
+                if (isPinchingRef.current) return;
                 const currentX = (moveEvent.clientX - viewRef.current.x) / scale;
                 const currentY = (moveEvent.clientY - viewRef.current.y) / scale;
                 pathData += ` L ${currentX} ${currentY}`;
                 setCurrentDrawingPath({ id: newId, path: pathData, color: currentDrawColor, x: 0, y: 0 });
             };
 
-            const handlePointerUp = () => {
+            const handlePointerUp = (upEvent) => {
+                activePointers.current.delete(upEvent.pointerId);
                 // PointerUpしたら最終パスをitemsに追加
                 setCurrentDrawingPath(prev => {
                     if (prev) {
@@ -737,6 +795,10 @@ function App() {
             document.addEventListener('pointermove', handlePointerMove);
             document.addEventListener('pointerup', handlePointerUp);
         }
+    };
+
+    const handleCanvasPointerUpCleanup = (e) => {
+        activePointers.current.delete(e.pointerId);
     };
 
     const handleWheel = (e) => {
@@ -872,6 +934,8 @@ function App() {
             <div
                 className="w-full h-full absolute inset-0 touch-none"
                 onPointerDown={handleCanvasPointerDown}
+                onPointerUp={handleCanvasPointerUpCleanup}
+                onPointerCancel={handleCanvasPointerUpCleanup}
                 onWheel={handleWheel}
                 style={{
                     cursor: toolMode === 'select' ? 'default' :

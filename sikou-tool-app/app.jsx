@@ -917,11 +917,11 @@ function App() {
         setItems(itemsRef.current.map(item => {
             if (!selectedIdsRef.current.includes(item.id)) return item;
             if (item.isLocked) return item;
-            if (item.type !== 'text' && item.type !== 'summary') return item;
+            if (item.type !== 'text' && item.type !== 'summary' && item.type !== 'sticky') return item;
             const current = typeof item.fontSize === 'number'
                 ? item.fontSize
-                : (item.type === 'text' ? 24 : 22);
-            const next = Math.min(60, Math.max(12, current + delta));
+                : (item.type === 'text' ? 24 : item.type === 'sticky' ? 18 : 22);
+            const next = Math.min(60, Math.max(8, current + delta));
             return { ...item, fontSize: next };
         }));
     };
@@ -1066,12 +1066,16 @@ function App() {
                             );
                         }
 
-                        // 幅に依存したフォントサイズの計算 (初期サイズを基準としたスケール)
+                        // 幅と高さに依存したフォントサイズの計算 (初期サイズを基準としたスケール)
                         const baseFontSize = item.type === 'text' ? 24 : 18;
                         const baseWidth = item.type === 'text' ? 300 : 150;
+                        const baseHeight = item.type === 'text' ? 100 : 100;
+                        const sizeScale = item.type === 'sticky'
+                            ? Math.min(item.width / baseWidth, item.height / baseHeight)
+                            : item.width / baseWidth;
                         const computedFontSize = typeof item.fontSize === 'number'
                             ? item.fontSize
-                            : Math.max(12, Math.floor(baseFontSize * (item.width / baseWidth)));
+                            : Math.max(12, Math.floor(baseFontSize * sizeScale));
 
                         const isOnlySelected = selectedIds.length === 1 && isSelected;
 
@@ -1142,6 +1146,29 @@ function App() {
                                     </div>
                                 )}
 
+                                {/* 文字サイズ（付箋） */}
+                                {isSelected && item.type === 'sticky' && !isLocked && (
+                                    <div className="absolute left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-full shadow-lg border border-slate-200 flex items-center gap-2 z-50 pointer-events-auto" style={{ bottom: '-5.5rem' }}>
+                                        <button
+                                            className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 font-extrabold text-slate-700"
+                                            onPointerDown={(e) => { e.stopPropagation(); changeFontSizeSelected(-2); }}
+                                            title="文字を小さく"
+                                        >
+                                            A-
+                                        </button>
+                                        <div className="min-w-[56px] text-center text-xs font-bold text-slate-600">
+                                            {computedFontSize}px
+                                        </div>
+                                        <button
+                                            className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 font-extrabold text-slate-700"
+                                            onPointerDown={(e) => { e.stopPropagation(); changeFontSizeSelected(2); }}
+                                            title="文字を大きく"
+                                        >
+                                            A+
+                                        </button>
+                                    </div>
+                                )}
+
                                 {/* 文字サイズ（文字・まとめ） */}
                                 {isSelected && (item.type === 'text' || item.type === 'summary') && !isLocked && (
                                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white px-3 py-2 rounded-full shadow-lg border border-slate-200 flex items-center gap-2 z-50 pointer-events-auto">
@@ -1167,13 +1194,13 @@ function App() {
 
                                 {item.type === 'sticky' && (
                                     <div
-                                        className={`w-full h-full ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
+                                        className={`w-full h-full ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col overflow-y-auto ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
                                         onDoubleClick={() => !isLocked && setEditingId(item.id)}
                                         style={{ fontSize: `${computedFontSize}px` }}
                                     >
                                         {editingId === item.id ? (
                                             <textarea
-                                                className="w-full h-full bg-transparent resize-none outline-none font-bold text-slate-800 overflow-hidden"
+                                                className="w-full h-full bg-transparent resize-none outline-none font-bold text-slate-800 overflow-y-auto"
                                                 value={item.content}
                                                 onChange={(e) => updateItem(item.id, { content: e.target.value })}
                                                 onBlur={() => setEditingId(null)}
@@ -1181,7 +1208,7 @@ function App() {
                                                 autoFocus
                                             />
                                         ) : (
-                                            <div className="w-full h-full font-bold text-slate-800 whitespace-pre-wrap break-words select-none pointer-events-none flex items-start">
+                                            <div className="w-full font-bold text-slate-800 whitespace-pre-wrap break-words select-none pointer-events-none">
                                                 {item.content || <span className="text-black/30">ダブルクリックで入力</span>}
                                             </div>
                                         )}

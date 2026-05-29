@@ -1196,9 +1196,9 @@ function App() {
 
                                 {item.type === 'sticky' && (
                                     <div
-                                        className={`w-full h-full ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col overflow-y-auto ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
+                                        className={`w-full h-full ${item.color} border-2 p-3 rounded-lg shadow-md flex flex-col overflow-hidden ${isLocked ? 'cursor-default pointer-events-none' : 'cursor-move'}`}
                                         onDoubleClick={() => !isLocked && setEditingId(item.id)}
-                                        style={{ fontSize: `${computedFontSize}px` }}
+                                        style={{ fontSize: `${computedFontSize}px`, touchAction: 'none' }}
                                     >
                                         {editingId === item.id ? (
                                             <textarea

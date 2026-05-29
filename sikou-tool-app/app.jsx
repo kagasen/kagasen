@@ -817,6 +817,7 @@ function App() {
     const handleItemDragStart = (e, id) => {
         e.stopPropagation();
         if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.closest('.lock-btn')) return;
+        e.preventDefault();
 
         const targetItem = itemsRef.current.find(i => i.id === id);
         if (!targetItem || targetItem.isLocked) {
@@ -1091,7 +1092,8 @@ function App() {
                                     width: item.width,
                                     height: item.height,
                                     zIndex: renderZIndex,
-                                    cursor: isLocked ? 'not-allowed' : 'move'
+                                    cursor: isLocked ? 'not-allowed' : 'move',
+                                    touchAction: 'none'
                                 }}
                                 onPointerDown={(e) => handleItemDragStart(e, item.id)}
                             >

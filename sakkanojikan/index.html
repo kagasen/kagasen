@@ -5,10 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>作家の時間</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwindはローカルファイルから読み込む（オフラインのiPadでも動くように）。無い場合だけCDNを使う -->
+    <script src="tailwind.min.js"></script>
+    <script>
+        if (!window.tailwind) {
+            document.write('<script src="https://cdn.tailwindcss.com/3.4.17" integrity="sha384-igm5BeiBt36UU4gqwWS7imYmelpTsZlQ45FZf+XBn9MuJbn4nQr7yx1yFydocC/K" crossorigin="anonymous"><\/script>');
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap"
         rel="stylesheet">
     <style>
+        /* Tailwindが読み込めなかったときの保険（画面の表示・非表示だけは必ず動くように） */
+        .hidden {
+            display: none;
+        }
+
         /* === アプリ専用のスタイル（他の要素に干渉しないように #sakka-app に限定） === */
         #sakka-app {
             font-family: 'M PLUS Rounded 1c', sans-serif;
@@ -91,8 +102,10 @@
             padding: 8cqw 9cqw 5cqw 9cqw;
             display: flex;
             flex-direction: column;
-            font-size: 3cqw;
-            line-height: 2.2;
+            /* 文字サイズ・行送り・字間は「1行の字数×行の数」からJSが計算してセットする */
+            font-size: var(--sakka-font, 3cqw);
+            line-height: var(--sakka-line, 6.6cqw);
+            letter-spacing: var(--sakka-tracking, 0);
             overflow: hidden;
             word-break: break-word;
         }
@@ -100,8 +113,10 @@
         .sakka-page-title {
             font-size: 4.5cqw;
             font-weight: 800;
-            margin-bottom: 1.5cqw;
+            /* 論理プロパティ（block-end / inline-end）なので、たて書きでも正しい向きに余白がつく */
+            margin-block-end: 1.5cqw;
             line-height: 1.4;
+            letter-spacing: normal;
             text-align: center;
         }
 
@@ -111,8 +126,10 @@
             text-align: right;
             color: inherit;
             opacity: 0.8;
-            margin-bottom: 4cqw;
-            padding-right: 2cqw;
+            margin-block-end: 4cqw;
+            padding-inline-end: 2cqw;
+            line-height: 1.6;
+            letter-spacing: normal;
         }
 
         .sakka-page-num {
@@ -124,6 +141,33 @@
             font-size: 2cqw;
             font-weight: bold;
             opacity: 0.6;
+        }
+
+        /* === たて書きモード（A4よこ・右上から書きはじめる） === */
+        .sakka-page-container.sakka-vertical {
+            aspect-ratio: 1.414 / 1;
+            /* A4よこ比率 */
+        }
+
+        .sakka-vertical .sakka-page-inner {
+            writing-mode: vertical-rl;
+            /* 紙がよこ長になるぶん、cqw（横幅基準）の値を 1.414 で割って換算した余白 */
+            padding: 5.7cqw 6.4cqw 3.5cqw 6.4cqw;
+        }
+
+        .sakka-vertical .sakka-page-title {
+            font-size: 3.2cqw;
+            margin-block-end: 1cqw;
+        }
+
+        .sakka-vertical .sakka-page-author {
+            font-size: 2.1cqw;
+            margin-block-end: 2.8cqw;
+        }
+
+        .sakka-vertical .sakka-page-num {
+            bottom: 1.4cqw;
+            font-size: 1.4cqw;
         }
 
         /* === 本のデザイン（テーマ）10種類 === */
@@ -244,16 +288,24 @@
                 page-break-after: always !important;
             }
 
+            /* たて書きのときはA4よこ向きの安全領域に合わせる */
+            .sakka-print-page.sakka-vertical {
+                width: 240mm !important;
+                height: 170mm !important;
+            }
+
             /* 最後のページだけは改ページしない（無駄な白紙ページを防ぐ） */
             .sakka-print-page:last-child {
                 page-break-after: auto !important;
             }
-
-            @page {
-                size: A4 portrait;
-                margin: 15mm !important;
-                /* ページの外側に15mmの余白を設け、ヘッダやフッタの場所を確保する */
-            }
+        }
+    </style>
+    <style id="sakka-print-orientation">
+        /* 用紙の向きは印刷時にJSが書きかえる（よこ書き=A4たて / たて書き=A4よこ） */
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+            /* ページの外側に15mmの余白を設け、ヘッダやフッタの場所を確保する */
         }
     </style>
 </head>
@@ -278,6 +330,13 @@
                 <button onclick="sakka_startApp()"
                     class="btn-bounce w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xl md:text-2xl font-extrabold py-4 px-10 rounded-full shadow-lg hover:shadow-xl hover:from-orange-500 hover:to-orange-600 border-b-4 border-orange-600 active:border-b-0 active:translate-y-1 leading-normal mb-4">
                     <span><ruby>新<rt>あたら</rt></ruby>しく<ruby>書<rt>か</rt></ruby>く ✨</span>
+                </button>
+
+                <!-- 自動保存からの再開ボタン（保存データがあるときだけ表示） -->
+                <button id="sakka-resume-btn" onclick="sakka_restoreAutosave()" style="display: none;"
+                    class="btn-bounce w-full bg-gradient-to-r from-green-400 to-green-500 text-white text-lg md:text-xl font-extrabold py-3 px-10 rounded-full shadow-lg hover:from-green-500 hover:to-green-600 border-b-4 border-green-600 active:border-b-0 active:translate-y-1 leading-normal mb-4">
+                    <span>▶️ さっきのつづきから</span>
+                    <span id="sakka-resume-info" class="block text-xs font-bold text-green-100 mt-1"></span>
                 </button>
 
                 <!-- 読み込みボタン -->
@@ -428,23 +487,45 @@
                 </div>
 
                 <!-- 右側：エディタ -->
-                <div
+                <div id="sakka-editor-panel"
                     class="w-full md:w-2/3 lg:w-3/4 flex flex-col min-h-[60vh] md:min-h-0 md:h-full bg-white rounded-3xl shadow-sm border-2 border-gray-200 overflow-hidden">
                     <div class="flex flex-col">
                         <input type="text" id="sakka-story-title" placeholder="お話（はなし）のタイトル"
                             class="text-xl md:text-3xl font-extrabold p-4 md:p-6 pb-2 border-b border-dashed border-gray-300 focus:bg-orange-50 focus:outline-none w-full text-center text-gray-800 placeholder-gray-300 transition-colors">
                         <div
-                            class="flex justify-end items-center pr-4 md:pr-6 py-2 border-b-2 border-dashed border-gray-300 bg-gray-50 focus-within:bg-orange-50 transition-colors">
+                            class="flex justify-end items-center pr-4 md:pr-6 py-2 border-b border-dashed border-gray-300 bg-gray-50 focus-within:bg-orange-50 transition-colors">
                             <div class="flex items-center">
                                 <span class="text-gray-500 font-bold mr-2 text-sm md:text-base">なまえ：</span>
                                 <input type="text" id="sakka-story-author" placeholder="ここに入力"
                                     class="text-base md:text-lg font-bold p-1 focus:outline-none bg-transparent text-gray-800 w-32 md:w-48 text-left">
                             </div>
                         </div>
+                        <!-- 書き方の設定（マスの数）。たて書きは完成画面でえらべる。 -->
+                        <div
+                            class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-3 py-2 border-b-2 border-dashed border-gray-300 bg-gray-50 text-xs md:text-sm font-bold text-gray-600">
+                            <label class="flex items-center gap-1">
+                                <span>1<ruby>行<rt>ぎょう</rt></ruby>の<ruby>字<rt>じ</rt></ruby>：</span>
+                                <select onchange="sakka_setGridChars(this.value)"
+                                    class="sakka-grid-chars border-2 border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-700 font-bold"></select>
+                            </label>
+                            <label class="flex items-center gap-1">
+                                <span><ruby>行<rt>ぎょう</rt></ruby>の<ruby>数<rt>かず</rt></ruby>：</span>
+                                <select onchange="sakka_setGridLines(this.value)"
+                                    class="sakka-grid-lines border-2 border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-700 font-bold"></select>
+                            </label>
+                            <span class="text-gray-400">（できあがる<ruby>本<rt>ほん</rt></ruby>の1ページのマス）</span>
+                        </div>
                     </div>
+                    <!-- 罫線（背景画像）・字間・固定行高は、カーソル位置がズレる原因になるため使わない -->
                     <textarea id="sakka-story-editor" placeholder="ここにお話（はなし）を書いてね！&#13;&#10;左（ひだり）のメモを見ながら進めよう。"
-                        class="flex-grow w-full p-4 md:p-8 focus:outline-none resize-none text-base md:text-lg text-gray-700 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjQwIj48bGluZSB4MT0iMCIgeTE9IjM5IiB4Mj0iMTAwJSIgeTI9IjM5IiBzdHJva2U9IiNlNWU3ZWIiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==')] bg-local"
-                        style="line-height: 40px; background-size: 100% 40px;"></textarea>
+                        class="flex-grow w-full p-4 md:p-8 focus:outline-none resize-none text-base md:text-lg text-gray-700"
+                        style="line-height: 1.75;"></textarea>
+                    <div
+                        class="flex justify-end items-center px-4 md:px-6 py-1.5 border-t border-gray-100 bg-gray-50 text-xs md:text-sm font-bold text-gray-500 flex-shrink-0">
+                        <span>✍️ いま</span>
+                        <span id="sakka-char-count" class="text-orange-500 text-base md:text-lg mx-1">0</span>
+                        <span><ruby>字<rt>じ</rt></ruby></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -457,41 +538,36 @@
                 <span>🎉</span> <span>キミのお<ruby>話<rt>はなし</rt></ruby>が<ruby>完成<rt>かんせい</rt></ruby>したよ！</span>
             </h2>
 
+            <!-- 文字の向き選択 -->
+            <div class="mb-4">
+                <p class="text-center text-sm md:text-base font-bold text-gray-600 mb-3">
+                    <ruby>文字<rt>もじ</rt></ruby>の<ruby>向<rt>む</rt></ruby>きをえらんでね
+                </p>
+                <div class="flex flex-wrap gap-3 justify-center items-center px-2">
+                    <button onclick="sakka_setWritingMode(false)" data-vertical="false"
+                        class="sakka-mode-btn px-5 py-2 rounded-full text-sm md:text-base font-bold border-2 bg-orange-500 text-white border-orange-600 shadow-sm">
+                        ➡️ よこ<ruby>書<rt>が</rt></ruby>き</button>
+                    <button onclick="sakka_setWritingMode(true)" data-vertical="true"
+                        class="sakka-mode-btn px-5 py-2 rounded-full text-sm md:text-base font-bold border-2 bg-white text-gray-600 border-gray-300 hover:bg-gray-100">
+                        ⬇️ たて<ruby>書<rt>が</rt></ruby>き（<ruby>本<rt>ほん</rt></ruby>みたい）</button>
+                    <label class="flex items-center gap-1 text-sm md:text-base font-bold text-gray-600">
+                        <span>1<ruby>行<rt>ぎょう</rt></ruby>の<ruby>字<rt>じ</rt></ruby>：</span>
+                        <select onchange="sakka_setGridChars(this.value)"
+                            class="sakka-grid-chars border-2 border-gray-300 rounded-full px-3 py-2 bg-white text-gray-700 font-bold"></select>
+                    </label>
+                    <label class="flex items-center gap-1 text-sm md:text-base font-bold text-gray-600">
+                        <span><ruby>行<rt>ぎょう</rt></ruby>の<ruby>数<rt>かず</rt></ruby>：</span>
+                        <select onchange="sakka_setGridLines(this.value)"
+                            class="sakka-grid-lines border-2 border-gray-300 rounded-full px-3 py-2 bg-white text-gray-700 font-bold"></select>
+                    </label>
+                </div>
+            </div>
+
             <!-- デザイン選択 -->
             <div class="mb-6">
                 <p class="text-center text-sm md:text-base font-bold text-gray-600 mb-3">本のデザインをえらんでね</p>
-                <div class="flex flex-wrap gap-3 justify-center px-2">
-                    <button onclick="sakka_setTheme('classic')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-orange-500 text-white border-orange-600 shadow-sm"
-                        data-theme="classic">📖 クラシック</button>
-                    <button onclick="sakka_setTheme('magic')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="magic">✨ ほしぞら魔法</button>
-                    <button onclick="sakka_setTheme('forest')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="forest">🌿 森の物語</button>
-                    <button onclick="sakka_setTheme('notebook')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="notebook">📓 かわいいノート</button>
-                    <button onclick="sakka_setTheme('antique')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="antique">🖼️ アンティーク</button>
-                    <button onclick="sakka_setTheme('ocean')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="ocean">🌊 海のぼうけん</button>
-                    <button onclick="sakka_setTheme('sunset')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="sunset">🌇 夕焼け空</button>
-                    <button onclick="sakka_setTheme('sakura')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="sakura">🌸 さくら色</button>
-                    <button onclick="sakka_setTheme('space')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="space">🚀 宇宙旅行</button>
-                    <button onclick="sakka_setTheme('monochrome')"
-                        class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                        data-theme="monochrome">🎞️ モノクロ映画</button>
-                </div>
+                <!-- ボタンはJSの sakka_themes から自動生成 -->
+                <div id="sakka-theme-buttons" class="flex flex-wrap gap-3 justify-center px-2"></div>
             </div>
 
             <!-- プレビュー本体 -->
@@ -563,114 +639,15 @@
                 </div>
 
                 <div class="overflow-y-auto pr-2 mb-6 flex-grow space-y-6">
-                    <div class="space-y-3">
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">まちがえた<ruby>字
-                                    <rt>じ</rt>
-                                </ruby>や、ぬけている<ruby>字<rt>じ</rt></ruby>はないかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span
-                                class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「　」（かぎかっこ）を<ruby>使
-                                    <rt>つか</rt>
-                                </ruby>って、<ruby>会話文<rt>かいわぶん</rt></ruby>を<ruby>入<rt>い</rt>
-                                </ruby>れているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span
-                                class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「〜です」「〜だ」などの<ruby>文
-                                    <rt>ぶん</rt>
-                                </ruby>の<ruby>終<rt>お</rt></ruby>わり<ruby>方<rt>かた</rt>
-                                </ruby>はそろっているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">「、」や「。」は<ruby>読
-                                    <rt>よ</rt>
-                                </ruby>みやすい<ruby>場所<rt>ばしょ</rt></ruby>にあるかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>気持<rt>きも
-                                    </rt></ruby>ちやようすがわかる<ruby>言葉<rt>ことば</rt></ruby>（ドキドキ、キラキラなど）を<ruby>使<rt>つか</rt>
-                                </ruby>っているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">お<ruby>話<rt>はなし
-                                    </rt></ruby>がかわるところで、<ruby>行<rt>ぎょう</rt></ruby>をかえたり、マスをあけたりしているかな？（だんらく）</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-green-50 rounded-2xl transition-colors border border-transparent hover:border-green-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">つなぐ<ruby>言葉<rt>
-                                        ことば</rt></ruby>（そして、しかし、など）を<ruby>使<rt>つか</rt></ruby>って、<ruby>文<rt>ぶん</rt>
-                                </ruby>と<ruby>文<rt>ぶん</rt></ruby>をつないでいるかな？</span>
-                        </label>
-                    </div>
+                    <!-- 項目はJSの sakka_checklistData から自動生成 -->
+                    <div class="space-y-3" id="sakka-checklist-basic"></div>
 
                     <div class="space-y-3">
                         <h4
                             class="font-bold text-orange-600 border-b-2 border-orange-200 pb-1 mb-3 flex items-center gap-2 text-lg leading-relaxed">
                             🌟 <span><ruby>上級者編<rt>じょうきゅうしゃへん</rt></ruby></span>
                         </h4>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">その<ruby>場所<rt>
-                                        ばしょ</rt></ruby>のけしきを、<ruby>色<rt>いろ</rt></ruby>もまじえて<ruby>書<rt>か</rt>
-                                </ruby>いているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>主人公<rt>
-                                        しゅじんこう</rt></ruby>の<ruby>気持<rt>きも</rt></ruby>ちがかわったきっかけを、くわしく<ruby>書<rt>か</rt>
-                                </ruby>いているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">においや、さわった<ruby>感
-                                    <rt>かん</rt>
-                                </ruby>じなど、いろいろな<ruby>感覚<rt>かんかく</rt></ruby>を<ruby>言葉<rt>ことば</rt>
-                                </ruby>にしているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">お<ruby>話<rt>はなし
-                                    </rt></ruby>の<ruby>始<rt>はじ</rt></ruby>まりから<ruby>終<rt>お</rt></ruby>わりまで、<ruby>順番<rt>
-                                        じゅんばん</rt></ruby>がわかりやすくつながっているかな？</span>
-                        </label>
-                        <label
-                            class="flex items-start gap-4 cursor-pointer p-3 hover:bg-orange-50 rounded-2xl transition-colors border border-transparent hover:border-orange-200">
-                            <input type="checkbox"
-                                class="mt-1 w-6 h-6 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 flex-shrink-0">
-                            <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed"><ruby>読<rt>よ
-                                    </rt></ruby>む<ruby>人<rt>ひと</rt></ruby>がワクワクしたり、びっくりしたりするような<ruby>工夫<rt>くふう</rt>
-                                </ruby>があるかな？</span>
-                        </label>
+                        <div class="space-y-3" id="sakka-checklist-advanced"></div>
                     </div>
                 </div>
 
@@ -708,6 +685,13 @@
             return str.replace(/\[(.+?):(.+?)\]/g, "$1");
         }
 
+        // --- 子どもが「<」などを入力してもレイアウトが壊れないようにするエスケープ ---
+        function sakka_escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
         // --- データ定義 ---
         const sakka_protagonistOptions = [
             "つよい[勇者:ゆうしゃ]", "おくびょうなまほう[使:つか]い", "おしゃべりな[猫:ねこ]", "[空:そら]をとぶペンギン", "わすれんぼうのおじいちゃん",
@@ -715,14 +699,14 @@
             "[歌:うた]が[上手:じょうず]なカエル", "うちゅうから[来:き]たエイリアン", "[未来:みらい]から[来:き]たロボット", "まほうのじゅうたん", "やさしいおばけ",
             "いたずら[好:す]きのようせい", "おっちょこちょいなたんてい", "[力持:ちからも]ちのクマ", "はずかしがりやのウサギ", "[物知:ものし]りなフクロウ",
             "りょうりがとくいなブタ", "おどるガイコツ", "ねむってばかりのライオン", "へんしんできるタヌキ", "うそつきなキツネ",
-            "みんなの[味方:みかた]", "わるいボスの", "たからをさがす[海:うみ]ぞく", "[空:そら]の[上:うえ]の[神様:かみさま]", "[海:うみ]のそこの[人魚:にんぎょ]",
+            "みんなの[味方:みかた]", "わるいボスの[手下:てした]", "たからをさがす[海:うみ]ぞく", "[空:そら]の[上:うえ]の[神様:かみさま]", "[海:うみ]のそこの[人魚:にんぎょ]",
             "いつもはらペコなオオカミ", "きかいが[好:す]きな[少年:しょうねん]", "[本:ほん]を[読:よ]むのが[好:す]きな[少女:しょうじょ]", "スポーツがとくいな[転校生:てんこうせい]", "おばけが[見:み]えるお[坊:ぼう]さん",
             "[時間:じかん]を[止:と]められる[時計屋:とけいや]", "[星:ほし]を[食:た]べるバク", "にじ[色:いろ]の[鳥:とり]", "お[金持:かねも]ちのニワトリ", "びんぼうな[王子様:おうじさま]",
             "おかしでできた[雪:ゆき]だるま", "[火:ひ]をあやつる[人:ひと]", "[氷:こおり]のま[女:じょ]", "[言葉:ことば]を[話:はな]す[剣:けん]", "[空:そら]をとぶほうき",
             "かげが[動:うご]くにんじゃ", "[雲:くも]にのる[神様:かみさま]", "とても[大:おお]きなクジラ", "[小:ちい]さなアリの[王様:おうさま]", "ふつうの[小学生:しょうがくせい]",
             "[魔法:まほう]のリンゴ", "さすらいの[剣士:けんし]", "おんがくが[好:す]きなクマ", "にじ[色:いろ]のチョウ", "うたう[花:はな]",
             "[元気:げんき]な[子犬:こいぬ]", "はずかしがりやのオバケ", "[空:そら]とぶサカナ", "ものしりなカメ", "ロボットの[犬:いぬ]",
-            "いたずらな[子猫:こねこ]", "おこりんぼうの[星:ほし]", "[氷:こおり]の[妖精:ようせい]", "火をはくトカゲ", "おかしが[好:す]きな[王様:おうさま]",
+            "いたずらな[子猫:こねこ]", "おこりんぼうの[星:ほし]", "[氷:こおり]の[妖精:ようせい]", "[火:ひ]をはくトカゲ", "おかしが[好:す]きな[王様:おうさま]",
             "[勇気:ゆうき]ある[村人:むらびと]", "おどり[子:こ]のウサギ", "なぞの[忍者:にんじゃ]", "ふしぎな[魔法使:まほうつか]い", "わんぱくな[子ザル:こざる]"
         ];
 
@@ -732,7 +716,7 @@
             "[雪:ゆき]がしんしんとふる[日:ひ]", "[時計:とけい]が12[時:じ]を[打:う]った[時:とき]", "[学校:がっこう]の[帰:かえ]り[道:みち]", "だれも[起:お]きていない[時間:じかん]", "ゆめの[中:なか]",
             "[朝日:あさひ]がのぼるころ", "おやつの[時間:じかん]", "[星:ほし]が[流:なが]れた[夜:よる]", "[日:ひ]が[暮:く]れるころ", "お[昼:ひる]ごはんのあと",
             "にじが[出:で]た[時:とき]", "[雷:かみなり]がなった[日:ひ]", "[春:はる]の[風:かぜ]がふく[日:ひ]", "[夏:なつ]のあつい[日:ひ]", "[秋:あき]の[夕暮:ゆうぐ]れ",
-            "[冬:ふゆ]のさむい[朝:あさ]", "[時計:とけい]がとまった[時:とき]", "[満月:まんげつ]の[夜:よる]", "[朝:あさ]つゆがひかるころ", "みんながねずまったころ",
+            "[冬:ふゆ]のさむい[朝:あさ]", "[時計:とけい]がとまった[時:とき]", "[満月:まんげつ]の[夜:よる]", "[朝:あさ]つゆがひかるころ", "みんなが[寝静:ねしず]まったころ",
             "お[祭:まつ]りの[日:ひ]", "たんじょう[日:ひ]の[朝:あさ]", "はじめて[雪:ゆき]がふった[日:ひ]", "とおくでサイレンがなった[時:とき]", "かぜが[強:つよ]くふく[日:ひ]"
         ];
 
@@ -752,7 +736,7 @@
             "[大切:たいせつ]な[人:ひと]がさらわれた", "しゃべる[動物:どうぶつ]に出[会:あ]った", "[宝:たから]の[地図:ちず]をひろった", "[大雨:おおあめ]で[家:いえ]が[流:なが]されそうになった", "だれもいない[町:まち]にまよいこんだ",
             "[空:そら]をとべるようになった", "どうぶつと[話:はな]せるようになった", "ふしぎなボタンをおした", "おおきな[卵:たまご]を[見:み]つけた", "かげがにげだした",
             "[時計:とけい]の[針:はり]がぎゃくに[回:まわ]った", "にじの[色:いろ]がきえた", "おもちゃが[動:うご]き[出:だ]した", "まっくらやみになった", "おおきな[穴:あな]におちた",
-            "とつぜん[体:からだ]が[小:ちい]さくなった", "なぞの手紙がとどいた", "[魔法:まほう]のつえが[折:お]れた", "[風:かぜ]に[飛:と]ばされた", "ふしぎな[音:おと]が聞こえた",
+            "とつぜん[体:からだ]が[小:ちい]さくなった", "なぞの[手紙:てがみ]がとどいた", "[魔法:まほう]のつえが[折:お]れた", "[風:かぜ]に[飛:と]ばされた", "ふしぎな[音:おと]が[聞:き]こえた",
             "たいせつな[約束:やくそく]をわすれた", "ともだちが[姿:すがた]をけした", "あやしい[影:かげ]を[見:み]た", "たから[箱:ばこ]があかない", "[空:そら]から[星:ほし]がふってきた"
         ];
 
@@ -772,7 +756,7 @@
             "みんながえがおになった", "ゆめに[向:む]かって[走:はし]り[出:だ]した", "[大:おお]きな[声:こえ]で[笑:わら]った", "[星空:ほしぞら]を[見上:みあ]げてちかった", "そしてだれもいなくなった",
             "[次:つぎ]の[日:ひ]から[何:なに]かがかわった", "ずっと[忘:わす]れない[思:おも]い[出:で]になった", "[空:そら]の[上:うえ]から[見守:みまも]ることにした", "[魔法:まほう]の[力:ちから]はきえてしまった", "みんなでパーティーをした",
             "あしたもきっといい[日:ひ]になる", "お[腹:なか]がいっぱいになった", "またひとつ[年:とし]をとった", "ふしぎな[夢:ゆめ]からさめた", "[誰:だれ]も[知:し]らない[秘密:ひみつ]のまま",
-            "[宝物:たからもの]はずっと[心:こころ]の[中:なか]に", "[新:あたら]しい[友:とも]だちができた", "そして[夜:よる]が明けた", "いつもの[笑顔:えがお]がもどった", "[遠:とお]くから[歌:うた]が聞こえた",
+            "[宝物:たからもの]はずっと[心:こころ]の[中:なか]に", "[新:あたら]しい[友:とも]だちができた", "そして[夜:よる]が[明:あ]けた", "いつもの[笑顔:えがお]がもどった", "[遠:とお]くから[歌:うた]が[聞:き]こえた",
             "[風:かぜ]がやさしくふいた", "どこかへ[旅立:たびだ]っていった", "にじの[橋:はし]をわたった", "ほんの[少:すこ]し[勇気:ゆうき]がもてた", "これからもぼうけんはつづく"
         ];
 
@@ -786,21 +770,31 @@
         ];
 
         // --- 状態管理 ---
+        function sakka_createEmptyAnswers() {
+            const answers = {};
+            sakka_questionsData.forEach(q => {
+                answers[q.id] = { selected: [], free: '', visibleOptions: [] };
+            });
+            return answers;
+        }
+
         const sakka_appData = {
             step: 0,
-            answers: {
-                protagonist: { selected: [], free: '', visibleOptions: [] },
-                time: { selected: [], free: '', visibleOptions: [] },
-                place: { selected: [], free: '', visibleOptions: [] },
-                event: { selected: [], free: '', visibleOptions: [] },
-                solution: { selected: [], free: '', visibleOptions: [] },
-                ending: { selected: [], free: '', visibleOptions: [] }
-            }
+            answers: sakka_createEmptyAnswers()
         };
 
+        // Fisher-Yates シャッフル（偏りのないランダム）
+        function sakka_shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
         function sakka_getRandomItems(array, num) {
-            const shuffled = [...array].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, num);
+            return sakka_shuffleArray(array).slice(0, num);
         }
 
         function sakka_generateVisibleOptions(qId) {
@@ -812,7 +806,7 @@
                 const unselectedOptions = q.options.filter(opt => !ans.selected.includes(opt));
                 newVisible = newVisible.concat(sakka_getRandomItems(unselectedOptions, neededCount));
             }
-            ans.visibleOptions = newVisible.sort(() => 0.5 - Math.random());
+            ans.visibleOptions = sakka_shuffleArray(newVisible);
         }
 
         function sakka_shuffleOptions(qId) {
@@ -821,24 +815,43 @@
         }
 
         function sakka_startApp() {
+            // 自動保存されたお話があるときは、消える前に確認する
+            try {
+                if (localStorage.getItem(SAKKA_STORAGE_KEY)) {
+                    const ok = confirm('まえに書いたお話のデータがあるよ。\n新しく書きはじめると、まえのデータは消えてしまうけどいいかな？\n\n（とっておきたいときは「キャンセル」をおして、「さっきのつづきから」を開いて💾保存してね）');
+                    if (!ok) return;
+                    localStorage.removeItem(SAKKA_STORAGE_KEY);
+                }
+            } catch (e) { }
+            document.getElementById('sakka-resume-btn').style.display = 'none';
+
             // はじめて書くときはデータをリセットする
-            sakka_appData.answers = {
-                protagonist: { selected: [], free: '', visibleOptions: [] },
-                time: { selected: [], free: '', visibleOptions: [] },
-                place: { selected: [], free: '', visibleOptions: [] },
-                event: { selected: [], free: '', visibleOptions: [] },
-                solution: { selected: [], free: '', visibleOptions: [] },
-                ending: { selected: [], free: '', visibleOptions: [] }
-            };
+            sakka_appData.answers = sakka_createEmptyAnswers();
             document.getElementById('sakka-story-title').value = '';
             document.getElementById('sakka-story-author').value = '';
             document.getElementById('sakka-story-editor').value = '';
+            sakka_updateCharCount();
+            sakka_resetChecklist();
+
+            // 向き・デザイン・マスの数もはじめの状態にもどす
+            sakka_isVertical = false;
+            sakka_currentTheme = 'classic';
+            sakka_gridChars = 20;
+            sakka_gridLines = 10;
+            sakka_renderThemeButtons();
+            sakka_updateModeButtons();
+            sakka_updateEditorMode();
+            sakka_syncGridSelects();
 
             sakka_appData.step = 1;
             sakka_updateScreen();
         }
 
         function sakka_finishStory() {
+            if (!document.getElementById('sakka-story-editor').value.trim()) {
+                sakka_showToast('✍️ まだお話が書かれていないよ！');
+                return;
+            }
             sakka_appData.step = 8;
             sakka_updateScreen();
         }
@@ -859,10 +872,15 @@
             } else if (sakka_appData.step === 7) {
                 sakka_renderWritingScreen();
                 document.getElementById('sakka-screen-writing').classList.remove('hidden');
+                // 表示されてから、向き・スクロールバー・文字サイズをまとめて適用
+                // （非表示中はサイズが取れないため、ここで確定させる）
+                sakka_updateEditorMode();
             } else if (sakka_appData.step === 8) {
                 document.getElementById('sakka-screen-finish').classList.remove('hidden');
-                setTimeout(sakka_createPreviewPages, 100);
+                setTimeout(() => sakka_createPreviewPages(), 100);
             }
+
+            sakka_autoSave();
         }
 
         function sakka_renderQuestion(index) {
@@ -913,15 +931,10 @@
             freeTextEl.value = currentAnswers.free;
             freeTextEl.oninput = (e) => {
                 sakka_appData.answers[q.id].free = e.target.value;
+                sakka_autoSave();
             };
 
             document.getElementById('sakka-btn-prev').style.visibility = (index === 0) ? 'hidden' : 'visible';
-        }
-
-        function sakka_indexOf(opt) {
-            const selectedArr = sakka_appData.answers[sakka_appData.step - 1 ? sakka_questionsData[sakka_appData.step - 1].id : ''].selected;
-            if (!selectedArr) return -1;
-            return selectedArr.indexOf(opt);
         }
 
         function sakka_toggleOption(qId, option, maxSelect, btnEl, baseClass) {
@@ -945,6 +958,7 @@
                     setTimeout(() => btnEl.classList.remove('-translate-x-1'), 300);
                 }
             }
+            sakka_autoSave();
         }
 
         function sakka_nextStep() {
@@ -989,7 +1003,7 @@
                 }
 
                 if (ans.free.trim()) {
-                    contentHtml += `<p class="text-gray-600 text-sm whitespace-pre-wrap border-l-4 border-orange-300 pl-3 py-1 bg-orange-50/50 rounded-r-md">${ans.free}</p>`;
+                    contentHtml += `<p class="text-gray-600 text-sm whitespace-pre-wrap border-l-4 border-orange-300 pl-3 py-1 bg-orange-50/50 rounded-r-md">${sakka_escapeHtml(ans.free)}</p>`;
                 }
 
                 div.innerHTML = contentHtml;
@@ -1018,19 +1032,21 @@
             const solution = getAnsStr('solution', 'がんばった');
             const ending = getAnsStr('ending', 'おしまいになりました');
 
-            const draft = `　${time}、${place}に、${protagonist}がいました。
-（どんなけしきが広がっているかな？天気や周りの音、主人公のようすも書いてみよう！）
+            const draft = `（　）の中（なか）のヒントは、読（よ）んだらけして、自分（じぶん）の言葉（ことば）に書（か）きかえてね！
 
-　ある日、${event}ということが起きました。
-（その時、主人公はどんな気持ちになった？「　」を使ってセリフを入れてみよう！）
+　${time}、${place}に、${protagonist}がいました。
+（どんなけしきが広（ひろ）がっているかな？天気（てんき）や周（まわ）りの音（おと）、主人公（しゅじんこう）のようすも書（か）いてみよう！）
 
-　どうなることかと思いましたが、${solution}ことで、なんとかのりこえることができました。
-（のりこえるために、一番大変だったことは何かな？）
+　ある日（ひ）、${event}ということが起（お）きました。
+（その時（とき）、主人公はどんな気持（きも）ちになった？「　」を使（つか）ってセリフを入（い）れてみよう！）
 
-　最後に、${ending}。
-（この出来事のあと、主人公はどんなふうにかわったかな？）
+　どうなることかと思（おも）いましたが、${solution}ことで、なんとかのりこえることができました。
+（のりこえるために、一番（いちばん）大変（たいへん）だったことは何（なに）かな？）
 
-　これでお話はおしまいです。`;
+　最後（さいご）に、${ending}。
+（この出来事（できごと）のあと、主人公はどんなふうにかわったかな？）
+
+　これでお話（はなし）はおしまいです。`;
 
             const editor = document.getElementById('sakka-story-editor');
             const magicHeader = '【✨ まほうのステッキの下書き ✨】';
@@ -1058,14 +1074,100 @@
             setTimeout(() => editor.classList.remove('bg-purple-50'), 1000);
         }
 
-        // === ファイル保存（エクスポート）と読み込み（インポート）機能 ===
-        function sakka_exportData() {
-            const exportObj = {
+        // === 保存・読み込み（共通処理） ===
+        function sakka_collectData() {
+            return {
                 appData: sakka_appData,
                 title: document.getElementById('sakka-story-title').value,
                 author: document.getElementById('sakka-story-author').value,
-                text: document.getElementById('sakka-story-editor').value
+                text: document.getElementById('sakka-story-editor').value,
+                theme: sakka_currentTheme,
+                vertical: sakka_isVertical,
+                gridChars: sakka_gridChars,
+                gridLines: sakka_gridLines
             };
+        }
+
+        // 読み込んだデータを画面に反映する（ファイル読み込み・自動保存の復元の両方で使う）
+        function sakka_applyData(data) {
+            Object.assign(sakka_appData, data.appData);
+
+            // 古いデータでも壊れないように、足りない回答キーを補う
+            const empty = sakka_createEmptyAnswers();
+            for (const key in empty) {
+                if (!sakka_appData.answers[key]) sakka_appData.answers[key] = empty[key];
+            }
+
+            document.getElementById('sakka-story-title').value = data.title || '';
+            document.getElementById('sakka-story-author').value = data.author || '';
+            document.getElementById('sakka-story-editor').value = data.text || '';
+            sakka_updateCharCount();
+
+            // 本のデザイン・文字の向き・マスの数も復元する
+            sakka_currentTheme = data.theme || 'classic';
+            sakka_isVertical = !!data.vertical;
+            sakka_gridChars = parseInt(data.gridChars, 10) || 20;
+            sakka_gridLines = parseInt(data.gridLines, 10) || 10;
+            sakka_renderThemeButtons();
+            sakka_updateModeButtons();
+            sakka_updateEditorMode();
+            sakka_syncGridSelects();
+
+            // とちゅうのステップが不明なときは執筆画面へ
+            if (!(sakka_appData.step >= 1 && sakka_appData.step <= 8)) {
+                sakka_appData.step = 7;
+            }
+            sakka_updateScreen();
+        }
+
+        // === 自動保存（リロードや電源切れでも作品が消えないように） ===
+        const SAKKA_STORAGE_KEY = 'sakka_autosave';
+        let sakka_saveTimer = null;
+
+        function sakka_autoSave() {
+            clearTimeout(sakka_saveTimer);
+            sakka_saveTimer = setTimeout(() => {
+                try {
+                    const data = sakka_collectData();
+                    const hasContent = data.title || data.author || data.text.trim() ||
+                        Object.values(data.appData.answers).some(a => a.selected.length > 0 || a.free.trim());
+                    if (hasContent) {
+                        data.savedAt = Date.now();
+                        localStorage.setItem(SAKKA_STORAGE_KEY, JSON.stringify(data));
+                    }
+                } catch (e) { /* プライベートモードなどで保存できない場合は静かに諦める */ }
+            }, 500);
+        }
+
+        function sakka_checkAutosave() {
+            try {
+                const raw = localStorage.getItem(SAKKA_STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (!data.appData) return;
+
+                document.getElementById('sakka-resume-btn').style.display = 'block';
+                const date = new Date(data.savedAt || Date.now());
+                const name = data.title ? `「${data.title}」` : '（タイトルはまだないよ）';
+                document.getElementById('sakka-resume-info').textContent =
+                    `${name} ${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ほぞん`;
+            } catch (e) { }
+        }
+
+        function sakka_restoreAutosave() {
+            try {
+                const data = JSON.parse(localStorage.getItem(SAKKA_STORAGE_KEY));
+                sakka_applyData(data);
+                sakka_showToast('▶️ つづきから再開したよ！');
+            } catch (e) {
+                console.error(e);
+                sakka_showToast('❌ データの読み込みに失敗したよ😢');
+            }
+        }
+
+        // === ファイル保存（エクスポート）と読み込み（インポート）機能 ===
+        function sakka_exportData() {
+            const exportObj = sakka_collectData();
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
             const downloadAnchorNode = document.createElement('a');
@@ -1089,18 +1191,11 @@
                     const imported = JSON.parse(contents);
 
                     if (imported.appData) {
-                        // データを復元
-                        Object.assign(sakka_appData, imported.appData);
-                        document.getElementById('sakka-story-title').value = imported.title || '';
-                        document.getElementById('sakka-story-author').value = imported.author || '';
-                        document.getElementById('sakka-story-editor').value = imported.text || '';
-
                         // ファイル入力をリセット
                         event.target.value = '';
 
-                        // 執筆画面へ移動
-                        sakka_appData.step = 7;
-                        sakka_updateScreen();
+                        // データを復元して、保存したときの画面へ移動
+                        sakka_applyData(imported);
 
                         sakka_showToast("📂 つづきから読み込んだよ！");
                     } else {
@@ -1117,6 +1212,186 @@
         let sakka_pagesData = [];
         let sakka_currentPageIndex = 0;
         let sakka_currentTheme = 'classic';
+        let sakka_isVertical = false;
+
+        // --- 文字の向き（よこ書き / たて書き） ---
+        function sakka_updateModeButtons() {
+            document.querySelectorAll('.sakka-mode-btn').forEach(btn => {
+                const active = (btn.dataset.vertical === 'true') === sakka_isVertical;
+                btn.classList.toggle('bg-orange-500', active);
+                btn.classList.toggle('text-white', active);
+                btn.classList.toggle('border-orange-600', active);
+                btn.classList.toggle('shadow-sm', active);
+                btn.classList.toggle('bg-white', !active);
+                btn.classList.toggle('text-gray-600', !active);
+                btn.classList.toggle('border-gray-300', !active);
+                btn.classList.toggle('hover:bg-gray-100', !active);
+            });
+        }
+
+        function sakka_setWritingMode(vertical) {
+            sakka_isVertical = vertical;
+            sakka_updateModeButtons();
+            sakka_updateEditorMode();
+            sakka_createPreviewPages(sakka_currentPageIndex);
+            sakka_autoSave();
+        }
+
+        // 書くところ（エディタ）は つねに よこ書き。
+        // たて書きエディタはカーソルがずれるため使わず、たて書きは完成画面の本だけに使う。
+        function sakka_updateEditorMode() {
+            const editor = document.getElementById('sakka-story-editor');
+            editor.classList.remove('sakka-editor-vertical');
+
+            // スクロールバーが「出たり消えたり」すると書くスペースの幅が変わって、
+            // 1行の字数がズレたりカーソルが飛んだりする。右の縦バーを常に出して幅を一定に保つ。
+            // ※iPadなどの重なり表示スクロールバーは場所を取らないので見た目は変わらない。
+            editor.style.overflowX = 'hidden';
+            editor.style.overflowY = 'scroll';
+            document.getElementById('sakka-editor-panel').style.minHeight = '';
+
+            sakka_updateEditorGrid();
+        }
+
+        // エディタを「1行の字数」どおりに折り返すよう、文字サイズ（よこ書き）を合わせる。
+        // letter-spacing や px指定の line-height はカーソル位置がズレる原因になるため使わず、
+        // フォントの字送り係数を実測して、フォントサイズだけで折り返し位置を合わせる。
+        function sakka_updateEditorGrid() {
+            const editor = document.getElementById('sakka-story-editor');
+            if (!editor.clientWidth) return; // 画面に出ていないときは何もしない（表示時に再計算される）
+
+            const cs = getComputedStyle(editor);
+            const availPx = editor.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+            if (availPx <= 0) return;
+
+            // 基準フォント20pxで「1文字の送り ÷ フォントサイズ」の係数を実測
+            const probe = document.createElement('div');
+            probe.style.cssText = `position:absolute;visibility:hidden;white-space:pre;letter-spacing:0;font-family:${cs.fontFamily};font-size:20px;`;
+            probe.textContent = 'ああああああああああ';
+            document.body.appendChild(probe);
+            const advanceRatio = probe.getBoundingClientRect().width / 10 / 20;
+            probe.remove();
+            if (!(advanceRatio > 0)) return;
+
+            // 「N＋0.5文字ぶん」で行の長さが埋まるフォントサイズにする。
+            // こうすると N文字はぴったり入り、N+1文字目は必ずあふれて次の行に折り返す。
+            // （固定の％余白だと、N=25のとき余白がちょうど1文字ぶんになり26文字目が入ってしまう）
+            let font = availPx / ((sakka_gridChars + 0.5) * advanceRatio);
+            // 読めないほど小さく／大きくなりすぎないよう制限（本のページのマスは別計算で常に正確）
+            font = Math.max(Math.min(font, 48), 12);
+            // 計算値を超えないよう 0.1px 単位で切り下げ、N文字が確実に入るようにする
+            font = Math.floor(font * 10) / 10;
+
+            editor.style.fontSize = font + 'px';
+            editor.style.letterSpacing = 'normal';
+        }
+
+        // --- マスの数（1行の字数 × 1ページの行数） ---
+        let sakka_gridChars = 20;
+        let sakka_gridLines = 10;
+        const SAKKA_GRID_CHAR_OPTIONS = [10, 12, 15, 18, 20, 22, 25, 30];
+        const SAKKA_GRID_LINE_OPTIONS = [6, 8, 10, 12, 15, 18, 20, 24];
+
+        function sakka_renderGridSelects() {
+            document.querySelectorAll('select.sakka-grid-chars').forEach(sel => {
+                sel.innerHTML = SAKKA_GRID_CHAR_OPTIONS.map(n => `<option value="${n}">${n}字</option>`).join('');
+            });
+            document.querySelectorAll('select.sakka-grid-lines').forEach(sel => {
+                sel.innerHTML = SAKKA_GRID_LINE_OPTIONS.map(n => `<option value="${n}">${n}行</option>`).join('');
+            });
+            sakka_syncGridSelects();
+        }
+
+        function sakka_syncGridSelects() {
+            document.querySelectorAll('select.sakka-grid-chars').forEach(sel => sel.value = String(sakka_gridChars));
+            document.querySelectorAll('select.sakka-grid-lines').forEach(sel => sel.value = String(sakka_gridLines));
+        }
+
+        function sakka_setGridChars(value) {
+            sakka_gridChars = parseInt(value, 10) || 20;
+            sakka_onGridChanged();
+        }
+
+        function sakka_setGridLines(value) {
+            sakka_gridLines = parseInt(value, 10) || 10;
+            sakka_onGridChanged();
+        }
+
+        function sakka_onGridChanged() {
+            sakka_syncGridSelects();
+            sakka_updateEditorGrid();
+            if (sakka_appData.step === 8) {
+                sakka_createPreviewPages(sakka_currentPageIndex);
+            }
+            sakka_autoSave();
+        }
+
+        // 「N字 × M行」がきっちり収まる文字サイズ・行送り・字間。
+        // テーマの枠線の太さで紙面が変わるため、定数ではなく計測ボックスの実寸から計算する。
+        // 値は cqw（紙面の横幅の1%）単位なので、プレビュー・印刷どちらでも同じ見た目になる。
+        let sakka_gridVars = { font: 3, line: 6.6, tracking: 0 };
+
+        function sakka_setupGrid(measureBox, measureContent) {
+            const cs = getComputedStyle(measureContent);
+            const boxW = measureContent.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+            const boxH = measureContent.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            const cqwPx = measureContent.clientWidth / 100;
+
+            // 字がならぶ方向の長さ ÷ 字数 ＝ 1マスの大きさ（縦書きなら縦方向）
+            const charPitch = (sakka_isVertical ? boxH : boxW) / sakka_gridChars / cqwPx;
+            // 行がならぶ方向の長さ ÷ 行数 ＝ 行送り（0.98倍の余裕で印刷時の枠線差を吸収）
+            const linePitch = (sakka_isVertical ? boxW : boxH) / sakka_gridLines / cqwPx * 0.98;
+            // マスより少し小さめ＆行送りの0.72倍までに抑えて、ふりがなの場所も確保
+            const font = Math.min(charPitch * 0.97, linePitch * 0.72);
+
+            // フォントの字送りは1emぴったりとは限らない（特に縦書き）ので、
+            // 実際に文字を置いて測り、1マス＝charPitch になるよう字間で補正する
+            measureBox.style.setProperty('--sakka-font', font.toFixed(3) + 'cqw');
+            measureBox.style.setProperty('--sakka-tracking', '0cqw');
+            const probe = document.createElement('div');
+            probe.style.cssText = 'position:absolute;visibility:hidden;letter-spacing:0;white-space:pre;';
+            probe.textContent = 'ああああああああああ';
+            measureContent.innerHTML = '';
+            measureContent.appendChild(probe);
+            const rect = probe.getBoundingClientRect();
+            const advanceCqw = (sakka_isVertical ? rect.height : rect.width) / 10 / cqwPx;
+            measureContent.removeChild(probe);
+            // 0.99倍の余裕をもたせて、端数のはみ出しによる予定外の改行を防ぐ
+            const tracking = advanceCqw > 0 ? charPitch * 0.99 - advanceCqw : 0;
+
+            sakka_gridVars = { font, line: linePitch, tracking };
+        }
+
+        function sakka_applyGridVars(el) {
+            el.style.setProperty('--sakka-font', sakka_gridVars.font.toFixed(3) + 'cqw');
+            el.style.setProperty('--sakka-line', sakka_gridVars.line.toFixed(3) + 'cqw');
+            el.style.setProperty('--sakka-tracking', sakka_gridVars.tracking.toFixed(3) + 'cqw');
+        }
+
+        // --- 本のデザイン（テーマ）一覧 ---
+        const sakka_themes = [
+            { id: 'classic', label: '📖 クラシック' },
+            { id: 'magic', label: '✨ ほしぞら魔法' },
+            { id: 'forest', label: '🌿 森の物語' },
+            { id: 'notebook', label: '📓 かわいいノート' },
+            { id: 'antique', label: '🖼️ アンティーク' },
+            { id: 'ocean', label: '🌊 海のぼうけん' },
+            { id: 'sunset', label: '🌇 夕焼け空' },
+            { id: 'sakura', label: '🌸 さくら色' },
+            { id: 'space', label: '🚀 宇宙旅行' },
+            { id: 'monochrome', label: '🎞️ モノクロ映画' }
+        ];
+
+        function sakka_renderThemeButtons() {
+            document.getElementById('sakka-theme-buttons').innerHTML = sakka_themes.map(t => {
+                const active = t.id === sakka_currentTheme;
+                const colorClass = active
+                    ? 'bg-orange-500 text-white border-orange-600 shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100';
+                return `<button onclick="sakka_setTheme('${t.id}')" data-theme="${t.id}"
+                    class="px-4 py-2 rounded-full text-sm md:text-base font-bold border-2 sakka-theme-btn ${colorClass}">${t.label}</button>`;
+            }).join('');
+        }
 
         function sakka_setTheme(themeName) {
             sakka_currentTheme = themeName;
@@ -1131,7 +1406,8 @@
                 }
             });
 
-            sakka_createPreviewPages();
+            // テーマを変えても、いま見ていたページにとどまる
+            sakka_createPreviewPages(sakka_currentPageIndex);
         }
 
         function sakka_tokenizeAll(text) {
@@ -1156,7 +1432,21 @@
             return tokens;
         }
 
-        function sakka_createPreviewPages() {
+        function sakka_tokenToNode(t) {
+            if (t.type === 'br') return document.createElement('br');
+            if (t.type === 'ruby') {
+                const match = t.value.match(/\[(.+?):(.+?)\]/);
+                const ruby = document.createElement('ruby');
+                const rt = document.createElement('rt');
+                ruby.appendChild(document.createTextNode(match[1]));
+                rt.appendChild(document.createTextNode(match[2]));
+                ruby.appendChild(rt);
+                return ruby;
+            }
+            return document.createTextNode(t.value);
+        }
+
+        function sakka_createPreviewPages(keepIndex = 0) {
             const title = document.getElementById('sakka-story-title').value || '無題のお話';
             const author = document.getElementById('sakka-story-author').value || '';
             const text = document.getElementById('sakka-story-editor').value || '';
@@ -1165,63 +1455,77 @@
             const measureBox = document.getElementById('sakka-measure-box');
             const measureContent = document.getElementById('sakka-measure-content');
 
-            previewBox.className = `sakka-page-container shadow-2xl transition-all duration-300 sakka-theme-${sakka_currentTheme} mx-auto`;
-            previewBox.style.maxWidth = '600px';
+            const vertClass = sakka_isVertical ? ' sakka-vertical' : '';
+            previewBox.className = `sakka-page-container shadow-2xl transition-all duration-300 sakka-theme-${sakka_currentTheme}${vertClass} mx-auto`;
+            previewBox.style.maxWidth = sakka_isVertical ? '800px' : '600px';
 
-            measureBox.className = `sakka-page-container sakka-theme-${sakka_currentTheme}`;
+            measureBox.className = `sakka-page-container sakka-theme-${sakka_currentTheme}${vertClass}`;
             measureBox.style.width = '800px';
 
-            measureContent.innerHTML = '';
+            // 紙面の実寸からマスに合う文字サイズを計算し、計測用とプレビューの両方に適用
+            sakka_setupGrid(measureBox, measureContent);
+            sakka_applyGridVars(measureBox);
+            sakka_applyGridVars(previewBox);
+
             sakka_pagesData = [];
 
-            const isOverflow = () => measureContent.scrollHeight > measureContent.clientHeight;
-
-            const headerDiv = document.createElement('div');
-            headerDiv.className = "flex-shrink-0";
-            headerDiv.innerHTML = `
-        <h1 class="sakka-page-title">${sakka_parseRuby(title)}</h1>
-        <p class="sakka-page-author">なまえ：${sakka_parseRuby(author)}</p>
-      `;
-            measureContent.appendChild(headerDiv);
-
+            // たて書きは右から左へ流れるので、あふれ判定は横方向で行う
+            const isOverflow = sakka_isVertical
+                ? () => measureContent.scrollWidth > measureContent.clientWidth
+                : () => measureContent.scrollHeight > measureContent.clientHeight;
             const tokens = sakka_tokenizeAll(text);
-            let contentDiv = document.createElement('div');
-            contentDiv.className = "whitespace-pre-wrap flex-grow";
-            measureContent.appendChild(contentDiv);
 
-            for (let i = 0; i < tokens.length; i++) {
-                const t = tokens[i];
-                let node;
-                if (t.type === 'br') {
-                    node = document.createElement('br');
-                } else if (t.type === 'ruby') {
-                    const match = t.value.match(/\[(.+?):(.+?)\]/);
-                    node = document.createElement('ruby');
-                    node.innerHTML = `${match[1]}<rt>${match[2]}</rt>`;
-                } else {
-                    node = document.createTextNode(t.value);
+            const headerHtml = `
+        <h1 class="sakka-page-title">${sakka_parseRuby(sakka_escapeHtml(title))}</h1>
+        <p class="sakka-page-author">なまえ：${sakka_parseRuby(sakka_escapeHtml(author))}</p>
+      `;
+
+            let pos = 0;
+            let isFirstPage = true;
+            do {
+                measureContent.innerHTML = '';
+                if (isFirstPage) {
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = "flex-shrink-0";
+                    headerDiv.innerHTML = headerHtml;
+                    measureContent.appendChild(headerDiv);
                 }
+                const contentDiv = document.createElement('div');
+                contentDiv.className = "whitespace-pre-wrap flex-grow";
+                measureContent.appendChild(contentDiv);
 
-                contentDiv.appendChild(node);
+                const renderRange = (count) => {
+                    contentDiv.innerHTML = '';
+                    const frag = document.createDocumentFragment();
+                    for (let k = pos; k < pos + count; k++) {
+                        frag.appendChild(sakka_tokenToNode(tokens[k]));
+                    }
+                    contentDiv.appendChild(frag);
+                };
+
+                const remaining = tokens.length - pos;
+                let count = remaining;
+                renderRange(count);
 
                 if (isOverflow()) {
-                    contentDiv.removeChild(node);
-                    sakka_pagesData.push(measureContent.innerHTML);
-
-                    measureContent.innerHTML = '';
-                    contentDiv = document.createElement('div');
-                    contentDiv.className = "whitespace-pre-wrap flex-grow";
-                    measureContent.appendChild(contentDiv);
-
-                    contentDiv.appendChild(node);
+                    // 二分探索で「あふれない最大の文字数」を見つける（1文字ずつ試すより速い）
+                    let fits = 0;
+                    let breaks = remaining;
+                    while (breaks - fits > 1) {
+                        const mid = Math.floor((fits + breaks) / 2);
+                        renderRange(mid);
+                        if (isOverflow()) breaks = mid; else fits = mid;
+                    }
+                    count = Math.max(fits, 1); // 1文字も入らないときの無限ループを防ぐ
+                    renderRange(count);
                 }
-            }
 
-            if (measureContent.innerHTML.trim() !== '') {
                 sakka_pagesData.push(measureContent.innerHTML);
-            }
+                pos += count;
+                isFirstPage = false;
+            } while (pos < tokens.length);
 
-            sakka_showPage(0);
+            sakka_showPage(Math.min(keepIndex, sakka_pagesData.length - 1));
         }
 
         function sakka_showPage(index) {
@@ -1241,9 +1545,16 @@
             const printArea = document.getElementById('sakka-print-area');
             printArea.innerHTML = '';
 
+            // 用紙の向きを文字の向きに合わせる（よこ書き=A4たて / たて書き=A4よこ）
+            document.getElementById('sakka-print-orientation').textContent =
+                `@page { size: A4 ${sakka_isVertical ? 'landscape' : 'portrait'}; margin: 15mm; }`;
+
+            const vertClass = sakka_isVertical ? ' sakka-vertical' : '';
             sakka_pagesData.forEach((pageHtml, index) => {
                 const pageDiv = document.createElement('div');
-                pageDiv.className = `sakka-print-page sakka-page-container sakka-theme-${sakka_currentTheme}`;
+                pageDiv.className = `sakka-print-page sakka-page-container sakka-theme-${sakka_currentTheme}${vertClass}`;
+                // プレビューと同じ文字サイズ計算（cqw単位）なので、印刷も画面と同じ見た目になる
+                sakka_applyGridVars(pageDiv);
 
                 const innerDiv = document.createElement('div');
                 innerDiv.className = "sakka-page-inner";
@@ -1259,6 +1570,44 @@
             });
 
             try { window.print(); } catch (e) { }
+        }
+
+        // === ふり返りチェックリスト（[漢字:よみ] 形式で書くと自動でルビになる） ===
+        const sakka_checklistData = {
+            basic: [
+                'まちがえた[字:じ]や、ぬけている[字:じ]はないかな？',
+                '「　」（かぎかっこ）を[使:つか]って、[会話文:かいわぶん]を[入:い]れているかな？',
+                '「〜です」「〜だ」などの[文:ぶん]の[終:お]わり[方:かた]はそろっているかな？',
+                '「、」や「。」は[読:よ]みやすい[場所:ばしょ]にあるかな？',
+                '[気持:きも]ちやようすがわかる[言葉:ことば]（ドキドキ、キラキラなど）を[使:つか]っているかな？',
+                'お[話:はなし]がかわるところで、[行:ぎょう]をかえたり、マスをあけたりしているかな？（だんらく）',
+                'つなぐ[言葉:ことば]（そして、しかし、など）を[使:つか]って、[文:ぶん]と[文:ぶん]をつないでいるかな？'
+            ],
+            advanced: [
+                'その[場所:ばしょ]のけしきを、[色:いろ]もまじえて[書:か]いているかな？',
+                '[主人公:しゅじんこう]の[気持:きも]ちがかわったきっかけを、くわしく[書:か]いているかな？',
+                'においや、さわった[感:かん]じなど、いろいろな[感覚:かんかく]を[言葉:ことば]にしているかな？',
+                'お[話:はなし]の[始:はじ]まりから[終:お]わりまで、[順番:じゅんばん]がわかりやすくつながっているかな？',
+                '[読:よ]む[人:ひと]がワクワクしたり、びっくりしたりするような[工夫:くふう]があるかな？'
+            ]
+        };
+
+        function sakka_renderChecklist() {
+            const buildItems = (items, hoverBg, hoverBorder, checkColor) => items.map(item => `
+                <label class="flex items-start gap-4 cursor-pointer p-3 ${hoverBg} rounded-2xl transition-colors border border-transparent ${hoverBorder}">
+                    <input type="checkbox" class="mt-1 w-6 h-6 ${checkColor} bg-gray-100 border-gray-300 rounded flex-shrink-0">
+                    <span class="text-gray-700 font-medium text-sm md:text-base leading-relaxed">${sakka_parseRuby(item)}</span>
+                </label>`).join('');
+
+            document.getElementById('sakka-checklist-basic').innerHTML =
+                buildItems(sakka_checklistData.basic, 'hover:bg-green-50', 'hover:border-green-200', 'text-green-600 focus:ring-green-500');
+            document.getElementById('sakka-checklist-advanced').innerHTML =
+                buildItems(sakka_checklistData.advanced, 'hover:bg-orange-50', 'hover:border-orange-200', 'text-orange-500 focus:ring-orange-500');
+        }
+
+        // 新しいお話を書きはじめたらチェックを全部はずす
+        function sakka_resetChecklist() {
+            document.querySelectorAll('#sakka-modal-checklist input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
 
         function sakka_openChecklist() {
@@ -1293,10 +1642,49 @@
             }, 2500);
         }
 
+        // === 文字数カウント（がんばりが目に見えるように） ===
+        function sakka_updateCharCount() {
+            const text = document.getElementById('sakka-story-editor').value;
+            // 改行・空白をのぞいた文字数（[漢字:よみ] 形式は漢字だけ数える）
+            const count = sakka_stripRuby(text).replace(/\s/g, '').length;
+            document.getElementById('sakka-char-count').innerText = count;
+        }
+
+        // 画面サイズが変わったら（iPadの回転・ウインドウ変更）レイアウトを作りなおす。
+        // リサイズ中は何度も発火するので、落ち着いてから1回だけ計算する
+        let sakka_resizeTimer = null;
         window.addEventListener('resize', () => {
-            if (sakka_appData.step === 8) {
-                sakka_createPreviewPages();
-            }
+            clearTimeout(sakka_resizeTimer);
+            sakka_resizeTimer = setTimeout(() => {
+                if (sakka_appData.step === 7) {
+                    // 画面幅でエディタ高さの方針が変わるので、向きの設定からやり直す
+                    sakka_updateEditorMode();
+                    // フォント変更で周りのレイアウトが動いた場合にそなえて、確定後にもう一度
+                    requestAnimationFrame(() => sakka_updateEditorGrid());
+                } else if (sakka_appData.step === 8) {
+                    sakka_createPreviewPages(sakka_currentPageIndex);
+                }
+            }, 200);
+        });
+
+        // 完成画面では矢印キーでもページをめくれる
+        document.addEventListener('keydown', (e) => {
+            if (sakka_appData.step !== 8) return;
+            if (e.key === 'ArrowRight') sakka_nextPage();
+            else if (e.key === 'ArrowLeft') sakka_prevPage();
+        });
+
+        // === 初期化 ===
+        sakka_renderThemeButtons();
+        sakka_renderGridSelects();
+        sakka_renderChecklist();
+        sakka_checkAutosave();
+
+        ['sakka-story-title', 'sakka-story-author', 'sakka-story-editor'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                sakka_updateCharCount();
+                sakka_autoSave();
+            });
         });
 
     </script>

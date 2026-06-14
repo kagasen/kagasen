@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7ec8f0"/>
+      <stop offset="0.5" stop-color="#a8e0f5"/>
+      <stop offset="1" stop-color="#d8f3e0"/>
+    </linearGradient>
+    <linearGradient id="island" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd86b"/>
+      <stop offset="1" stop-color="#ff9f43"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#sky)"/>
+  <!-- 雲 -->
+  <text x="36" y="48" font-size="30" opacity="0.85">☁️</text>
+  <text x="330" y="70" font-size="24" opacity="0.8">☁️</text>
+  <!-- 書き取り枠（お手本をなぞる） -->
+  <rect x="38" y="64" width="150" height="150" rx="16" fill="#fffdf7" stroke="#4ECDC4" stroke-width="4"/>
+  <line x1="113" y1="64" x2="113" y2="214" stroke="#cdd8e3" stroke-width="2" stroke-dasharray="8 8"/>
+  <line x1="38" y1="139" x2="188" y2="139" stroke="#cdd8e3" stroke-width="2" stroke-dasharray="8 8"/>
+  <!-- 薄ピンクのお手本＋藍のなぞり -->
+  <text x="113" y="178" font-family="'Klee One','Zen Maru Gothic',serif" font-size="118" font-weight="600" fill="#ffb6c8" text-anchor="middle">漢</text>
+  <text x="113" y="178" font-family="'Klee One','Zen Maru Gothic',serif" font-size="118" font-weight="600" fill="none" stroke="#243b53" stroke-width="1.5" text-anchor="middle" opacity="0.55">漢</text>
+  <!-- 筆順マーカー -->
+  <circle cx="70" cy="92" r="9" fill="#E8552E"/>
+  <text x="70" y="96" font-size="11" font-weight="900" fill="#fff" text-anchor="middle">1</text>
+  <!-- 冒険の島（学年＝島） -->
+  <ellipse cx="290" cy="196" rx="78" ry="30" fill="#3aa66b"/>
+  <ellipse cx="290" cy="186" rx="66" ry="26" fill="#5cc98a"/>
+  <rect x="286" y="120" width="6" height="62" fill="#8a5a2b"/>
+  <path d="M292 122 L330 132 L292 144 Z" fill="#FF7043"/>
+  <text x="290" y="178" font-family="'Zen Maru Gothic',sans-serif" font-size="22" font-weight="900" fill="#fff" text-anchor="middle" stroke="#3aa66b" stroke-width="0.6">2年</text>
+  <!-- コイン -->
+  <circle cx="332" cy="98" r="17" fill="#FFC02E" stroke="#e0a400" stroke-width="2"/>
+  <text x="332" y="105" font-size="18" font-weight="900" fill="#6b4e00" text-anchor="middle">¥</text>
+  <circle cx="356" cy="118" r="12" fill="#FFC02E" stroke="#e0a400" stroke-width="2"/>
+  <!-- タイトル -->
+  <text x="24" y="36" font-family="'Zen Maru Gothic',sans-serif" font-size="32" font-weight="900" fill="#fff" stroke="#FF7043" stroke-width="1.2">漢字の冒険</text>
+  <text x="210" y="246" font-family="'Zen Maru Gothic',sans-serif" font-size="17" font-weight="700" fill="#243b53">なぞって ぼうけん！🗺️</text>
+</svg>

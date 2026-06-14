@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2a4a"/>
+      <stop offset="0.5" stop-color="#2c3e66"/>
+      <stop offset="1" stop-color="#1b2a4a"/>
+    </linearGradient>
+    <linearGradient id="lava" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#E8552E"/>
+      <stop offset="0.5" stop-color="#ff9505"/>
+      <stop offset="1" stop-color="#ffe066"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#bg)"/>
+  <!-- 書き取り枠 -->
+  <rect x="120" y="58" width="150" height="150" rx="16" fill="#ffffff" stroke="#FFD23F" stroke-width="4"/>
+  <line x1="195" y1="58" x2="195" y2="208" stroke="#d7d7d7" stroke-width="2" stroke-dasharray="8 8"/>
+  <line x1="120" y1="133" x2="270" y2="133" stroke="#d7d7d7" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="195" y="170" font-family="'Zen Maru Gothic',sans-serif" font-size="110" font-weight="900" fill="#1b2a4a" text-anchor="middle">漢</text>
+  <!-- ゲージ -->
+  <rect x="300" y="58" width="26" height="150" rx="13" fill="rgba(255,255,255,0.15)" stroke="#ffffff" stroke-opacity="0.4" stroke-width="3"/>
+  <rect x="300" y="128" width="26" height="80" rx="13" fill="url(#lava)"/>
+  <text x="313" y="58" font-size="34" text-anchor="middle">💣</text>
+  <!-- タイトル -->
+  <text x="40" y="44" font-family="'Zen Maru Gothic',sans-serif" font-size="34" font-weight="900" fill="#FFD23F" stroke="#E8552E" stroke-width="1">漢字バクダン</text>
+  <text x="330" y="245" font-size="40">💥</text>
+  <text x="48" y="240" font-family="'Zen Maru Gothic',sans-serif" font-size="18" font-weight="700" fill="#cdd8ef">10秒で書け！</text>
+</svg>

@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -25,47 +25,200 @@
                         'maru': ['"Zen Maru Gothic"', 'sans-serif'],
                     },
                     colors: {
-                        'natural-bg': '#FFFEFA',
                         'natural-brown': '#5D4037',
-                        'subject-red': '#FFCDD2',
-                        'subject-blue': '#B3E5FC',
-                        'subject-green': '#C5E1A5',
-                        'subject-yellow': '#FFF59D',
-                        'subject-orange': '#FFCCBC',
-                        'subject-purple': '#E1BEE7',
-                        'subject-gray': '#E0E0E0',
-                        'accent-orange': '#FFAB91',
                     },
-                    boxShadow: {
-                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)',
-                    }
                 }
             }
         }
     </script>
 
     <style>
-        body {
-            background-color: #FFFEFA;
-            background-image: linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, transparent 1px);
-            background-size: 40px 40px;
+        :root {
+            --c-red: #FF8FA3;
+            --c-blue: #5BC9F5;
+            --c-green: #6BCB77;
+            --c-yellow: #FFC94D;
+            --c-orange: #FF9F68;
+            --c-purple: #B28DFF;
+            --ink: #4A3B32;
         }
 
+        body {
+            background-color: #FFF9EE;
+            background-image:
+                radial-gradient(#FFE3C2 1.5px, transparent 1.5px),
+                radial-gradient(#FFE9F0 1.5px, transparent 1.5px);
+            background-size: 36px 36px;
+            background-position: 0 0, 18px 18px;
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+
+        /* ===== にじいろライン ===== */
+        .rainbow-bar {
+            height: 6px;
+            background: linear-gradient(90deg,
+                var(--c-red), var(--c-orange), var(--c-yellow),
+                var(--c-green), var(--c-blue), var(--c-purple), var(--c-red));
+            background-size: 200% 100%;
+            animation: rainbowSlide 8s linear infinite;
+        }
+
+        @keyframes rainbowSlide {
+            to { background-position: 200% 0; }
+        }
+
+        /* ===== タイトル文字あそび ===== */
+        .title-char {
+            display: inline-block;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        h1:hover .title-char {
+            animation: charJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .title-char:nth-child(6n+1) { color: #FF6B81; }
+        .title-char:nth-child(6n+2) { color: #FF9F45; }
+        .title-char:nth-child(6n+3) { color: #F5B800; }
+        .title-char:nth-child(6n+4) { color: #4CAF6E; }
+        .title-char:nth-child(6n+5) { color: #38B6E3; }
+        .title-char:nth-child(6n+6) { color: #9C7BEB; }
+
+        @keyframes charJump {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-10px) rotate(-6deg); }
+            70% { transform: translateY(2px) rotate(3deg); }
+            100% { transform: translateY(0); }
+        }
+
+        h1:hover .title-char:nth-child(2n) { animation-delay: 0.05s; }
+        h1:hover .title-char:nth-child(3n) { animation-delay: 0.1s; }
+        h1:hover .title-char:nth-child(5n) { animation-delay: 0.15s; }
+
+        /* ===== ふわふわ飾り ===== */
+        .floaty {
+            position: fixed;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.5;
+            z-index: 0;
+            animation: floaty 7s ease-in-out infinite;
+        }
+
+        @keyframes floaty {
+            0%, 100% { transform: translateY(0) rotate(-6deg); }
+            50% { transform: translateY(-18px) rotate(6deg); }
+        }
+
+        /* ===== 検索バー ===== */
+        .search-box {
+            border: 3px solid #FFE0B2;
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--c-yellow);
+            box-shadow: 0 0 0 5px rgba(255, 201, 77, 0.25);
+            transform: scale(1.02);
+        }
+
+        /* ===== カテゴリボタン ===== */
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 9px 18px;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            background: #fff;
+            color: #9c8b80;
+            border: 2.5px solid #F3E5D8;
+            box-shadow: 0 3px 0 #F3E5D8;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-3px) rotate(-1.5deg) scale(1.05);
+            box-shadow: 0 6px 0 #F3E5D8;
+        }
+
+        .filter-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #F3E5D8;
+        }
+
+        .filter-btn.active {
+            color: #fff;
+            border-color: transparent;
+            transform: scale(1.06);
+        }
+
+        .filter-btn.active[data-category="all"]       { background: linear-gradient(135deg, #FF9F68, #FF6B81); box-shadow: 0 4px 0 #E0566B; }
+        .filter-btn.active[data-category="japanese"]  { background: linear-gradient(135deg, #FF8FA3, #FF6B81); box-shadow: 0 4px 0 #E0566B; }
+        .filter-btn.active[data-category="math"]      { background: linear-gradient(135deg, #5BC9F5, #38A8E0); box-shadow: 0 4px 0 #2D8BBE; }
+        .filter-btn.active[data-category="science"]   { background: linear-gradient(135deg, #6BCB77, #43A85B); box-shadow: 0 4px 0 #378A4B; }
+        .filter-btn.active[data-category="social"]    { background: linear-gradient(135deg, #FFC94D, #F5A623); box-shadow: 0 4px 0 #D18C14; }
+        .filter-btn.active[data-category="others"]    { background: linear-gradient(135deg, #B28DFF, #9165F0); box-shadow: 0 4px 0 #7A4FD6; }
+        .filter-btn.active[data-category="favorites"] { background: linear-gradient(135deg, #FFD54F, #FFB300); box-shadow: 0 4px 0 #DB9A00; }
+        .filter-btn.active[data-category="management"]{ background: linear-gradient(135deg, #4DD0C4, #26A99D); box-shadow: 0 4px 0 #1F8B81; }
+        .filter-btn.active[data-category="teacher"]   { background: linear-gradient(135deg, #90A4AE, #607D8B); box-shadow: 0 4px 0 #4D6570; }
+
+        /* ===== 並び替えボタン ===== */
+        .sort-btn {
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #b0a094;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .sort-btn.active {
+            background: linear-gradient(135deg, #FF9F68, #FF6B81);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(255, 107, 129, 0.4);
+        }
+
+        /* ===== アプリカード ===== */
         .app-card {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --card-main: #FF8FA3;
+            --card-soft: #FFE3E8;
+            background: #fff;
+            border: 3px solid var(--card-soft);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 6px 0 var(--card-soft);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+            animation: cardIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
 
         .app-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-8px) rotate(-0.6deg);
+            border-color: var(--card-main);
+            box-shadow: 0 12px 0 var(--card-soft), 0 18px 30px -12px rgba(93, 64, 55, 0.25);
         }
 
-        /* サムネイル画像エリア */
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(24px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         .card-thumbnail {
             width: 100%;
             height: 160px;
             overflow: hidden;
             position: relative;
+            background: var(--card-soft);
         }
 
         .card-thumbnail img {
@@ -73,125 +226,213 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: block;
         }
 
         .app-card:hover .card-thumbnail img {
-            transform: scale(1.06);
+            transform: scale(1.08) rotate(0.5deg);
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* キラッと光るエフェクト */
+        .card-thumbnail::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -80%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .app-card:hover .card-thumbnail::after {
+            left: 130%;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #FFCCBC;
-            border-radius: 4px;
+        /* 教科タグ：ステッカー風 */
+        .subject-sticker {
+            display: inline-block;
+            background: var(--card-main);
+            color: #fff;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            padding: 3px 14px;
+            border-radius: 9999px;
+            transform: rotate(-2deg);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #FFAB91;
+        .card-title {
+            border-bottom: 3px dotted var(--card-soft);
         }
 
-        /* カテゴリフィルターボタン：アイコンとテキストを縦中央に揃える */
-        .filter-btn {
+        /* OPENボタン */
+        .open-btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            gap: 6px;
+            background: linear-gradient(135deg, var(--card-main), var(--card-main));
+            filter: saturate(1.05);
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            padding: 8px 28px;
+            border-radius: 9999px;
+            font-size: 14px;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+        }
+
+        .app-card:hover .open-btn {
+            transform: scale(1.08);
+        }
+
+        .open-btn .arrow {
+            display: inline-block;
+            transition: transform 0.25s;
+        }
+
+        .app-card:hover .open-btn .arrow {
+            transform: translateX(4px);
+        }
+
+        /* NEWバッジ */
+        .new-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: linear-gradient(135deg, #FF6B81, #FF9F45);
+            color: #fff;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            box-shadow: 0 3px 8px rgba(255, 107, 129, 0.5);
+            animation: badgeBounce 2.2s ease-in-out infinite;
+        }
+
+        @keyframes badgeBounce {
+            0%, 100% { transform: rotate(6deg) scale(1); }
+            10% { transform: rotate(6deg) scale(1.15); }
+            20% { transform: rotate(6deg) scale(1); }
+        }
+
+        /* お気に入り★ボタン */
+        .fav-btn {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .fav-btn:hover {
+            transform: scale(1.25) rotate(15deg);
+        }
+
+        .fav-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #FFF3E0; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--c-orange), var(--c-red));
+            border-radius: 5px;
+        }
+
+        /* 動きを減らす設定の人向け */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 
-<body class="font-maru text-natural-brown min-h-screen flex flex-col">
+<body class="font-maru min-h-screen flex flex-col">
 
-    <header class="w-full bg-white/80 backdrop-blur-sm py-4 border-b border-orange-100 sticky top-0 z-20">
+    <!-- ふわふわ飾り -->
+    <span class="floaty text-3xl" style="top:18%; left:3%; animation-delay:0s;">✏️</span>
+    <span class="floaty text-2xl" style="top:40%; left:6%; animation-delay:1.2s;">🌈</span>
+    <span class="floaty text-3xl" style="top:70%; left:4%; animation-delay:2.4s;">📚</span>
+    <span class="floaty text-2xl" style="top:22%; right:4%; animation-delay:0.6s;">⭐</span>
+    <span class="floaty text-3xl" style="top:50%; right:3%; animation-delay:1.8s;">🚀</span>
+    <span class="floaty text-2xl" style="top:78%; right:6%; animation-delay:3s;">🎨</span>
+
+    <div class="rainbow-bar"></div>
+
+    <header class="w-full bg-white/85 backdrop-blur-md py-4 border-b-2 border-orange-100 sticky top-0 z-30 shadow-sm">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-center md:text-left">
-                <h1 class="font-pop text-lg md:text-xl text-natural-brown tracking-widest flex items-center gap-2">
-                    <span class="text-accent-orange">✻</span>
-                    かがせんのHAPPYアプリ集
-                    <span class="text-accent-orange">✻</span>
+                <h1 class="font-pop text-xl md:text-2xl tracking-wider flex items-center justify-center md:justify-start gap-2 cursor-default">
+                    <span class="text-2xl">🎈</span>
+                    <span id="siteTitle">かがせんのHAPPYアプリ集</span>
+                    <span class="text-2xl">🎈</span>
                 </h1>
-                <p class="text-gray-400 text-xs tracking-wide ml-6">学校生活をもっと楽しく！</p>
+                <p class="text-amber-400 text-xs font-bold tracking-[0.3em] mt-1 ml-1">✦ 学校生活をもっと楽しく！ ✦</p>
             </div>
-            <div class="relative w-full md:w-80">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
+            <div class="search-box relative w-full md:w-80 bg-white rounded-full">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="text-amber-400 w-5 h-5"></i>
                 </div>
                 <input type="text" id="searchInput"
-                    class="block w-full pl-10 pr-3 py-2 border-2 border-orange-50 rounded-2xl leading-5 bg-white placeholder-gray-300 focus:outline-none focus:border-subject-orange focus:ring-0 transition duration-150 ease-in-out text-sm text-natural-brown"
+                    class="block w-full pl-12 pr-4 py-2.5 rounded-full leading-5 bg-transparent placeholder-amber-300 focus:outline-none text-sm font-bold"
                     placeholder="アプリをさがす...">
             </div>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10">
 
-        <div class="flex flex-wrap gap-2 mb-8 justify-center" id="categoryContainer">
-            <button
-                class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold bg-accent-orange text-white shadow-soft transition-all tracking-wider"
-                data-category="all">すべて</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="japanese"><i data-lucide="book-open"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>国語</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="math"><i data-lucide="calculator"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>算数</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="science"><i data-lucide="flask-conical"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>理科</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="social"><i data-lucide="globe"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>社会</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="others"><i data-lucide="star"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>その他</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider text-yellow-500 hover:text-yellow-600"
-                data-category="favorites"><i data-lucide="star"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 fill-current"></i>お気に入り</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="management"><i data-lucide="users"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>学級経営</button>
-            <button
-                class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-orange-100 hover:bg-orange-50 transition-all tracking-wider"
-                data-category="teacher"><i data-lucide="user-cog"
-                    class="inline-block w-3 h-3 mr-1 mb-0.5 opacity-70"></i>先生用</button>
+        <!-- ヒーローメッセージ -->
+        <div class="text-center mb-8">
+            <p class="font-pop text-base md:text-lg text-natural-brown">
+                きょうは どれであそぶ？ <span class="inline-block">🎮✨</span>
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2.5 mb-10 justify-center" id="categoryContainer">
+            <button class="filter-btn active" data-category="all">🌟 すべて</button>
+            <button class="filter-btn" data-category="japanese">📖 国語</button>
+            <button class="filter-btn" data-category="math">🔢 算数</button>
+            <button class="filter-btn" data-category="science">🧪 理科</button>
+            <button class="filter-btn" data-category="social">🌏 社会</button>
+            <button class="filter-btn" data-category="others">🎲 その他</button>
+            <button class="filter-btn" data-category="favorites">⭐ お気に入り</button>
+            <button class="filter-btn" data-category="management">🏫 学級経営</button>
+            <button class="filter-btn" data-category="teacher">👩‍🏫 先生用</button>
         </div>
 
         <div class="flex justify-between items-center mb-6 px-1">
-            <p class="text-xs text-gray-400"><span id="countDisplay"
-                    class="font-bold text-natural-brown text-base">0</span> 件</p>
-            <div class="flex bg-white rounded-lg p-1 border border-orange-100">
-                <button id="sortNew"
-                    class="px-3 py-1 text-xs font-bold rounded bg-orange-50 text-natural-brown">新着順</button>
-                <button id="sortPopular"
-                    class="px-3 py-1 text-xs font-bold rounded text-gray-400 hover:bg-orange-50 hover:text-natural-brown transition">名前順</button>
+            <p class="text-sm text-amber-500 font-bold bg-white border-2 border-orange-100 rounded-full px-4 py-1.5 shadow-sm">
+                <span id="countDisplay" class="font-pop text-natural-brown text-lg">0</span> 件 みつかったよ！
+            </p>
+            <div class="flex bg-white rounded-full p-1 border-2 border-orange-100 shadow-sm">
+                <button id="sortNew" class="sort-btn active">🆕 新着順</button>
+                <button id="sortPopular" class="sort-btn">🔤 名前順</button>
             </div>
         </div>
 
-        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
         <div id="noData" class="hidden text-center py-20">
-            <div class="inline-block p-4 rounded-full bg-white border border-orange-100 mb-4"><i data-lucide="coffee"
-                    class="w-8 h-8 text-gray-300"></i></div>
-            <p class="text-gray-400 text-sm">条件に合うアプリが見つかりませんでした。</p>
+            <div class="text-6xl mb-4">🔍</div>
+            <p class="font-pop text-natural-brown">みつからなかった…</p>
+            <p class="text-amber-500 text-sm mt-2 font-bold">べつの ことばで さがしてみてね！</p>
         </div>
     </main>
 
-    <footer class="bg-white/60 border-t border-orange-100 py-8 mt-12">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-400 text-xs">&copy; 2026 かがせんのHAPPYアプリ集</p>
+    <footer class="relative z-10 mt-12">
+        <div class="rainbow-bar"></div>
+        <div class="bg-white/80 py-8">
+            <div class="container mx-auto px-4 text-center">
+                <p class="font-pop text-sm text-natural-brown mb-1">🌈 あしたも あそびに きてね！ 🌈</p>
+                <p class="text-amber-400 text-xs font-bold">&copy; 2026 かがせんのHAPPYアプリ集</p>
+            </div>
         </div>
     </footer>
 
@@ -203,6 +444,12 @@
     <script src="apps.js"></script>
 
     <script>
+        // タイトルを1文字ずつ虹色に
+        (function () {
+            const el = document.getElementById('siteTitle');
+            el.innerHTML = [...el.textContent].map(c => `<span class="title-char">${c}</span>`).join('');
+        })();
+
         // Firebase 初期化
         const firebaseConfig = {
             apiKey: "AIzaSyAhM5WJn8ub-OOuJKoSFaa8Pceki-SzlQ4",
@@ -283,17 +530,24 @@
         const sortNewBtn = document.getElementById('sortNew');
         const sortPopularBtn = document.getElementById('sortPopular');
 
+        // 教科カラー（colorClass → カードの色）
+        const CARD_COLORS = {
+            'subject-red':    { main: '#FF8FA3', soft: '#FFE3E8' },
+            'subject-blue':   { main: '#5BC9F5', soft: '#DCF2FD' },
+            'subject-green':  { main: '#6BCB77', soft: '#DFF5E2' },
+            'subject-yellow': { main: '#FFC94D', soft: '#FFF3D6' },
+            'subject-orange': { main: '#FF9F68', soft: '#FFE8D9' },
+            'subject-purple': { main: '#B28DFF', soft: '#EDE4FF' },
+            'subject-gray':   { main: '#90A4AE', soft: '#ECEFF1' },
+        };
+
         // apps.js が読み込まれた後に実行
         renderApps();
 
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                filterBtns.forEach(b => {
-                    b.classList.remove('bg-accent-orange', 'text-white', 'active', 'shadow-soft');
-                    b.classList.add('bg-white', 'text-gray-500', 'border', 'border-orange-100');
-                });
-                btn.classList.remove('bg-white', 'text-gray-500', 'border', 'border-orange-100');
-                btn.classList.add('bg-accent-orange', 'text-white', 'active', 'shadow-soft');
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 currentCategory = btn.dataset.category;
                 renderApps();
             });
@@ -305,23 +559,18 @@
         });
 
         sortNewBtn.addEventListener('click', () => {
-            toggleSortBtn(sortNewBtn, sortPopularBtn);
+            sortNewBtn.classList.add('active');
+            sortPopularBtn.classList.remove('active');
             currentSort = 'new';
             renderApps();
         });
 
         sortPopularBtn.addEventListener('click', () => {
-            toggleSortBtn(sortPopularBtn, sortNewBtn);
+            sortPopularBtn.classList.add('active');
+            sortNewBtn.classList.remove('active');
             currentSort = 'name';
             renderApps();
         });
-
-        function toggleSortBtn(active, inactive) {
-            active.classList.remove('text-gray-400', 'hover:bg-orange-50');
-            active.classList.add('bg-orange-50', 'text-natural-brown');
-            inactive.classList.remove('bg-orange-50', 'text-natural-brown');
-            inactive.classList.add('text-gray-400', 'hover:bg-orange-50');
-        }
 
         // お気に入りデータ管理
         function getFavorites() {
@@ -377,41 +626,40 @@
                 appGrid.classList.remove('hidden');
                 noData.classList.add('hidden');
 
-                filtered.forEach(app => {
+                filtered.forEach((app, index) => {
                     const card = document.createElement('a');
                     card.href = app.link;
-                    card.className = `group block bg-white rounded-2xl overflow-hidden border-2 border-${app.colorClass} shadow-soft hover:shadow-card h-full flex flex-col relative app-card`;
+                    card.className = 'app-card group';
+
+                    const colors = CARD_COLORS[app.colorClass] || CARD_COLORS['subject-gray'];
+                    card.style.setProperty('--card-main', colors.main);
+                    card.style.setProperty('--card-soft', colors.soft);
+                    // 登場アニメーションを順番にずらす（最初の12枚まで）
+                    card.style.animationDelay = `${Math.min(index, 11) * 0.05}s`;
 
                     const isNew = new Date(app.date) > new Date('2026-02-01');
-                    const newBadge = isNew ? `<span class="absolute top-2 right-2 bg-accent-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 tracking-widest">NEW</span>` : '';
-
-                    let tagColorClass = "text-gray-600 bg-gray-100";
-                    if (app.colorClass === 'subject-red') tagColorClass = "text-red-600 bg-red-50";
-                    if (app.colorClass === 'subject-blue') tagColorClass = "text-blue-600 bg-blue-50";
-                    if (app.colorClass === 'subject-green') tagColorClass = "text-green-700 bg-green-50";
-                    if (app.colorClass === 'subject-orange') tagColorClass = "text-orange-700 bg-orange-50";
-                    if (app.colorClass === 'subject-purple') tagColorClass = "text-purple-700 bg-purple-50";
+                    const newBadge = isNew ? `<span class="new-badge">NEW</span>` : '';
 
                     const isFav = favs.includes(app.title);
                     const starColor = isFav ? "text-yellow-400 fill-current" : "text-gray-300";
 
                     card.innerHTML = `
                         ${newBadge}
-                        <button class="absolute top-2 left-2 z-10 p-1.5 bg-white/80 rounded-full shadow-sm hover:scale-110 transition-transform fav-btn" data-title="${app.title}">
+                        <button class="absolute top-2.5 left-2.5 z-10 p-1.5 bg-white/90 rounded-full shadow-md fav-btn" data-title="${app.title}" aria-label="お気に入り">
                             <i data-lucide="star" class="w-5 h-5 ${starColor}"></i>
                         </button>
                         <div class="card-thumbnail">
-                            <img src="${app.image}" alt="${app.title}のサムネイル">
+                            <img src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
                         </div>
                         <div class="p-5 flex-grow flex flex-col items-center text-center">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded mb-2 ${tagColorClass}">${app.tagName}</span>
-                            <h3 class="text-lg text-natural-brown mb-2 border-b-2 border-${app.colorClass}/30 pb-1 px-4 font-pop">${app.title}</h3>
+                            <span class="subject-sticker mb-3">${app.tagName}</span>
+                            <h3 class="card-title text-lg text-natural-brown mb-2 pb-1.5 px-4 font-pop">${app.title}</h3>
                             <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">${app.description}</p>
-                            <div class="w-full flex justify-between items-center text-[10px] text-gray-400 mt-2 mb-3 px-2">
+                            <div class="w-full flex justify-between items-center text-[11px] text-amber-500 font-bold mt-2 mb-4 px-2">
                                 <span id="count-${app.id}">👁 ---</span>
                                 <span>📅 ${app.date}</span>
                             </div>
-                            <span class="bg-${app.colorClass} text-natural-brown py-1.5 px-6 rounded-lg text-sm shadow-sm group-hover:opacity-80 transition tracking-widest border border-black/5">OPEN</span>
+                            <span class="open-btn">あそぶ <span class="arrow">▶</span></span>
                         </div>
                     `;
                     appGrid.appendChild(card);
@@ -448,6 +696,9 @@
                 updateCountDisplay();
             }
         }
+
+        // ヘッダーの検索アイコンを描画
+        lucide.createIcons();
     </script>
 </body>
 

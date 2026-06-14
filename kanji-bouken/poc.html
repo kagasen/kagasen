@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>データPoC｜漢字の冒険</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Klee+One:wght@400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;min-height:100%;overflow-x:hidden;overflow-y:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-overflow-scrolling:touch}
+.cw,.cw canvas{touch-action:none}
+body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(160deg,#7ec8f0,#a8e0f5 45%,#d8f3e0);color:#243b53;
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px}
+h1{font-size:clamp(16px,4.4vw,24px);color:#E8552E}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.b{padding:9px 16px;border:none;border-radius:14px;font-family:inherit;font-size:clamp(12px,3.4vw,16px);font-weight:700;color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.16);transition:transform .08s}
+.b:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.16)}
+.b-go{background:#4ECDC4}.b-test{background:#FF7043}.b-cf{background:#2E86E8}.b-clr{background:#FF9800}
+#kanjiRow{flex-wrap:nowrap;overflow-x:auto;max-width:96vw;padding:4px 4px 10px;justify-content:flex-start;scrollbar-width:thin}
+.kbtn{flex:none;padding:8px 14px;border:none;border-radius:12px;font-family:inherit;font-size:clamp(18px,5vw,26px);font-weight:900;background:#fff;color:#243b53;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.14)}
+.kbtn.sel{background:#FFC02E;box-shadow:0 4px 0 #c79400}
+.cw{position:relative;flex:none}
+.cw canvas{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;background:#fffdf7}
+.cbg{z-index:1}.cgu{z-index:2}.cdr{z-index:3;cursor:crosshair}
+.pill{background:rgba(255,255,255,.9);border-radius:20px;padding:6px 16px;font-weight:900;font-size:clamp(14px,4vw,20px)}
+.pill b{color:#E8552E;font-size:1.3em}
+#log{display:none}
+.ok{color:#0a7d3c;font-weight:900}.ng{color:#c0392b;font-weight:900}
+/* 読み方・熟語パネル */
+.info{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.92);border-radius:18px;padding:10px 16px;box-shadow:0 4px 0 rgba(0,0,0,.10);max-width:96vw}
+.bigk{font-family:'Klee One','Zen Maru Gothic',serif;font-weight:600;font-size:clamp(48px,15vw,76px);line-height:1;color:#243b53;width:1.2em;text-align:center}
+.reads{font-family:'Klee One','Zen Maru Gothic',sans-serif;font-size:clamp(13px,3.6vw,17px);line-height:1.55;color:#243b53}
+.reads .lbl{display:inline-block;min-width:2.4em;font-weight:700;color:#4ECDC4}
+.reads .lbl.kun{color:#FF7043}.reads .lbl.wd{color:#9C27B0}
+.reads .kaku{font-weight:700;color:#E8552E}
+.credit{font-size:11px;color:rgba(36,59,83,.6);margin-top:2px}
+.credit a{color:rgba(36,59,83,.75)}
+</style>
+</head>
+<body>
+<h1>✏️ 漢字れんしゅう</h1>
+<div class="row" id="kanjiRow"></div>
+<div class="info">
+  <div class="bigk" id="bigK">週</div>
+  <div class="reads">
+    <div><span class="lbl">音</span><span id="onyomi">—</span></div>
+    <div><span class="lbl kun">訓</span><span id="kunyomi">—</span></div>
+    <div><span class="lbl wd">ことば</span><span id="words">—</span></div>
+    <div><span class="kaku" id="kakusu">—</span></div>
+  </div>
+</div>
+<div class="pill">てん：<b id="score">—</b> <span id="verdict"></span></div>
+<div class="cw" id="cw">
+  <canvas class="cbg" id="bg"></canvas>
+  <canvas class="cgu" id="gu"></canvas>
+  <canvas class="cdr" id="dr"></canvas>
+</div>
+<div class="row">
+  <button class="b b-clr" onclick="resetDraw()">けす</button>
+  <button class="b b-go" onclick="playDemo()">お手本（なぞる練習）</button>
+  <button class="b b-cf" onclick="showScore()">かくにん！</button>
+</div>
+<div id="log"></div>
+<div class="credit">漢字データ：<a href="http://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a>（&copy; Ulrich Apel / CC BY-SA 3.0）</div>
+
+<!-- 同梱データ（実行時CDN不要＝オフライン動作） -->
+<script src="grade2-strokes.js"></script>
+<script src="grade2-data.js"></script>
+<script>
+/* ===== データ：同梱の grade2-strokes.js / grade2-data.js を使用（オフライン） ===== */
+const SAMPLE=Object.keys(GRADE2_STROKES);
+const INFO=GRADE2_INFO;
+const cache={};
+let curCh=SAMPLE[0], cSize=320;
+let strokeTraces=[], currentTrace=[];
+
+const $=id=>document.getElementById(id);
+function log(s,cls){const el=$('log');el.innerHTML+= '\n'+(cls?`<span class="${cls}">${s}</span>`:s);el.scrollTop=el.scrollHeight;}
+
+/* ===== データ取得：同梱済み(変換済み)を返すだけ。通信なし ===== */
+function loadCh(ch){
+  if(cache[ch])return cache[ch];
+  const d=GRADE2_STROKES[ch];
+  if(!d)throw new Error('同梱データに無い字です');
+  cache[ch]=d;
+  return d;
+}
+
+/* ===== エンジン（KanjiVG＝中心線データに合わせて中心線距離で採点） ===== */
+const DS=109; // KanjiVG座標系 109×109
+function getStrokeGroups(data){
+  if(!data)return[];
+  return data.strokes.map((d,i)=>({num:String(i+1), d, median:(data.medians[i]||[])}));
+}
+// 点(px,py)から中心線(折れ線pts)までの最短距離
+function distToPolyline(px,py,pts){
+  if(!pts||!pts.length)return 1e9;
+  if(pts.length===1)return Math.hypot(px-pts[0][0],py-pts[0][1]);
+  let best=1e9;
+  for(let i=0;i<pts.length-1;i++){
+    const ax=pts[i][0],ay=pts[i][1],bx=pts[i+1][0],by=pts[i+1][1];
+    const dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy;
+    let t=L?((px-ax)*dx+(py-ay)*dy)/L:0; t=Math.max(0,Math.min(1,t));
+    const d=Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
+    if(d<best)best=d;
+  }
+  return best;
+}
+function calcScore(){
+  const data=cache[curCh];if(!data)return 0;
+  const groups=getStrokeGroups(data);
+  const total=groups.length;if(total===0)return 0;
+  const TOL=11;            // 中心線からこの距離(109座標)以内なら「線の上」
+  const allMed=groups.map(g=>g.median);
+  let totalScore=0;
+  for(let si=0;si<total;si++){
+    const median=groups[si].median, trace=strokeTraces[si];
+    if(!trace||trace.length<3)continue;
+    let inside=0;
+    for(const pt of trace){if(distToPolyline(pt.x,pt.y,median)<=TOL)inside++;}
+    const insideScore=Math.round((inside/trace.length)*60);
+    let startScore=0,endScore=0;
+    if(median.length>=2){
+      const sd=Math.hypot(trace[0].x-median[0][0],trace[0].y-median[0][1]);
+      startScore=Math.round(Math.max(0,Math.min(20,20*(1-Math.max(0,sd-7)/16))));
+      const me=median[median.length-1],ue=trace[trace.length-1];
+      const ed=Math.hypot(ue.x-me[0],ue.y-me[1]);
+      endScore=Math.round(Math.max(0,Math.min(20,20*(1-Math.max(0,ed-7)/16))));
+    }
+    totalScore+=insideScore+startScore+endScore;
+  }
+  // 余分なストローク：どの中心線からも遠ければ減点
+  for(let si=total;si<strokeTraces.length;si++){
+    const trace=strokeTraces[si];if(!trace||trace.length<3)continue;
+    let outside=0;
+    for(const pt of trace){let near=false;for(const m of allMed){if(distToPolyline(pt.x,pt.y,m)<=TOL){near=true;break;}}if(!near)outside++;}
+    totalScore-=Math.round((outside/trace.length)*15);
+  }
+  return Math.max(0,Math.min(100,Math.round(totalScore/total)));
+}
+
+/* ===== 描画 ===== */
+function sizeC(){
+  cSize=Math.min(Math.floor(window.innerWidth*0.85),Math.floor(window.innerHeight*0.5),400);
+  const w=$('cw');w.style.width=cSize+'px';w.style.height=cSize+'px';
+  ['bg','gu','dr'].forEach(id=>{const c=$(id);c.width=cSize;c.height=cSize;});
+}
+function drawBg(){
+  const c=$('bg'),ctx=c.getContext('2d'),s=c.width;
+  ctx.clearRect(0,0,s,s);ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,s,s);
+  ctx.strokeStyle='#bbb';ctx.lineWidth=3;ctx.strokeRect(2,2,s-4,s-4);
+  ctx.strokeStyle='rgba(180,180,180,.5)';ctx.lineWidth=1;ctx.setLineDash([8,6]);
+  ctx.beginPath();ctx.moveTo(s/2,4);ctx.lineTo(s/2,s-4);ctx.moveTo(4,s/2);ctx.lineTo(s-4,s/2);ctx.stroke();ctx.setLineDash([]);
+}
+function drawGuide(data){
+  const c=$('gu'),ctx=c.getContext('2d'),s=c.width;ctx.clearRect(0,0,s,s);if(!data)return;
+  const sc=s/DS,groups=getStrokeGroups(data);
+  // 中心線パスを薄グレーでなぞり描き（お手本の下じき）
+  ctx.save();ctx.scale(sc,sc);ctx.strokeStyle='rgba(150,160,175,.5)';ctx.lineWidth=5.5;ctx.lineCap='round';ctx.lineJoin='round';
+  groups.forEach(g=>{if(g.d)ctx.stroke(new Path2D(g.d));});
+  ctx.restore();
+  // 書き順番号
+  const colors=['#E8552E','#2E86E8','#4ECDC4','#FF9800','#9C27B0','#795548','#0a7d3c','#d81b60'];
+  groups.forEach((g,gi)=>{
+    if(g.median.length>0){
+      ctx.fillStyle=colors[gi%colors.length];
+      ctx.font=`600 ${Math.max(s*.05,14)}px 'Klee One','Zen Maru Gothic',sans-serif`;
+      ctx.fillText(`${gi+1}`,g.median[0][0]*sc-9,g.median[0][1]*sc-5);
+    }
+  });
+}
+function resetDraw(){demoRunning=false;strokeTraces=[];currentTrace=[];const c=$('dr');c.getContext('2d').clearRect(0,0,c.width,c.height);$('score').textContent='—';$('verdict').textContent='';}
+
+/* ===== 入力（Pointer Events・手のひら除去：流用） ===== */
+function setupInput(){
+  const old=$('dr');const c=old.cloneNode(true);old.parentNode.replaceChild(c,old);
+  const ctx=c.getContext('2d');let drawing=false,lastPt=null;
+  const getPos=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*(c.width/r.width),y:(e.clientY-r.top)*(c.height/r.height)};};
+  const isPalm=pe=>pe.pointerType==='touch'&&(pe.width||0)>80&&(pe.height||0)>80;
+  c.addEventListener('pointerdown',e=>{
+    if(e.button!==0||isPalm(e))return;e.preventDefault();
+    try{c.setPointerCapture(e.pointerId);}catch(_){}
+    drawing=true;lastPt=getPos(e);currentTrace=[];
+    const sc=DS/cSize;currentTrace.push({x:lastPt.x*sc,y:lastPt.y*sc});
+    ctx.beginPath();ctx.moveTo(lastPt.x,lastPt.y);
+  },{passive:false});
+  c.addEventListener('pointermove',e=>{
+    if(!drawing)return;e.preventDefault();const p=getPos(e);const sc=DS/cSize;
+    currentTrace.push({x:p.x*sc,y:p.y*sc});
+    ctx.lineWidth=Math.max(cSize*.045,8);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#243b53';
+    ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);lastPt=p;
+  },{passive:false});
+  const fin=e=>{if(!drawing)return;e.preventDefault();drawing=false;strokeTraces.push([...currentTrace]);currentTrace=[];};
+  c.addEventListener('pointerup',fin,{passive:false});
+  c.addEventListener('pointercancel',fin,{passive:false});
+}
+
+/* ===== スコア表示 ===== */
+function showScore(){
+  const s=calcScore();$('score').textContent=s;
+  const v=$('verdict');
+  v.textContent=s>=70?'⭕ せいかい！':'… もういちど';
+  v.className=s>=70?'ok':'ng';
+  log(`「${curCh}」採点 = ${s}点 (ストローク数 ${getStrokeGroups(cache[curCh]).length} / 書いた線 ${strokeTraces.length})`);
+}
+
+/* ===== お手本：書き順アニメーション（1画ずつ なぞって見せる） ===== */
+let demoRunning=false;
+function animateStroke(ctx,g,sc,num){
+  return new Promise(res=>{
+    const pts=g.median.map(([x,y])=>[x*sc,y*sc]);
+    // 書き順番号（教科書体フォントで）
+    if(pts.length){
+      ctx.fillStyle='#E8552E';
+      ctx.font=`600 ${Math.max(cSize*.06,18)}px 'Klee One','Zen Maru Gothic',sans-serif`;
+      ctx.fillText(String(num),pts[0][0]-cSize*.018,pts[0][1]-cSize*.018);
+    }
+    ctx.strokeStyle='rgba(255,150,180,.85)';ctx.lineWidth=Math.max(cSize*.052,9);ctx.lineCap='round';ctx.lineJoin='round';
+    let i=0;
+    const step=()=>{
+      if(!demoRunning){res();return;}
+      if(i>=pts.length-1){
+        // 画の形（KanjiVGパス）を薄ピンクでなぞって字形を見せる
+        ctx.save();ctx.scale(sc,sc);
+        ctx.strokeStyle='rgba(255,150,180,.6)';ctx.lineWidth=6;ctx.lineCap='round';ctx.lineJoin='round';
+        if(g.d)ctx.stroke(new Path2D(g.d));
+        ctx.restore();
+        setTimeout(res,170);return;
+      }
+      ctx.beginPath();ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(pts[i+1][0],pts[i+1][1]);ctx.stroke();
+      i++;setTimeout(step,26);
+    };
+    step();
+  });
+}
+async function playDemo(){
+  const data=cache[curCh];if(!data||demoRunning)return;
+  resetDraw();demoRunning=true;
+  const c=$('dr'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);
+  const sc=cSize/DS,groups=getStrokeGroups(data);
+  for(let i=0;i<groups.length;i++){
+    if(!demoRunning)break;
+    await animateStroke(ctx,groups[i],sc,i+1);
+  }
+  demoRunning=false;
+}
+
+/* ===== 起動 ===== */
+function fillInfo(ch,kaku){
+  const it=INFO[ch]||{on:'—',kun:'—',words:'—'};
+  $('bigK').textContent=ch;
+  $('onyomi').textContent=it.on;
+  $('kunyomi').textContent=it.kun;
+  $('words').textContent=it.words;
+  $('kakusu').textContent=`ぜんぶで ${kaku}画`;
+}
+async function pick(ch){
+  curCh=ch;
+  [...$('kanjiRow').children].forEach(b=>b.classList.toggle('sel',b.textContent===ch));
+  resetDraw();
+  try{
+    const d=await loadCh(ch);
+    sizeC();drawBg();drawGuide(d);setupInput();
+    const g=getStrokeGroups(d);
+    fillInfo(ch,g.length);
+    log(`✅ 「${ch}」読込・変換OK：${g.length}画（strokes=${d.strokes.length}, medians=${d.medians.length}）`,'ok');
+  }catch(e){
+    log(`❌ 「${ch}」読込/変換 失敗：${e.message}`,'ng');
+  }
+}
+window.addEventListener('load',async()=>{
+  $('log').textContent='';
+  const row=$('kanjiRow');
+  SAMPLE.forEach(ch=>{const b=document.createElement('button');b.className='kbtn';b.textContent=ch;b.onclick=()=>pick(ch);row.appendChild(b);});
+  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+  await pick(SAMPLE[0]);
+});
+window.addEventListener('resize',()=>{if(cache[curCh]){sizeC();drawBg();drawGuide(cache[curCh]);setupInput();resetDraw();}});
+</script>
+</body>
+</html>

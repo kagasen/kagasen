@@ -11,17 +11,6 @@ const appsData = [
         link: "kanji-bouken/index.html"
     },
     {
-        id: "kanji-bakudan",
-        title: "漢字バクダン",
-        description: "30秒以内に漢字を手書きしよう！時間切れでドカーン💥 練習・テストモードと漢字図鑑つき。学年別・全10問の書き取りゲーム。",
-        category: "japanese",
-        tagName: "国語",
-        date: "2026/06/01",
-        colorClass: "subject-red",
-        image: "images/kanji-bakudan.svg",
-        link: "kanji-bakudan/index.html"
-    },
-    {
         id: "hantai-no-kotoba",
         title: "はんたいの言葉",
         description: "写真と言葉を見て、反対の意味を4択から選ぶ低学年向けの国語ゲームです。",

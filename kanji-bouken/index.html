@@ -465,19 +465,12 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--sky);color:var(--
 <div class="toast" id="toast"></div>
 
 <!-- 同梱データ（実行時CDN不要＝オフライン動作） -->
+<!-- 起動に必要な1・2年のみ同期ロード。3〜6年はマップ表示後にバックグラウンドで遅延ロード -->
 <script src="three.min.js"></script>
 <script src="grade1-strokes.js?v=1"></script>
 <script src="grade1-data.js?v=1"></script>
 <script src="grade2-strokes.js?v=4"></script>
 <script src="grade2-data.js?v=4"></script>
-<script src="grade3-strokes.js?v=1"></script>
-<script src="grade3-data.js?v=1"></script>
-<script src="grade4-strokes.js?v=1"></script>
-<script src="grade4-data.js?v=1"></script>
-<script src="grade5-strokes.js?v=1"></script>
-<script src="grade5-data.js?v=1"></script>
-<script src="grade6-strokes.js?v=1"></script>
-<script src="grade6-data.js?v=1"></script>
 <script>
 /* ============================================================
  * 漢字の冒険  ─ 小2検証版（KanjiVGデータ・オフライン）
@@ -487,10 +480,6 @@ const $=id=>document.getElementById(id);
 const GRADE_DATA={
   1:{strokes:GRADE1_STROKES, info:GRADE1_INFO, label:'1年生'},
   2:{strokes:GRADE2_STROKES, info:GRADE2_INFO, label:'2年生'},
-  3:{strokes:GRADE3_STROKES, info:GRADE3_INFO, label:'3年生'},
-  4:{strokes:GRADE4_STROKES, info:GRADE4_INFO, label:'4年生'},
-  5:{strokes:GRADE5_STROKES, info:GRADE5_INFO, label:'5年生'},
-  6:{strokes:GRADE6_STROKES, info:GRADE6_INFO, label:'6年生'},
 };
 let currentGrade=2;
 let STROKES=GRADE_DATA[currentGrade].strokes;
@@ -2821,6 +2810,27 @@ window.addEventListener('keydown',e=>{
     showToast(`うらワザ！ 💰 +${CHEAT_COINS}`);
   }
 });
+/* 3〜6年を起動後にバックグラウンドでロード（初期表示の固まり防止） */
+const LAZY_GRADES=[
+  {n:3,sv:'grade3-strokes.js?v=1',dv:'grade3-data.js?v=1',label:'3年生'},
+  {n:4,sv:'grade4-strokes.js?v=1',dv:'grade4-data.js?v=1',label:'4年生'},
+  {n:5,sv:'grade5-strokes.js?v=1',dv:'grade5-data.js?v=1',label:'5年生'},
+  {n:6,sv:'grade6-strokes.js?v=1',dv:'grade6-data.js?v=1',label:'6年生'},
+];
+function loadGradeLazy(i){
+  if(i>=LAZY_GRADES.length)return;
+  const g=LAZY_GRADES[i];
+  let done=0;
+  const onLoad=()=>{
+    if(++done<2)return;
+    GRADE_DATA[g.n]={strokes:window[`GRADE${g.n}_STROKES`],info:window[`GRADE${g.n}_INFO`],label:g.label};
+    if(curView==='map')renderMap();
+    else if(curView==='dex')renderDex();
+    loadGradeLazy(i+1);
+  };
+  [g.sv,g.dv].forEach(src=>{const s=document.createElement('script');s.src=src;s.onload=onLoad;document.head.appendChild(s);});
+}
+
 window.addEventListener('load',()=>{
   document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
   profileId='me';
@@ -2831,6 +2841,7 @@ window.addEventListener('load',()=>{
   }
   save=loadSave('me');persist();
   go('map');
+  loadGradeLazy(0);
 });
 </script>
 </body>

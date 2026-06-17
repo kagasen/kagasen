@@ -461,6 +461,97 @@
     margin-right: 6px;
   }
   .flow-guide b { color: var(--ink); }
+
+  /* マイペットの数カウンター */
+  .pet-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  /* 天使などのお世話コストの注意書き */
+  .pet-note {
+    font-size: 11px;
+    font-weight: 700;
+    color: #b6862e;
+    background: var(--gold-soft);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 2px 10px;
+    display: inline-block;
+    margin: 2px 0 6px;
+  }
+
+  /* === ペットを逃がすモーダル === */
+  .release-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(45, 42, 38, 0.55);
+    z-index: 300;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .release-modal.show { display: flex; }
+  .release-box {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 20px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    text-align: center;
+  }
+  .release-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .release-box p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .release-box p b { color: var(--accent); }
+  .release-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .release-item {
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .release-item .pet-svg { width: 64px; height: 64px; margin: 0 auto 2px; }
+  .release-item .r-name { font-size: 12px; font-weight: 700; }
+  .release-item .r-stage { font-size: 10px; color: var(--ink-soft); margin-bottom: 6px; }
+  .release-item .r-btn {
+    width: 100%;
+    background: var(--green-soft);
+    border: 2px solid var(--green);
+    border-radius: 8px;
+    padding: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .release-item .r-btn:hover { background: var(--green); color: white; }
+  .release-cancel {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
 </style>
 </head>
 <body>
@@ -492,7 +583,7 @@
     <!-- ========== ペット画面 ========== -->
     <div class="view" id="view-pets">
       <div class="panel">
-        <h2>🐣 マイペット</h2>
+        <h2>🐣 マイペット <span id="pet-count" class="pet-count"></span></h2>
         <div class="flow-guide">
           <span class="step">🥚 <b>あたためる</b>(3P)</span>→
           <span class="step">🐣 <b>エサ</b>(5P)</span>→
@@ -508,7 +599,7 @@
       <div class="panel">
         <h2>📖 ペット図鑑</h2>
         <div class="dex-info" id="dex-info">
-          コレクション：<span id="dex-count">0</span> / <span id="dex-total">8</span>
+          コレクション：<span id="dex-count">0</span> / <span id="dex-total">9</span>
         </div>
         <div class="dex-grid" id="dex-grid"></div>
       </div>
@@ -533,6 +624,17 @@
   </div>
 
   <div class="keybuf" id="keybuf"></div>
+
+  <!-- ペットを逃がすモーダル（10ひきを超えたとき） -->
+  <div class="release-modal" id="release-modal">
+    <div class="release-box">
+      <h3>🏠 おうちが いっぱい！</h3>
+      <p>ペットは <b>10ひき</b> までしか飼えません。<br>
+        新しいなかまを むかえるには、いまの子を1ひき そとに にがしてあげてね。</p>
+      <div class="release-list" id="release-list"></div>
+      <button class="release-cancel" id="release-cancel">やめる</button>
+    </div>
+  </div>
 
   <a class="back-link" href="./index.html">← タイピングに戻る</a>
 
@@ -568,8 +670,13 @@
     cat:      { id: 'cat',      name: 'ネコ',     eggName: 'ネコのたまご',       desc: 'いたずら好きな仲間',             price: 1000, color: '#e1d5f5', spots: '#9c7cc4', species: 'cat' },
     owl:      { id: 'owl',      name: 'フクロウ', eggName: 'フクロウのたまご',   desc: 'もの知りな夜のけんじゃ',         price: 1000, color: '#f0e1c8', spots: '#a47651', species: 'owl' },
     dino:     { id: 'dino',     name: 'キョウリュウ', eggName: 'キョウリュウのたまご', desc: 'たくさん育ててみよう！',     price: 2500, color: '#d4edda', spots: '#7ab648', species: 'dino' },
-    dragon:   { id: 'dragon',   name: 'ドラゴン', eggName: 'ドラゴンのたまご',   desc: 'でんせつの生き物！',             price: 5000, color: '#ffe0e0', spots: '#e74c3c', species: 'dragon' }
+    dragon:   { id: 'dragon',   name: 'ドラゴン', eggName: 'ドラゴンのたまご',   desc: 'でんせつの生き物！',             price: 5000, color: '#ffe0e0', spots: '#e74c3c', species: 'dragon' },
+    // 9番目のたまご：見た目は「？？？」だが、正体はてんし。おせわのコストは10倍（温30P/餌50P/遊100P）。
+    angel:    { id: 'angel',    name: '天使',     eggName: '？？？',             desc: 'なぞに つつまれた たまご…？',   price: 77777, color: '#f3ecff', spots: '#f4b942', species: 'angel', special: true, costMul: 10 }
   };
+
+  // 飼えるペットの最大数。これを超えるたまごは、どれか1ひきを逃がしてから飼う。
+  const MAX_PETS = 10;
 
   // ============================================
   // 状態管理
@@ -649,7 +756,7 @@
     if (stage === 'egg') return svgEggLarge(EGG_TYPES[species]);
     const fn = {
       chick: svgChick, penguin: svgPenguin, bunny: svgBunny, fox: svgFox,
-      cat: svgCat, owl: svgOwl, dino: svgDino, dragon: svgDragon
+      cat: svgCat, owl: svgOwl, dino: svgDino, dragon: svgDragon, angel: svgAngel
     }[species];
     return fn ? fn(stage) : '';
   }
@@ -1053,6 +1160,85 @@
     </svg>`;
   }
 
+  // --- 天使（「？？？」のたまごの正体） ---
+  function svgAngel(stage) {
+    if (stage === 'baby') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="55" cy="48" r="34" fill="#fff7df" opacity="0.5"/>
+      <ellipse cx="55" cy="22" rx="15" ry="5" fill="none" stroke="#f4b942" stroke-width="3.2"/>
+      <ellipse cx="55" cy="22" rx="15" ry="5" fill="none" stroke="#fff0b8" stroke-width="1.2"/>
+      <path d="M 40 62 Q 18 52 13 64 Q 25 60 35 68 Q 26 62 40 62 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 70 62 Q 92 52 97 64 Q 85 60 75 68 Q 84 62 70 62 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 43 62 Q 55 56 67 62 L 63 86 Q 55 92 47 86 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 43 68 Q 55 73 67 68" stroke="#f4b942" stroke-width="2.5" fill="none"/>
+      <circle cx="55" cy="42" r="18" fill="#ffe3c2" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 38 40 Q 39 25 55 24 Q 71 25 72 40 Q 64 33 55 34 Q 46 33 38 40 Z" fill="#f4d06f" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="49" cy="44" r="2.6" fill="#2d2a26"/>
+      <circle cx="61" cy="44" r="2.6" fill="#2d2a26"/>
+      <circle cx="50" cy="43" r="0.8" fill="#fff"/>
+      <circle cx="62" cy="43" r="0.8" fill="#fff"/>
+      <circle cx="44" cy="50" r="3" fill="#ffc2c2" opacity="0.75"/>
+      <circle cx="66" cy="50" r="3" fill="#ffc2c2" opacity="0.75"/>
+      <path d="M 50 51 Q 55 55 60 51" stroke="#2d2a26" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M 89 32 l 1.5 4 l 4 1.5 l -4 1.5 l -1.5 4 l -1.5 -4 l -4 -1.5 l 4 -1.5 Z" fill="#ffd966"/>
+    </svg>`;
+    if (stage === 'teen') return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="55" cy="48" r="38" fill="#fff7df" opacity="0.5"/>
+      <ellipse cx="55" cy="19" rx="15" ry="5" fill="none" stroke="#f4b942" stroke-width="3.4"/>
+      <ellipse cx="55" cy="19" rx="15" ry="5" fill="none" stroke="#fff0b8" stroke-width="1.3"/>
+      <path d="M 46 60 Q 20 52 12 32 Q 18 44 25 45 Q 19 34 28 36 Q 28 48 34 50 Q 28 40 36 42 Q 38 52 44 54 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 64 60 Q 90 52 98 32 Q 92 44 85 45 Q 91 34 82 36 Q 82 48 76 50 Q 82 40 74 42 Q 72 52 66 54 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 44 60 Q 55 54 66 60 L 70 94 Q 55 100 40 94 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 50 64 L 49 96 M 60 64 L 61 96" stroke="#dfe6f2" stroke-width="1.4" fill="none"/>
+      <path d="M 44 67 Q 55 73 66 67" stroke="#f4b942" stroke-width="3" fill="none"/>
+      <ellipse cx="55" cy="74" rx="6.5" ry="4.5" fill="#ffe3c2" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="55" cy="40" r="16.5" fill="#ffe3c2" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 38 38 Q 39 23 55 22 Q 71 23 72 38 Q 64 31 55 32 Q 46 31 38 38 Z" fill="#f4d06f" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="49" cy="41" r="2.5" fill="#2d2a26"/>
+      <circle cx="61" cy="41" r="2.5" fill="#2d2a26"/>
+      <circle cx="50" cy="40" r="0.8" fill="#fff"/>
+      <circle cx="62" cy="40" r="0.8" fill="#fff"/>
+      <circle cx="44" cy="47" r="2.9" fill="#ffc2c2" opacity="0.75"/>
+      <circle cx="66" cy="47" r="2.9" fill="#ffc2c2" opacity="0.75"/>
+      <path d="M 50 48 Q 55 52 60 48" stroke="#2d2a26" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      <path d="M 92 54 l 1.4 3.8 l 3.8 1.4 l -3.8 1.4 l -1.4 3.8 l -1.4 -3.8 l -3.8 -1.4 l 3.8 -1.4 Z" fill="#ffd966"/>
+      <path d="M 14 60 l 1.1 3 l 3 1.1 l -3 1.1 l -1.1 3 l -1.1 -3 l -3 -1.1 l 3 -1.1 Z" fill="#ffd966"/>
+    </svg>`;
+    return `<svg class="pet-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="55" cy="46" r="44" fill="#fff7df" opacity="0.55"/>
+      <g stroke="#ffe08a" stroke-width="2.2" stroke-linecap="round" opacity="0.85">
+        <line x1="55" y1="2" x2="55" y2="9"/>
+        <line x1="30" y1="8" x2="33" y2="14"/>
+        <line x1="80" y1="8" x2="77" y2="14"/>
+        <line x1="12" y1="26" x2="18" y2="29"/>
+        <line x1="98" y1="26" x2="92" y2="29"/>
+      </g>
+      <path d="M 50 56 Q 22 50 8 24 Q 14 38 22 40 Q 12 30 20 28 Q 22 42 31 44 Q 22 33 31 32 Q 34 45 43 48 Q 33 40 40 40 Q 44 50 50 52 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 43 48 Q 28 42 16 32 M 43 50 Q 26 47 14 40" stroke="#cfd8ea" stroke-width="1.3" fill="none"/>
+      <path d="M 60 56 Q 88 50 102 24 Q 96 38 88 40 Q 98 30 90 28 Q 88 42 79 44 Q 88 33 79 32 Q 76 45 67 48 Q 77 40 70 40 Q 66 50 60 52 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="2.5"/>
+      <path d="M 67 48 Q 82 42 94 32 M 67 50 Q 84 47 96 40" stroke="#cfd8ea" stroke-width="1.3" fill="none"/>
+      <path d="M 43 56 Q 55 50 67 56 L 73 100 Q 55 106 37 100 Z" fill="#ffffff" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 49 60 L 47 100 M 55 58 L 55 103 M 61 60 L 63 100" stroke="#dfe6f2" stroke-width="1.5" fill="none"/>
+      <path d="M 43 65 Q 55 72 67 65" stroke="#f4b942" stroke-width="3.2" fill="none"/>
+      <ellipse cx="55" cy="76" rx="7.5" ry="5.5" fill="#ffe3c2" stroke="#2d2a26" stroke-width="2"/>
+      <circle cx="55" cy="40" r="15.5" fill="#ffe3c2" stroke="#2d2a26" stroke-width="3"/>
+      <path d="M 39 38 Q 40 22 55 21 Q 70 22 71 38 Q 64 30 55 31 Q 46 30 39 38 Z" fill="#f4d06f" stroke="#2d2a26" stroke-width="2"/>
+      <ellipse cx="55" cy="16" rx="15" ry="5" fill="none" stroke="#f4b942" stroke-width="3.6"/>
+      <ellipse cx="55" cy="16" rx="15" ry="5" fill="none" stroke="#fff0b8" stroke-width="1.5"/>
+      <circle cx="50" cy="41" r="2.4" fill="#2d2a26"/>
+      <circle cx="60" cy="41" r="2.4" fill="#2d2a26"/>
+      <circle cx="50.8" cy="40.2" r="0.8" fill="#fff"/>
+      <circle cx="60.8" cy="40.2" r="0.8" fill="#fff"/>
+      <circle cx="45" cy="46" r="2.8" fill="#ffc2c2" opacity="0.75"/>
+      <circle cx="65" cy="46" r="2.8" fill="#ffc2c2" opacity="0.75"/>
+      <path d="M 51 47 Q 55 51 59 47" stroke="#2d2a26" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M 94 52 l 1.7 4.6 l 4.6 1.7 l -4.6 1.7 l -1.7 4.6 l -1.7 -4.6 l -4.6 -1.7 l 4.6 -1.7 Z" fill="#ffd966"/>
+      <path d="M 12 56 l 1.3 3.6 l 3.6 1.3 l -3.6 1.3 l -1.3 3.6 l -1.3 -3.6 l -3.6 -1.3 l 3.6 -1.3 Z" fill="#ffd966"/>
+      <circle cx="84" cy="88" r="2" fill="#ffd966"/>
+      <circle cx="26" cy="92" r="1.7" fill="#ffd966"/>
+      <circle cx="78" cy="22" r="1.6" fill="#fff"/>
+    </svg>`;
+  }
+
   // ============================================
   // ショップ
   // ============================================
@@ -1082,6 +1268,22 @@
 
   function buyEgg(eggId) {
     const egg = EGG_TYPES[eggId];
+    // ポイントが足りるかを先にチェック（ここではまだ消費しない）
+    if (state.points < egg.price) {
+      toast('ポイントが たりないよ！', 'bad');
+      return;
+    }
+    // すでに最大数まで飼っているときは、どれか1ひきを逃がしてもらう
+    if (state.pets.length >= MAX_PETS) {
+      openReleaseModal(eggId);
+      return;
+    }
+    finalizeBuy(eggId);
+  }
+
+  // 実際にポイントを消費して新しいたまごをむかえる
+  function finalizeBuy(eggId) {
+    const egg = EGG_TYPES[eggId];
     if (!spendPoints(egg.price)) {
       toast('ポイントが たりないよ！', 'bad');
       return;
@@ -1100,10 +1302,64 @@
   }
 
   // ============================================
+  // ペットを逃がす（10ひきを超えるとき）
+  // ============================================
+  let pendingEggId = null;
+
+  function openReleaseModal(eggId) {
+    pendingEggId = eggId;
+    const list = document.getElementById('release-list');
+    list.innerHTML = '';
+    state.pets.forEach(pet => {
+      const egg = EGG_TYPES[pet.eggType];
+      const stageMap = { egg: '🥚 たまご', baby: '🐣 ヒナ', teen: '🐥 こども', adult: '⭐ 大人' };
+      const showName = (pet.stage === 'egg' && egg.special) ? '？？？' : egg.name;
+      const item = document.createElement('div');
+      item.className = 'release-item';
+      item.innerHTML = `
+        ${svgPet(egg.species, pet.stage)}
+        <div class="r-name">${showName}</div>
+        <div class="r-stage">${stageMap[pet.stage] || ''}</div>
+        <button class="r-btn" data-pet="${pet.id}">🌿 にがす</button>
+      `;
+      list.appendChild(item);
+    });
+    list.querySelectorAll('.r-btn').forEach(btn => {
+      btn.addEventListener('click', () => releasePet(btn.dataset.pet));
+    });
+    document.getElementById('release-modal').classList.add('show');
+  }
+
+  function closeReleaseModal() {
+    document.getElementById('release-modal').classList.remove('show');
+    pendingEggId = null;
+  }
+
+  function releasePet(petId) {
+    const idx = state.pets.findIndex(p => p.id === petId);
+    if (idx === -1) return;
+    const released = state.pets[idx];
+    const releasedEgg = EGG_TYPES[released.eggType];
+    const releasedName = (released.stage === 'egg' && releasedEgg.special) ? '？？？' : releasedEgg.name;
+    state.pets.splice(idx, 1);
+    saveState();
+    const eggId = pendingEggId;
+    document.getElementById('release-modal').classList.remove('show');
+    pendingEggId = null;
+    toast(`🌿 ${releasedName}を そとに にがしてあげたよ。元気でね！`, 'good');
+    // 空いた1ひき分のスペースに新しいたまごをむかえる
+    if (eggId) finalizeBuy(eggId);
+    renderPets();
+    renderShop();
+  }
+
+  // ============================================
   // ペット育成
   // ============================================
   function renderPets() {
     const container = document.getElementById('pet-list-container');
+    const counter = document.getElementById('pet-count');
+    if (counter) counter.textContent = `（${state.pets.length} / ${MAX_PETS}ひき）`;
     if (state.pets.length === 0) {
       container.innerHTML = `<div class="empty-msg">
         まだペットがいません。<br>
@@ -1118,6 +1374,8 @@
 
   function renderPetCard(pet) {
     const egg = EGG_TYPES[pet.eggType];
+    const mul = egg.costMul || 1;            // 天使だけ 5倍
+    const cWarm = COST_WARM * mul, cFeed = COST_FEED * mul, cPlay = COST_PLAY * mul;
     const div = document.createElement('div');
     div.className = 'pet-card';
     div.dataset.petId = pet.id;
@@ -1130,21 +1388,21 @@
       progressPct = (pet.warmCount / WARM_NEEDED) * 100;
       fillClass = 'warm';
       actionsHTML = `<button class="action-btn warm" data-act="warm" data-pet="${pet.id}">
-        🔥 あたためる<br><small>${COST_WARM}P</small></button>`;
+        🔥 あたためる<br><small>${cWarm}P</small></button>`;
     } else if (pet.stage === 'baby') {
       stageLabel = '🐣 ヒナ';
       progressLabel = `エサ：${pet.feedCount} / ${FEED_NEEDED}`;
       progressPct = (pet.feedCount / FEED_NEEDED) * 100;
       fillClass = 'feed';
       actionsHTML = `<button class="action-btn feed" data-act="feed" data-pet="${pet.id}">
-        🍴 エサをあげる<br><small>${COST_FEED}P</small></button>`;
+        🍴 エサをあげる<br><small>${cFeed}P</small></button>`;
     } else if (pet.stage === 'teen') {
       stageLabel = '🐥 こども';
       progressLabel = `あそぶ：${pet.playCount} / ${PLAY_NEEDED}`;
       progressPct = (pet.playCount / PLAY_NEEDED) * 100;
       fillClass = 'play';
       actionsHTML = `<button class="action-btn play" data-act="play" data-pet="${pet.id}">
-        🎾 あそぶ<br><small>${COST_PLAY}P</small></button>`;
+        🎾 あそぶ<br><small>${cPlay}P</small></button>`;
     } else {
       stageLabel = '⭐ 大人になった！';
       progressLabel = `図鑑に登録ずみ！`;
@@ -1153,12 +1411,19 @@
       actionsHTML = `<button class="action-btn done">📖 図鑑にいるよ</button>`;
     }
 
+    // たまごのうちは天使の正体をかくす
+    const displayName = (pet.stage === 'egg' && egg.special) ? '？？？' : egg.name;
+    // 天使はおせわのコストが5倍であることを知らせる
+    const noteHTML = (egg.special && pet.stage !== 'adult')
+      ? `<div class="pet-note">✨ おせわは ${mul}ばい たいへん！</div>` : '';
+
     div.innerHTML = `
       ${svgPet(egg.species, pet.stage)}
-      <div class="pet-name">${egg.name}</div>
+      <div class="pet-name">${displayName}</div>
       <div class="pet-stage">${stageLabel}</div>
       <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${Math.min(100, progressPct)}%"></div></div>
       <div class="progress-label">${progressLabel}</div>
+      ${noteHTML}
       <div class="pet-actions">${actionsHTML}</div>
     `;
 
@@ -1172,7 +1437,8 @@
     const pet = state.pets.find(p => p.id === petId);
     if (!pet) return;
     const egg = EGG_TYPES[pet.eggType];
-    const costs = { warm: COST_WARM, feed: COST_FEED, play: COST_PLAY };
+    const mul = egg.costMul || 1;            // 天使だけ 5倍
+    const costs = { warm: COST_WARM * mul, feed: COST_FEED * mul, play: COST_PLAY * mul };
     if (!spendPoints(costs[act])) {
       toast('ポイントが たりない！', 'bad');
       return;
@@ -1312,6 +1578,12 @@
 
     document.querySelectorAll('.tab').forEach(t => {
       t.addEventListener('click', () => switchView(t.dataset.view));
+    });
+
+    // 「ペットを逃がす」モーダルを閉じる
+    document.getElementById('release-cancel').addEventListener('click', closeReleaseModal);
+    document.getElementById('release-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'release-modal') closeReleaseModal();
     });
 
     document.getElementById('debug-close').addEventListener('click', closeDebugPanel);

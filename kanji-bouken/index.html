@@ -464,9 +464,20 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--sky);color:var(--
 <div class="bt-banner" id="btBanner"></div>
 <div class="toast" id="toast"></div>
 
+<!-- ローディング画面（データ読込み完了まで表示） -->
+<div id="loading-screen" style="
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#7ec8f0,#a8e0f5 45%,#d8f3e0);
+  font-family:'Zen Maru Gothic',sans-serif;color:#243b53;gap:16px;
+">
+  <div style="font-size:52px">📖</div>
+  <div style="font-size:22px;font-weight:900">漢字の冒険</div>
+  <div style="font-size:14px;opacity:0.7">よみこんでいます…</div>
+</div>
+
 <!-- 同梱データ（実行時CDN不要＝オフライン動作） -->
-<!-- 起動に必要な1・2年のみ同期ロード。3〜6年はマップ表示後にバックグラウンドで遅延ロード -->
-<script src="three.min.js"></script>
+<!-- Three.jsは3Dルーム使用時に遅延ロード。1・2年のみ同期ロード。3〜6年はマップ表示後にバックグラウンドで遅延ロード -->
 <script src="grade1-strokes.js?v=1"></script>
 <script src="grade1-data.js?v=1"></script>
 <script src="grade2-strokes.js?v=4"></script>
@@ -1709,7 +1720,7 @@ function wallSlots(){
  *  - x=よこ(0..6) / z=おくゆき(0..4) / y=たかさ。タイル1辺=1
  *  - 左かべ=x:0面（L）、右かべ=z:0面（R）。セーブキーは2D版と互換
  * ============================================================ */
-const T=THREE;
+let T=null;
 const WALL_H=2.6, WALL_HS=[WALL_H*0.32, WALL_H*0.62];   // かべかざりの2だんの高さ
 const R3={inited:false,looping:false,renderer:null,scene:null,camera:null,ray:null,root:null,holder:null,
   az:0.80,el:0.55,dist:9.2,target:null,                 // カメラ（よこ回転・見おろし角・きょり）
@@ -2385,7 +2396,16 @@ function charSprite(){
 /* ----- 初期化（1回だけ） ----- */
 function init3D(){
   if(R3.inited)return;
-  if(typeof THREE==='undefined'){$('roomStage').innerHTML='<p class="subt">3Dの よみこみに しっぱいしたよ</p>';return;}
+  if(typeof THREE==='undefined'){
+    $('roomStage').innerHTML='<p class="subt" style="padding:20px">3Dを よみこんでいます…</p>';
+    const s=document.createElement('script');
+    s.src='three.min.js';
+    s.onload=()=>{T=THREE;init3D();};
+    s.onerror=()=>{$('roomStage').innerHTML='<p class="subt">3Dの よみこみに しっぱいしたよ</p>';};
+    document.head.appendChild(s);
+    return;
+  }
+  T=THREE;
   const stage=$('roomStage');
   stage.innerHTML='<div class="room" id="room3d"><div class="room3d-hint" id="roomHint3d">ゆびで くるっと まわせるよ！</div></div>';
   const holder=$('room3d');R3.holder=holder;
@@ -2832,6 +2852,7 @@ function loadGradeLazy(i){
 }
 
 window.addEventListener('load',()=>{
+  const ls=$('loading-screen');if(ls)ls.style.display='none';
   document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
   profileId='me';
   if(!hasSave('me')){

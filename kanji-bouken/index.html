@@ -1161,6 +1161,7 @@ let curCh=SAMPLE[0], cSize=320;
 let strokeTraces=[], currentTrace=[];
 let writeMode='practice';            // 'practice' | 'test'
 let demoRunning=false;
+let practiceRewarded=false;          // 同じ書き取りで2回以上ポイントを渡さないためのフラグ
 
 function loadCh(ch){if(cache[ch])return cache[ch];const d=STROKES[ch]||GRADE1_STROKES[ch]||GRADE2_STROKES[ch];if(!d)throw new Error('no data');cache[ch]=d;return d;}
 function getStrokeGroups(data){if(!data)return[];return data.strokes.map((d,i)=>({num:String(i+1),d,median:(data.medians[i]||[])}));}
@@ -1266,7 +1267,7 @@ function drawGuide(data){
     ctx.fillText(`${gi+1}`,g.median[0][0]*sc-9,g.median[0][1]*sc-5);
   }});
 }
-function resetDraw(){demoRunning=false;strokeTraces=[];currentTrace=[];const c=$('dr');c.getContext('2d').clearRect(0,0,cSize,cSize);$('score').textContent='—';$('verdict').textContent='';}
+function resetDraw(){demoRunning=false;strokeTraces=[];currentTrace=[];practiceRewarded=false;const c=$('dr');c.getContext('2d').clearRect(0,0,cSize,cSize);$('score').textContent='—';$('verdict').textContent='';}
 
 function setupInput(){
   const old=$('dr');const c=old.cloneNode(false);old.parentNode.replaceChild(c,old);
@@ -1354,13 +1355,24 @@ function startPractice(gi){
 function prevCh(){const span=practiceEnd-practiceStart;practiceIdx=practiceStart+((practiceIdx-practiceStart-1+span)%span);showPracticeChar();}
 function nextCh(){const span=practiceEnd-practiceStart;practiceIdx=practiceStart+((practiceIdx-practiceStart+1)%span);showPracticeChar();}
 function confirmPractice(){
+  const data=cache[curCh];if(!data)return;
+  const groups=getStrokeGroups(data),N=groups.length;
+  const drawn=strokeTraces.filter(t=>t&&t.length>=3);
+  if(drawn.length<N){
+    $('score').textContent='—';
+    $('verdict').textContent=`画数が たりないよ（ぜんぶで ${N}画）`;$('verdict').className='ng';
+    sfxBad();return;
+  }
   const s=calcScoreLenient();$('score').textContent=s;
   const v=$('verdict');const ok=s>=60;
   v.textContent=ok?'⭕ じょうず！':'… もういちど';v.className=ok?'ok':'ng';
   if(ok){
-    const cpv=cp(curCh);save.mastery[cpv]=Math.max(save.mastery[cpv]||0,1);
-    const gain=5;save.coins+=gain;persist();refreshChrome();
-    popStamp();confetti(18);sfxGood();flyCoins(gain);
+    if(!practiceRewarded){
+      practiceRewarded=true;
+      const cpv=cp(curCh);save.mastery[cpv]=Math.max(save.mastery[cpv]||0,1);
+      const gain=5;save.coins+=gain;persist();refreshChrome();
+      popStamp();confetti(18);sfxGood();flyCoins(gain);
+    }else sfxGood();
   }else sfxBad();
 }
 

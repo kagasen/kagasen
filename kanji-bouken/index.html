@@ -960,6 +960,36 @@ function loadSave(id){
 }
 function persist(){if(profileId)localStorage.setItem(saveKey(profileId),JSON.stringify(save));}
 function hasSave(id){return !!localStorage.getItem(saveKey(id));}
+/* お金と「これまで買ったもの」の 一斉リセット（端末ごとに 1回だけ）。
+ * ズルした お金で 本来 頑張らないと買えない物を 買った対策。これから 勉強を 頑張って
+ * 本当に貯めた お金で 買ってほしい、という ねらい。
+ * 日付つきフラグで「この端末で もう実行したか」を覚え、二度目以降は 何もしない。
+ * 更新版アプリを 次に開いた時、この端末の すべての保存(全プロフィール)について：
+ *   ・コイン=0
+ *   ・買った かぐ/ゆか/かべ → スターターだけに
+ *   ・買い足した へや → 1つ目だけ(からっぽ)に。※部屋・配置システム自体は そのまま残す
+ *   ・買った 着せ替え → スターターだけに（装備も 初期コーデへ）
+ * 勉強の記録（図鑑 dex・習得 mastery・にがて weak・テストのクリア★ cleared）は 残す。
+ * リセット後は ふつうに 稼げる。再度 全員リセットしたい時は フラグの 日付を 新しくする。 */
+const RESET_FLAG='kanji_reset_20260618';
+function resetProgressOnce(){
+  if(localStorage.getItem(RESET_FLAG))return;
+  try{
+    const keys=[];
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf('kanji_save_')===0)keys.push(k);}
+    keys.forEach(k=>{try{
+      const s=JSON.parse(localStorage.getItem(k));if(!s||typeof s!=='object')return;
+      s.coins=0;                                          // お金
+      s.furn=[];s.floors=['f_wood'];s.walls=['w_cream'];  // 買った かぐ・ゆか・かべ → スターターだけ
+      s.rooms=[defaultRoom()];s.curRoom=0;s.room=s.rooms[0]; // 買い足した へや → 1つ目だけ(からっぽ)に
+      s.unlocked=starterItems();                          // 買った 着せ替え → スターターだけ
+      s.equipped={shirt:'s_white',pants:'p_blue',shoes:'sh_white',hair:'h_short_br',hat:'hat_none',glasses:'gl_none'};
+      // ※ 図鑑(dex)・習得(mastery)・にがて(weak)・クリア★(cleared)＝勉強の記録は 残す
+      localStorage.setItem(k,JSON.stringify(s));
+    }catch(_){}});
+  }catch(_){}
+  localStorage.setItem(RESET_FLAG,'1');
+}
 function cp(ch){return String(ch.codePointAt(0));}     // 安定ID（字形非依存）
 function masteredCount(){return SAMPLE.filter(ch=>(save.mastery[cp(ch)]||0)>=1).length;}
 function dexCount(){return SAMPLE.filter(ch=>save.dex[cp(ch)]!=null).length;}
@@ -2937,6 +2967,7 @@ window.addEventListener('load',()=>{
     const last=localStorage.getItem('kanji_last_profile');
     if(last&&hasSave(last)){const old=loadSave(last);old.base='kid';localStorage.setItem(saveKey('me'),JSON.stringify(old));}
   }
+  resetProgressOnce();          // 不正コイン・かぐ・図鑑の 一斉リセット（端末ごと1回）。loadSaveの前に 実行
   save=loadSave('me');persist();
   go('map');
   pumpLazyGrades();

@@ -500,7 +500,7 @@ let GROUPS=[];
 function gradeSample(n){return Object.keys(GRADE_DATA[n].strokes);}
 function gradeMastered(n){return gradeSample(n).filter(ch=>(save.mastery[cp(ch)]||0)>=1).length;}
 function setGrade(n){
-  currentGrade=GRADE_DATA[n]?+n:2;
+  currentGrade=(GRADE_DATA[n]&&GRADE_DATA[n].strokes)?+n:2;  // データが そろっている学年だけ。未ロードは2年に フォールバック
   STROKES=GRADE_DATA[currentGrade].strokes;
   SAMPLE=Object.keys(STROKES);
   INFO=GRADE_DATA[currentGrade].info;
@@ -1001,6 +1001,7 @@ function go(v){
   if(v==='dex'){dexGrade=currentGrade;renderDex();}
   if(v==='room')renderRoom();
   if(v==='closet')renderCloset();
+  if(v!=='write'&&typeof pumpLazyGrades==='function')pumpLazyGrades();  // テストを抜けたら 学年データの遅延ロードを再開
 }
 function goBack(){ if(curView==='write'&&writeMode==='test'){ if(!confirm('テストを やめて マップに もどる？'))return; } go('map'); }
 function refreshChrome(){
@@ -1080,7 +1081,7 @@ function renderMap(){
   if(buddy)buddy.innerHTML=`<div class="buddy-fig" onclick="go('room')">${charSVG(save.base,save.equipped,70)}</div><div class="bubble">${buddyLine()}</div>`;
   const grid=$('mapGrid');grid.innerHTML='';
   GRADES.forEach(g=>{
-    const active=!!GRADE_DATA[g.n];          // データがある学年（1・2）はあそべる
+    const active=!!(GRADE_DATA[g.n]&&GRADE_DATA[g.n].strokes);  // データが そろった学年だけ あそべる（未ロード/失敗は ロックのまま）
     const el=document.createElement('button');
     el.className='island '+(active?'active':'locked');
     if(active){
@@ -2842,25 +2843,38 @@ window.addEventListener('keydown',e=>{
     showToast(`うらワザ！ 💰 +${CHEAT_COINS}`);
   }
 });
-/* 3〜6年を起動後にバックグラウンドでロード（初期表示の固まり防止） */
+/* 3〜6年を起動後にバックグラウンドでロード（初期表示の固まり防止）。
+ * 各データは「const GRADEn_STROKES = …」で宣言されており、const はグローバル(window)
+ * プロパティに ならないため window['GRADE3_STROKES'] では取れない（undefinedになる）。
+ * そこで各エントリの get() が ロード後に その const を 名前で参照して返す。
+ * → 学年を ふやす時は LAZY_GRADES に 1行 足すだけでOK。 */
 const LAZY_GRADES=[
-  {n:3,sv:'grade3-strokes.js?v=1',dv:'grade3-data.js?v=1',label:'3年生'},
-  {n:4,sv:'grade4-strokes.js?v=1',dv:'grade4-data.js?v=1',label:'4年生'},
-  {n:5,sv:'grade5-strokes.js?v=1',dv:'grade5-data.js?v=1',label:'5年生'},
-  {n:6,sv:'grade6-strokes.js?v=1',dv:'grade6-data.js?v=1',label:'6年生'},
+  {n:3,sv:'grade3-strokes.js?v=1',dv:'grade3-data.js?v=1',label:'3年生',get:()=>({s:GRADE3_STROKES,i:GRADE3_INFO})},
+  {n:4,sv:'grade4-strokes.js?v=1',dv:'grade4-data.js?v=1',label:'4年生',get:()=>({s:GRADE4_STROKES,i:GRADE4_INFO})},
+  {n:5,sv:'grade5-strokes.js?v=1',dv:'grade5-data.js?v=1',label:'5年生',get:()=>({s:GRADE5_STROKES,i:GRADE5_INFO})},
+  {n:6,sv:'grade6-strokes.js?v=1',dv:'grade6-data.js?v=1',label:'6年生',get:()=>({s:GRADE6_STROKES,i:GRADE6_INFO})},
 ];
-function loadGradeLazy(i){
-  if(i>=LAZY_GRADES.length)return;
-  const g=LAZY_GRADES[i];
-  let done=0;
-  const onLoad=()=>{
-    if(++done<2)return;
-    GRADE_DATA[g.n]={strokes:window[`GRADE${g.n}_STROKES`],info:window[`GRADE${g.n}_INFO`],label:g.label};
-    if(curView==='map')renderMap();
-    else if(curView==='dex')renderDex();
-    loadGradeLazy(i+1);
+let lazyIdx=0, lazyBusy=false;
+/* テスト/れんしゅう中（write画面）は ロードを止める。巨大データ(各約850KB)の
+ * パースで メインスレッドが止まると、出題アニメ(playAttack)のタイマーが遅れ
+ * 「1問 答えても 次が 出ない」ように見えるため。マップ等に戻ると go() が再開する。 */
+function pumpLazyGrades(){
+  if(lazyBusy||lazyIdx>=LAZY_GRADES.length||curView==='write')return;
+  lazyBusy=true;
+  const g=LAZY_GRADES[lazyIdx];
+  let done=0, settled=false;
+  const finish=()=>{                 // 成功・失敗どちらでも 次の学年へ進む（1学年の失敗で 全体を止めない）
+    if(settled)return;settled=true;
+    lazyBusy=false;lazyIdx++;
+    if(curView==='map')renderMap();else if(curView==='dex')renderDex();
+    pumpLazyGrades();
   };
-  [g.sv,g.dv].forEach(src=>{const s=document.createElement('script');s.src=src;s.onload=onLoad;document.head.appendChild(s);});
+  const onLoad=()=>{
+    if(settled||++done<2)return;
+    try{const r=g.get();GRADE_DATA[g.n]={strokes:r.s,info:r.i,label:g.label};}catch(e){/* データ未定義なら ロックのまま */}
+    finish();
+  };
+  [g.sv,g.dv].forEach(src=>{const s=document.createElement('script');s.src=src;s.onload=onLoad;s.onerror=finish;document.head.appendChild(s);});
 }
 
 window.addEventListener('load',()=>{
@@ -2874,7 +2888,7 @@ window.addEventListener('load',()=>{
   }
   save=loadSave('me');persist();
   go('map');
-  loadGradeLazy(0);
+  pumpLazyGrades();
 });
 </script>
 </body>

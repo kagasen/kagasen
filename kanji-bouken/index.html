@@ -1163,6 +1163,7 @@ function pickGroup(mode,gi){closeSheet();if(mode==='test')startTest(gi);else sta
  * ============================================================ */
 let curCh=SAMPLE[0], cSize=320;
 let strokeTraces=[], currentTrace=[];
+let drawingActive=false;             // 今 指/ペンで 書いている最中か（リサイズで作り直さないための番人）
 let writeMode='practice';            // 'practice' | 'test'
 let demoRunning=false;
 let practiceRewarded=false;          // 同じ書き取りで2回以上ポイントを渡さないためのフラグ
@@ -1272,6 +1273,16 @@ function drawGuide(data){
   }});
 }
 function resetDraw(){demoRunning=false;strokeTraces=[];currentTrace=[];practiceRewarded=false;const c=$('dr');c.getContext('2d').clearRect(0,0,cSize,cSize);$('score').textContent='—';$('verdict').textContent='';}
+/* すでに書いた線(strokeTraces=DS座標)を 今のサイズで 描き直す。リサイズで作り直した時に 消さないため。 */
+function redrawTraces(){
+  const c=$('dr'),ctx=c.getContext('2d'),s=cSize/DS;
+  ctx.clearRect(0,0,cSize,cSize);
+  ctx.lineWidth=Math.max(cSize*.045,8);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#243b53';
+  for(const tr of strokeTraces){if(!tr||!tr.length)continue;
+    ctx.beginPath();ctx.moveTo(tr[0].x*s,tr[0].y*s);
+    for(let i=1;i<tr.length;i++)ctx.lineTo(tr[i].x*s,tr[i].y*s);
+    ctx.stroke();}
+}
 
 function setupInput(){
   const old=$('dr');const c=old.cloneNode(false);old.parentNode.replaceChild(c,old);
@@ -1283,7 +1294,7 @@ function setupInput(){
   c.addEventListener('pointerdown',e=>{
     if(e.button!==0||isPalm(e)||demoRunning)return;e.preventDefault();
     try{c.setPointerCapture(e.pointerId);}catch(_){}
-    drawing=true;lastPt=getPos(e);currentTrace=[];const sc=DS/cSize;
+    drawing=true;drawingActive=true;lastPt=getPos(e);currentTrace=[];const sc=DS/cSize;
     currentTrace.push({x:lastPt.x*sc,y:lastPt.y*sc});
     ctx.beginPath();ctx.moveTo(lastPt.x,lastPt.y);
   },{passive:false});
@@ -1293,7 +1304,7 @@ function setupInput(){
     ctx.lineWidth=Math.max(cSize*.045,8);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#243b53';
     ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);lastPt=p;
   },{passive:false});
-  const fin=e=>{if(!drawing)return;e.preventDefault();drawing=false;strokeTraces.push([...currentTrace]);currentTrace=[];};
+  const fin=e=>{if(!drawing)return;e.preventDefault();drawing=false;drawingActive=false;strokeTraces.push([...currentTrace]);currentTrace=[];};
   c.addEventListener('pointerup',fin,{passive:false});
   c.addEventListener('pointercancel',fin,{passive:false});
 }
@@ -2841,7 +2852,23 @@ function flyCoins(n){
 }
 
 /* ===== 起動 ===== */
-window.addEventListener('resize',()=>{if(curView==='write'&&cache[curCh]){setupCanvas(curCh);resetDraw();}});
+/* リサイズ対応。iPad Safari は スクロールや ツールバーの出入りで resize を 頻発させる。
+ * 以前は その都度 キャンバスを 作り直して 書きかけを 消していた（＝書いている途中で
+ * 上の方が 反応しなくなる 原因）。今は：書いている最中は 触らない／サイズが 実際に
+ * 変わった時だけ 作り直し、書いた線は 保持して 描き直す。 */
+let resizeT=null;
+window.addEventListener('resize',()=>{
+  if(curView!=='write'||!cache[curCh])return;
+  clearTimeout(resizeT);
+  resizeT=setTimeout(()=>{
+    if(drawingActive)return;                 // 書いている最中は 作り直さない
+    const next=Math.min(Math.floor(window.innerWidth*0.86),Math.floor(window.innerHeight*0.46),420);
+    if(next===cSize)return;                   // 表示サイズが 変わらないなら 何もしない（書きかけ・キャプチャを 保持）
+    const saved=strokeTraces.map(t=>t.slice());  // 書いた線を 退避
+    setupCanvas(curCh);                       // 新サイズで 作り直し
+    strokeTraces=saved;redrawTraces();        // 線を 復元して 描き直す（消さない）
+  },150);
+});
 /* ===== 裏ワザ：ぼうけんマップで「boukenmappu」とタイプ → コイン追加 ===== */
 const CHEAT_CODE='boukenmappu', CHEAT_COINS=10000;
 let cheatBuf='';
@@ -2896,6 +2923,14 @@ function pumpLazyGrades(){
 window.addEventListener('load',()=>{
   const ls=$('loading-screen');if(ls)ls.style.display='none';
   document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+  /* 練習・テスト中(write画面)に 誤って ピンチイン/アウトすると 画面が ズームして 戻らなくなるのを防ぐ。
+   * iOS Safari は viewport の user-scalable=no を 無視するため、2本指の touchmove を 直接止める。
+   * 指1本の 手書き・スクロールは そのまま。マイルーム(3D)の ピンチズームは write以外なので 影響なし。 */
+  document.addEventListener('touchmove',e=>{
+    if(curView==='write'&&e.touches&&e.touches.length>1)e.preventDefault();
+  },{passive:false});
+  document.addEventListener('gesturechange',e=>{if(curView==='write')e.preventDefault();},{passive:false});
+  document.addEventListener('gestureend',e=>{if(curView==='write')e.preventDefault();},{passive:false});
   profileId='me';
   if(!hasSave('me')){
     // 旧バージョンの保存データがあれば引き継ぐ

@@ -17,7 +17,10 @@
   --radius:20px; --shadow-3d:0 6px 0 rgba(0,0,0,.16);
   --pop:cubic-bezier(.34,1.56,.64,1);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;          /* 指でトントン(ダブルタップ)の 拡大を 全要素で 無効化（描画/3Dキャンバスの touch-action:none は 特異度で維持） */
+  -webkit-touch-callout:none;          /* 長押しの 虫眼鏡(ルーペ)・コールアウトを 無効化 */
+  -webkit-user-select:none;user-select:none}
 html,body{width:100%;min-height:100%;overflow-x:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-overflow-scrolling:touch}
 body{font-family:'Zen Maru Gothic',sans-serif;background:var(--sky);color:var(--ink);min-height:100vh;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
@@ -1674,8 +1677,10 @@ function finishTest(){
   const tot=testResults.length||1;
   const cleared=correct===testTotal;        // 全問せいかい＝クリア（◎）
   const allPerfect=perfect===testTotal;     // 全問100点＝はなまる（💮）
-  // 全問100点＝はなまるは ちょうど1000コイン（固定）／それ以外は 正解×10＋100点ボーナス×20
+  // 全問100点＝はなまるは 1000コイン／それ以外は 正解×10＋100点ボーナス×20。
+  // さらに 全問せいかい(クリア)なら +200ボーナス（はなまるにも 上乗せ）。
   let gain=allPerfect?1000:(correct*10+perfect*20);
+  if(cleared)gain+=200;                      // 全問せいかいボーナス
   save.coins+=gain;
   // グループの クリア状況を記録（1=◎ / 2=はなまる、ダウングレードしない）
   const st=allPerfect?2:(cleared?1:0);
@@ -1693,7 +1698,8 @@ function finishTest(){
   $('resultBig').textContent=allPerfect?`💮 ${correct}/${tot} はなまる！`:`${correct}/${tot} せいかい！`;
   $('resultComment').textContent=allPerfect?'ぜんぶ 100てん！ かんぺき！🏆':getComment(correct/tot);
   let gainTxt;
-  if(allPerfect)gainTxt=`💮 はなまる！ 💰 +1000`;
+  if(allPerfect)gainTxt=`💮 はなまる！ 💰 +${gain}（ぜんもんせいかい ボーナス＋200こみ）`;
+  else if(cleared)gainTxt=`🎉 ぜんもんせいかい！ 💰 +${gain}（ボーナス＋200${perfect?` / 100てん${perfect}こ＋${perfect*20}`:''}）`;
   else gainTxt=`💰 +${gain}`+(perfect?`（100てん${perfect}こ ボーナス＋${perfect*20}）`:'');
   $('coinGain').textContent=gainTxt;
   // まちがえた／パスした かんじを まとめて 教える

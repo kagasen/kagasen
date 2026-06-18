@@ -969,10 +969,13 @@ let soundOn=localStorage.getItem(SOUND_KEY)!=='off';
 let actx=null;
 function ac(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(_){}}return actx;}
 function tone(freq,t0,dur,type='sine',vol=.18){
-  const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain();
-  o.type=type;o.frequency.value=freq;o.connect(g);g.connect(c.destination);
-  const t=c.currentTime+t0;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);
-  g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.start(t);o.stop(t+dur);
+  const c=ac();if(!c)return;
+  try{                                  // iOSで音声が interrupted/suspended の時に投げる例外でゲームを止めない
+    const o=c.createOscillator(),g=c.createGain();
+    o.type=type;o.frequency.value=freq;o.connect(g);g.connect(c.destination);
+    const t=c.currentTime+t0;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.start(t);o.stop(t+dur);
+  }catch(_){}
 }
 function sfxGood(){if(!soundOn)return;[523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.32,'triangle',.16));}
 function sfxBad(){if(!soundOn)return;tone(220,0,.22,'sawtooth',.12);tone(165,.12,.28,'sawtooth',.12);}
@@ -1470,39 +1473,52 @@ function renderBattleProgress(){
 }
 function playAttack(score,cb){
   attackBusy=true;$('testBtns').style.pointerEvents='none';
-  combo++;
-  const boss=(testResults.length===testTotal-1);
-  // 1) 書いた かんじが とんでいく
-  const shot=document.createElement('img');shot.src=captureThumb();shot.className='kanji-shot';
-  const cwR=$('cw').getBoundingClientRect(), enR=$('btEnemy').getBoundingClientRect();
-  shot.style.left=(cwR.left+cwR.width/2-32)+'px';shot.style.top=(cwR.top+cwR.height/2-32)+'px';
-  shot.style.width='64px';shot.style.height='64px';
-  document.body.appendChild(shot);
-  sfxHit();
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    shot.style.left=(enR.left+enR.width/2-22)+'px';shot.style.top=(enR.top+enR.height/2-22)+'px';
-    shot.style.width='44px';shot.style.height='44px';shot.style.transform='rotate(360deg)';shot.style.opacity='.92';
-  }));
-  // 2) めいちゅう！ → ダメージ・HP0・コンボ
-  setTimeout(()=>{
-    shot.remove();
-    const en=$('btEnemy');
-    en.classList.add('hit');
-    const d=document.createElement('div');d.className='dmg'+(score===100?' crit':'');
-    d.textContent=score===100?'💯クリティカル!':score;
-    en.appendChild(d);setTimeout(()=>d.remove(),1000);
-    const bm=document.createElement('div');bm.className='boom';bm.textContent='💥';
-    en.appendChild(bm);setTimeout(()=>bm.remove(),650);
-    $('btHp').style.width='0%';
-    sfxPoof();
-    if(combo>=2){const cbn=$('btCombo');cbn.textContent='🔥'+combo+'れんぞく！';cbn.className='bt-combo on';}
-    // 3) たおした！
+  // 演出(音/アニメ)が途中で失敗しても 必ず次の問題へ進めるための要。
+  // finalizeは何回呼ばれても1回だけ実行（idempotent）。アニメ正常終了でも保険でも、どちらが先でもOK。
+  let finished=false;
+  const finalize=()=>{
+    if(finished)return;finished=true;
+    attackBusy=false;$('testBtns').style.pointerEvents='';
+    try{cb&&cb();}catch(e){}
+  };
+  // 保険：何があっても 一定時間後に必ず次へ進む（音声例外でフリーズした iPad 対策）
+  setTimeout(finalize,2000);
+  try{
+    combo++;
+    const boss=(testResults.length===testTotal-1);
+    // 1) 書いた かんじが とんでいく
+    const shot=document.createElement('img');shot.src=captureThumb();shot.className='kanji-shot';
+    const cwR=$('cw').getBoundingClientRect(), enR=$('btEnemy').getBoundingClientRect();
+    shot.style.left=(cwR.left+cwR.width/2-32)+'px';shot.style.top=(cwR.top+cwR.height/2-32)+'px';
+    shot.style.width='64px';shot.style.height='64px';
+    document.body.appendChild(shot);
+    sfxHit();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      shot.style.left=(enR.left+enR.width/2-22)+'px';shot.style.top=(enR.top+enR.height/2-22)+'px';
+      shot.style.width='44px';shot.style.height='44px';shot.style.transform='rotate(360deg)';shot.style.opacity='.92';
+    }));
+    // 2) めいちゅう！ → ダメージ・HP0・コンボ
     setTimeout(()=>{
-      en.classList.remove('hit');en.classList.add('die');
-      if(boss)confetti(40);
-      setTimeout(()=>{attackBusy=false;$('testBtns').style.pointerEvents='';cb();},560);
-    },400);
-  },430);
+      try{
+        shot.remove();
+        const en=$('btEnemy');
+        en.classList.add('hit');
+        const d=document.createElement('div');d.className='dmg'+(score===100?' crit':'');
+        d.textContent=score===100?'💯クリティカル!':score;
+        en.appendChild(d);setTimeout(()=>d.remove(),1000);
+        const bm=document.createElement('div');bm.className='boom';bm.textContent='💥';
+        en.appendChild(bm);setTimeout(()=>bm.remove(),650);
+        $('btHp').style.width='0%';
+        sfxPoof();
+        if(combo>=2){const cbn=$('btCombo');cbn.textContent='🔥'+combo+'れんぞく！';cbn.className='bt-combo on';}
+        // 3) たおした！
+        setTimeout(()=>{
+          try{en.classList.remove('hit');en.classList.add('die');if(boss)confetti(40);}catch(e){}
+          setTimeout(finalize,560);
+        },400);
+      }catch(e){finalize();}
+    },430);
+  }catch(e){finalize();}
 }
 function enemyAttackFx(){
   combo=0;$('btCombo').className='bt-combo';

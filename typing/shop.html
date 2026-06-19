@@ -248,6 +248,14 @@
     border-color: var(--gold);
     cursor: default;
   }
+  /* マイペット画面で、いつでもペットを逃がせるボタン */
+  .action-btn.release {
+    background: var(--green-soft);
+    border-color: var(--green);
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  .action-btn.release:hover { background: var(--green); color: white; }
   .empty-msg {
     text-align: center;
     color: var(--ink-soft);
@@ -628,9 +636,9 @@
   <!-- ペットを逃がすモーダル（10ひきを超えたとき） -->
   <div class="release-modal" id="release-modal">
     <div class="release-box">
-      <h3>🏠 おうちが いっぱい！</h3>
+      <h3>🏠 これ以上は 飼えません！</h3>
       <p>ペットは <b>10ひき</b> までしか飼えません。<br>
-        新しいなかまを むかえるには、いまの子を1ひき そとに にがしてあげてね。</p>
+        新しいなかまを むかえるには、ペットを逃がしてください。</p>
       <div class="release-list" id="release-list"></div>
       <button class="release-cancel" id="release-cancel">やめる</button>
     </div>
@@ -1335,6 +1343,18 @@
     pendingEggId = null;
   }
 
+  // マイペット画面から、自分の意思でペットを逃がす（買うときの強制ではない）
+  // 大事な仲間を まちがえて 逃がさないように、かならず確認する
+  function confirmReleasePet(petId) {
+    const pet = state.pets.find(p => p.id === petId);
+    if (!pet) return;
+    const egg = EGG_TYPES[pet.eggType];
+    const name = (pet.stage === 'egg' && egg.special) ? '？？？' : egg.name;
+    if (!confirm(`${name}を そとに にがしますか？\nいちど にがすと、もう もどってきません。`)) return;
+    // pendingEggId は null のため、releasePet は新しく買わずに「逃がすだけ」になる
+    releasePet(petId);
+  }
+
   function releasePet(petId) {
     const idx = state.pets.findIndex(p => p.id === petId);
     if (idx === -1) return;
@@ -1424,11 +1444,17 @@
       <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${Math.min(100, progressPct)}%"></div></div>
       <div class="progress-label">${progressLabel}</div>
       ${noteHTML}
-      <div class="pet-actions">${actionsHTML}</div>
+      <div class="pet-actions">
+        ${actionsHTML}
+        <button class="action-btn release" data-pet="${pet.id}">🌿 にがす</button>
+      </div>
     `;
 
     div.querySelectorAll('.action-btn[data-act]').forEach(btn => {
       btn.addEventListener('click', () => petAction(btn.dataset.act, btn.dataset.pet));
+    });
+    div.querySelectorAll('.action-btn.release').forEach(btn => {
+      btn.addEventListener('click', () => confirmReleasePet(btn.dataset.pet));
     });
     return div;
   }

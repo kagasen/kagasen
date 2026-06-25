@@ -1,5 +1,8 @@
 {
   "scripts": {
     "build:typing": "npx esbuild typing/app.js --bundle=false --loader:.js=jsx --platform=browser --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --target=es2017 --outfile=typing/app.compiled.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^2.1.181"
   }
 }

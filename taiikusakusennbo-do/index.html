@@ -12,6 +12,11 @@
             background-color: #f3f4f6;
             touch-action: none; /* スクロール防止 */
             user-select: none; /* テキスト選択防止 */
+            height: 100dvh; /* iOS Safariのアドレスバー対応 */
+        }
+        /* iOS safe area 対応 */
+        #bottomBar {
+            padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
         }
         .tool-button.active {
             background-color: #3b82f6;
@@ -139,61 +144,63 @@
         }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
-    <div class="container mx-auto p-2 flex-grow flex flex-col h-full">
+<body class="flex flex-col overflow-hidden" style="height: 100dvh;">
+    <div class="container mx-auto px-2 pt-1 pb-0 flex-grow flex flex-col" style="height: 100%; min-height: 0;">
         <!-- ツールバー：コート選択 -->
-        <div class="mb-2 flex flex-wrap gap-2 justify-center">
-            <button id="basketballBtn" class="tool-button bg-white px-3 py-1 text-sm md:text-base rounded-lg shadow hover:shadow-md active">
+        <div class="mb-1 flex flex-wrap gap-1 justify-center">
+            <button id="basketballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md active">
                 🏀 バスケ
             </button>
-            <button id="soccerBtn" class="tool-button bg-white px-3 py-1 text-sm md:text-base rounded-lg shadow hover:shadow-md">
+            <button id="soccerBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
                 ⚽ サッカー
             </button>
-            <button id="baseballBtn" class="tool-button bg-white px-3 py-1 text-sm md:text-base rounded-lg shadow hover:shadow-md">
+            <button id="baseballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
                 ⚾ 野球
             </button>
-            <button id="dodgeballBtn" class="tool-button bg-white px-3 py-1 text-sm md:text-base rounded-lg shadow hover:shadow-md">
+            <button id="dodgeballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
                 🔴 ドッジ
             </button>
-            <button id="volleyballBtn" class="tool-button bg-white px-3 py-1 text-sm md:text-base rounded-lg shadow hover:shadow-md">
+            <button id="volleyballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
                 🏐 バレー
             </button>
-            <button id="otherBtn" class="tool-button bg-white px-3 py-1 text-sm md:text-base rounded-lg shadow hover:shadow-md">
+            <button id="otherBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
                 ⬜ その他
             </button>
         </div>
 
-        <!-- シートタブ -->
-        <div class="mb-2 flex flex-wrap gap-2 justify-center overflow-x-auto" id="sheetTabsContainer">
-            <button class="sheet-tab bg-white px-3 py-1 rounded-lg shadow hover:shadow-md active" data-sheet-id="sheet-1">
-                シート1
+        <!-- シートタブ + 描画ツール (1行に統合) -->
+        <div class="mb-1 flex flex-wrap gap-1 justify-center items-center">
+            <!-- シートタブ -->
+            <div class="flex gap-1 overflow-x-auto flex-nowrap" id="sheetTabsContainer">
+                <button class="sheet-tab bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md active whitespace-nowrap" data-sheet-id="sheet-1">
+                    シート1
+                </button>
+                <button class="sheet-tab bg-green-500 text-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md whitespace-nowrap" id="addSheetBtn">
+                    ＋ 新規
+                </button>
+            </div>
+            <!-- 仕切り -->
+            <div class="w-px h-5 bg-gray-300 mx-0.5 hidden sm:block"></div>
+            <!-- 描画ツール -->
+            <button id="drawBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+                ✏️ フリー
             </button>
-            <button class="sheet-tab bg-green-500 text-white px-3 py-1 rounded-lg shadow hover:shadow-md" id="addSheetBtn">
-                ＋ 新規シート
+            <button id="straightLineBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+                📏 直線
+            </button>
+            <button id="arrowBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+                ➡️ 矢印
+            </button>
+            <button id="undoBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+                ↩️ 戻る
             </button>
         </div>
 
         <!-- 作戦名入力 -->
-        <div class="mb-2 flex justify-center">
+        <div class="mb-1 flex justify-center">
             <div class="relative w-full max-w-md">
-                <input type="text" id="strategyName" placeholder="作戦名を入力" class="w-full px-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="strategyName" placeholder="作戦名を入力" class="w-full px-3 py-0.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
-        </div>
-
-        <!-- 描画ツール -->
-        <div class="flex flex-wrap gap-2 mb-2 justify-center">
-            <button id="drawBtn" class="tool-button bg-white px-3 py-1 text-sm rounded-lg shadow hover:shadow-md">
-                ✏️ フリー
-            </button>
-            <button id="straightLineBtn" class="tool-button bg-white px-3 py-1 text-sm rounded-lg shadow hover:shadow-md">
-                📏 直線
-            </button>
-            <button id="arrowBtn" class="tool-button bg-white px-3 py-1 text-sm rounded-lg shadow hover:shadow-md">
-                ➡️ 矢印
-            </button>
-            <button id="undoBtn" class="tool-button bg-white px-3 py-1 text-sm rounded-lg shadow hover:shadow-md">
-                ↩️ 戻る
-            </button>
         </div>
 
         <!-- メインキャンバスエリア -->
@@ -358,25 +365,24 @@
         </div>
 
         <!-- プレイヤー追加・操作エリア -->
-        <div class="mt-2 pb-2 flex justify-center gap-2 flex-wrap">
-            <button id="addRedPlayer" class="bg-red-500 text-white px-3 py-2 text-sm rounded-lg shadow hover:bg-red-600">
+        <div id="bottomBar" class="mt-1 flex justify-center gap-1.5 flex-wrap shrink-0">
+            <button id="addRedPlayer" class="bg-red-500 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-red-600">
                 赤チーム 👤
             </button>
-            <button id="addBluePlayer" class="bg-blue-500 text-white px-3 py-2 text-sm rounded-lg shadow hover:bg-blue-600">
+            <button id="addBluePlayer" class="bg-blue-500 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-blue-600">
                 青チーム 👤
             </button>
-             <!-- 黄色チーム追加 -->
-            <button id="addYellowPlayer" class="bg-yellow-400 text-gray-800 px-3 py-2 text-sm rounded-lg shadow hover:bg-yellow-500 font-bold">
+            <button id="addYellowPlayer" class="bg-yellow-400 text-gray-800 px-3 py-1.5 text-sm rounded-lg shadow hover:bg-yellow-500 font-bold">
                 黄チーム 👤
             </button>
-            <button id="addBall" class="bg-orange-500 text-white px-3 py-2 text-sm rounded-lg shadow hover:bg-orange-600">
+            <button id="addBall" class="bg-orange-500 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-orange-600">
                 ボール ⚾
             </button>
-            <div class="w-px h-8 bg-gray-300 mx-1"></div>
-            <button id="playAnimation" class="bg-green-600 text-white px-4 py-2 text-sm rounded-lg shadow hover:bg-green-700 font-bold">
+            <div class="w-px h-7 bg-gray-300 mx-0.5 self-center"></div>
+            <button id="playAnimation" class="bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-green-700 font-bold">
                 ▶️ 再生
             </button>
-            <button id="stopAnimation" class="bg-gray-500 text-white px-4 py-2 text-sm rounded-lg shadow hover:bg-gray-600 font-bold">
+            <button id="stopAnimation" class="bg-gray-500 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-gray-600 font-bold">
                 ⏹️ 停止
             </button>
         </div>
@@ -419,6 +425,16 @@
     </div>
 
 <script>
+    // iOS Safari 100dvh フォールバック
+    function fixViewportHeight() {
+        document.body.style.height = window.innerHeight + 'px';
+    }
+    if (!CSS.supports('height', '100dvh')) {
+        fixViewportHeight();
+        window.addEventListener('resize', fixViewportHeight);
+        window.addEventListener('orientationchange', () => setTimeout(fixViewportHeight, 100));
+    }
+
     // シート管理
     let currentSheetId = 'sheet-1';
     let sheetCounter = 1;
@@ -482,7 +498,7 @@
         // タブを追加
         const tabsContainer = document.getElementById('sheetTabsContainer');
         const newTab = document.createElement('button');
-        newTab.className = 'sheet-tab bg-white px-3 py-1 rounded-lg shadow hover:shadow-md';
+        newTab.className = 'sheet-tab bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md whitespace-nowrap';
         newTab.dataset.sheetId = newSheetId;
         newTab.textContent = defaultName;
         tabsContainer.insertBefore(newTab, document.getElementById('addSheetBtn'));

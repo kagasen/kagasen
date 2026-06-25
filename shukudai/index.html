@@ -7,7 +7,9 @@
     <meta name="description" content="宿題提出管理アプリは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- 複数QR同時読み取り対応スキャナ: ネイティブBarcodeDetectorが無い端末(iPad/Safari等)向けのZXing-wasmフォールバック。
+         ネイティブが使える端末(Chromebook/Android Chrome)では読み込んでもwasmは取得されない(遅延初期化)。 -->
+    <script src="https://cdn.jsdelivr.net/npm/barcode-detector@3.2.0/dist/iife/index.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -26,11 +28,30 @@
             display: block;
         }
         #qr-reader {
+            position: relative;          /* オーバーレイcanvasの基準 */
             width: 100%;
-            max-width: 400px; /* Adjusted for better mobile view */
-            border: 1px solid #d1d5db; /* Tailwind gray-300 */
+            max-width: 480px;            /* 一回り大きく (旧400px) */
+            aspect-ratio: 4 / 3;
+            border: 1px solid #d1d5db;   /* Tailwind gray-300 */
             margin: 1rem auto;
-            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            border-radius: 0.5rem;       /* Tailwind rounded-lg */
+            overflow: hidden;
+            background: #000;
+        }
+        #qr-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;           /* 枠いっぱいに表示 */
+            display: block;
+        }
+        #qr-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;        /* タップ透過 */
         }
         .qr-item {
             display: flex;
@@ -126,7 +147,7 @@
             position: fixed;
             top: 12px;
             right: 12px;
-            width: 300px;
+            width: min(380px, 92vw);     /* 一回り大きく (旧300px) */
             z-index: 50;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -140,15 +161,74 @@
             border: none;
         }
         #qr-reader-section.floating #qr-scan-status {
-            font-size: 0.6rem;
+            font-size: 0.72rem;
             margin-top: 2px;
             line-height: 1.3;
         }
         #qr-reader-section.floating #stop-scan-btn {
             margin-top: 4px;
-            padding: 4px 8px;
-            font-size: 0.7rem;
+            padding: 6px 8px;
+            font-size: 0.75rem;
         }
+        /* 直近の読み取り結果リスト */
+        #scan-results {
+            margin-top: 4px;
+            max-height: 96px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 0.7rem;
+            line-height: 1.5;
+        }
+        #scan-results:empty { display: none; }
+        #scan-results .scan-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 1px 2px;
+        }
+        #scan-results .scan-row .badge {
+            background: #16a34a; /* green-600 */
+            color: #fff;
+            border-radius: 9999px;
+            padding: 0 6px;
+            font-weight: 700;
+            font-size: 0.65rem;
+            min-width: 1.4rem;
+            text-align: center;
+        }
+        /* 非ブロッキングのトースト通知（複数スキャン中に最適） */
+        #toast-container {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            pointer-events: none;
+            width: max-content;
+            max-width: 92vw;
+        }
+        .toast {
+            pointer-events: auto;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity .2s ease, transform .2s ease;
+            max-width: 92vw;
+            text-align: center;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #16a34a; }  /* green-600 */
+        .toast.info    { background: #4f46e5; }  /* indigo-600 */
+        .toast.error   { background: #dc2626; }  /* red-600 */
     </style>
 </head>
 <body class="p-2 sm:p-4 md:p-8">
@@ -181,8 +261,12 @@
                     </button>
                 </div>
                 <div id="qr-reader-section" style="display:none;" class="p-4 border border-gray-200 rounded-lg bg-white shadow">
-                    <div id="qr-reader"></div>
+                    <div id="qr-reader">
+                        <video id="qr-video" playsinline muted autoplay></video>
+                        <canvas id="qr-overlay"></canvas>
+                    </div>
                     <p id="qr-scan-status" class="mt-2 text-sm text-center text-gray-600">カメラでQRコードをスキャンしてください。</p>
+                    <div id="scan-results" aria-live="polite"></div>
                     <button id="stop-scan-btn" class="mt-2 w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150" disabled>
                         読み取り停止
                     </button>
@@ -246,6 +330,8 @@
         </div>
     </div>
 
+    <div id="toast-container"></div>
+
     <script>
         // --- 定数 ---
         const HOMEWORK_TYPES = [
@@ -287,7 +373,22 @@
         const messageModalText = document.getElementById('message-modal-text');
         const messageModalCloseBtn = document.getElementById('message-modal-close-btn');
 
-        let html5QrCodeScanner;
+        // --- QRスキャナ用の状態（複数同時読み取り対応） ---
+        let mediaStream = null;          // getUserMediaのMediaStream
+        let barcodeDetector = null;      // ネイティブ or ZXing-wasm の BarcodeDetector
+        let scanLoopId = null;           // requestAnimationFrame のID
+        let isScanning = false;
+        const recentScans = new Map();   // cellKey -> 最終記録時刻(ms)。重複記録のクールダウン用
+        const recentInvalid = new Map(); // rawValue -> 最終通知時刻(ms)。無効QRの通知スパム防止
+        const RESCAN_COOLDOWN_MS = 4000; // 同一カードを連続検出しても4秒は再通知しない
+        let sessionScanCount = 0;        // この読み取りセッションで記録した件数
+        let audioCtx = null;             // ビープ音用（遅延生成）
+
+        const qrVideo = document.getElementById('qr-video');
+        const qrOverlay = document.getElementById('qr-overlay');
+        const scanResultsEl = document.getElementById('scan-results');
+        const toastContainer = document.getElementById('toast-container');
+
         let submissionData = {};
         let currentDateStr = ''; // 現在の日付を追跡（日付変更検知用）
         let dateCheckTimer = null;
@@ -517,96 +618,303 @@
             });
         }
 
-        function startQrScanner() {
+        // ===== QRスキャナ（複数同時読み取り・高感度版） =====
+        // ネイティブ BarcodeDetector を優先し、無ければ ZXing-wasm ポリフィルにフォールバック。
+        // どちらも 1フレーム内の全QRを配列で返すため、複数のカードを一気に読み取れる。
+        async function createBarcodeDetector() {
+            // ネイティブ（Chromebook/Android Chrome 等）：高速・ハードウェア支援
+            try {
+                if ('BarcodeDetector' in window) {
+                    const fmts = await window.BarcodeDetector.getSupportedFormats();
+                    if (fmts.includes('qr_code')) {
+                        return { detector: new window.BarcodeDetector({ formats: ['qr_code'] }), native: true };
+                    }
+                }
+            } catch (_) { /* ネイティブ不可 → フォールバックへ */ }
+            // フォールバック（iPad/Safari 等）：ZXing-wasm 製ポリフィル
+            const Ctor = window.BarcodeDetectionAPI && window.BarcodeDetectionAPI.BarcodeDetector;
+            if (!Ctor) throw new Error('BarcodeDetector unavailable');
+            return { detector: new Ctor({ formats: ['qr_code'] }), native: false };
+        }
+
+        // QRの中身（{"h":宿題コード,"s":出席番号}）を解釈
+        function parseStudentCode(rawValue) {
+            try {
+                const data = JSON.parse(rawValue);
+                if (!data || !data.h || typeof data.s === 'undefined') return { valid: false };
+                const studentId = parseInt(data.s, 10);
+                const homeworkObj = HOMEWORK_TYPES.find(hw => hw.code === data.h);
+                if (!homeworkObj) return { valid: false };
+                const homeworkIndex = HOMEWORK_TYPES.indexOf(homeworkObj);
+                if (!(studentId >= 1 && studentId <= MAX_STUDENTS)) return { valid: false };
+                return { valid: true, studentId, homeworkIndex, homeworkName: homeworkObj.name };
+            } catch (_) {
+                return { valid: false };
+            }
+        }
+
+        async function startQrScanner() {
             qrReaderSection.style.display = 'block';
             qrReaderSection.classList.add('floating');
             startScanBtn.disabled = true;
             stopScanBtn.disabled = false;
             qrScanStatus.textContent = "カメラを起動しています...";
 
-            if (!html5QrCodeScanner) html5QrCodeScanner = new Html5Qrcode("qr-reader");
+            // セッション初期化
+            recentScans.clear();
+            recentInvalid.clear();
+            sessionScanCount = 0;
+            scanResultsEl.innerHTML = '';
 
-            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-                try {
-                    const data = JSON.parse(decodedText);
-                    if (data.h && typeof data.s !== 'undefined') { 
-                        const studentId = parseInt(data.s, 10);
-                        const homeworkCode = data.h; 
-                        const homeworkObj = HOMEWORK_TYPES.find(hw => hw.code === homeworkCode);
-                        if (!homeworkObj) {
-                            qrScanStatus.textContent = "無効な宿題コードです。";
-                            showMessage("無効な宿題コードです。", true); return;
-                        }
-                        const homeworkIndex = HOMEWORK_TYPES.indexOf(homeworkObj);
-                        const homeworkName = homeworkObj.name;
+            // ビープ音をユーザー操作（このクリック）内で解錠しておく
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (_) {}
 
-                        if (studentId >= 1 && studentId <= MAX_STUDENTS && homeworkIndex !== -1) {
-                            const selectedDate = submissionDateInput.value;
-                            if (!selectedDate) {
-                                qrScanStatus.textContent = "日付を選択してください。";
-                                showMessage("記録する日付が選択されていません。", true); return;
-                            }
-                            if (!submissionData[selectedDate]) submissionData[selectedDate] = {};
-                            const cellKey = `s${studentId}-h${homeworkIndex}`;
-                            submissionData[selectedDate][cellKey] = "check";
-                            saveSubmissionData();
-                            renderSubmissionTable();
-                            qrScanStatus.textContent = `出席番号${studentId}の「${homeworkName}」を記録しました。`;
-                            showMessage(`出席番号${studentId}の「${homeworkName}」を記録しました。`);
-                        } else {
-                            qrScanStatus.textContent = "無効なQRコードデータです（生徒ID範囲外）。";
-                            showMessage("無効なQRコードデータです。", true);
-                        }
-                    } else {
-                        qrScanStatus.textContent = "QRコードの形式が正しくありません（hまたはs不明）。";
-                        showMessage("QRコードの形式が正しくありません。", true);
-                    }
-                } catch (e) {
-                    qrScanStatus.textContent = "QRコードの解析に失敗しました。";
-                    console.error("QR Parse Error:", e, decodedText);
-                    showMessage("QRコードの解析に失敗しました。", true);
+            // カメラ取得（高解像度で要求 → 小さい/遠いQRや複数同時にも強くなる）
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+            } catch (err) {
+                console.error("getUserMedia error:", err);
+                failStart("カメラの起動に失敗しました。カメラへのアクセス許可を確認してください。");
+                return;
+            }
+
+            // 連続オートフォーカス（対応端末のみ・ベストエフォート）
+            try {
+                const track = mediaStream.getVideoTracks()[0];
+                const caps = track.getCapabilities ? track.getCapabilities() : {};
+                if (caps.focusMode && caps.focusMode.includes('continuous')) {
+                    await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                }
+            } catch (_) {}
+
+            qrVideo.srcObject = mediaStream;
+            // 映像比率に合わせて表示枠を調整（検出枠オーバーレイをピタリと重ねるため）
+            qrVideo.onloadedmetadata = () => {
+                if (qrVideo.videoWidth && qrVideo.videoHeight) {
+                    document.getElementById('qr-reader').style.aspectRatio =
+                        `${qrVideo.videoWidth} / ${qrVideo.videoHeight}`;
                 }
             };
+            try { await qrVideo.play(); } catch (_) {}
 
-            const config = { fps: 10, qrbox: (viewfinderWidth, viewfinderHeight) => {
-                const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.7);
-                return { width: size, height: size };
-            }};
-            
-            html5QrCodeScanner.start({ facingMode: "user" }, config, qrCodeSuccessCallback)
-                .then(() => { qrScanStatus.textContent = "カメラでQRコードをスキャンしてください。"; })
-                .catch(err => {
-                    console.error("QR Scanner Start Error:", err);
-                    qrScanStatus.textContent = "カメラの起動に失敗しました。";
-                    qrReaderSection.style.display = 'none';
-                    qrReaderSection.classList.remove('floating');
-                    startScanBtn.disabled = false;
-                    stopScanBtn.disabled = true; 
-                    showMessage("カメラの起動に失敗しました。カメラへのアクセス許可を確認してください。", true);
-                });
+            // 検出器を用意
+            try {
+                const result = await createBarcodeDetector();
+                barcodeDetector = result.detector;
+                qrScanStatus.textContent = result.native
+                    ? "カメラにQRをかざしてください（複数同時OK）"
+                    : "高精度モードで読み取り中（複数同時OK）";
+            } catch (err) {
+                console.error("BarcodeDetector init error:", err);
+                failStart("QR読み取り機能を初期化できませんでした。通信環境をご確認ください。");
+                return;
+            }
+
+            isScanning = true;
+            scanLoopId = requestAnimationFrame(scanTick);
+        }
+
+        // 検出ループ：detect() は非同期なので自然にスロットリングされる
+        async function scanTick() {
+            if (!isScanning) return;
+            try {
+                if (qrVideo.readyState >= 2 && qrVideo.videoWidth > 0) {
+                    const codes = await barcodeDetector.detect(qrVideo);
+                    handleDetections(codes);
+                    drawOverlay(codes);
+                }
+            } catch (_) {
+                // フレーム単位の一時的なデコードエラーは無視
+            }
+            if (isScanning) scanLoopId = requestAnimationFrame(scanTick);
+        }
+
+        // 1フレーム分の検出結果を一括処理（複数QRをまとめて記録）
+        function handleDetections(codes) {
+            if (!codes || codes.length === 0) return;
+            const now = Date.now();
+            const selectedDate = submissionDateInput.value;
+            if (!selectedDate) {
+                qrScanStatus.textContent = "日付を選択してください。";
+                notifyInvalidThrottled("記録する日付が選択されていません。", now);
+                return;
+            }
+            if (!submissionData[selectedDate]) submissionData[selectedDate] = {};
+
+            const newly = [];
+            let sawInvalid = false;
+            codes.forEach(code => {
+                const info = parseStudentCode(code.rawValue);
+                if (!info.valid) { sawInvalid = true; return; }
+                const cellKey = `s${info.studentId}-h${info.homeworkIndex}`;
+                const last = recentScans.get(cellKey);
+                if (last && (now - last) < RESCAN_COOLDOWN_MS) return; // 直近に記録済み → 再記録しない
+                submissionData[selectedDate][cellKey] = "check";
+                recentScans.set(cellKey, now);
+                sessionScanCount++;
+                newly.push(info);
+            });
+
+            if (newly.length) {
+                saveSubmissionData();
+                renderSubmissionTable();
+                beep(newly.length);
+                newly.forEach(info => addScanResultRow(info.studentId, info.homeworkName));
+                const summary = newly.length === 1
+                    ? `✓ No.${newly[0].studentId}「${newly[0].homeworkName}」を記録`
+                    : `✓ ${newly.length}件まとめて記録 (${newly.map(n => 'No.' + n.studentId).join(', ')})`;
+                showToast(summary, 'success');
+                qrScanStatus.textContent = `読み取り中… このセッションで計${sessionScanCount}件記録`;
+            } else if (sawInvalid) {
+                notifyInvalidThrottled("対象外のQRコードです。", now);
+            }
+        }
+
+        // 検出枠と出席番号ラベルを映像に重ねて描画
+        function drawOverlay(codes) {
+            const ctx = qrOverlay.getContext('2d');
+            if (qrOverlay.width !== qrVideo.videoWidth || qrOverlay.height !== qrVideo.videoHeight) {
+                qrOverlay.width = qrVideo.videoWidth;
+                qrOverlay.height = qrVideo.videoHeight;
+            }
+            ctx.clearRect(0, 0, qrOverlay.width, qrOverlay.height);
+            const lw = Math.max(3, Math.round(qrOverlay.width / 180));
+            codes.forEach(code => {
+                const info = parseStudentCode(code.rawValue);
+                const color = info.valid ? '#16a34a' : '#f59e0b'; // 緑=有効 / 橙=対象外
+                const label = info.valid ? `No.${info.studentId} ${info.homeworkName}` : '対象外';
+                ctx.lineWidth = lw;
+                ctx.strokeStyle = color;
+                const pts = code.cornerPoints;
+                if (pts && pts.length) {
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                    ctx.closePath();
+                    ctx.stroke();
+                    drawLabel(ctx, pts[0].x, pts[0].y, label, color, lw);
+                } else if (code.boundingBox) {
+                    const b = code.boundingBox;
+                    ctx.strokeRect(b.x, b.y, b.width, b.height);
+                    drawLabel(ctx, b.x, b.y, label, color, lw);
+                }
+            });
+        }
+
+        function drawLabel(ctx, x, y, text, color, lw) {
+            const fontSize = Math.max(16, Math.round(qrOverlay.width / 30));
+            ctx.font = `bold ${fontSize}px sans-serif`;
+            const padX = fontSize * 0.4;
+            const w = ctx.measureText(text).width + padX * 2;
+            const h = fontSize * 1.4;
+            let lx = x;
+            let ly = y - h - lw;                         // 既定は角の上
+            if (ly < 0) ly = y + lw;                      // 上に収まらなければ下へ
+            if (lx + w > qrOverlay.width) lx = qrOverlay.width - w;
+            if (lx < 0) lx = 0;
+            ctx.fillStyle = color;
+            ctx.fillRect(lx, ly, w, h);
+            ctx.fillStyle = '#ffffff';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, lx + padX, ly + h / 2);
+        }
+
+        // 読み取り結果リスト（最新を上に、最大12件）
+        function addScanResultRow(studentId, homeworkName) {
+            const row = document.createElement('div');
+            row.className = 'scan-row';
+            const time = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = studentId;
+            const name = document.createElement('span');
+            name.textContent = homeworkName;
+            const ts = document.createElement('span');
+            ts.style.cssText = 'color:#9ca3af;margin-left:auto;';
+            ts.textContent = time;
+            row.append(badge, name, ts);
+            scanResultsEl.prepend(row);
+            while (scanResultsEl.childElementCount > 12) scanResultsEl.removeChild(scanResultsEl.lastChild);
+        }
+
+        // 成功音（複数同時記録時は少し高い音）
+        function beep(count) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.type = 'sine';
+                o.frequency.value = count > 1 ? 1320 : 990;
+                g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.01);
+                g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(); o.stop(audioCtx.currentTime + 0.17);
+            } catch (_) {}
+        }
+
+        // 無効QR・日付未選択の通知はスパムしないよう全体で間引く
+        function notifyInvalidThrottled(msg, now) {
+            const last = recentInvalid.get('_throttle') || 0;
+            if (now - last < 2500) return;
+            recentInvalid.set('_throttle', now);
+            showToast(msg, 'info');
+        }
+
+        // 非ブロッキングのトースト通知
+        function showToast(text, type = 'info', duration = 2200) {
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = text;
+            toastContainer.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 250);
+            }, duration);
+        }
+
+        // カメラ・ループ・オーバーレイの後片付け
+        function cleanupCamera() {
+            isScanning = false;
+            if (scanLoopId) { cancelAnimationFrame(scanLoopId); scanLoopId = null; }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+            if (qrVideo) qrVideo.srcObject = null;
+            try {
+                const ctx = qrOverlay.getContext('2d');
+                if (ctx) ctx.clearRect(0, 0, qrOverlay.width, qrOverlay.height);
+            } catch (_) {}
+        }
+
+        function failStart(message) {
+            cleanupCamera();
+            qrReaderSection.style.display = 'none';
+            qrReaderSection.classList.remove('floating');
+            startScanBtn.disabled = false;
+            stopScanBtn.disabled = true;
+            qrScanStatus.textContent = message;
+            showMessage(message, true);
         }
 
         function stopQrScanner() {
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                html5QrCodeScanner.stop()
-                    .then(() => { qrScanStatus.textContent = "スキャンを停止しました。"; })
-                    .catch(err => {
-                        console.error("Error stopping scanner:", err);
-                        qrScanStatus.textContent = "スキャナー停止に失敗しました。";
-                        showMessage("スキャナーの停止に失敗しました。", true);
-                    })
-                    .finally(() => {
-                        qrReaderSection.style.display = 'none';
-                        qrReaderSection.classList.remove('floating');
-                        startScanBtn.disabled = false;
-                        stopScanBtn.disabled = true;
-                    });
-            } else {
-                qrReaderSection.style.display = 'none';
-                qrReaderSection.classList.remove('floating');
-                startScanBtn.disabled = false;
-                stopScanBtn.disabled = true;
-            }
+            cleanupCamera();
+            qrReaderSection.style.display = 'none';
+            qrReaderSection.classList.remove('floating');
+            startScanBtn.disabled = false;
+            stopScanBtn.disabled = true;
+            qrScanStatus.textContent = sessionScanCount > 0
+                ? `スキャンを停止しました（計${sessionScanCount}件記録）`
+                : "スキャンを停止しました。";
         }
 
         function initializeGeneratorTab() {

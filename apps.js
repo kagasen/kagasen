@@ -1,5 +1,16 @@
 const appsData = [
     {
+        id: "level-up-adventure",
+        title: "自分レベルアップアドベンチャー",
+        description: "毎日の習慣やToDoをこなしてEXPをため、自分のアバターをレベルアップ！コインで部屋の家具や相棒ペットを買えて、続けるほど「鎖（れんぞく記録）」がのびるよ。デイリーミッションや称号、活動の記録カレンダーも。友だちと8文字のコードを交換すれば、カッコいい演出つきの「たいせん」で勝負できる！",
+        category: "others",
+        tagName: "その他",
+        date: "2026/06/28",
+        colorClass: "subject-purple",
+        image: "images/level-up-adventure.svg",
+        link: "level-up-adventure/index.html"
+    },
+    {
         id: "kanji-bouken",
         title: "漢字の冒険",
         description: "学年の島を冒険しながら漢字を手書きでマスター！「れんしゅう」と10問の「テスト」、覚えた漢字がのる漢字図鑑、テストでためたコインで家具を買って自分だけのマイルームを作れるよ。",

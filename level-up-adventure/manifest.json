@@ -1,0 +1,15 @@
+{
+  "name": "自分レベルアップアドベンチャー",
+  "short_name": "レベルアップ",
+  "description": "習慣化アプリ。毎日チェックしてコインを稼ぎ、レベルを上げ、アバターを育てよう。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFF9EE",
+  "theme_color": "#B28DFF",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

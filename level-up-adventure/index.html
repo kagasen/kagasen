@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>自分レベルアップアドベンチャー | 習慣化アプリ</title>
+  <meta name="description" content="習慣化アプリ。やりたい習慣を登録して毎日チェック。コインを稼ぎ、レベルを上げ、アバターを育てよう。続けるほど強くなり、サボるとアバターが元気をなくす。大人も子どもも楽しく続けられる安全な無料アプリ。" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#B28DFF" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="レベルアップ" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            pop: ['"Mochiy Pop One"', 'sans-serif'],
+            maru: ['"Zen Maru Gothic"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --c-red: #FF8FA3;
+      --c-blue: #5BC9F5;
+      --c-green: #6BCB77;
+      --c-yellow: #FFC94D;
+      --c-orange: #FF9F68;
+      --c-purple: #B28DFF;
+      --ink: #4A3B32;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      color: var(--ink);
+      background-color: #FFF9EE;
+      background-image:
+        radial-gradient(#FFE3C2 1.5px, transparent 1.5px),
+        radial-gradient(#FFE9F0 1.5px, transparent 1.5px);
+      background-size: 36px 36px;
+      background-position: 0 0, 18px 18px;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+    .font-pop { font-family: 'Mochiy Pop One', sans-serif; }
+
+    .card {
+      background: #fff;
+      border: 3px solid #fff;
+      border-radius: 22px;
+      box-shadow: 0 6px 0 rgba(74, 59, 50, .08), 0 10px 24px rgba(74, 59, 50, .08);
+    }
+    .btn {
+      border-radius: 16px;
+      font-weight: 700;
+      transition: transform .08s ease, box-shadow .08s ease, filter .12s ease;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .12);
+    }
+    .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, .12); }
+
+    /* チェックの達成アニメ */
+    @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+    .animate-pop { animation: pop .32s ease; }
+
+    @keyframes floatUp { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-46px); opacity: 0; } }
+    .float-up { animation: floatUp 1s ease forwards; }
+
+    @keyframes wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+    .wobble { animation: wobble 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+
+    .nav-btn.active { color: var(--c-purple); }
+    .nav-btn.active .nav-ico { background: #F1E9FF; transform: translateY(-2px); }
+
+    .rainbow-bar { height: 6px; background: linear-gradient(90deg, var(--c-red), var(--c-orange), var(--c-yellow), var(--c-green), var(--c-blue), var(--c-purple)); }
+
+    /* ===== 対戦演出（バトルシネマ） ===== */
+    @keyframes bfxSlideL { 0% { transform: translateX(-140%) rotate(-10deg) scale(.8); opacity: 0; } 65% { transform: translateX(6%) rotate(3deg) scale(1.05); opacity: 1; } 100% { transform: translateX(0) rotate(0) scale(1); } }
+    @keyframes bfxSlideR { 0% { transform: translateX(140%) rotate(10deg) scale(.8); opacity: 0; } 65% { transform: translateX(-6%) rotate(-3deg) scale(1.05); opacity: 1; } 100% { transform: translateX(0) rotate(0) scale(1); } }
+    @keyframes bfxVs { 0% { transform: scale(3.4) rotate(-28deg); opacity: 0; } 55% { transform: scale(.82) rotate(8deg); opacity: 1; } 75% { transform: scale(1.18) rotate(-5deg); } 100% { transform: scale(1) rotate(-6deg); opacity: 1; } }
+    @keyframes bfxShake { 0%,100% { transform: translate(0,0); } 15% { transform: translate(-7px,4px); } 30% { transform: translate(7px,-4px); } 45% { transform: translate(-6px,-3px); } 60% { transform: translate(6px,3px); } 80% { transform: translate(-3px,2px); } }
+    @keyframes bfxFlash { 0% { opacity: 0; } 40% { opacity: .92; } 100% { opacity: 0; } }
+    @keyframes bfxStamp { 0% { transform: scale(3.2) rotate(16deg); opacity: 0; } 55% { transform: scale(.82) rotate(-13deg); opacity: 1; } 78% { transform: scale(1.12) rotate(-9deg); } 100% { transform: scale(1) rotate(-11deg); opacity: 1; } }
+    @keyframes bfxRays { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+    @keyframes bfxConf { 0% { transform: translateY(-12vh) rotate(0); opacity: 1; } 100% { transform: translateY(112vh) rotate(760deg); opacity: .85; } }
+    @keyframes bfxFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    @keyframes bfxLines { from { background-position: 0 0; } to { background-position: 120px 0; } }
+    @keyframes bfxFadeOut { from { opacity: 1; } to { opacity: 0; } }
+    .bfx-lines { background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 14px, transparent 14px 34px); animation: bfxLines 1.1s linear infinite; }
+    .bfx-l { animation: bfxSlideL .55s cubic-bezier(.2,1.4,.45,1) both; }
+    .bfx-r { animation: bfxSlideR .55s cubic-bezier(.2,1.4,.45,1) both; }
+    .bfx-float { animation: bfxFloat 2.2s ease-in-out infinite; }
+    .bfx-vs { animation: bfxVs .5s cubic-bezier(.2,1.5,.4,1) both; }
+    .bfx-shake { animation: bfxShake .5s ease both; }
+    .bfx-flash { animation: bfxFlash .45s ease both; }
+    .bfx-stamp { animation: bfxStamp .55s cubic-bezier(.2,1.5,.4,1) both; }
+    .bfx-rays { animation: bfxRays 9s linear infinite; }
+    .bfx-fadeout { animation: bfxFadeOut .35s ease forwards; }
+
+    /* スクロールバー控えめ */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #EAD9C2; border-radius: 8px; }
+
+    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+  </style>
+</head>
+
+<body class="font-maru">
+  <!-- ============ オンボーディング ============ -->
+  <div id="onboarding" class="fixed inset-0 z-50 hidden items-center justify-center p-5" style="background:rgba(74,59,50,.45)">
+    <div class="card w-full max-w-md p-6">
+      <div class="rainbow-bar -mx-6 -mt-6 mb-5 rounded-t-[19px]"></div>
+      <h1 class="font-pop text-2xl text-center leading-snug" style="color:var(--c-purple)">自分レベルアップ<br />アドベンチャー</h1>
+      <p class="text-center text-sm mt-2 mb-5 opacity-80">きみの冒険をはじめよう！</p>
+
+      <label class="block text-sm font-bold mb-1">なまえ（ニックネーム）</label>
+      <input id="ob-name" type="text" maxlength="12" placeholder="れい：たろう" class="w-full rounded-2xl border-2 border-[#EEE2CF] px-4 py-3 mb-4 outline-none focus:border-[var(--c-purple)]" />
+
+      <label class="block text-sm font-bold mb-2">アバターをえらぶ</label>
+      <div id="ob-style" class="grid grid-cols-2 gap-3 mb-6">
+        <button data-style="boy" class="ob-style-btn btn bg-[#EAF6FF] py-3 flex flex-col items-center gap-1"><span class="ob-prev"></span><span class="text-sm font-bold">男の子</span></button>
+        <button data-style="girl" class="ob-style-btn btn bg-[#FFEAF1] py-3 flex flex-col items-center gap-1"><span class="ob-prev"></span><span class="text-sm font-bold">女の子</span></button>
+      </div>
+
+      <button id="ob-start" class="btn w-full py-4 text-white font-pop text-lg" style="background:var(--c-green)">はじめる！</button>
+    </div>
+  </div>
+
+  <!-- ============ ヘッダー ============ -->
+  <header class="sticky top-0 z-30 backdrop-blur bg-[#FFF9EE]/80 border-b border-[#F0E4D2]">
+    <div class="max-w-5xl mx-auto px-3 py-2 flex items-center gap-2">
+      <div class="font-pop text-base sm:text-lg" style="color:var(--c-purple)">レベルアップ</div>
+      <div class="flex-1"></div>
+      <!-- レベル -->
+      <div class="flex items-center gap-1.5 bg-white rounded-full pl-2 pr-3 py-1 shadow-sm">
+        <span class="grid place-items-center w-6 h-6 rounded-full text-white text-xs font-bold" style="background:var(--c-purple)">Lv</span>
+        <span id="hud-level" class="font-bold text-sm">1</span>
+      </div>
+      <!-- コイン -->
+      <div class="flex items-center gap-1.5 bg-white rounded-full pl-1.5 pr-3 py-1 shadow-sm">
+        <span class="grid place-items-center w-6 h-6 rounded-full text-white text-[13px]" style="background:var(--c-yellow)">●</span>
+        <span id="hud-coins" class="font-bold text-sm">0</span>
+      </div>
+      <button id="btn-settings" title="設定" class="grid place-items-center w-9 h-9 rounded-full bg-white shadow-sm text-lg">⚙️</button>
+    </div>
+  </header>
+
+  <!-- ============ メイン（2ペイン：lgでアバター右常駐） ============ -->
+  <main class="max-w-5xl mx-auto px-3 pt-3 pb-28 lg:grid lg:grid-cols-[1fr_340px] lg:gap-5">
+
+    <!-- 左：タブ内容 -->
+    <section class="min-w-0">
+      <!-- ホーム（今日） -->
+      <div id="tab-home" class="tab-panel">
+        <!-- スマホ用：アバター吹き出し（lgでは右ペインにあるので隠す） -->
+        <div id="home-avatar" class="lg:hidden card p-4 mb-4 flex items-center gap-3"></div>
+
+        <div class="flex items-end justify-between mb-2 px-1">
+          <h2 class="font-pop text-lg">きょう</h2>
+          <span id="today-date" class="text-sm opacity-70"></span>
+        </div>
+
+        <!-- 達成バー -->
+        <div class="card p-4 mb-4">
+          <div class="flex items-center justify-between text-sm font-bold mb-2">
+            <span>きょうの達成</span>
+            <span id="ach-frac">0 / 0</span>
+          </div>
+          <div class="h-4 rounded-full bg-[#F1E7D8] overflow-hidden">
+            <div id="ach-bar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:linear-gradient(90deg,var(--c-green),var(--c-blue))"></div>
+          </div>
+          <div id="perfect-badge" class="hidden mt-3 text-center text-sm font-bold py-2 rounded-xl" style="background:#FFF6DC;color:#C9971B">🏆 パーフェクトデー達成！ +30コイン</div>
+        </div>
+
+        <!-- デイリーミッション（毎日3つ・日替わり） -->
+        <h3 class="font-bold text-sm px-1 mb-2 mt-5 opacity-80">🌟 きょうのデイリーミッション</h3>
+        <p class="text-xs opacity-60 px-1 mb-2">やったら人生がちょっと豊かになる3つ。毎日かわるよ！</p>
+        <div id="daily-list" class="space-y-2.5"></div>
+
+        <!-- 習慣リスト -->
+        <h3 class="font-bold text-sm px-1 mb-2 mt-6 opacity-80">⭐ しゅうかん</h3>
+        <div id="list-habits" class="space-y-2.5"></div>
+        <p id="empty-habits" class="hidden text-center text-sm opacity-60 py-6">まだ習慣がないよ。下の「＋」で追加しよう！</p>
+
+        <!-- Todoリスト -->
+        <h3 class="font-bold text-sm px-1 mb-2 mt-6 opacity-80">📌 やること（Todo）</h3>
+        <div id="list-todos" class="space-y-2.5"></div>
+        <p id="empty-todos" class="hidden text-center text-sm opacity-60 py-4">やることはないよ。</p>
+
+        <!-- ミッション -->
+        <h3 class="font-bold text-sm px-1 mb-2 mt-6 opacity-80 flex items-center justify-between"><span>🎯 ミッション</span><span id="mission-count" class="text-xs opacity-70"></span></h3>
+        <div id="mission-list" class="space-y-2"></div>
+      </div>
+
+      <!-- カレンダー（週） -->
+      <div id="tab-calendar" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="font-pop text-lg">しゅうカレンダー</h2>
+          <div class="flex items-center gap-2">
+            <button id="wk-prev" class="btn bg-white w-9 h-9 grid place-items-center">‹</button>
+            <button id="wk-today" class="btn bg-white px-3 py-1.5 text-sm">今週</button>
+            <button id="wk-next" class="btn bg-white w-9 h-9 grid place-items-center">›</button>
+          </div>
+        </div>
+        <div id="week-range" class="text-center text-sm opacity-70 mb-3"></div>
+        <div class="card p-3 overflow-x-auto">
+          <div id="calendar" class="min-w-[520px]"></div>
+        </div>
+        <p class="text-xs opacity-60 mt-3 px-1">🔗 連続でこなすと「鎖」がつながるよ。1日でもサボると切れちゃうから気をつけて！</p>
+      </div>
+
+      <!-- ショップ（着せ替え＆回復） -->
+      <div id="tab-shop" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="font-pop text-lg">ショップ</h2>
+          <div class="flex items-center gap-1.5 bg-white rounded-full pl-1.5 pr-3 py-1 shadow-sm">
+            <span class="grid place-items-center w-6 h-6 rounded-full text-white text-[13px]" style="background:var(--c-yellow)">●</span>
+            <span id="shop-coins" class="font-bold text-sm">0</span>
+          </div>
+        </div>
+        <div id="shop-cats" class="flex gap-1.5 overflow-x-auto pb-2 mb-1"></div>
+        <div id="shop-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <!-- マイルーム（相棒ペット＋家具） -->
+      <div id="tab-room" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="font-pop text-lg">マイルーム</h2>
+          <button data-tab="shop" data-shopjump="furniture" class="btn bg-white px-3 py-1.5 text-xs">＋かぐ・ペット</button>
+        </div>
+        <div id="room-scene"></div>
+        <p class="text-xs opacity-60 mt-3 px-1">ショップで「かぐ」や「ペット」を買うと、ここに増えていくよ！</p>
+      </div>
+
+      <!-- キャラ＆がんばりの記録 -->
+      <div id="tab-avatar" class="tab-panel hidden">
+        <h2 class="font-pop text-lg mb-3 px-1">マイキャラ</h2>
+        <div id="avatar-tab-body" class="lg:hidden mb-4"></div>
+        <h2 class="font-pop text-lg mb-3 px-1">📈 がんばりの記録</h2>
+        <div id="progress-dash"></div>
+      </div>
+    </section>
+
+    <!-- 右：アバター常駐ペイン（lgのみ表示） -->
+    <aside class="hidden lg:block">
+      <div class="sticky top-16">
+        <div id="avatar-pane"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ============ 追加ボタン（FAB） ============ -->
+  <button id="fab-add" class="fixed right-5 bottom-24 z-30 w-16 h-16 rounded-full text-white text-3xl font-pop grid place-items-center btn" style="background:var(--c-orange)">＋</button>
+
+  <!-- ============ 下タブナビ ============ -->
+  <nav class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-[#F0E4D2] safe-bottom">
+    <div class="max-w-xl mx-auto grid grid-cols-5">
+      <button data-tab="home" class="nav-btn active py-2 flex flex-col items-center gap-0.5 text-[11px] font-bold">
+        <span class="nav-ico w-10 h-7 grid place-items-center rounded-full text-lg transition-all">🏠</span>きょう
+      </button>
+      <button data-tab="calendar" class="nav-btn py-2 flex flex-col items-center gap-0.5 text-[11px] font-bold">
+        <span class="nav-ico w-10 h-7 grid place-items-center rounded-full text-lg transition-all">📅</span>カレンダー
+      </button>
+      <button data-tab="shop" class="nav-btn py-2 flex flex-col items-center gap-0.5 text-[11px] font-bold">
+        <span class="nav-ico w-10 h-7 grid place-items-center rounded-full text-lg transition-all">🛍️</span>ショップ
+      </button>
+      <button data-tab="room" class="nav-btn py-2 flex flex-col items-center gap-0.5 text-[11px] font-bold">
+        <span class="nav-ico w-10 h-7 grid place-items-center rounded-full text-lg transition-all">🛋️</span>へや
+      </button>
+      <button data-tab="avatar" class="nav-btn py-2 flex flex-col items-center gap-0.5 text-[11px] font-bold">
+        <span class="nav-ico w-10 h-7 grid place-items-center rounded-full text-lg transition-all">😊</span>キャラ
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ 追加/編集モーダル ============ -->
+  <div id="modal-add" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center p-0 sm:p-5" style="background:rgba(74,59,50,.45)">
+    <div class="card w-full max-w-md p-5 rounded-b-none sm:rounded-[22px] max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modal-title" class="font-pop text-lg">なにを習慣にする？</h3>
+        <button id="modal-close" class="w-9 h-9 grid place-items-center rounded-full bg-[#F4ECDF] text-lg">✕</button>
+      </div>
+
+      <label class="block text-sm font-bold mb-1">やること</label>
+      <input id="f-name" type="text" maxlength="40" placeholder="れい：本を10分よむ／腕立て20回" class="w-full rounded-2xl border-2 border-[#EEE2CF] px-4 py-3 mb-4 outline-none focus:border-[var(--c-purple)]" />
+
+      <label class="block text-sm font-bold mb-2">いつやる？</label>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <button data-type="daily" class="type-btn btn bg-[#EFFAEF] py-2.5 text-sm">まいにち</button>
+        <button data-type="weekly" class="type-btn btn bg-[#EAF6FF] py-2.5 text-sm">曜日をえらぶ</button>
+        <button data-type="todo" class="type-btn btn bg-[#FFF3E6] py-2.5 text-sm">Todo（今日）</button>
+      </div>
+
+      <div id="weekday-row" class="hidden mb-4">
+        <div class="grid grid-cols-7 gap-1.5" id="weekday-btns"></div>
+      </div>
+
+      <label class="block text-sm font-bold mb-1 mt-2">いつ・どこで？<span class="font-normal opacity-60 text-xs">（にゅうりょく自由・続けるコツ）</span></label>
+      <input id="f-ifthen" type="text" maxlength="40" placeholder="れい：朝ごはんのあと／おふろの前" class="w-full rounded-2xl border-2 border-[#EEE2CF] px-4 py-3 mb-5 outline-none focus:border-[var(--c-purple)]" />
+
+      <div class="flex gap-2">
+        <button id="f-delete" class="hidden btn bg-[#FFE3E8] text-[#D5566E] px-4 py-3">けす</button>
+        <button id="f-save" class="btn flex-1 py-3.5 text-white font-pop" style="background:var(--c-green)">けってい</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 設定モーダル ============ -->
+  <div id="modal-settings" class="fixed inset-0 z-40 hidden items-center justify-center p-5" style="background:rgba(74,59,50,.45)">
+    <div class="card w-full max-w-sm p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-pop text-lg">せってい</h3>
+        <button id="settings-close" class="w-9 h-9 grid place-items-center rounded-full bg-[#F4ECDF] text-lg">✕</button>
+      </div>
+      <div id="settings-info" class="text-sm space-y-1 mb-4 opacity-80"></div>
+      <button id="btn-reset" class="btn w-full py-3 bg-[#FFE3E8] text-[#D5566E]">さいしょから やりなおす</button>
+      <p class="text-xs opacity-50 mt-3">※データはこの端末だけに保存されます（同期なし）。</p>
+    </div>
+  </div>
+
+  <!-- ============ 対戦演出（バトルシネマ） ============ -->
+  <div id="battle-fx" class="fixed inset-0 z-50 hidden items-center justify-center overflow-hidden select-none" style="background:radial-gradient(circle at 50% 38%, #3a2f5e 0%, #211a36 55%, #15101f 100%)"></div>
+
+  <!-- ============ 対戦結果モーダル ============ -->
+  <div id="modal-battle" class="fixed inset-0 z-40 hidden items-center justify-center p-5" style="background:rgba(74,59,50,.45)">
+    <div class="card w-full max-w-sm p-5">
+      <div class="rainbow-bar -mx-5 -mt-5 mb-4 rounded-t-[19px]"></div>
+      <div id="battle-body"></div>
+      <button id="battle-close" class="btn w-full py-3 mt-4 bg-[#F4ECDF]">とじる</button>
+    </div>
+  </div>
+
+  <!-- トースト -->
+  <div id="toast-wrap" class="fixed inset-x-0 bottom-28 lg:bottom-10 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+  <script>
+  // =====================================================================
+  //  自分レベルアップアドベンチャー — Stage1（動く骨格）
+  //  保存: localStorage（端末ごと・同期なし）。詳細は HANDOFF.md を参照。
+  // =====================================================================
+  'use strict';
+  const SKEY = 'lua_state_v1';
+  const WEEK_JP = ['日', '月', '火', '水', '木', '金', '土'];
+
+  // ---------- 日付ヘルパー（ローカル時刻基準） ----------
+  const pad = (n) => String(n).padStart(2, '0');
+  const dkey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); x.setHours(0, 0, 0, 0); return x; };
+  const parseKey = (k) => { const [y, m, dd] = k.split('-').map(Number); return new Date(y, m - 1, dd); };
+
+  // ---------- 状態 ----------
+  let state = load();
+  let ui = { tab: 'home', weekOffset: 0, editId: null, formType: 'daily', formDays: [], lastAdvice: [], shopCat: 'hair' };
+
+  function defaultState() {
+    return {
+      version: 1,
+      profile: null,                 // { name, style }
+      coins: 0,
+      exp: 0,
+      condition: 100,                // 100=元気, 0=ゾンビ
+      items: [],                     // 習慣/Todo
+      perfect: {},                   // 'YYYY-MM-DD' -> true（パーフェクトデー付与済み）
+      lastOpenDate: null,            // コンディション再計算の基準
+      createdAt: dkey(today()),
+      equipped: null,                // 現在のコーデ（onboardingで初期化）
+      unlocked: [],                  // 買って手に入れた着せ替えid（price:0は含めない）
+      titleIdx: -1,                  // 持っている称号の最上位index（-1=まだ無し・50段ラダー）
+      freezes: 0,                    // ストリークフリーズ（お守り）の所持数
+      missionsDone: {},              // 達成ずみミッション id -> true
+      dailyDone: {},                 // デイリーミッション 'YYYY-MM-DD' -> {slot:true}
+      raresSeen: {},                 // 解放を告知ずみのレアid -> true
+      pet: 'pet_none',               // そうび中の相棒ペット
+      battleDay: null,               // 対戦記録の対象日（'YYYY-MM-DD'）
+      battleFoes: {},                // その日に対戦ずみの相手コード -> true（同じ相手は1日1回）
+    };
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(SKEY);
+      if (!raw) return defaultState();
+      return Object.assign(defaultState(), JSON.parse(raw));
+    } catch (e) { return defaultState(); }
+  }
+  function save() { try { localStorage.setItem(SKEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---------- アイテム/スケジュール ----------
+  function isScheduled(item, d) {
+    if (item.archived) return false;
+    if (item.type === 'daily') return true;
+    if (item.type === 'weekly') return (item.days || []).includes(d.getDay());
+    if (item.type === 'todo') return false; // Todoはカレンダー対象外
+    return false;
+  }
+  const isHabit = (it) => it.type === 'daily' || it.type === 'weekly';
+  const todoDone = (it) => Object.keys(it.done || {}).length > 0;
+
+  // 今日のリスト
+  function todaysHabits() {
+    const t = today();
+    return state.items.filter((it) => isHabit(it) && !it.archived && isScheduled(it, t));
+  }
+  function activeTodos() {
+    // 未完了のTodoは（締切を過ぎても）残す
+    return state.items.filter((it) => it.type === 'todo' && !it.archived && !todoDone(it));
+  }
+  function doneTodosToday() {
+    const k = dkey(today());
+    return state.items.filter((it) => it.type === 'todo' && !it.archived && it.done && it.done[k]);
+  }
+
+  // ---------- ストリーク ----------
+  function computeStreak(item) {
+    if (!isHabit(item)) return 0;
+    const start = parseKey(item.createdAt || state.createdAt);
+    let d = today();
+    // 今日が対象でまだ未チェックなら、今日は保留（連続を切らない）
+    if (isScheduled(item, d) && !(item.done && item.done[dkey(d)])) d = addDays(d, -1);
+    let streak = 0, guard = 0;
+    while (guard++ < 500 && d >= start) {
+      if (isScheduled(item, d)) {
+        const k = dkey(d);
+        if (item.done && item.done[k]) streak++;             // 達成＝連続+1
+        else if (item.frozen && item.frozen[k]) { /* お守りで橋渡し：切れない・数えない */ }
+        else break;
+      }
+      d = addDays(d, -1);
+    }
+    return streak;
+  }
+  function bestStreak(item) {
+    return Math.max(item.bestStreak || 0, computeStreak(item));
+  }
+  // dより前で、その習慣が予定されている一番近い日のkey（無ければnull）
+  function prevScheduledKey(item, d) {
+    const start = parseKey(item.createdAt || state.createdAt);
+    let x = addDays(d, -1), g = 0;
+    while (x >= start && g++ < 90) { if (isScheduled(item, x)) return dkey(x); x = addDays(x, -1); }
+    return null;
+  }
+
+  // ---------- レベル / EXP ----------
+  function levelInfo(exp) {
+    let lvl = 1, need = 100, acc = 0;
+    while (exp >= acc + need) { acc += need; lvl++; need = Math.round(need * 1.3); }
+    return { lvl, into: exp - acc, need };
+  }
+
+  // ---------- コンディション ----------
+  function conditionStage(v) {
+    if (v >= 75) return { key: 'genki', label: 'げんき', color: 'var(--c-green)' };
+    if (v >= 50) return { key: 'tsukare', label: 'つかれぎみ', color: 'var(--c-yellow)' };
+    if (v >= 25) return { key: 'fucho', label: 'げんきがない', color: 'var(--c-orange)' };
+    return { key: 'zombie', label: 'ぐったり…', color: '#8FB36B' };
+  }
+  // 起動時：経過した過去日を評価してコンディションを更新
+  function evaluatePastDays() {
+    const t = today();
+    const last = state.lastOpenDate ? parseKey(state.lastOpenDate) : t;
+    let d = addDays(last, 0);
+    let guard = 0, frozenUsed = 0;
+    while (d < t && guard++ < 400) {
+      // dは「確定した過去日」。その日に予定された習慣の達成を見る
+      const dk = dkey(d);
+      const sched = state.items.filter((it) => isHabit(it) && !it.archived && isScheduled(it, d)
+        && parseKey(it.createdAt || state.createdAt) <= d);
+      let missed = 0;
+      for (const it of sched) {
+        if (it.done && it.done[dk]) continue;             // 達成ずみ
+        if (it.frozen && it.frozen[dk]) continue;         // すでに凍結ずみ
+        // 連続が続いていたか（直前の予定日が達成 or 凍結）→お守りで救済する価値あり
+        const prevK = prevScheduledKey(it, d);
+        const chain = prevK && ((it.done && it.done[prevK]) || (it.frozen && it.frozen[prevK]));
+        if (state.freezes > 0 && chain) {
+          it.frozen = it.frozen || {}; it.frozen[dk] = true; state.freezes--; frozenUsed++;
+        } else {
+          missed++;
+        }
+      }
+      if (sched.length) {
+        if (missed > 0) state.condition = Math.max(0, state.condition - 10);
+        else state.condition = Math.min(100, state.condition + 5);
+      }
+      d = addDays(d, 1);
+    }
+    state.lastOpenDate = dkey(t);
+    ui.freezeUsed = frozenUsed;   // 起動あいさつで知らせる用
+  }
+
+  // ---------- パーフェクトデー ----------
+  function isPerfectToday() {
+    const habits = todaysHabits();
+    const k = dkey(today());
+    const allHabitsDone = habits.length > 0 && habits.every((it) => it.done && it.done[k]);
+    const noTodoLeft = activeTodos().length === 0;
+    // 何もない日はパーフェクト扱いしない
+    if (habits.length === 0 && doneTodosToday().length === 0) return false;
+    return allHabitsDone && noTodoLeft;
+  }
+  function refreshPerfectDay() {
+    const k = dkey(today());
+    const perfect = isPerfectToday();
+    if (perfect && !state.perfect[k]) {
+      state.perfect[k] = true;
+      state.coins += 30;
+      flyCoin('+30', true);
+      say(pick('perfect'));
+    } else if (!perfect && state.perfect[k]) {
+      state.perfect[k] = false;
+      state.coins = Math.max(0, state.coins - 30);
+    }
+  }
+
+  // ---------- 完了トグル（今日のみ） ----------
+  function toggleToday(id) {
+    const it = state.items.find((x) => x.id === id);
+    if (!it) return;
+    const k = dkey(today());
+    const lvlBefore = levelInfo(state.exp).lvl;
+    it.done = it.done || {};
+    const wasDone = !!it.done[k];
+
+    if (!wasDone) {
+      it.done[k] = true;
+      let gain = 10, bonus = 0, milestone = false;
+      if (isHabit(it)) {
+        const s = computeStreak(it); // 今日を含む
+        bonus = 2 * Math.min(s, 10);
+        it.bestStreak = Math.max(it.bestStreak || 0, s);
+        milestone = [3, 7, 14, 21, 30, 50, 100].includes(s);
+      }
+      state.coins += gain + bonus;
+      state.exp += expGain(it);                 // 達成率×継続係数でEXP（下がらない）
+      state.condition = Math.min(100, state.condition + 3);
+      flyCoin('+' + (gain + bonus));
+      say(milestone ? pick('streak') : pick(isHabit(it) ? 'complete' : 'todo'));
+    } else {
+      // 同日中の取り消し（誤チェックの訂正）→ 同じ式で巻き戻し
+      let gain = 10, bonus = 0;
+      if (isHabit(it)) { const s = computeStreak(it); bonus = 2 * Math.min(s, 10); }
+      const eg = expGain(it);                    // 取り消し前（done状態）の値で巻き戻し
+      delete it.done[k];
+      state.coins = Math.max(0, state.coins - gain - bonus);
+      state.exp = Math.max(0, state.exp - eg);
+      state.condition = Math.max(0, state.condition - 3);
+    }
+    refreshPerfectDay();
+    if (!wasDone) checkMissions();
+    if (levelInfo(state.exp).lvl > lvlBefore) say(pick('levelup'));   // レベルアップを最優先で知らせる
+    save();
+    render();
+  }
+
+  // =====================================================================
+  //  アドバイス（ルールベース・大量プールはStage2で拡張）
+  // =====================================================================
+  const ADVICE = {
+    firsttime: [
+      'はじめまして！いっしょに習慣をそだてよう。まずは「＋」でやることを1つ追加してみてね。',
+      'ようこそ！小さく始めるのがコツだよ。かんたんな習慣を1つ登録してみよう。',
+      'いっしょに冒険のはじまりだ！「＋」ボタンから、つづけたいことを入れてみて。',
+      'むずかしく考えなくてOK。まずは「1日1回」できそうなことから始めよう！',
+      'よろしくね！「いつ・どこで やる？」も決めると、ぐっと続きやすくなるよ。',
+      'さあ、自分レベルアップのはじまりだ。小さな一歩を1つ登録しよう🌱',
+    ],
+    allclear: [
+      'きょうもいい調子！この調子でつづけよう⚡',
+      'ぜんぶできてるね、さすが！えらいぞ✨',
+      'バッチリ！キミの「つづける力」が育ってるよ🌱',
+      'ナイス！毎日のつみ重ねが未来をつくるんだ。',
+      'きょうも自分にハナマル💮 ゆっくり休もうね。',
+      'やりきったね！この調子なら、なりたい自分に近づけるよ。',
+      'つづけるって、じつはすごいこと。キミはそれをやってる！',
+      'お見事！「やれた日」が1日ふえたね。',
+      'いいリズムだ〜。体が習慣をおぼえてきてるよ。',
+      '今日のキミ、かがやいてる☀️ あしたもマイペースでいこう。',
+      'コツコツ最強！ちりも積もれば山となる、だね。',
+      'ぜんぶ完了！ごほうびに、すきな着せ替えでも見にいく？',
+      'すばらしい！「できた」をかさねるほど、自信になるよ。',
+      'きょうも約束をまもれたね。じぶんをほめてあげよう👏',
+      'パーフェクトな1日！がんばったぶん、レベルもアップしてるよ。',
+      'えらすぎる…！キミの継続、見ならいたいくらいだよ。',
+      'よくやった！明日の自分がきっと感謝するよ。',
+      'グッド！習慣は「歯みがき」みたいに、当たり前になっていくよ。',
+    ],
+    overdue: [
+      'やり残しがあるみたい。今からでも1つやればOK！👍',
+      'うっ…元気が出ない…。1つこなすと回復するよ。',
+      'だいじょうぶ、大事なのは「またはじめる」こと。今日いこう！',
+      'のこってるよ〜。サクッと終わらせて気持ちよくなろう！',
+      'まだ間に合う！ちいさな1つからでOKだよ。',
+      'できなかった日があっても気にしない。今日リセットしよう🔄',
+      'あと少し！ここで1つやれば、いい流れがもどるよ。',
+      '完ぺきじゃなくていいんだ。「やった」が大事。さあ1つ！',
+      'のこりが気になるね…。5分だけやってみない？',
+      'お、まだ宿題タイムだ！ひとつ片づけてスッキリしよう。',
+      'キミならできる。まずは一番かんたんなのから、ね。',
+      'ストリークがピンチかも！今日やれば、つながるよ🔥',
+      'むりはしないで、でも1つだけ。それで十分えらい。',
+      'スマホ置いて、いまから30秒。動いた者がちだよ💪',
+      'やる気は「やりはじめ」たら出てくるんだって。だまされたと思って1つ！',
+      'だいじょうぶ、まだ取りもどせる。いっしょにいこう！',
+    ],
+    complete: [
+      'やったね！+コインゲット🪙',
+      'ナイス！1つクリア✨',
+      'いいぞ！その調子だ⚡',
+      'グッジョブ！体が軽くなった気がする〜',
+      'えらい！つづけると見た目もカッコよくなるよ。',
+      'よっしゃ！1つ達成、いい流れ〜',
+      'ぱちぱち👏 きょうの自分、ナイスだ！',
+      'おお、やるね！コインがチャリンとたまったよ🪙',
+      'いいね！この「できた」が、つよさになる。',
+      'クリア！脳が「気持ちいい」っておぼえていくよ。',
+      'すばらしい一歩！未来の自分が大よろこびだ。',
+      'ナイスファイト！つづけるキミ、かっこいいよ。',
+      'できたね！むずかしくても、やればできる。',
+      'ヒーローみたいだ！次もいけそう？',
+      'コツコツ発動✨ レベルアップが近づいたよ。',
+      'やりきった！その手、ハイタッチ🙌',
+      'いいぞいいぞ〜！習慣マスターへの道だ。',
+      'おみごと！ちいさな勝利を、いっぱい集めよう。',
+      '達成！キミの「やる力」がまた1つ育ったよ🌱',
+      'バッチリ！この調子でぜんぶ片づけちゃおう。',
+    ],
+    todo: [
+      'Todoかんりょう！スッキリしたね📌',
+      'よし、ひとつ片づいた！',
+      'やることクリア、いいながれ！',
+      'タスク完了✅ あたまの中もスッキリだね。',
+      'おかたづけ名人！ひとつ消えると気持ちいい〜',
+      'やるべきこと、ちゃんとやれたね。えらい！',
+      'チェック完了！のこりも軽くなったよ。',
+      'いい仕事した〜！ごほうびタイムが近いね。',
+      'パッと終わらせるキミ、デキる人だ✨',
+      'ひとつ完了！「あとでやる」をやっつけたね。',
+      'すっきり！やることリストが短くなったよ。',
+      'ナイス対応！めんどうを先にやるの、さいこう。',
+    ],
+    perfect: [
+      '🏆 パーフェクト！今日のぶん、ぜんぶ達成だ！さいこう！',
+      '完ぺき！ボーナス+30コインだよ🎉',
+      'ぜんぶできた！キミは今日のヒーローだ✨',
+      'パーフェクトデー達成！花マルどころか王冠級👑',
+      'すべて完了！今日のキミに、拍手おくる👏👏',
+      '非のうちどころなし！ボーナスもゲットだ🪙',
+      'ぜんぶクリア！この1日、キミの自信になるよ。',
+      'カンペキ！つづけたら、すごい人になっちゃうよ。',
+      '今日もコンプリート🎊 ごほうびに着せ替えどう？',
+      '満点の1日！ぐっすり眠れそうだね😴',
+      'ぜんぶやりきった…！キミは本物の継続者だ。',
+      'パーフェクト続き、ねらえる？明日も楽しみだ。',
+      'お見事すぎる！レベルもぐんぐん上がってるよ。',
+      '今日のMVPはキミだ⭐ ボーナス+30！',
+    ],
+    condition_low: [
+      'うぅ…元気がへってきた…。習慣をこなすか、ショップの回復アイテムでもどそう。',
+      'ちょっとフラフラ…。毎日つづけると元気がもどるよ。',
+      'むむ、調子がよくないみたい。1つやると元気がわいてくるよ💪',
+      'たすけて〜元気切れそう…。今日こなして回復しよう！',
+      'お守りやお薬で回復もできるよ。でも一番の薬は「やること」かも。',
+      'ぐったり…。でもキミがやれば、すぐ元気になれる！',
+      'エネルギー不足みたい。小さな1つから、ね。',
+      'うう…さぼり気味かな？今日でもどそう、いっしょに！',
+      '元気ゲージがピンチ！1つこなして、にっこりにもどろう😊',
+      'ちょっと休んでもいい。でも1つだけ、やってみない？',
+    ],
+    levelup: [
+      'レベルアップ！🎉 つづけた成果だよ、すごい！',
+      'ピコーン⤴ レベルが上がった！達成率が高いほど早く上がるよ。',
+      'レベルアップ！新しい称号も近づいてきたかも？',
+      'やったね、レベルアップ✨ キミの「つづける力」の証だ。',
+      'レベルUP！この調子でどんどん強くなろう💪',
+      'おめでとう、レベルが上がったよ！自分レベルアップ、まさに！',
+    ],
+    mission: [
+      'ミッション達成！ボーナスEXPゲット🎯',
+      'おお、ミッションクリア！えらすぎる✨',
+      'ミッション達成だ！次のもねらってみよう。',
+      'クエストクリア🎉 経験値がぐーんと入ったよ！',
+      'ミッションコンプ！キミの冒険が進んでるね。',
+    ],
+    freeze: [
+      'お守りが連続を守ってくれた！🛡️ あぶなかったね〜',
+      'ストリークフリーズ発動！🔥 連続記録、まもれたよ。',
+      'お守りパワーで、つながり キープ！次はやれるといいね。',
+      'セーフ！お守りが1日ぶん、肩がわりしてくれたよ🛡️',
+    ],
+    streak: [
+      '連続記録こうしん！🔥 この鎖、切らさないでいこう！',
+      'すごい連続だ！🔥 「don\'t break the chain」だね。',
+      '自己ベスト級の継続！キミのねばり、本物だ。',
+      '連続パワー全開🔥 つづくほどレベルも上がりやすいよ！',
+    ],
+    daily: [
+      'いいね！その小さな行動が、人生を豊かにするよ🌟',
+      'デイリーミッション達成！+20コイン、ナイス挑戦✨',
+      'すてき！やってみると気持ちいいでしょ？😊',
+      'えらい！ちょっとした挑戦が、明日の自分をつくるよ。',
+      'グッド！毎日ちがうことに挑戦するの、さいこうだ。',
+      'やったね！世界がちょっと広がった気がしない？',
+    ],
+    rare: [
+      '✨レアアイテムが解放されたよ！ショップを見てみて！',
+      'やり込みのごほうび✨ 特別なアイテムが手に入るようになった！',
+      'おめでとう！レア枠が出現したよ。ショップでチェック！',
+    ],
+  };
+  function pick(bucket) {
+    let pool = ADVICE[bucket] || [''];
+    let cand = pool.filter((m) => !ui.lastAdvice.includes(m));
+    if (!cand.length) cand = pool;
+    const msg = cand[Math.floor(Math.random() * cand.length)];
+    ui.lastAdvice.push(msg);
+    if (ui.lastAdvice.length > 6) ui.lastAdvice.shift();
+    return msg;
+  }
+  let currentSpeech = '';
+  function say(msg) { currentSpeech = msg; renderAvatars(); }
+  // 起動時の状態依存あいさつ
+  function openingGreeting() {
+    // お守りが連続を守った直後は、それを最優先で知らせる
+    if (ui.freezeUsed > 0) { ui.freezeUsed = 0; return pick('freeze'); }
+    if (!state.items.length) return pick('firsttime');
+    // やり残し（過去の予定で未チェック or 未完了Todo）を検出
+    const t = today();
+    let overdue = activeTodos().some((it) => parseKey(it.createdAt) < t); // 締切超過Todo
+    if (!overdue) {
+      for (const it of state.items) {
+        if (!isHabit(it)) continue;
+        const start = parseKey(it.createdAt || state.createdAt);
+        let d = addDays(t, -1), g = 0;
+        while (g++ < 14 && d >= start) {
+          const dk = dkey(d);
+          if (isScheduled(it, d) && !(it.done && it.done[dk]) && !(it.frozen && it.frozen[dk])) { overdue = true; break; }
+          d = addDays(d, -1);
+        }
+        if (overdue) break;
+      }
+    }
+    // 今日まだ残ってる？
+    const k = dkey(t);
+    const todayLeft = todaysHabits().some((it) => !(it.done && it.done[k])) || activeTodos().length > 0;
+    if (conditionStage(state.condition).key === 'zombie') return pick('condition_low');
+    if (overdue) return pick('overdue');
+    if (todayLeft) return pick('allclear');
+    return pick('allclear');
+  }
+
+  // =====================================================================
+  //  アバターSVG（コンディションで表情・色が変化）
+  // =====================================================================
+  // ===== アニメ調ちびキャラ（kanji-boukenのcharSVGを移植・着せ替え＋表情対応） =====
+  function shadeHex(hex, f) {
+    const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    const t = f >= 0 ? 255 : 0, a = Math.abs(f), m = (v) => Math.round(v + (t - v) * a);
+    return '#' + ((1 << 24) + (m(r) << 16) + (m(g) << 8) + m(b)).toString(16).slice(1);
+  }
+  // 肌の色（コンディションで青ざめ表現）
+  const CHARS = {
+    kid:  { skin: '#ffd9b3' },
+    pale: { skin: '#ead9c7' },   // げんきがない（少し青ざめ）
+    sick: { skin: '#cfe3cf' },   // ぐったり（ほんのり青）
+  };
+  // 着せ替えアイテム（ショップ用カタログ。price:0＝最初から持っている）
+  const ITEMS = {
+    hair: {
+      h_sweep_br:    { name: 'ながし前髪(ちゃ)',    color: '#5b3a1e', style: 'sweep',    price: 0 },
+      h_sidepony_br: { name: 'サイドポニー(ちゃ)',  color: '#6b4226', style: 'sidepony', price: 0 },
+      h_short_br:    { name: 'ショート(ちゃ)',      color: '#6b4226', style: 'short',    price: 0 },
+      h_short_bk:    { name: 'ショート(くろ)',      color: '#3c3546', style: 'short',    price: 300 },
+      h_sweep_bk:    { name: 'ながし前髪(くろ)',    color: '#3c3546', style: 'sweep',    price: 300 },
+      h_spiky_br:    { name: 'ツンツン(ちゃ)',      color: '#6b4226', style: 'spiky',    price: 300 },
+      h_spiky_bk:    { name: 'ツンツン(くろ)',      color: '#3c3546', style: 'spiky',    price: 300 },
+      h_twin_br:     { name: 'ツインテール(ちゃ)',  color: '#6b4226', style: 'twin',     price: 400 },
+      h_twin_bk:     { name: 'ツインテール(くろ)',  color: '#3c3546', style: 'twin',     price: 400 },
+      h_sidepony_bk: { name: 'サイドポニー(くろ)',  color: '#3c3546', style: 'sidepony', price: 400 },
+      h_short_gd:    { name: 'ショート(きん)',      color: '#e8b64c', style: 'short',    price: 500 },
+      h_sweep_gd:    { name: 'ながし前髪(きん)',    color: '#e8b64c', style: 'sweep',    price: 500 },
+      h_spiky_gd:    { name: 'ツンツン(きん)',      color: '#e8b64c', style: 'spiky',    price: 500 },
+      h_sidepony_gd: { name: 'サイドポニー(きん)',  color: '#e8b64c', style: 'sidepony', price: 500 },
+      h_spiky_pk:    { name: 'ツンツン(ピンク)',    color: '#ff9ab8', style: 'spiky',    price: 600 },
+      h_twin_pk:     { name: 'ツインテール(ピンク)',color: '#ff9ab8', style: 'twin',     price: 600 },
+      h_twin_gd:     { name: 'ツインテール(きん)',  color: '#e8b64c', style: 'twin',     price: 600 },
+      h_sidepony_pk: { name: 'サイドポニー(ピンク)',color: '#ff9ab8', style: 'sidepony', price: 600 },
+      h_bob_br:      { name: 'ボブ(ちゃ)',          color: '#6b4226', style: 'bob',      price: 300 },
+      h_bob_bk:      { name: 'ボブ(くろ)',          color: '#3c3546', style: 'bob',      price: 400 },
+      h_bob_pk:      { name: 'ボブ(ピンク)',        color: '#ff9ab8', style: 'bob',      price: 600 },
+      h_buns_br:     { name: 'おだんご(ちゃ)',      color: '#6b4226', style: 'buns',     price: 400 },
+      h_buns_bk:     { name: 'おだんご(くろ)',      color: '#3c3546', style: 'buns',     price: 500 },
+      h_buns_pk:     { name: 'おだんご(ピンク)',    color: '#ff9ab8', style: 'buns',     price: 600 },
+      h_curly_br:    { name: 'もこもこ(ちゃ)',      color: '#6b4226', style: 'curly',    price: 500 },
+      h_curly_bk:    { name: 'もこもこ(くろ)',      color: '#3c3546', style: 'curly',    price: 500 },
+      h_long_br:     { name: 'ロング(ちゃ)',        color: '#6b4226', style: 'long',     price: 400 },
+      h_long_bk:     { name: 'ロング(くろ)',        color: '#3c3546', style: 'long',     price: 500 },
+      h_long_gd:     { name: 'ロング(きん)',        color: '#e8b64c', style: 'long',     price: 600 },
+      h_hime_bk:     { name: 'ひめカット(くろ)',    color: '#3c3546', style: 'hime',     price: 700 },
+      h_hime_pk:     { name: 'ひめカット(ピンク)',  color: '#ff9ab8', style: 'hime',     price: 800 },
+      h_mash_br:     { name: 'マッシュ(ちゃ)',      color: '#6b4226', style: 'mash',     price: 300 },
+      h_mash_bk:     { name: 'マッシュ(くろ)',      color: '#3c3546', style: 'mash',     price: 400 },
+      h_mash_gd:     { name: 'マッシュ(きん)',      color: '#e8b64c', style: 'mash',     price: 500 },
+      h_crew_br:     { name: 'ベリーショート(ちゃ)',color: '#6b4226', style: 'crew',     price: 300 },
+      h_crew_bk:     { name: 'ベリーショート(くろ)',color: '#3c3546', style: 'crew',     price: 300 },
+      h_center_br:   { name: 'センター分け(ちゃ)',  color: '#6b4226', style: 'center',   price: 400 },
+      h_center_bk:   { name: 'センター分け(くろ)',  color: '#3c3546', style: 'center',   price: 400 },
+      h_allback_bk:  { name: 'オールバック(くろ)',  color: '#3c3546', style: 'allback',  price: 500 },
+      h_allback_gd:  { name: 'オールバック(きん)',  color: '#e8b64c', style: 'allback',  price: 600 },
+      h_wolf_br:     { name: 'ウルフ(ちゃ)',        color: '#6b4226', style: 'wolf',     price: 500 },
+      h_wolf_bk:     { name: 'ウルフ(くろ)',        color: '#3c3546', style: 'wolf',     price: 500 },
+      h_mohawk_bk:   { name: 'モヒカン(くろ)',      color: '#3c3546', style: 'mohawk',   price: 500 },
+      h_mohawk_bl:   { name: 'モヒカン(あお)',      color: '#5b8def', style: 'mohawk',   price: 600 },
+      h_twin_silver: { name: '★ぎんのツインテール', color: '#c9d2dd', style: 'twin', price: 1200, rare: { type: 'titles', n: 10, label: '称号を10こ集める' } },
+      h_long_silver: { name: '★ぎんのロング',       color: '#c9d2dd', style: 'long', price: 1300, rare: { type: 'level', n: 12, label: 'レベル12にとうたつ' } },
+    },
+    shirt: {
+      s_blue:      { name: 'あおシャツ',         color: '#2E86E8', price: 0 },
+      s_dress_pk:  { name: 'ピンクのワンピース', color: '#ff9ab8', kind: 'dress', price: 0 },
+      s_white:     { name: 'しろシャツ',         color: '#ffffff', price: 200 },
+      s_red:       { name: 'あかシャツ',         color: '#FF6B6B', price: 300 },
+      s_green:     { name: 'みどりシャツ',       color: '#34C759', price: 300 },
+      s_yellow:    { name: 'きいろシャツ',       color: '#FFC02E', price: 300 },
+      s_purple:    { name: 'むらさきシャツ',     color: '#9C5BD6', price: 400 },
+      s_black:     { name: 'くろシャツ',         color: '#39414e', price: 400 },
+      s_dress_mt:  { name: 'ミントのワンピース', color: '#8fd6c8', kind: 'dress', price: 500 },
+      s_dress_yl:  { name: 'きいろワンピース',   color: '#ffd86b', kind: 'dress', price: 500 },
+      s_dress_lv:  { name: 'むらさきワンピース', color: '#b18cf0', kind: 'dress', price: 500 },
+      s_dress_bl:  { name: 'あおワンピース',     color: '#6db5f0', kind: 'dress', price: 500 },
+      s_mark_star: { name: 'スターシャツ',       color: '#2E86E8', mark: 'star',  price: 600 },
+      s_mark_heart:{ name: 'ハートシャツ',       color: '#ff7aa0', mark: 'heart', price: 600 },
+      s_mark_bolt: { name: 'いなずまシャツ',     color: '#FFC02E', mark: 'bolt',  price: 700 },
+      s_stripe:    { name: 'ボーダーシャツ',     color: '#2E86E8', acc: '#ffffff', pat: 'stripe', price: 700 },
+      s_dot:       { name: 'みずたまシャツ',     color: '#FF6B6B', acc: '#ffffff', pat: 'dot',    price: 700 },
+      s_check:     { name: 'チェックシャツ',     color: '#34C759', acc: '#ffffff', pat: 'check',  price: 800 },
+      s_star:      { name: 'ほしがらシャツ',     color: '#3a4a8c', acc: '#FFD93B', pat: 'star',   price: 900 },
+      s_rainbow:   { name: 'にじいろシャツ',     color: 'rainbow', price: 1500 },
+      s_galaxy:    { name: '★ぎんがシャツ',     color: '#3a2a6b', acc: '#FFD93B', pat: 'star', price: 1500, rare: { type: 'total', n: 100, label: '累計100こなす' } },
+      s_hero:      { name: '★ヒーローシャツ',   color: '#E0556A', mark: 'star', price: 1200, rare: { type: 'level', n: 8, label: 'レベル8にとうたつ' } },
+    },
+    cape: {
+      cape_green:   { name: 'みどりマント',     color: '#36B37E', style: 'cape', price: 0 },
+      cape_none:    { name: 'マントなし',       color: '#dddddd', style: 'none', price: 0 },
+      cape_red:     { name: 'あかマント',       color: '#E0556A', style: 'cape', price: 300 },
+      cape_blue:    { name: 'あおマント',       color: '#4A78D0', style: 'cape', price: 300 },
+      cape_pink:    { name: 'ピンクマント',     color: '#ff8fb1', style: 'cape', price: 300 },
+      cape_sky:     { name: 'そらいろマント',   color: '#6fc7f0', style: 'cape', price: 300 },
+      cape_orange:  { name: 'オレンジマント',   color: '#ff9f68', style: 'cape', price: 300 },
+      cape_purple:  { name: 'むらさきマント',   color: '#9B6BD6', style: 'cape', price: 400 },
+      cape_black:   { name: 'くろマント',       color: '#39414e', style: 'cape', price: 400 },
+      cape_stripe:  { name: 'ボーダーマント',   color: '#9B6BD6', style: 'cape', pat: 'stripe', price: 1000 },
+      cape_dot:     { name: 'みずたまマント',   color: '#E0556A', style: 'cape', pat: 'dot',    price: 1000 },
+      cape_check:   { name: 'チェックマント',   color: '#36B37E', style: 'cape', pat: 'check',  price: 1100 },
+      cape_gold:    { name: 'きんマント',       color: '#E8B64C', style: 'cape', price: 900 },
+      cape_rainbow: { name: 'にじマント',       color: 'rainbow', style: 'cape', price: 1800 },
+      cape_flame:   { name: '★ほのおマント',   color: '#FF6B3D', style: 'cape', price: 1200, rare: { type: 'streak', n: 14, label: '14日連続たっせい' } },
+      cape_galaxy:  { name: '★ぎんがマント',   color: '#3a2a6b', style: 'cape', price: 1500, rare: { type: 'level', n: 10, label: 'レベル10にとうたつ' } },
+    },
+    hat: {
+      hat_none:     { name: 'ぼうしなし',       style: 'none', price: 0 },
+      hat_cap_rd:   { name: 'キャップ(あか)',   color: '#e85562', style: 'cap',    price: 350 },
+      hat_cap_bl:   { name: 'キャップ(あお)',   color: '#4a90d9', style: 'cap',    price: 350 },
+      hat_cap_gn:   { name: 'キャップ(みどり)', color: '#34C759', style: 'cap',    price: 350 },
+      hat_cap_yl:   { name: 'キャップ(きいろ)', color: '#FFC02E', style: 'cap',    price: 350 },
+      hat_beanie:   { name: 'ニットぼうし',     color: '#f2b134', acc: '#fffdf4', style: 'beanie', price: 350 },
+      hat_beanie_pk:{ name: 'ニット(ピンク)',   color: '#ff9ab8', acc: '#fffdf4', style: 'beanie', price: 350 },
+      hat_band_fl:  { name: 'はなカチューシャ', color: '#ff9ab8', acc: '#ffd93b', style: 'bandfl', price: 400 },
+      hat_band_rb:  { name: 'リボンカチューシャ',color: '#e85562', style: 'band',  price: 500 },
+      hat_straw:    { name: 'むぎわらぼうし',   color: '#e8c878', acc: '#e85562', style: 'straw', price: 600 },
+      hat_cat:      { name: 'ねこみみ',         color: '#3c3546', acc: '#ff9ab8', style: 'cat',    price: 700 },
+      hat_cat_wh:   { name: 'ねこみみ(しろ)',   color: '#f0e9e0', acc: '#ff9ab8', style: 'cat',    price: 700 },
+      hat_wizard:   { name: 'まほうのぼうし',   color: '#6a4a9c', acc: '#ffd93b', style: 'wizard', price: 1000 },
+      hat_crown:    { name: 'おうかん',         color: '#ffd93b', style: 'crown',  price: 1200 },
+      hat_crown_rose: { name: '★バラのおうかん', color: '#FF8FA3', style: 'crown',  price: 1000, rare: { type: 'perfect', n: 10, label: 'パーフェクト10回' } },
+      hat_wizard_star:{ name: '★せいざのぼうし', color: '#3a2a6b', acc: '#FFD93B', style: 'wizard', price: 1500, rare: { type: 'streak', n: 30, label: '30日連続たっせい' } },
+      hat_crown_sky:  { name: '★そらのおうかん', color: '#6fc7f0', style: 'crown', price: 1000, rare: { type: 'streak', n: 21, label: '21日連続たっせい' } },
+    },
+    glasses: {
+      gl_none:     { name: 'めがねなし',   style: 'none', price: 0 },
+      gl_round:    { name: 'まるめがね',   color: '#3c3546', style: 'round', price: 300 },
+      gl_red:      { name: 'あかめがね',   color: '#e85562', style: 'round', price: 300 },
+      gl_blue:     { name: 'あおめがね',   color: '#4a90d9', style: 'round', price: 300 },
+      gl_pink:     { name: 'ピンクめがね', color: '#ff8fb1', style: 'round', price: 300 },
+      gl_round_gd: { name: 'きんめがね',   color: '#e8b64c', style: 'round', price: 400 },
+      gl_sun:      { name: 'サングラス',   color: '#2b2b33', style: 'sun',   price: 500 },
+      gl_sun_bl:   { name: 'サングラス(あお)', color: '#2b3b5a', style: 'sun', price: 500 },
+      gl_star:     { name: 'スターめがね', color: '#FFD93B', style: 'star',  price: 800 },
+      gl_heart:    { name: 'ハートめがね', color: '#ff6b8d', style: 'heart', price: 800 },
+    },
+    // 着ぐるみ（レア・顔のまわりが動物になるバラエティ枠）
+    suit: {
+      suit_none:   { name: 'きぐるみなし', style: 'none', price: 0 },
+      suit_frog:   { name: '★カエル',     kind: 'frog',   color: '#7BC86C', belly: '#E8F2C8', acc: '#FF9DB0', price: 1200, rare: { type: 'streak',  n: 7,   label: '7日連続たっせい' } },
+      suit_cat:    { name: '★ねこ',       kind: 'cat',    color: '#A9A39B', belly: '#F2EEE6', acc: '#FF9DB0', price: 1200, rare: { type: 'perfect', n: 5,   label: 'パーフェクト5回' } },
+      suit_chick:  { name: '★ひよこ',     kind: 'chick',  color: '#FFD86B', belly: '#FFE9A8', acc: '#FF9F43', price: 1300, rare: { type: 'total',   n: 30,  label: '累計30こなす' } },
+      suit_dino:   { name: '★きょうりゅう', kind: 'dino', color: '#5DBB63', belly: '#E8F2C8', acc: '#3E9A53', price: 1500, rare: { type: 'total',   n: 50,  label: '累計50こなす' } },
+      suit_bear:   { name: '★くま',       kind: 'bear',   color: '#B98A5A', belly: '#EBD9BE', acc: '#7A5733', price: 1500, rare: { type: 'level',   n: 5,   label: 'レベル5にとうたつ' } },
+      suit_rabbit: { name: '★うさぎ',     kind: 'rabbit', color: '#F1E3EC', belly: '#FFFFFF', acc: '#FF9DB0', price: 1500, rare: { type: 'titles',  n: 5,   label: '称号を5こ集める' } },
+      suit_shark:  { name: '★サメ',       kind: 'shark',  color: '#7FA8C9', belly: '#EAF2F8', acc: '#39516B', price: 1800, rare: { type: 'streak',  n: 21,  label: '21日連続たっせい' } },
+      suit_panda:  { name: '★パンダ',     kind: 'panda',  color: '#F4F1EC', belly: '#FFFFFF', acc: '#39414e', price: 1800, rare: { type: 'perfect', n: 20,  label: 'パーフェクト20回' } },
+      suit_dragon: { name: '★ドラゴン',   kind: 'dragon', color: '#9B6BD6', belly: '#E7D7F5', acc: '#FFD93B', price: 2500, rare: { type: 'level',   n: 20,  label: 'レベル20にとうたつ' } },
+    },
+    pants: {
+      p_blue:   { name: 'あおズボン',     color: '#3b6ea5', price: 0 },
+      p_pink:   { name: 'ピンクズボン',   color: '#ff8fb1', price: 0 },
+      p_black:  { name: 'くろズボン',     color: '#333333', price: 250 },
+      p_red:    { name: 'あかズボン',     color: '#c0392b', price: 250 },
+      p_white:  { name: 'しろズボン',     color: '#eeeeee', price: 250 },
+      p_green:  { name: 'みどりズボン',   color: '#2e8b57', price: 300 },
+      p_yellow: { name: 'きいろズボン',   color: '#f0c93a', price: 300 },
+      p_purple: { name: 'むらさきズボン', color: '#8a6bd0', price: 300 },
+      p_orange: { name: 'オレンジズボン', color: '#ff9f68', price: 300 },
+      p_sky:    { name: 'そらいろズボン', color: '#6fc7f0', price: 300 },
+      p_denim:  { name: 'デニム',         color: '#4a6fa5', price: 300 },
+      p_gold:   { name: 'きんズボン',     color: '#E8B64C', price: 700 },
+    },
+    shoes: {
+      sh_white:  { name: 'しろぐつ',     color: '#eeeeee', price: 0 },
+      sh_pink:   { name: 'ピンクぐつ',   color: '#ff8fb1', price: 0 },
+      sh_red:    { name: 'あかぐつ',     color: '#E8552E', price: 200 },
+      sh_blue:   { name: 'あおぐつ',     color: '#2E86E8', price: 200 },
+      sh_black:  { name: 'くろぐつ',     color: '#333a45', price: 200 },
+      sh_green:  { name: 'みどりぐつ',   color: '#34C759', price: 250 },
+      sh_yellow: { name: 'きいろぐつ',   color: '#FFC02E', price: 250 },
+      sh_sky:    { name: 'そらいろぐつ', color: '#6fc7f0', price: 250 },
+      sh_purple: { name: 'むらさきぐつ', color: '#9C5BD6', price: 300 },
+      sh_gold:   { name: 'きんぐつ',     color: '#FFC02E', price: 600 },
+    },
+  };
+  // ショップのカテゴリ表示順とラベル
+  const SHOP_CATS = [['suit', 'きぐるみ'], ['hair', 'かみがた'], ['shirt', 'ふく'], ['cape', 'マント'], ['hat', 'ぼうし'], ['glasses', 'めがね'], ['pants', 'ズボン'], ['shoes', 'くつ']];
+  // 回復アイテム（消耗品・コンディションを回復）
+  const HEALS = {
+    heal_small: { name: 'おくすり',   heal: 30,  price: 100, emoji: '💊' },
+    heal_full:  { name: 'ちゅうしゃ', heal: 100, price: 350, emoji: '💉' },
+  };
+  const FREEZE = { name: 'ストリークフリーズ（お守り）', price: 500, emoji: '🛡️' };
+  // 相棒ペット（カスタムSVGの小さな相棒・1匹そうび）
+  const PETS = {
+    pet_none:    { name: 'なし' },
+    pet_cat:     { name: 'ねこ',     kind: 'cat',     color: '#E8A23D', price: 800 },
+    pet_dog:     { name: 'いぬ',     kind: 'dog',     color: '#C99A6A', price: 800 },
+    pet_rabbit:  { name: 'うさぎ',   kind: 'rabbit',  color: '#F0E3EC', price: 1000 },
+    pet_bird:    { name: 'ことり',   kind: 'bird',    color: '#6FC7F0', price: 1000 },
+    pet_slime:   { name: '★スライム', kind: 'slime',  color: '#8FD06A', price: 1200, rare: { type: 'total',   n: 30, label: '累計30こなす' } },
+    pet_penguin: { name: '★ペンギン', kind: 'penguin', color: '#3a414e', price: 1500, rare: { type: 'perfect', n: 10, label: 'パーフェクト10回' } },
+  };
+  // 部屋の家具（買うとマイルームに置かれる・絵文字＋固定位置）
+  const FURNITURE = {
+    f_window:    { name: 'まど',       emoji: '🪟', x: 70, y: 60, size: 46, price: 300 },
+    f_picture:   { name: 'ポスター',   emoji: '🖼️', x: 28, y: 62, size: 40, price: 300 },
+    f_clock:     { name: 'かべどけい', emoji: '🕰️', x: 50, y: 70, size: 36, price: 400 },
+    f_plant:     { name: 'かんようしょくぶつ', emoji: '🪴', x: 90, y: 8, size: 44, price: 400 },
+    f_teddy:     { name: 'くまのぬいぐるみ', emoji: '🧸', x: 33, y: 6, size: 38, price: 500 },
+    f_bookshelf: { name: 'ほんだな',   emoji: '📚', x: 8, y: 26, size: 44, price: 600 },
+    f_chair:     { name: 'いす',       emoji: '🪑', x: 66, y: 7, size: 40, price: 600 },
+    f_tv:        { name: 'テレビ',     emoji: '📺', x: 87, y: 30, size: 46, price: 900 },
+    f_bed:       { name: 'ベッド',     emoji: '🛏️', x: 16, y: 9, size: 52, price: 1000 },
+    f_sofa:      { name: 'ソファ',     emoji: '🛋️', x: 80, y: 11, size: 50, price: 1200 },
+    f_piano:     { name: '★ピアノ',    emoji: '🎹', x: 12, y: 7, size: 50, price: 1500, rare: { type: 'level', n: 8, label: 'レベル8にとうたつ' } },
+    f_trophy:    { name: '★トロフィー', emoji: '🏆', x: 50, y: 30, size: 40, price: 1500, rare: { type: 'perfect', n: 15, label: 'パーフェクト15回' } },
+  };
+  function petSVG(kind, color, px) {
+    px = px || 56; const LN = '#54402f', c = color, sh = shadeHex(c, -.16), lt = shadeHex(c, .5);
+    // ★きらきらお目め（白ハイライト2つでうるうる感）
+    const eye = (x) => `<circle cx="${x}" cy="37.5" r="3.5" fill="#3a2a2a"/><circle cx="${x - 1.2}" cy="36" r="1.4" fill="#fff"/><circle cx="${x + 1}" cy="38.6" r="0.7" fill="#fff" opacity=".85"/>`;
+    const blush = `<ellipse cx="19" cy="42" rx="3" ry="2" fill="#ff9db0" opacity=".6"/><ellipse cx="41" cy="42" rx="3" ry="2" fill="#ff9db0" opacity=".6"/>`;
+    const smile = `<path d="M27.4 42 Q30 44.4 32.6 42" stroke="${LN}" stroke-width="1.3" fill="none" stroke-linecap="round"/>`;
+    // 共通：まんまる体＋おなかハイライト＋ちいさいあんよ
+    let body = `<ellipse cx="30" cy="38" rx="17" ry="15.5" fill="${c}" stroke="${LN}" stroke-width="1.4"/><ellipse cx="30" cy="42" rx="8.5" ry="7.5" fill="${lt}" opacity=".4"/>`;
+    let face = `${eye(24)}${eye(36)}${smile}${blush}`;
+    let feet = `<ellipse cx="23" cy="53.5" rx="4.4" ry="3" fill="${sh}" stroke="${LN}" stroke-width="1.1"/><ellipse cx="37" cy="53.5" rx="4.4" ry="3" fill="${sh}" stroke="${LN}" stroke-width="1.1"/>`;
+    let feat = '', front = '';
+    if (kind === 'cat') {
+      feat = `<path d="M17 28 L13.5 16 L27 25 Z" fill="${c}" stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"/><path d="M43 28 L46.5 16 L33 25 Z" fill="${c}" stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"/><path d="M20 25 L18.5 19.5 L25 24 Z" fill="#ff9db0"/><path d="M40 25 L41.5 19.5 L35 24 Z" fill="#ff9db0"/><path d="M46 48 Q58 46 54 32" stroke="${c}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
+      front = `<path d="M9 40 H17 M9.5 43 H17" stroke="${LN}" stroke-width="0.8" stroke-linecap="round" opacity=".5"/><path d="M51 40 H43 M50.5 43 H43" stroke="${LN}" stroke-width="0.8" stroke-linecap="round" opacity=".5"/>`;
+    } else if (kind === 'dog') {
+      // たれ耳（顔のよこにぶら下がる）＋ふりふりのしっぽ
+      feat = `<path d="M18 26 Q5.5 27 5 43 Q5 53.5 14.5 51.5 Q11 41 16 29 Z" fill="${sh}" stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"/>`
+        + `<path d="M42 26 Q54.5 27 55 43 Q55 53.5 45.5 51.5 Q49 41 44 29 Z" fill="${sh}" stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"/>`
+        + `<path d="M46 47 Q57 43 53.5 33.5" stroke="${c}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`;
+      const dEye = (x) => `<circle cx="${x}" cy="34" r="3.3" fill="#3a2a2a"/><circle cx="${x - 1.1}" cy="32.6" r="1.3" fill="#fff"/><circle cx="${x + 0.9}" cy="35" r="0.6" fill="#fff" opacity=".8"/>`;
+      // ぶち（片目まわり）＋大きなお目め＋つきでたマズル（鼻・口・ベロ）
+      face = `<ellipse cx="37.5" cy="33" rx="6.2" ry="5.6" fill="${sh}" opacity=".45"/>`
+        + dEye(23) + dEye(37)
+        + `<ellipse cx="30" cy="44.2" rx="8.4" ry="6.4" fill="${lt}" stroke="${LN}" stroke-width="0.9"/>`
+        + `<ellipse cx="30" cy="40.6" rx="2.8" ry="2.1" fill="#3a2a2a"/><circle cx="28.9" cy="39.8" r="0.7" fill="#fff" opacity=".7"/>`
+        + `<path d="M30 42.4 L30 46" stroke="${LN}" stroke-width="1" stroke-linecap="round"/>`
+        + `<path d="M30 46 Q25.8 48 24.2 45.4" stroke="${LN}" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M30 46 Q34.2 48 35.8 45.4" stroke="${LN}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`
+        + `<path d="M28.2 46.6 Q30 50 31.8 46.6 Z" fill="#ff8a9a"/>`
+        + `<ellipse cx="18.5" cy="41" rx="2.6" ry="1.7" fill="#ff9db0" opacity=".5"/><ellipse cx="41.5" cy="41" rx="2.6" ry="1.7" fill="#ff9db0" opacity=".5"/>`;
+    } else if (kind === 'rabbit') {
+      feat = `<ellipse cx="23" cy="17" rx="4" ry="12" fill="${c}" stroke="${LN}" stroke-width="1.3" transform="rotate(-7 23 17)"/><ellipse cx="37" cy="17" rx="4" ry="12" fill="${c}" stroke="${LN}" stroke-width="1.3" transform="rotate(7 37 17)"/><ellipse cx="23" cy="18" rx="1.8" ry="8" fill="#ff9db0" transform="rotate(-7 23 18)"/><ellipse cx="37" cy="18" rx="1.8" ry="8" fill="#ff9db0" transform="rotate(7 37 18)"/><circle cx="47" cy="46" r="4" fill="${lt}" stroke="${LN}" stroke-width="1.1"/>`;
+    } else if (kind === 'bird') {
+      body = `<ellipse cx="30" cy="39" rx="15.5" ry="14.5" fill="${c}" stroke="${LN}" stroke-width="1.4"/><ellipse cx="30" cy="43" rx="8" ry="7" fill="${lt}" opacity=".4"/>`;
+      feat = `<path d="M28 24 Q30 18 32 24 Z" fill="${sh}" stroke="${LN}" stroke-width="0.8"/><path d="M16 39 Q9 41 13 49 Q17 46 19 42 Z" fill="${sh}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/><path d="M44 39 Q51 41 47 49 Q43 46 41 42 Z" fill="${sh}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+      face = `${eye(25)}${eye(35)}<path d="M27 41.5 L33 41.5 L30 45.5 Z" fill="#ffb340" stroke="${LN}" stroke-width="0.9" stroke-linejoin="round"/>${blush}`;
+      feet = `<path d="M25 53 l0 3 m-2 0 h4" stroke="#ffb340" stroke-width="1.6" stroke-linecap="round"/><path d="M35 53 l0 3 m-2 0 h4" stroke="#ffb340" stroke-width="1.6" stroke-linecap="round"/>`;
+    } else if (kind === 'slime') {
+      body = `<path d="M11 45 Q9 22 30 22 Q51 22 49 45 Q49 49 44 49 L16 49 Q11 49 11 45 Z" fill="${c}" stroke="${LN}" stroke-width="1.4"/><ellipse cx="30" cy="38" rx="14" ry="8" fill="${lt}" opacity=".35"/>`;
+      face = `${eye(24)}${eye(36)}<path d="M27 41.5 Q30 45 33 41.5" stroke="${LN}" stroke-width="1.3" fill="none" stroke-linecap="round"/>${blush}<ellipse cx="20" cy="30" rx="3.2" ry="2" fill="#fff" opacity=".6" transform="rotate(-25 20 30)"/>`;
+      feet = '';
+    } else if (kind === 'penguin') {
+      const bk = '#3b4350';
+      feat = `<ellipse cx="15" cy="40" rx="4.5" ry="9" fill="${bk}" stroke="${LN}" stroke-width="1.2" transform="rotate(-10 15 40)"/><ellipse cx="45" cy="40" rx="4.5" ry="9" fill="${bk}" stroke="${LN}" stroke-width="1.2" transform="rotate(10 45 40)"/>`;
+      body = `<ellipse cx="30" cy="38" rx="16" ry="16" fill="${bk}" stroke="${LN}" stroke-width="1.4"/><path d="M30 25 Q43 26 42 42 Q41 51 30 51 Q19 51 18 42 Q17 26 30 25 Z" fill="#fff"/>`;
+      face = `${eye(25)}${eye(35)}<path d="M27.5 41 L32.5 41 L30 45 Z" fill="#FF9F43" stroke="${LN}" stroke-width="0.8" stroke-linejoin="round"/><ellipse cx="20.5" cy="40" rx="2.4" ry="1.6" fill="#ff9db0" opacity=".5"/><ellipse cx="39.5" cy="40" rx="2.4" ry="1.6" fill="#ff9db0" opacity=".5"/>`;
+      feet = `<ellipse cx="24" cy="53.5" rx="4.4" ry="2.6" fill="#FF9F43" stroke="${LN}" stroke-width="1"/><ellipse cx="36" cy="53.5" rx="4.4" ry="2.6" fill="#FF9F43" stroke="${LN}" stroke-width="1"/>`;
+    }
+    return `<svg viewBox="0 0 60 60" width="${px}" height="${px}" class="wobble" xmlns="http://www.w3.org/2000/svg">${feat}${feet}${body}${face}${front}</svg>`;
+  }
+  // 男の子／女の子のコーデ（このアプリ独自の「ちびっこ勇者」スタイル）
+  const EQ = {
+    boy:  { shirt: 's_blue',     pants: 'p_blue', shoes: 'sh_white', hair: 'h_sweep_br',    hat: 'hat_none', glasses: 'gl_none', cape: 'cape_green', suit: 'suit_none' },
+    girl: { shirt: 's_dress_pk', pants: 'p_pink', shoes: 'sh_pink',  hair: 'h_sidepony_br', hat: 'hat_none', glasses: 'gl_none', cape: 'cape_green', suit: 'suit_none' },
+  };
+  // 所持判定（price:0は最初から所持）／装備の取得
+  function owns(catId, itemId) { const it = ITEMS[catId] && ITEMS[catId][itemId]; if (!it) return false; return it.price === 0 || (state.unlocked || []).includes(itemId); }
+  // レア解放：マイルストーン（やり込み）の節目で「買えるようになる」
+  function milestoneValue(type) {
+    if (type === 'total') return progressStats().total;
+    if (type === 'streak') return maxStreakAll();
+    if (type === 'level') return levelInfo(state.exp).lvl;
+    if (type === 'perfect') return perfectCount();
+    if (type === 'titles') return state.titleIdx + 1;
+    return 0;
+  }
+  function rareUnlocked(it) { return !it.rare || milestoneValue(it.rare.type) >= it.rare.n; }
+  function playerEquip() { return state.equipped || EQ[state.profile && state.profile.style] || EQ.boy; }
+  function playerSVG(stageKey, size) { const charKey = stageKey === 'zombie' ? 'sick' : stageKey === 'fucho' ? 'pale' : 'kid'; return charSVG(charKey, playerEquip(), size, stageKey); }
+
+  // ===== 称号（50段ラダー・安い順にしか買えない／上位はレベルで解禁） =====
+  const TITLES = [
+    '習慣のたまご', 'はじめの一歩', 'やる気スイッチON', '三日坊主そつぎょう', 'つづけるルーキー',
+    'コツコツ見習い', 'ひよっこ冒険者', 'まいにち戦士', 'リズムをつかむ者', '一週間つづいた人',
+    '習慣みならい', 'がんばりや', 'つみかさね見習い', 'ねばり強い心', 'ちいさな勇者',
+    'つづける剣士', '努力のたび人', 'しゅうかんナイト', 'ぶれない意志', '二週間の継続者',
+    'じょうずな習慣家', 'つづけるエキスパート', '自分みがきの達人', 'やりぬく勇者', '一ヶ月の継続者',
+    'ゴールデンルーティン', 'ぶれない達人', '習慣の使い手', 'つづける魔法使い', '鉄の意志の持ち主',
+    'しゅうかんマスター', '努力の英雄', 'つみかさねの王', 'ストイック賢者', '継続のカリスマ',
+    '自分を超える者', '習慣のグランドマスター', '不屈の冒険者', 'ルーティンの覇者', '百日の継続者',
+    '伝説のがんばりや', '習慣の達人王', '努力のレジェンド', '継続の超人', '自分レベルアップの星',
+    '習慣の神レベル', 'つづける伝説', '究極の継続者', '殿堂入りの習慣家', '伝説の継続者・神',
+  ];
+  function titlePrice(i) { return Math.round(60 * Math.pow(1.12, i) / 10) * 10; }
+  function titleReq(i) { return Math.floor(i / 2) + 1; }          // 必要レベル
+  function curTitle() { return state.titleIdx >= 0 ? TITLES[state.titleIdx] : ''; }
+  function buyTitle(i) {
+    if (i !== (state.titleIdx + 1)) return;                       // 安い順（次の1つ）だけ
+    const price = titlePrice(i), req = titleReq(i), lvl = levelInfo(state.exp).lvl;
+    if (lvl < req) { say(`この称号は レベル${req}に なると 手に入るよ。`); renderAvatars(); return; }
+    if (state.coins < price) { say('コインが たりないよ。習慣をこなして ためよう！'); renderAvatars(); return; }
+    state.coins -= price; state.titleIdx = i;
+    checkMissions();
+    save(); render(); say(`称号「${TITLES[i]}」を 手に入れた！🎉`);
+  }
+
+  // ===== レベル＝達成率ドリブン（EXPは下がらない＝単調増加） =====
+  // 直近days日の「予定した習慣のうち実行できた割合」（0〜1）。習慣が無ければ1扱い。
+  function adherenceRate(days) {
+    const t = today(); let sched = 0, done = 0;
+    for (let i = 0; i < days; i++) {
+      const d = addDays(t, -i);
+      for (const it of state.items) {
+        if (!isHabit(it) || it.archived) continue;
+        const start = parseKey(it.createdAt || state.createdAt);
+        if (d < start) continue;
+        if (isScheduled(it, d)) {
+          const k = dkey(d);
+          if (it.frozen && it.frozen[k]) continue;  // お守りで守った日は達成率に含めない
+          sched++; if (it.done && it.done[k]) done++;
+        }
+      }
+    }
+    return sched === 0 ? 1 : done / sched;
+  }
+  function adherencePct() { return Math.round(adherenceRate(14) * 100); }
+  // 1回の完了で得るEXP：達成率(0.5〜1.5倍) × 継続係数(1〜2倍) × 基本10
+  function expGain(item) {
+    const adhMul = 0.5 + adherenceRate(14);
+    let streakMul = 1;
+    if (isHabit(item)) streakMul = 1 + Math.min(computeStreak(item), 20) * 0.05;
+    return Math.max(1, Math.round(10 * adhMul * streakMul));
+  }
+
+  // ===== ミッション（達成でEXPボーナス・どんどんレベルが上がる） =====
+  function perfectCount() { return Object.keys(state.perfect || {}).filter((k) => state.perfect[k]).length; }
+  function completedTodoCount() { return state.items.filter((it) => it.type === 'todo' && todoDone(it)).length; }
+  function schedSlots(days) { const t = today(); let n = 0; for (let i = 0; i < days; i++) { const d = addDays(t, -i); for (const it of state.items) { if (isHabit(it) && !it.archived && parseKey(it.createdAt || state.createdAt) <= d && isScheduled(it, d) && !(it.frozen && it.frozen[dkey(d)])) n++; } } return n; }
+  const MISSIONS = [
+    { id: 'first_habit', name: 'はじめての習慣を登録', exp: 30, check: () => state.items.some(isHabit) },
+    { id: 'first_done', name: 'はじめてチェックする', exp: 20, check: () => state.items.some((it) => it.done && Object.keys(it.done).length > 0) },
+    { id: 'ifthen', name: '「いつ・どこで」を決める', exp: 30, check: () => state.items.some((it) => it.ifthen) },
+    { id: 'habits3', name: '習慣を3つ登録', exp: 40, check: () => state.items.filter(isHabit).length >= 3 },
+    { id: 'dressup', name: '着せ替えを1つ買う', exp: 30, check: () => (state.unlocked || []).length >= 1 },
+    { id: 'perfect1', name: 'パーフェクトデーを1回', exp: 40, check: () => perfectCount() >= 1 },
+    { id: 'streak3', name: '3日連続を達成', exp: 50, check: () => state.items.some((it) => isHabit(it) && bestStreak(it) >= 3) },
+    { id: 'coins1000', name: 'コインを1000ためる', exp: 50, check: () => state.coins >= 1000 },
+    { id: 'freeze1', name: 'お守りを手に入れる', exp: 30, check: () => state.freezes >= 1 },
+    { id: 'todo10', name: 'Todoを10こ こなす', exp: 60, check: () => completedTodoCount() >= 10 },
+    { id: 'adherence80', name: '1週間の達成率80%以上', exp: 80, check: () => schedSlots(7) >= 5 && adherenceRate(7) >= 0.8 },
+    { id: 'streak7', name: '7日連続を達成', exp: 100, check: () => state.items.some((it) => isHabit(it) && bestStreak(it) >= 7) },
+    { id: 'level5', name: 'レベル5に到達', exp: 100, check: () => levelInfo(state.exp).lvl >= 5 },
+    { id: 'title5', name: '称号を5こ集める', exp: 100, check: () => state.titleIdx >= 4 },
+    { id: 'perfect7', name: 'パーフェクトデーを7回', exp: 150, check: () => perfectCount() >= 7 },
+    { id: 'streak30', name: '30日連続を達成', exp: 300, check: () => state.items.some((it) => isHabit(it) && bestStreak(it) >= 30) },
+  ];
+  // 達成したミッションを判定してEXP付与（newlyの数を返す）
+  function checkMissions() {
+    let newly = 0;
+    for (const m of MISSIONS) {
+      if (state.missionsDone[m.id]) continue;
+      let ok = false; try { ok = m.check(); } catch (_) {}
+      if (ok) { state.missionsDone[m.id] = true; state.exp += m.exp; newly++; }
+    }
+    if (newly > 0) say(pick('mission'));
+    checkRares();
+    return newly;
+  }
+  // レアが新しく解放されたら告知（ガチャ無し・確定解放）
+  function checkRares() {
+    let newly = 0;
+    for (const cat in ITEMS) for (const id in ITEMS[cat]) {
+      const it = ITEMS[cat][id];
+      if (it.rare && rareUnlocked(it) && !state.raresSeen[id]) { state.raresSeen[id] = true; newly++; }
+    }
+    if (newly > 0) say(pick('rare'));
+    return newly;
+  }
+
+  // ===== デイリーミッション（やったら人生が豊かになる行動・毎日3つランダム） =====
+  const DAILY_POOL = [
+    // からだ・けんこう
+    'スクワットを5回する', 'その場で20秒ジャンプする', 'ストレッチを1分する', '深呼吸をゆっくり5回する',
+    '水をコップ1杯のむ', 'かかと上げを10回する', '肩を10回まわす', '背すじをピンとのばす',
+    '5分だけ散歩する', '階段をつかってみる', '腕立てを3回する', 'つま先立ちで10数える',
+    '首をゆっくりまわす', '朝、カーテンを開けて日光をあびる', '片足で10秒立ってみる', 'よくかんでごはんを食べる',
+    '寝る前にスマホを置く', '30分はやく寝る準備をする', 'おふろにゆっくり入る', '体を大きくのびをする',
+    '1駅ぶん歩いてみる', '軽くジョギングしてみる', '姿勢を正してすわる', 'ラジオ体操をやってみる',
+    'よくねむれるように部屋を暗くする',
+    // まなび
+    '本を1ページ読む', '知らない言葉を1つ調べる', 'ニュースを1つ読む', '新しい漢字を1つおぼえる',
+    '英単語を1つおぼえる', '計算を1問やってみる', '図鑑を開いてみる', '今日学んだことを1つ書く',
+    '5分だけ勉強する', '地図で知らない国を1つ見る', '名言を1つ読んでみる', '気になったことをメモする',
+    'だれかに質問してみる', '学んだことを家族に話す', '好きな分野の動画を1本見る', '辞書をパラパラ見てみる',
+    '「なぜ?」を1つ考えてみる', '折り紙を1つ折る', '絵を1つ描いてみる', '新しいことに1つ挑戦する',
+    '今日の発見を1つメモする', 'クイズを1問つくってみる',
+    // ひととのつながり・しんせつ
+    '人にありがとうを言う', '友達を遊びにさそってみる', '家族に「おつかれさま」と言う', 'だれかをほめる',
+    '笑顔であいさつする', '困っている人を手伝う', 'ありがとうの手紙を書く', '友達に元気か聞いてみる',
+    '道で会った人にあいさつする', '席をゆずってみる', 'だれかの話を最後まで聞く', '久しぶりの人に連絡する',
+    '家族にハグする', 'ペットや植物にやさしくする', '友達のいいところを伝える', 'お礼のメッセージを送る',
+    'だれかに笑顔をプレゼントする', '落ちているゴミを1つひろう', '「ごめんね」を素直に言う', '先生や大人にあいさつする',
+    '新しい友達に話しかけてみる', 'みんなで使う物をかたづける', '家族に今日あったことを話す', 'だれかの分も手伝ってあげる',
+    'おうちの人にお手伝いを1つする', '友達に「ありがとう」のスタンプを送る',
+    // こころ・かんしゃ
+    '今日のいいことを3つ思い出す', '自分をほめてあげる', '目を閉じて1分リラックスする', '好きな音楽を1曲きく',
+    '空を1分ながめる', '心の中で「ありがとう」とつぶやく', '今日の目標を1つ決める', 'がんばった自分にごほうびをあげる',
+    '不安を紙に書き出す', '好きなものを1つじっくり味わう', '鏡の自分に「いいね」と言う', '今日できたことを1つほめる',
+    '5分だけ何もしない時間をつくる', '明日の楽しみを1つ決める', '自然の音をきいてみる', 'ゆっくりお茶を飲む',
+    '笑える動画を1本見る', '寝る前に「おつかれさま」と自分に言う', '好きな場所を思い出してみる', '今の気持ちを一言で書く',
+    'うれしかったことを誰かに話す', '深呼吸して気持ちを落ち着ける',
+    // せいかつ・かたづけ
+    '机の上を1つかたづける', 'いらない物を1つすてる', 'くつをそろえる', '部屋の窓を開けて空気を入れかえる',
+    'かばんの中を整理する', '5分だけそうじする', '食器を1つ自分で洗う', 'ベッドを整える',
+    '今日の予定を確認する', '財布の中を整理する', 'スマホの写真を1枚けす', '明日の準備をする',
+    '植物に水をやる', 'ゴミを分別する', '使った物をもとに戻す', '引き出しを1つ整理する',
+    '玄関をきれいにする', '服を1枚たたむ', '時間割をそろえる', 'つくえのまわりをふく',
+    'いらないメモをすてる', '冷蔵庫を1か所ふく',
+    // ちょうせん・たのしむ
+    '新しい道を通ってみる', 'いつもと違う席にすわる', '知らないメニューを食べてみる', '利き手じゃない手で字を書く',
+    '5分早起きする', '写真を1枚とる', '短い日記を書く', '好きな歌をうたう',
+    'だじゃれを1つ言う', '3分間だけ集中する', '目標を声に出して言う', '紙ひこうきを作って飛ばす',
+    '今日の自分にキャッチコピーをつける', '10分だけ趣味の時間をとる', '知らない音楽を1曲きく', '今日の天気を観察する',
+    '星や月を見上げてみる', '苦手なことに1分だけ挑戦する', '新しいあいさつを考えてみる', '今日の「できた!」を1つつくる',
+    '行ってみたい場所を1つ調べる', 'なりたい自分を1つ想像する', '好きな色のものを1つ見つける', '今日いちばんの笑顔をつくる',
+    'やってみたいことをリストに1つ書く',
+    // +α
+    'おうちの人に「いってきます」を元気よく言う', '今日の空の色を言葉にしてみる', 'すきな食べ物をゆっくり味わう', '1分間だけ目を休める',
+    '今日がんばる人を1人おうえんする', '机のひきだしを1つあける前に深呼吸', 'きれいな景色を1つ見つける', '今日の「ありがとう」を数えてみる',
+    'いつもより1つていねいにあいさつ', '手をしっかり洗ってリフレッシュ', '好きな本のタイトルを思い出す', '小さな目標を1つ立てて達成する',
+    '今日できた自分に拍手する', 'だれかの笑顔を見つける',
+  ];
+  function hashStr(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
+  function todaysDailies() {
+    let s = hashStr(dkey(today())) >>> 0;
+    const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+    const used = {}, out = [];
+    while (out.length < 3 && out.length < DAILY_POOL.length) { const r = Math.floor(rnd() * DAILY_POOL.length); if (!used[r]) { used[r] = 1; out.push({ slot: out.length, idx: r, text: DAILY_POOL[r] }); } }
+    return out;
+  }
+  function toggleDaily(slot) {
+    const k = dkey(today());
+    state.dailyDone[k] = state.dailyDone[k] || {};
+    const was = !!state.dailyDone[k][slot];
+    if (!was) {
+      state.dailyDone[k][slot] = true;
+      state.coins += 20; state.exp += 5; state.condition = Math.min(100, state.condition + 2);
+      flyCoin('+20'); say(pick('daily'));
+    } else {
+      delete state.dailyDone[k][slot];
+      state.coins = Math.max(0, state.coins - 20); state.exp = Math.max(0, state.exp - 5);
+      state.condition = Math.max(0, state.condition - 2);
+    }
+    checkMissions(); save(); render();
+  }
+
+  function charSVG(charKey, eq, px, expr) {
+    expr = expr || 'genki';
+    const c = CHARS[charKey] || CHARS.kid;
+    const skin = c.skin, skinSh = shadeHex(skin, -.16);
+    const sh = ITEMS.shirt[eq && eq.shirt] || ITEMS.shirt.s_white;
+    const pa = ITEMS.pants[eq && eq.pants] || ITEMS.pants.p_blue;
+    const so = ITEMS.shoes[eq && eq.shoes] || ITEMS.shoes.sh_white;
+    const hi = ITEMS.hair[eq && eq.hair] || ITEMS.hair.h_short_br;
+    const ht = ITEMS.hat[eq && eq.hat] || ITEMS.hat.hat_none;
+    const gl = ITEMS.glasses[eq && eq.glasses] || ITEMS.glasses.gl_none;
+    const cp = ITEMS.cape[eq && eq.cape] || ITEMS.cape.cape_green;
+    const su = ITEMS.suit[eq && eq.suit] || ITEMS.suit.suit_none;
+    const hairC = hi.color, hairShine = shadeHex(hairC, .42);
+    const LN = '#54402f';
+    const uid = 'g' + Math.random().toString(36).slice(2, 7);
+    let shirtFill = sh.color, defs = '';
+    defs += `<linearGradient id="${uid}i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5a3a"/><stop offset="1" stop-color="#3f2715"/></linearGradient>`;
+    // シャツの色・もよう（レインボー/ボーダー/みずたま/チェック/ほしがら）
+    if (sh.color === 'rainbow') { defs += `<linearGradient id="${uid}s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6B6B"/><stop offset=".5" stop-color="#FFC02E"/><stop offset="1" stop-color="#4ECDC4"/></linearGradient>`; shirtFill = `url(#${uid}s)`; }
+    else if (sh.pat) {
+      const a = sh.acc || '#ffffff';
+      if (sh.pat === 'stripe') defs += `<pattern id="${uid}s" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${sh.color}"/><rect y="5" width="10" height="5" fill="${a}"/></pattern>`;
+      else if (sh.pat === 'dot') defs += `<pattern id="${uid}s" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${sh.color}"/><circle cx="5" cy="5" r="2.1" fill="${a}"/></pattern>`;
+      else if (sh.pat === 'check') defs += `<pattern id="${uid}s" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${sh.color}"/><rect width="5" height="5" fill="${a}"/><rect x="5" y="5" width="5" height="5" fill="${a}"/></pattern>`;
+      else if (sh.pat === 'star') defs += `<pattern id="${uid}s" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="${sh.color}"/><path d="M6 2 L7 5 L10 5 L7.6 7 L8.6 10 L6 8.2 L3.4 10 L4.4 7 L2 5 L5 5 Z" fill="${a}"/></pattern>`;
+      shirtFill = `url(#${uid}s)`;
+    }
+    // マーク/エンブレム描画ヘルパー（むね・マントに置く）
+    const starPath = (cx, cy, r) => { let p = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; p += (i ? 'L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr).toFixed(1) + ' '; } return p + 'Z'; };
+    const markShape = (kind, cx, cy, s) => {
+      if (kind === 'star') return `<path d="${starPath(cx, cy, s)}" fill="#fff" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`;
+      if (kind === 'heart') return `<path d="M${cx} ${cy + s * .9} Q${cx - s * 1.25} ${cy - s * .15} ${cx - s * .55} ${cy - s * .7} Q${cx} ${cy - s} ${cx} ${cy - s * .3} Q${cx} ${cy - s} ${cx + s * .55} ${cy - s * .7} Q${cx + s * 1.25} ${cy - s * .15} ${cx} ${cy + s * .9} Z" fill="#fff" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`;
+      if (kind === 'bolt') return `<path d="M${cx + 1.5} ${cy - s} L${cx - s * .8} ${cy + s * .25} L${cx} ${cy + s * .25} L${cx - 1.5} ${cy + s} L${cx + s * .8} ${cy - s * .25} L${cx} ${cy - s * .25} Z" fill="#FFD93B" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`;
+      return '';
+    };
+    const mir = (s) => `<g transform="translate(100,0) scale(-1,1)">${s}</g>`;
+    // --- かみがた（うしろ髪＋スタイル別） ---
+    const hatt = `fill="${hairC}" stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"`;
+    const tie = (x, y) => `<circle cx="${x}" cy="${y}" r="3.1" fill="#ff5a76" stroke="${LN}" stroke-width="1"/>`;
+    const backShort = `<path d="M27.6 34 Q26 10 50 9 Q74 10 72.4 34 Q73.2 45 67.5 50 L32.5 50 Q26.8 45 27.6 34 Z" ${hatt}/>`;
+    let backHair = backShort, deep = '', acc = '';
+    if (hi.style === 'twin') {
+      const tail = `<path d="M27 30 Q13.5 33 14.5 50 Q15.2 64 24.4 71 Q26.8 61 25.6 47 Q25 36 29 30.6 Z" ${hatt}/>`;
+      deep = tail + mir(tail); acc = tie(26.2, 32.4) + tie(73.8, 32.4);
+    } else if (hi.style === 'sidepony') {
+      // 右サイドにまとめた しっぽ＋むすびめ
+      deep = `<path d="M67 29 Q87 30.5 86 53 Q84.5 69 72 73.5 Q77 58 71.5 43.5 Q67.5 33 62.5 30.5 Z" ${hatt}/>`;
+      acc = tie(66.5, 31);
+    } else if (hi.style === 'long') {
+      // 背中まで伸びるロングヘア（体のうしろに流れる）
+      const strand = `<path d="M28 35 Q22 58 26 88 Q28 101 37 103 Q39.5 88 35 62 Q33 45 37.5 36 Z" ${hatt}/>`;
+      deep = strand + mir(strand);
+    } else if (hi.style === 'hime') {
+      // ひめカット：長い後ろ髪（前髪＆サイドはfrontで）
+      const strand = `<path d="M27.5 34 Q21 60 25 92 Q27 105 36 106 Q38.5 90 33.5 64 Q31.5 45 36.5 35 Z" ${hatt}/>`;
+      deep = strand + mir(strand);
+    } else if (hi.style === 'buns') {
+      // 頭の上ふたつのおだんご
+      const bun = `<circle cx="30.5" cy="12.5" r="7.5" ${hatt}/>`;
+      deep = bun + mir(bun);
+      acc = tie(30.5, 19) + tie(69.5, 19);
+    } else if (hi.style === 'bob') {
+      // あごラインのまるいボブ
+      backHair = `<path d="M25 35 Q23 9 50 8 Q77 9 75 35 Q77 53 68 60 Q65.5 50 64 46 L36 46 Q34.5 50 32 60 Q23 53 25 35 Z" ${hatt}/>`;
+    } else if (hi.style === 'curly') {
+      // もこもこ（くるくる）の丸い髪
+      backHair = `<path d="M23 39 Q17.5 33 22 27 Q19 18.5 28 18 Q28 9 38 11 Q43 5.5 50 9 Q57 5.5 62 11 Q72 9 72 18 Q81 18.5 78 27 Q82.5 33 77 39 Q80.5 47 71 49.5 L29 49.5 Q19.5 47 23 39 Z" ${hatt}/>`;
+    } else if (hi.style === 'wolf') {
+      // ウルフ：えりあしが長め（首のうしろに毛束）
+      const nape = `<path d="M30.5 44 Q25.5 54 28 64 Q30.5 71 37 69.5 Q35.5 58 35.5 49 Z" ${hatt}/>`;
+      deep = nape + mir(nape);
+    } else if (hi.style === 'crew') {
+      // ベリーショート：頭にそった短い髪
+      backHair = `<path d="M28.5 33 Q27.5 13 50 12 Q72.5 13 71.5 33 Q71.5 41 67 45 L33 45 Q28.5 41 28.5 33 Z" ${hatt}/>`;
+    } else if (hi.style === 'mohawk') {
+      // モヒカン：サイドはかりあげ（地肌）＝まんなかの毛束だけ
+      backHair = `<path d="M43.5 42 Q42.5 16 50 14 Q57.5 16 56.5 42 Q53 38 50 38 Q47 38 43.5 42 Z" ${hatt}/>`;
+    }
+    // ★このアプリ独自：ちびっこ勇者のマント（装備で色を変えられる・kanji-boukenには無い要素）
+    let cape = '', clasp = '';
+    if (cp.style !== 'none') {
+      let capeFill = cp.color, capeSh = shadeHex(cp.color === 'rainbow' ? '#36B37E' : cp.color, -.22);
+      if (cp.color === 'rainbow') { defs += `<linearGradient id="${uid}c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6B6B"/><stop offset=".5" stop-color="#FFC02E"/><stop offset="1" stop-color="#4ECDC4"/></linearGradient>`; capeFill = `url(#${uid}c)`; }
+      else if (cp.pat) {
+        const a = '#ffffff';
+        if (cp.pat === 'stripe') defs += `<pattern id="${uid}c" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="${cp.color}"/><rect y="4.5" width="9" height="4.5" fill="${a}"/></pattern>`;
+        else if (cp.pat === 'dot') defs += `<pattern id="${uid}c" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${cp.color}"/><circle cx="5" cy="5" r="2" fill="${a}"/></pattern>`;
+        else if (cp.pat === 'check') defs += `<pattern id="${uid}c" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${cp.color}"/><rect width="5" height="5" fill="${a}"/><rect x="5" y="5" width="5" height="5" fill="${a}"/></pattern>`;
+        capeFill = `url(#${uid}c)`; capeSh = shadeHex(cp.color, -.22);
+      }
+      cape = `<path d="M42 59 Q50 56.5 58 59 L66 108 Q72 110 74 116 Q62 113 50 114 Q38 113 26 116 Q28 110 34 108 Z" fill="${capeFill}" stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"/>`
+        + `<path d="M50 60 L50 114 M41 64 L33 112 M59 64 L67 112" stroke="${capeSh}" stroke-width="1" fill="none" opacity=".55"/>`;
+      clasp = `<circle cx="50" cy="59.6" r="2.4" fill="#ffd93b" stroke="${LN}" stroke-width="1"/>`
+        + `<circle cx="50" cy="59.6" r="1" fill="#fff" opacity=".85"/>`;
+    }
+    const lockL = `<path d="M28.2 31 Q26.8 47 31.6 56.5 Q34.2 49.5 33.2 38.5 Q32.8 33 30.6 30.4 Z" ${hatt}/>`;
+    const shine = `<path d="M35 17.6 Q50 12.6 65 17.6" stroke="${hairShine}" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".85"/>`;
+    const bangs = `<path d="M28.4 38.5 Q26.6 11.5 50 10.5 Q73.4 11.5 71.6 38.5 Q70 31.5 66.4 28 Q67.2 33.5 63.2 37.2 Q61.6 30 57.6 27 Q58 33 53.6 36.6 Q52 29.5 49.4 26.8 Q49 32.6 44.4 36.8 Q42.6 30 38.6 27.8 Q39.4 33.6 35.4 37.4 Q33 31 30.4 30 Q31.2 35 28.4 38.5 Z" ${hatt}/>` + shine;
+    let front = lockL + mir(lockL) + bangs;
+    if (hi.style === 'spiky') {
+      front = `<path d="M28.5 38 Q27 30 24.5 26 Q31 27 32.5 21 Q36 24 38.5 15.5 Q42 20 45.5 12 Q48.5 18 52 11.5 Q54.5 18 59 13 Q61 20 66 16.5 Q67 23 72.5 22 Q70.5 27 75 28 Q71.5 31 71.5 38 Q70 30 65 27.5 Q66.5 33 62 36.5 Q60 29.5 56 27.5 Q56.5 33 52.5 36 Q50.5 29 48 27 Q47.5 33 43.5 36.5 Q41.5 29.5 38 28 Q39 34 35 37 Q32.5 30.5 29.5 30 Q30.5 34.5 28.5 38 Z" ${hatt}/>`;
+    } else if (hi.style === 'sweep') {
+      // 横に流した前髪（左から右へ）＋アホ毛アンテナ
+      front = `<path d="M28.4 39 Q26.8 12 50 10.5 Q73.2 12 71.6 39 Q69.8 31 64 28.6 Q66.4 34 59 35.6 Q61.2 29.6 54.6 27.8 Q55.8 33.6 48.6 35.2 Q43.2 28.8 37.6 31.6 Q41.6 27.4 33.8 29.4 Q36.6 34 30.6 34.6 Q31.4 37.6 28.4 39 Z" ${hatt}/>`
+        + shine
+        + `<path d="M52 10.4 Q58 1.2 64.5 3 Q58.5 4 55.4 11 Z" fill="${hairC}" stroke="${LN}" stroke-width="1.1" stroke-linejoin="round"/>`;
+    } else if (hi.style === 'bob') {
+      // ぱっつん（まっすぐ）の前髪
+      front = `<path d="M27 36 Q25.5 11 50 10 Q74.5 11 73 36 Q73 32.5 70 31 Q60.5 35.8 50 35.8 Q39.5 35.8 30 31 Q27 32.5 27 36 Z" ${hatt}/>` + shine;
+    } else if (hi.style === 'curly') {
+      // もこもこのカールした前髪
+      front = `<path d="M28 38 Q24.5 31 30 28 Q28.5 22.5 35 23.5 Q37 18.5 43 21.5 Q46 17.5 50 20.5 Q54 17.5 57 21.5 Q63 18.5 65 23.5 Q71.5 22.5 70 28 Q75.5 31 72 38 Q70 32.5 65.5 33.5 Q67 28.5 61.5 29.5 Q59.5 25.5 55.5 28.5 Q53.5 24.5 50 27 Q46.5 24.5 44.5 28.5 Q40.5 25.5 38.5 29.5 Q33 28.5 34.5 33.5 Q30 32.5 28 38 Z" ${hatt}/>`;
+    } else if (hi.style === 'hime') {
+      // ぱっつん前髪＋顔を縁どるストレートのサイド髪
+      const sideLock = `<path d="M28 30 Q25.5 44 27.5 55 Q30.5 57.5 33 55 Q31.5 43 32.5 33 Z" ${hatt}/>`;
+      front = `<path d="M27 36 Q25.5 11 50 10 Q74.5 11 73 36 Q73 32.5 70 31 Q60.5 35.8 50 35.8 Q39.5 35.8 30 31 Q27 32.5 27 36 Z" ${hatt}/>` + sideLock + mir(sideLock) + shine;
+    } else if (hi.style === 'mash') {
+      // マッシュ：まるく前髪をおろしたボーイッシュな定番
+      front = `<path d="M26.5 40 Q25 10 50 9 Q75 10 73.5 40 Q73.5 35 70 33 Q60 40.5 50 40.5 Q40 40.5 30 33 Q26.5 35 26.5 40 Z" ${hatt}/>` + shine;
+    } else if (hi.style === 'center') {
+      // センター分け：まんなかで分けたカーテン前髪
+      front = `<path d="M28 41 Q26.5 11 50 10 Q73.5 11 72 41 Q70.5 32 65 29.5 Q67 37 59.5 38 Q57 31 51 36 L50 30 L49 36 Q43 31 40.5 38 Q33 37 35 29.5 Q29.5 32 28 41 Z" ${hatt}/>` + shine;
+    } else if (hi.style === 'allback') {
+      // オールバック：おでこを出してうしろへ流す
+      front = `<path d="M27 25 Q25 11 50 10 Q75 11 73 25 Q73 20 68 18 Q59 20 50 20 Q41 20 32 18 Q27 20 27 25 Z" ${hatt}/>`
+        + `<path d="M34 15 Q50 19 66 15" stroke="${hairShine}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".8"/><path d="M37 18.3 Q50 21.6 63 18.3" stroke="${hairShine}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".55"/>`;
+    } else if (hi.style === 'mohawk') {
+      // モヒカン：まんなかにツンと立った毛束
+      front = `<path d="M44.5 40 Q43.5 22 41.5 9 Q47 14.5 50 4 Q53 14.5 58.5 9 Q56.5 22 55.5 40 Q53 31 50 31 Q47 31 44.5 40 Z" ${hatt}/>` + shine;
+    } else if (hi.style === 'crew') {
+      // ベリーショート：ぴっちり短い前髪
+      front = `<path d="M29 33 Q28 14 50 13 Q72 14 71 33 Q71 29 67 27.5 Q59 31 50 31 Q41 31 33 27.5 Q29 29 29 33 Z" ${hatt}/>`
+        + `<path d="M36 19 Q50 16 64 19" stroke="${hairShine}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".55"/>`;
+    } else if (hi.style === 'wolf') {
+      // ウルフ：トップは束感（前髪はツンツン気味）＋えりあしはdeepで長め
+      front = `<path d="M28.5 38 Q27 30 24.5 26 Q31 27 32.5 21 Q36 24 38.5 15.5 Q42 20 45.5 12 Q48.5 18 52 11.5 Q54.5 18 59 13 Q61 20 66 16.5 Q67 23 72.5 22 Q70.5 27 75 28 Q71.5 31 71.5 38 Q70 30 65 27.5 Q66.5 33 62 36.5 Q60 29.5 56 27.5 Q56.5 33 52.5 36 Q50.5 29 48 27 Q47.5 33 43.5 36.5 Q41.5 29.5 38 28 Q39 34 35 37 Q32.5 30.5 29.5 30 Q30.5 34.5 28.5 38 Z" ${hatt}/>`;
+    }
+    // --- ぼうし（複数スタイル） ---
+    let hat = '';
+    if (ht.style !== 'none') {
+      const hc = ht.color || '#f0c050', hac = ht.acc || '#fffdf4';
+      const hln = `stroke="${LN}" stroke-width="1.3" stroke-linejoin="round"`;
+      if (ht.style === 'bandfl') {
+        let fl = '';
+        for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 - Math.PI / 2; fl += `<circle cx="${(38 + Math.cos(a) * 3.7).toFixed(1)}" cy="${(13.5 + Math.sin(a) * 3.7).toFixed(1)}" r="2.6" fill="${hc}" stroke="${LN}" stroke-width=".9"/>`; }
+        hat = `<path d="M31.5 21.5 Q50 8.5 68.5 21.5" stroke="${hc}" stroke-width="4.5" fill="none" stroke-linecap="round"/>` + fl + `<circle cx="38" cy="13.5" r="2.1" fill="${hac}" stroke="${LN}" stroke-width=".8"/>`;
+      } else if (ht.style === 'cap') {
+        hat = `<path d="M29.5 25.5 Q31 7.5 50 7.5 Q69 7.5 70.5 25.5 Q60 20.5 50 20.5 Q40 20.5 29.5 25.5 Z" fill="${hc}" ${hln}/>`
+          + `<path d="M28.5 25.8 Q50 35 71.5 25.8 L71 29.4 Q50 38.5 29 29.4 Z" fill="${shadeHex(hc, -.18)}" ${hln}/>`
+          + `<circle cx="50" cy="8.2" r="2" fill="${shadeHex(hc, -.25)}" stroke="${LN}" stroke-width=".8"/>`;
+      } else if (ht.style === 'beanie') {
+        hat = `<path d="M30 26 Q30.5 5.5 50 5.5 Q69.5 5.5 70 26 Q50 31.5 30 26 Z" fill="${hc}" ${hln}/>`
+          + `<path d="M40 9 L39 22 M50 6.5 L50 23 M60 9 L61 22" stroke="${shadeHex(hc, -.2)}" stroke-width="1.2"/>`
+          + `<path d="M29.6 26.4 Q50 32.5 70.4 26.4 L70.4 21.4 Q50 27.5 29.6 21.4 Z" fill="${shadeHex(hc, .25)}" stroke="${LN}" stroke-width="1.1"/>`
+          + `<circle cx="50" cy="4.6" r="3.4" fill="${hac}" stroke="${LN}" stroke-width="1.1"/>`;
+      } else if (ht.style === 'crown') {
+        hat = `<path d="M32.5 19.5 L35.5 6 L43 13 L50 3.5 L57 13 L64.5 6 L67.5 19.5 Q50 25 32.5 19.5 Z" fill="${hc}" ${hln}/>`
+          + `<circle cx="50" cy="17" r="2" fill="#e85562" stroke="${LN}" stroke-width=".8"/>`
+          + `<circle cx="40" cy="16.2" r="1.5" fill="#4a90d9"/><circle cx="60" cy="16.2" r="1.5" fill="#4a90d9"/>`;
+      } else if (ht.style === 'cat') {
+        const earO = `<path d="M31 19 L27.5 3.5 L44 9.5 Z" fill="${hc}" ${hln}/>`;
+        const earI = `<path d="M32.8 15.4 L31 7.2 L39.6 10.4 Z" fill="${hac}"/>`;
+        hat = earO + earI + mir(earO + earI)
+          + `<path d="M32 20.5 Q50 10.5 68 20.5" stroke="${hc}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+      } else if (ht.style === 'straw') {
+        hat = `<ellipse cx="50" cy="23" rx="30" ry="7" fill="${hc}" ${hln}/>`
+          + `<path d="M33 22 Q34 5.5 50 5.5 Q66 5.5 67 22 Q50 27.5 33 22 Z" fill="${hc}" ${hln}/>`
+          + `<path d="M33.5 18.6 Q50 24 66.5 18.6 L66.8 22 Q50 27.4 33.2 22 Z" fill="${hac}"/>`;
+      } else if (ht.style === 'wizard') {
+        hat = `<ellipse cx="50" cy="21.5" rx="25" ry="6.5" fill="${shadeHex(hc, -.15)}" ${hln}/>`
+          + `<path d="M35 21 Q46 2.5 55.5 2 Q54 4.5 55 7 Q60 12.5 65.5 20.5 Q50 28 35 21 Z" fill="${hc}" ${hln}/>`
+          + `<circle cx="55.8" cy="2.8" r="2.2" fill="${hac}" stroke="${LN}" stroke-width=".9"/>`
+          + `<path d="M50 11.5 L51.1 14 L53.8 14.2 L51.8 16 L52.4 18.6 L50 17.1 L47.6 18.6 L48.2 16 L46.2 14.2 L48.9 14 Z" fill="${hac}" stroke="${LN}" stroke-width=".7" stroke-linejoin="round"/>`;
+      } else if (ht.style === 'band') {
+        hat = `<path d="M31.5 21.5 Q50 8.5 68.5 21.5" stroke="${hc}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`
+          + `<path d="M37 14 L30.5 10.5 L32 17.2 Z M37 14 L43.2 10 L42.2 17 Z" fill="${hc}" ${hln}/>`
+          + `<circle cx="37" cy="14" r="2.1" fill="${shadeHex(hc, .3)}" stroke="${LN}" stroke-width=".8"/>`;
+      }
+    }
+    // --- めがね ---
+    let glass = '';
+    if (gl.style === 'round' || gl.style === 'sun') {
+      const lens = gl.style === 'sun' ? 'rgba(43,43,51,.88)' : 'rgba(255,255,255,.14)';
+      const gle = `<circle cx="41" cy="40.5" r="6.4" fill="${lens}" stroke="${gl.color}" stroke-width="2"/>`;
+      glass = gle + mir(gle)
+        + `<path d="M47.4 39.4 Q50 37.6 52.6 39.4" stroke="${gl.color}" stroke-width="1.8" fill="none"/>`
+        + `<path d="M34.7 39.4 L30 38.2 M65.3 39.4 L70 38.2" stroke="${gl.color}" stroke-width="1.6" stroke-linecap="round"/>`
+        + (gl.style === 'sun' ? `<path d="M37.6 37.2 l2.2 2.2 M55.6 37.2 l2.2 2.2" stroke="rgba(255,255,255,.8)" stroke-width="1.4" stroke-linecap="round"/>` : '');
+    } else if (gl.style === 'star') {
+      const stg = (cx) => { let p = ''; for (let i = 0; i < 10; i++) { const a = Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 3.6 : 7.8; p += (i ? 'L' : 'M') + (cx + Math.cos(a) * r).toFixed(1) + ' ' + (40.5 - Math.sin(a) * r).toFixed(1) + ' '; } return `<path d="${p}Z" fill="rgba(255,217,59,.92)" stroke="${LN}" stroke-width="1.1" stroke-linejoin="round"/>`; };
+      glass = stg(41) + stg(59) + `<path d="M46.2 40 L53.8 40" stroke="${LN}" stroke-width="1.6"/>`;
+    } else if (gl.style === 'heart') {
+      const hle = `<path d="M41 46 Q34.2 41.2 35.3 37.4 Q36.2 34.4 39 35 Q40.4 35.4 41 36.8 Q41.6 35.4 43 35 Q45.8 34.4 46.7 37.4 Q47.8 41.2 41 46 Z" fill="rgba(255,107,141,.85)" stroke="${LN}" stroke-width="1.1"/>`;
+      glass = hle + mir(hle) + `<path d="M46.4 39.4 L53.6 39.4" stroke="${LN}" stroke-width="1.6"/>`;
+    }
+    // --- かお ---
+    const facePath = 'M50 57.5 Q41 57 36 52.5 Q29.5 46.5 29.3 33 Q29 14.5 50 14.5 Q71 14.5 70.7 33 Q70.5 46.5 64 52.5 Q59 57 50 57.5 Z';
+    const face = `<path d="${facePath}" fill="${skin}" stroke="${LN}" stroke-width="1.4"/>`;
+    const earL = `<ellipse cx="29.6" cy="40" rx="3" ry="4.2" fill="${skin}" stroke="${LN}" stroke-width="1.2"/>`;
+    const browL = `<path d="M35.4 30.6 Q40.6 28.4 46 30.2" stroke="${shadeHex(hairC, -.25)}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+    // --- 表情（コンディション別・こわくないアニメ表現） ---
+    const eyeBase = `<ellipse cx="41" cy="40" rx="5.6" ry="6.6" fill="#fff"/>`
+      + `<ellipse cx="41.3" cy="40.7" rx="4.1" ry="5.4" fill="url(#${uid}i)"/>`
+      + `<ellipse cx="41.3" cy="41.6" rx="2" ry="2.8" fill="#26160c"/>`
+      + `<path d="M39.6 35.1 Q40.3 37.3 42.5 38 Q40.3 38.7 39.6 40.9 Q38.9 38.7 36.7 38 Q38.9 37.3 39.6 35.1 Z" fill="#fff"/>`
+      + `<circle cx="43.2" cy="43.2" r="1" fill="#fff" opacity=".9"/>`
+      + `<path d="M35.2 36 Q40.6 32.2 46.8 36.2" stroke="${LN}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    const eyeSleepy = `<path d="M35.4 40.6 Q41 44.4 46.6 40.6" stroke="${LN}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+      + `<path d="M36.6 37.6 Q41 35.4 45.4 37.6" stroke="${LN}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+    const eyeSwirl = `<circle cx="41" cy="40.5" r="5.8" fill="#fff" stroke="${LN}" stroke-width="1"/>`
+      + `<path d="M41 40.5 q0 -1.6 1.6 -1.6 q3 0 3 3 q0 4.3 -4.3 4.3 q-5.7 0 -5.7 -5.7" fill="none" stroke="#4a3a30" stroke-width="1.5" stroke-linecap="round"/>`;
+    const mouthSmile = `<path d="M44.8 48.6 Q50 50.4 55.2 48.6 Q54 54.4 50 54.4 Q46 54.4 44.8 48.6 Z" fill="#d95a66" stroke="${LN}" stroke-width="1"/>`
+      + `<path d="M46.9 52.2 Q50 54.1 53.1 52.2 Q52 54.1 50 54.1 Q48 54.1 46.9 52.2 Z" fill="#ff9aa4"/>`;
+    const mouthWavy = `<path d="M45.4 51 q2.3 -2 4.6 0 q2.3 2 4.6 0" stroke="${LN}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+    const mouthSmallO = `<ellipse cx="50" cy="51.8" rx="2.3" ry="2.9" fill="#cf5a66" stroke="${LN}" stroke-width="1"/>`;
+    let eyeL, mouth, faceFx = '', blushOp = '.6';
+    if (expr === 'fucho') { eyeL = eyeSleepy; mouth = mouthWavy; blushOp = '.3'; }
+    else if (expr === 'zombie') { eyeL = eyeSwirl; mouth = mouthSmallO; blushOp = '.25'; faceFx = `<path d="M63 33 q3 6 0 10 q-3 -5 0 -10 Z" fill="#9fd0c8" stroke="${LN}" stroke-width=".7"/>`; }
+    else { eyeL = eyeBase; mouth = mouthSmile; if (expr === 'tsukare') faceFx = `<path d="M64 33 q3 5 0 9 q-3 -4 0 -9 Z" fill="#7fd0f0" stroke="${LN}" stroke-width=".7"/>`; }
+    const blushL = `<ellipse cx="33.6" cy="45.6" rx="3.8" ry="2.1" fill="#ffaab0" opacity="${blushOp}"/>`;
+    const nose = `<path d="M50.6 44 q.9 1.2 -.2 2.2" stroke="${skinSh}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+    // --- からだ ---
+    const neck = `<path d="M45.8 52 L45.8 60 Q50 62 54.2 60 L54.2 52 Z" fill="${skin}" stroke="${LN}" stroke-width="1.1"/>`;
+    const armL = `<rect x="28.6" y="63" width="7" height="25" rx="3.5" fill="${skin}" stroke="${LN}" stroke-width="1.2"/>`
+      + `<circle cx="32.1" cy="89" r="3.5" fill="${skin}" stroke="${LN}" stroke-width="1.2"/>`;
+    const sleeveL = `<path d="M37.4 60.3 Q31 61.5 29.4 65.5 Q28.6 68.6 29 72.2 Q32.6 73.8 36.8 72.6 Z" fill="${shirtFill}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+    const kind = sh.kind || 't';
+    const torsoBase = `<path d="M37 60.2 Q43 57.6 50 57.6 Q57 57.6 63 60.2 L64.6 86.4 Q57.5 88.8 50 88.8 Q42.5 88.8 35.4 86.4 Z" fill="${shirtFill}" stroke="${LN}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    const hemSh = `<path d="M36.4 83.2 Q50 86 63.6 83.2" stroke="rgba(0,0,0,.13)" stroke-width="1.4" fill="none"/>`;
+    const collarV = `<path d="M43.6 58.4 Q50 63.6 56.4 58.4 L57.8 60.6 Q50 66.6 42.2 60.6 Z" fill="#f8f8f6" stroke="${LN}" stroke-width="1"/>`;
+    const buttons = (sh.pat || sh.color === 'rainbow' || sh.mark) ? '' : `<circle cx="50" cy="71" r="1.2" fill="rgba(0,0,0,.18)"/><circle cx="50" cy="78" r="1.2" fill="rgba(0,0,0,.18)"/>`;
+    let torso;
+    if (kind === 'dress') {
+      torso = `<path d="M37.5 60.2 Q43 57.6 50 57.6 Q57 57.6 62.5 60.2 L68.5 97.5 Q59 100.8 50 100.8 Q41 100.8 31.5 97.5 Z" fill="${shirtFill}" stroke="${LN}" stroke-width="1.4" stroke-linejoin="round"/>`
+        + `<path d="M33.5 95.2 Q50 99.4 66.5 95.2" stroke="rgba(255,255,255,.75)" stroke-width="2" fill="none"/>`
+        + `<path d="M44 58.6 Q50 62.8 56 58.6" stroke="rgba(0,0,0,.15)" stroke-width="1.2" fill="none"/>`
+        + `<path d="M50 63 L45.6 60.6 L46.4 65 Z M50 63 L54.4 60.6 L53.6 65 Z" fill="#fff" stroke="${LN}" stroke-width=".8" stroke-linejoin="round"/>`
+        + `<circle cx="50" cy="63" r="1.4" fill="#ffd93b" stroke="${LN}" stroke-width=".7"/>`;
+    } else {
+      torso = torsoBase + hemSh + collarV + buttons;
+    }
+    // むねのマーク（エンブレム）
+    const mark = sh.mark ? markShape(sh.mark, 50, kind === 'dress' ? 70 : 72, 6.5) : '';
+    const paC = pa.color, paCuff = shadeHex(paC, .3), paSeam = shadeHex(paC, -.28);
+    const pants = `<path d="M36.4 86 L63.6 86 L64.4 103.5 Q59.6 105.4 55 104.2 L52.6 95.2 Q50 93.4 47.4 95.2 L45 104.2 Q40.4 105.4 35.6 103.5 Z" fill="${paC}" stroke="${LN}" stroke-width="1.4" stroke-linejoin="round"/>`
+      + `<path d="M36 100.8 L45.4 101.8 M54.6 101.8 L64 100.8" stroke="${paCuff}" stroke-width="2.6"/>`
+      + `<path d="M38.6 89 q2.6 2.6 5.6 .8 M61.4 89 q-2.6 2.6 -5.6 .8" stroke="${paSeam}" stroke-width="1" fill="none"/>`;
+    const shoeL = `<path d="M36.2 104 Q35.4 109.6 36.4 111.6 L46.4 111.6 Q47.4 107.6 46.4 104.2 Q41 102.8 36.2 104 Z" fill="${so.color}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`
+      + `<path d="M35.8 111 Q35 115 39.4 115.4 L45 115.4 Q47.6 115 46.8 111.1 Q41 112.4 35.8 111 Z" fill="#fff" stroke="${LN}" stroke-width="1.1" stroke-linejoin="round"/>`
+      + `<ellipse cx="44.7" cy="106.6" rx="2.4" ry="1.7" fill="rgba(255,255,255,.7)"/>`;
+
+    // ===== 着ぐるみ（きぐるみ）：つなぎ＋動物フードで顔のまわりが動物になる =====
+    if (su.kind) {
+      const scol = su.color, sbel = su.belly || '#fff', sac = su.accent || su.color;
+      const sbody = `<path d="M36 60 Q43 56.5 50 56.5 Q57 56.5 64 60 L65.5 96 Q65 105 57.5 105 L54.5 96.5 Q50 94 45.5 96.5 L42.5 105 Q35 105 34.5 96 Z" fill="${scol}" stroke="${LN}" stroke-width="1.4" stroke-linejoin="round"/>`
+        + `<ellipse cx="50" cy="79" rx="9.5" ry="13" fill="${sbel}"/>`;
+      const sarm = `<rect x="27.6" y="61" width="8.5" height="26" rx="4.25" fill="${scol}" stroke="${LN}" stroke-width="1.2"/><circle cx="31.85" cy="87.5" r="4.4" fill="${sbel}" stroke="${LN}" stroke-width="1.1"/>`;
+      const sfoot = `<ellipse cx="40.5" cy="106.5" rx="6" ry="4" fill="${sbel}" stroke="${LN}" stroke-width="1.2"/>`;
+      const hood = `<path d="M50 7 Q77 7 77 35 Q77 52 64 59 L36 59 Q23 52 23 35 Q23 7 50 7 Z" fill="${scol}" stroke="${LN}" stroke-width="1.4"/>`;
+      const faceK = `<path d="${facePath}" fill="${skin}" stroke="${LN}" stroke-width="1.2"/>`;
+      const earE = (cx, cy, rx, ry, fill) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${LN}" stroke-width="1.2"/>`;
+      let back = '', topFeat = '', facePatch = '', frontFeat = '';
+      if (su.kind === 'frog') {
+        const eye = `<circle cx="36" cy="9" r="7" fill="${scol}" stroke="${LN}" stroke-width="1.2"/><circle cx="36" cy="8" r="3.8" fill="#fff"/><circle cx="36.6" cy="8.4" r="2" fill="#2a2a2a"/>`;
+        topFeat = eye + mir(eye);
+      } else if (su.kind === 'cat') {
+        const earO = `<path d="M30 12 L25 -1 L41 8 Z" fill="${scol}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`, earI = `<path d="M31.6 9.4 L29 2 L38 7 Z" fill="${sac}"/>`;
+        topFeat = earO + earI + mir(earO + earI);
+        frontFeat = `<path d="M31 42 L21 40 M31 45 L21 46.5 M69 42 L79 40 M69 45 L79 46.5" stroke="${LN}" stroke-width="1" stroke-linecap="round"/>`;
+        back = `<path d="M64 95 Q82 92 82 76 Q82 68 76 66 Q79 74 73 82 Q68 90 62 91 Z" fill="${scol}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+      } else if (su.kind === 'bear') {
+        topFeat = earE(31, 11, 7, 7, scol) + earE(69, 11, 7, 7, scol) + earE(31, 11, 3.4, 3.4, sac) + earE(69, 11, 3.4, 3.4, sac);
+        frontFeat = `<ellipse cx="50" cy="44.5" rx="3" ry="2.3" fill="${sac}"/>`;
+      } else if (su.kind === 'rabbit') {
+        const earO = `<ellipse cx="40" cy="-1" rx="4.6" ry="14" fill="${scol}" stroke="${LN}" stroke-width="1.2"/>`, earI = `<ellipse cx="40" cy="0" rx="2" ry="10" fill="${sac}"/>`;
+        topFeat = earO + earI + mir(earO + earI);
+        back = `<circle cx="64" cy="98" r="6" fill="#fff" stroke="${LN}" stroke-width="1.2"/>`;
+        frontFeat = `<ellipse cx="50" cy="44.5" rx="2.4" ry="1.9" fill="${sac}"/>`;
+      } else if (su.kind === 'dino') {
+        let sp = ''; for (let i = 0; i < 5; i++) { const x = 33 + i * 8.4; sp += `<path d="M${x} 9 L${x + 4.2} -1 L${x + 8.4} 9 Z" fill="${sac}" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`; }
+        topFeat = sp;
+        back = `<path d="M63 96 Q85 94 88 76 Q89 67 81 64 Q84 73 77 82 Q71 90 62 91 Z" fill="${scol}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`
+          + `<path d="M83 69 L88 63 L88 70 Z M78 78 L84 73 L83 80 Z" fill="${sac}" stroke="${LN}" stroke-width=".8" stroke-linejoin="round"/>`;
+      } else if (su.kind === 'chick') {
+        topFeat = `<path d="M46.5 8 Q50 0 53.5 8 Z" fill="${sac}" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`;
+        frontFeat = `<path d="M46 46 L54 46 L50 51.5 Z" fill="${sac}" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`;
+      } else if (su.kind === 'shark') {
+        topFeat = `<path d="M44 8 Q50 -5 57 8 Z" fill="${shadeHex(scol, -.2)}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+        frontFeat = `<path d="M37 53 L40 57 L43 53 L46 57 L49 53 L52 57 L55 53 L58 57 L61 53 L63 56" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>`;
+        back = `<path d="M64 96 Q82 96 87 83 L80 79 Q82 88 74 90 Q68 92 62 91 Z" fill="${scol}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+      } else if (su.kind === 'panda') {
+        topFeat = earE(31, 11, 6.5, 6.5, sac) + earE(69, 11, 6.5, 6.5, sac);
+        const patch = `<ellipse cx="41" cy="40" rx="6" ry="7.6" fill="${sac}" transform="rotate(-12 41 40)"/>`;
+        facePatch = patch + mir(patch);
+        frontFeat = `<ellipse cx="50" cy="44.5" rx="3" ry="2.3" fill="${sac}"/>`;
+      } else if (su.kind === 'dragon') {
+        const horn = `<path d="M38 9 Q35 -1 41 -2 Q40 4 43 9 Z" fill="${sac}" stroke="${LN}" stroke-width="1" stroke-linejoin="round"/>`;
+        let sp = ''; for (let i = 0; i < 4; i++) { const x = 42 + i * 5; sp += `<path d="M${x} 8 L${x + 2.5} 2.5 L${x + 5} 8 Z" fill="${sac}" stroke="${LN}" stroke-width=".8" stroke-linejoin="round"/>`; }
+        topFeat = horn + mir(horn) + sp;
+        const wing = `<path d="M62 64 Q83 58 89 70 Q80 70 78 81 Q70 74 62 76 Z" fill="${shadeHex(scol, .2)}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+        back = wing + mir(wing) + `<path d="M63 96 Q84 94 87 77 Q88 69 80 66 Q83 74 76 83 Q70 90 62 91 Z" fill="${scol}" stroke="${LN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+      }
+      return `<svg class="char-svg wobble" viewBox="0 0 100 122" width="${px}" height="${Math.round(px * 1.22)}" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>`
+        + back
+        + sbody + sarm + mir(sarm) + sfoot + mir(sfoot)
+        + hood + topFeat
+        + faceK + facePatch
+        + browL + mir(browL) + eyeL + mir(eyeL) + blushL + mir(blushL) + nose + mouth
+        + frontFeat + faceFx
+        + `</svg>`;
+    }
+
+    return `<svg class="char-svg wobble" viewBox="0 0 100 122" width="${px}" height="${Math.round(px * 1.22)}" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>`
+      + deep + backHair
+      + cape
+      + earL + mir(earL)
+      + neck
+      + armL + mir(armL)
+      + pants
+      + shoeL + mir(shoeL)
+      + torso + sleeveL + mir(sleeveL) + clasp + mark
+      + face
+      + browL + mir(browL) + eyeL + mir(eyeL) + blushL + mir(blushL) + nose + mouth
+      + glass
+      + front + acc
+      + hat
+      + faceFx
+      + `</svg>`;
+  }
+
+  // 既存呼び出し（style, conditionキー, サイズ）をそのまま受ける薄いラッパー
+  function avatarSVG(style, stage, size) {
+    size = size || 150;
+    const eq = EQ[style] || EQ.boy;
+    const charKey = stage === 'zombie' ? 'sick' : stage === 'fucho' ? 'pale' : 'kid';
+    return charSVG(charKey, eq, size, stage);
+  }
+
+  // アバターの本体ブロック（吹き出し or ステータス付き）
+  function avatarBlockHTML(opts) {
+    opts = opts || {};
+    const st = conditionStage(state.condition);
+    const li = levelInfo(state.exp);
+    const sv = playerSVG(st.key, opts.size || 150);
+    const bubble = currentSpeech
+      ? `<div class="relative bg-[#FFFDF6] border-2 border-[#F0E4D2] rounded-2xl px-3 py-2 text-sm leading-snug shadow-sm">${esc(currentSpeech)}</div>` : '';
+    if (opts.compact) {
+      // ホームのスマホ用：横並びコンパクト
+      return `<div class="shrink-0">${playerSVG(st.key, 76)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-bold mb-1" style="color:${st.color}">${state.profile?.name || 'キミ'}・${st.label}</div>
+          ${bubble || '<div class="text-sm opacity-70">きょうもがんばろう！</div>'}
+        </div>`;
+    }
+    // フル（ペイン/タブ）
+    const petEl = (state.pet && state.pet !== 'pet_none' && PETS[state.pet])
+      ? `<div class="self-end pb-1">${petSVG(PETS[state.pet].kind, PETS[state.pet].color, 56)}</div>` : '';
+    return `
+      <div class="card p-4">
+        <div class="flex items-end justify-center gap-1">${sv}${petEl}</div>
+        ${curTitle() ? `<div class="text-center text-xs font-bold mt-1" style="color:var(--c-purple)">『${esc(curTitle())}』</div>` : ''}
+        <div class="text-center font-pop text-base">${esc(state.profile?.name || 'キミ')}</div>
+        <div class="text-center text-sm mb-3" style="color:${st.color}">きぶん：${st.label}</div>
+        ${bubble ? `<div class="mb-3">${bubble}</div>` : ''}
+        <!-- コンディションバー -->
+        <div class="text-xs font-bold mb-1 flex justify-between"><span>コンディション</span><span>${state.condition}</span></div>
+        <div class="h-3 rounded-full bg-[#F1E7D8] overflow-hidden mb-3">
+          <div class="h-full rounded-full transition-all" style="width:${state.condition}%;background:${st.color}"></div>
+        </div>
+        <!-- レベルバー（達成率で上がる） -->
+        <div class="text-xs font-bold mb-1 flex justify-between"><span>レベル ${li.lvl}</span><span>${li.into} / ${li.need}</span></div>
+        <div class="h-3 rounded-full bg-[#F1E7D8] overflow-hidden mb-3">
+          <div class="h-full rounded-full transition-all" style="width:${Math.round(li.into / li.need * 100)}%;background:var(--c-purple)"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-sm">
+          <div class="bg-[#FFF6DC] rounded-xl py-2"><div class="font-pop text-base" style="color:#C9971B">${state.coins}</div><div class="text-[11px] opacity-70">コイン</div></div>
+          <div class="bg-[#EAF6FF] rounded-xl py-2"><div class="font-pop text-base" style="color:var(--c-blue)">${state.items.some((it) => isHabit(it) && !it.archived) ? adherencePct() + '%' : '—'}</div><div class="text-[11px] opacity-70">達成率</div></div>
+          <div class="bg-[#EFFAEF] rounded-xl py-2"><div class="font-pop text-base" style="color:var(--c-green)">${maxStreakAll()}</div><div class="text-[11px] opacity-70">最長つづき</div></div>
+        </div>
+        ${state.freezes > 0 ? `<div class="text-center text-xs mt-2 opacity-80">🛡️ お守り ×${state.freezes}</div>` : ''}
+      </div>`;
+  }
+  function maxStreakAll() {
+    return state.items.reduce((m, it) => Math.max(m, isHabit(it) ? bestStreak(it) : 0), 0);
+  }
+
+  // =====================================================================
+  //  描画
+  // =====================================================================
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function render() {
+    // HUD
+    $('#hud-coins').textContent = state.coins;
+    $('#hud-level').textContent = levelInfo(state.exp).lvl;
+    renderToday();
+    renderDailies();
+    renderMissions();
+    renderCalendar();
+    renderAvatars();
+    if (ui.tab === 'shop') renderShop();
+    if (ui.tab === 'room') renderRoom();
+    if (ui.tab === 'avatar') renderProgress();
+  }
+  function renderRoom() {
+    const el = $('#room-scene'); if (!el) return;
+    const furn = Object.keys(FURNITURE).filter((id) => ownsId(id, FURNITURE[id].price)).map((id) => {
+      const f = FURNITURE[id];
+      return `<div style="position:absolute;left:${f.x}%;bottom:${f.y}%;transform:translateX(-50%);font-size:${f.size}px;line-height:1">${f.emoji}</div>`;
+    }).join('');
+    const st = conditionStage(state.condition);
+    const avatar = `<div style="position:absolute;left:43%;bottom:4%;transform:translateX(-50%)">${playerSVG(st.key, 116)}</div>`;
+    const pet = (state.pet && state.pet !== 'pet_none' && PETS[state.pet])
+      ? `<div style="position:absolute;left:63%;bottom:4%;transform:translateX(-50%)">${petSVG(PETS[state.pet].kind, PETS[state.pet].color, 62)}</div>` : '';
+    const empty = !furn ? '<div style="position:absolute;left:50%;top:30%;transform:translateX(-50%);font-size:12px;opacity:.55;text-align:center;width:80%">ショップの「かぐ」でおへやをかざろう！<br>「ペット」で相棒もむかえられるよ🐾</div>' : '';
+    el.innerHTML = `<div class="relative w-full rounded-2xl overflow-hidden" style="height:340px;background:linear-gradient(#dbeffb 0 58%, #ecd8b6 58% 100%);box-shadow:inset 0 2px 12px rgba(74,59,50,.12)">
+      <div style="position:absolute;left:0;right:0;top:58%;height:2px;background:rgba(0,0,0,.06)"></div>
+      ${empty}${furn}${avatar}${pet}
+    </div>`;
+  }
+  function renderDailies() {
+    const list = $('#daily-list'); if (!list) return;
+    const k = dkey(today()), done = state.dailyDone[k] || {};
+    list.innerHTML = todaysDailies().map((d) => {
+      const ok = !!done[d.slot];
+      return `<div class="card p-3 flex items-center gap-3 ${ok ? 'opacity-60' : ''}">
+        <button data-daily="${d.slot}" class="shrink-0 w-11 h-11 rounded-full grid place-items-center text-2xl btn ${ok ? 'text-white' : 'bg-[#F4ECDF]'}" style="${ok ? 'background:var(--c-orange)' : ''}">${ok ? '✓' : ''}</button>
+        <div class="flex-1 min-w-0"><div class="font-bold ${ok ? 'line-through' : ''}">${esc(d.text)}</div><div class="text-xs opacity-70">やったら +20コイン</div></div>
+      </div>`;
+    }).join('');
+  }
+  function renderMissions() {
+    const list = $('#mission-list'); if (!list) return;
+    const done = MISSIONS.filter((m) => state.missionsDone[m.id]).length;
+    const cc = $('#mission-count'); if (cc) cc.textContent = `${done} / ${MISSIONS.length} 達成`;
+    const sorted = MISSIONS.slice().sort((a, b) => (state.missionsDone[a.id] ? 1 : 0) - (state.missionsDone[b.id] ? 1 : 0));
+    list.innerHTML = sorted.map((m) => {
+      const ok = state.missionsDone[m.id];
+      return `<div class="card p-2.5 flex items-center gap-2.5 ${ok ? 'opacity-60' : ''}">
+        <span class="shrink-0 w-7 h-7 rounded-full grid place-items-center text-sm ${ok ? 'text-white' : 'bg-[#F4ECDF]'}" style="${ok ? 'background:var(--c-green)' : ''}">${ok ? '✓' : '🎯'}</span>
+        <div class="flex-1 min-w-0 font-bold text-sm ${ok ? 'line-through' : ''} truncate">${esc(m.name)}</div>
+        <span class="shrink-0 text-xs font-bold" style="color:var(--c-purple)">+${m.exp}EXP</span>
+      </div>`;
+    }).join('');
+  }
+
+  // =====================================================================
+  //  がんばりの記録（ダッシュボード：サマリー＋ヒートマップ＋達成率グラフ）
+  // =====================================================================
+  function dayActivity(dk) {
+    let n = 0;
+    for (const it of state.items) { if (it.done && it.done[dk]) n++; }
+    const dd = state.dailyDone[dk]; if (dd) { for (const s in dd) if (dd[s]) n++; }
+    return n;
+  }
+  function habitAdherence(it, days) {
+    const t = today(), start = parseKey(it.createdAt || state.createdAt);
+    let s = 0, d2 = 0;
+    for (let i = 0; i < days; i++) { const d = addDays(t, -i); if (d < start) continue; if (isScheduled(it, d)) { const k = dkey(d); if (it.frozen && it.frozen[k]) continue; s++; if (it.done && it.done[k]) d2++; } }
+    return s === 0 ? null : Math.round(d2 / s * 100);
+  }
+  function progressStats() {
+    const dates = new Set(); let total = 0;
+    for (const it of state.items) { for (const k in (it.done || {})) { if (it.done[k]) { total++; dates.add(k); } } }
+    for (const k in state.dailyDone) { let c = 0; const dd = state.dailyDone[k]; for (const s in dd) if (dd[s]) c++; if (c > 0) { total += c; dates.add(k); } }
+    return { total, activeDays: dates.size, perfect: perfectCount(), maxStreak: maxStreakAll() };
+  }
+  function heatColor(n) { return n <= 0 ? '#ECE3D2' : n === 1 ? '#CDEBB0' : n === 2 ? '#9FDB7A' : n === 3 ? '#6BCB77' : '#46A85A'; }
+  function heatmapSVG() {
+    const t = today(), dow = (t.getDay() + 6) % 7, thisMon = addDays(t, -dow), start = addDays(thisMon, -9 * 7);
+    const cell = 13, gap = 3, cols = 10, rows = 7, w = cols * (cell + gap) - gap, h = rows * (cell + gap) - gap;
+    let rects = '';
+    for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) {
+      const d = addDays(start, c * 7 + r), future = d > t, fill = future ? '#F6EFE1' : heatColor(dayActivity(dkey(d)));
+      rects += `<rect x="${c * (cell + gap)}" y="${r * (cell + gap)}" width="${cell}" height="${cell}" rx="3" fill="${fill}"/>`;
+    }
+    return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:340px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+  }
+  // ===== 対戦コード（ステータスをコード化して非同期で勝負・バックエンド不要） =====
+  function battleStats() {
+    const st = progressStats();
+    return { n: (state.profile && state.profile.name) || 'キミ', lv: levelInfo(state.exp).lvl, s: st.maxStreak, t: st.total, p: st.perfect, ti: state.titleIdx, pet: state.pet };
+  }
+  function battleScore(d) { return (d.lv || 0) * 10 + (d.s || 0) * 5 + (d.t || 0) + (d.p || 0) * 8 + (((d.ti != null ? d.ti : -1) + 1)) * 6 + (d.pet && d.pet !== 'pet_none' && PETS[d.pet] ? 12 : 0); }
+  function petMini(id) { return (id && id !== 'pet_none' && PETS[id]) ? petSVG(PETS[id].kind, PETS[id].color, 42) : '<span class="text-[11px] opacity-40">なし</span>'; }
+  // 8文字のみじかいコード：数値を48bitに詰めてbase62（名前は含めない＝相手は「あいて」表示）
+  const B62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  function toB62(n, len) { n = Math.max(0, Math.floor(n)); let s = ''; while (n > 0) { s = B62[n % 62] + s; n = Math.floor(n / 62); } while (s.length < len) s = '0' + s; return s; }
+  function fromB62(s) { let n = 0; for (const ch of s) { const i = B62.indexOf(ch); if (i < 0) return null; n = n * 62 + i; } return n; }
+  function petIndex(id) { const i = Object.keys(PETS).indexOf(id); return i < 0 ? 0 : i; }
+  function petById(idx) { return Object.keys(PETS)[idx] || 'pet_none'; }
+  function clampN(v, max) { v = Math.floor(v || 0); return v < 0 ? 0 : v > max ? max : v; }
+  function encodeBattle() {
+    const d = battleStats();
+    let val = clampN(d.lv, 63);
+    val = val * 512 + clampN(d.s, 511);
+    val = val * 16384 + clampN(d.t, 16383);
+    val = val * 1024 + clampN(d.p, 1023);
+    val = val * 51 + clampN((d.ti != null ? d.ti : -1) + 1, 50);
+    val = val * 7 + clampN(petIndex(d.pet), 6);
+    return toB62(val, 8);
+  }
+  function decodeBattle(code) {
+    code = (code || '').trim();
+    // 旧ロングコード（LUA1:base64）も読める
+    if (code.indexOf('LUA1:') === 0) {
+      try { const o = JSON.parse(decodeURIComponent(escape(atob(code.slice(5))))); if (typeof o.lv !== 'number') return null; return o; } catch (_) { return null; }
+    }
+    if (/^[0-9A-Za-z]{6,9}$/.test(code)) {
+      let n = fromB62(code); if (n == null) return null;
+      const pet = petById(n % 7); n = Math.floor(n / 7);
+      const ti = (n % 51) - 1; n = Math.floor(n / 51);
+      const p = n % 1024; n = Math.floor(n / 1024);
+      const t = n % 16384; n = Math.floor(n / 16384);
+      const s = n % 512; n = Math.floor(n / 512);
+      const lv = n % 64;
+      if (lv < 1) return null;
+      return { n: 'あいて', lv, s, t, p, ti, pet };
+    }
+    return null;
+  }
+  function titleNameOf(ti) { return (ti != null && ti >= 0) ? (TITLES[ti] || '？') : 'なし'; }
+  // その日に対戦ずみの相手数（日付が変わったらリセット）
+  const BATTLE_PER_DAY = 5;  // 1日にできる対戦の回数
+  function foesToday() { if (state.battleDay !== dkey(today())) { state.battleDay = dkey(today()); state.battleFoes = {}; } return Object.keys(state.battleFoes).length; }
+  function foughtFoe(code) { foesToday(); return !!state.battleFoes[code]; }
+  function doBattle() {
+    const code = ($('#vs-code').value || '').trim();
+    const opp = decodeBattle(code);
+    if (!opp) { alert('コードが正しくないみたい。もう一度かくにんしてね。'); return; }
+    if (foughtFoe(code)) { say('この あいてとは きょう もう たいせんしたよ。べつの あいてと しょうぶしよう！⚔️'); renderAvatars(); return; }
+    if (foesToday() >= BATTLE_PER_DAY) { say(`きょうの たいせんは ${BATTLE_PER_DAY}回まで！また あした しょうぶしよう⚔️`); renderAvatars(); return; }
+    const me = battleStats(), ms = battleScore(me), os = battleScore(opp);
+    // 🎲 運の要素（0〜80）。実力が高いほど有利だが、接戦なら逆転もあり
+    const lm = Math.floor(Math.random() * 81), lo = Math.floor(Math.random() * 81);
+    const mt = ms + lm, ot = os + lo;
+    const result = mt > ot ? 'win' : mt < ot ? 'lose' : 'draw';
+    const upset = (result === 'win' && ms < os) || (result === 'lose' && ms > os);
+    // 同じ相手は1日1回。勝てば+100コイン、負け/引き分けでも参加賞+20コイン
+    foesToday(); state.battleFoes[code] = true;
+    const reward = result === 'win' ? 100 : 20;
+    state.coins += reward;
+    const banner = result === 'draw' ? ['ひきわけ！', '#C9971B']
+      : result === 'win' ? [upset ? '🎲 ぎゃくてん勝ち！' : '🏆 かち！', 'var(--c-green)']
+        : [upset ? '🎲 おしくも まけ…' : 'くやしい…まけ', 'var(--c-red)'];
+    const row = (label, a, b) => `<div class="grid grid-cols-3 gap-1 items-center text-center py-1.5 border-t border-[#F2E9DA]"><div class="font-bold ${a >= b ? 'text-[var(--c-green)]' : 'opacity-60'}">${a}</div><div class="text-[11px] opacity-60">${label}</div><div class="font-bold ${b >= a ? 'text-[var(--c-green)]' : 'opacity-60'}">${b}</div></div>`;
+    $('#battle-body').innerHTML = `
+      <div class="text-center font-pop text-2xl mb-2" style="color:${banner[1]}">${banner[0]}</div>
+      <div class="grid grid-cols-3 items-center text-center mb-1"><div class="font-pop text-sm truncate">${esc(me.n)}</div><div class="text-xs opacity-50">VS</div><div class="font-pop text-sm truncate">${esc(opp.n)}</div></div>
+      <div class="grid grid-cols-3 items-center text-center mb-1 text-[11px]" style="color:var(--c-purple)"><div class="truncate">『${esc(titleNameOf(me.ti))}』</div><div></div><div class="truncate">『${esc(titleNameOf(opp.ti))}』</div></div>
+      <div class="grid grid-cols-3 items-center text-center mb-1"><div class="grid place-items-center">${petMini(me.pet)}</div><div class="text-[10px] opacity-50">あいぼう</div><div class="grid place-items-center">${petMini(opp.pet)}</div></div>
+      ${row('レベル', me.lv, opp.lv)}${row('最長つづき', me.s, opp.s)}${row('累計こなした', me.t, opp.t)}${row('パーフェクト', me.p, opp.p)}
+      <div class="grid grid-cols-3 gap-1 items-center text-center py-1.5 border-t border-[#F2E9DA]"><div class="font-bold opacity-80">${ms}</div><div class="text-[11px] opacity-60">じつりょく</div><div class="font-bold opacity-80">${os}</div></div>
+      <div class="grid grid-cols-3 gap-1 items-center text-center py-1.5"><div class="font-bold" style="color:var(--c-orange)">+${lm}</div><div class="text-[11px] opacity-60">🎲ラッキー</div><div class="font-bold" style="color:var(--c-orange)">+${lo}</div></div>
+      <div class="grid grid-cols-3 gap-1 items-center text-center py-2 border-t-2 border-[#EADBC4]"><div class="font-pop text-xl ${mt >= ot ? '' : 'opacity-50'}">${mt}</div><div class="text-[11px] opacity-60">ごうけい</div><div class="font-pop text-xl ${ot >= mt ? '' : 'opacity-50'}">${ot}</div></div>
+      <div class="text-center font-bold mt-2 py-2 rounded-xl" style="background:#FFF6DC;color:#C9971B">${result === 'win' ? '🎉 かったので +100コイン ゲット！' : '🪙 +20コイン ゲット！（さんかしょう）'}</div>
+      <div class="text-center text-[11px] opacity-60 mt-2">たいせんは 1日${BATTLE_PER_DAY}回まで（きょう ${foesToday()}/${BATTLE_PER_DAY}）。同じ あいてとは 1日1回だよ！</div>`;
+    checkMissions();
+    save(); render();
+    // 🎬 まずカッコいいバトル演出 → 終わったら結果モーダル＋コイン
+    playBattleIntro(me, opp, { result, upset, mt, ot, ms, os, lm, lo, banner }, () => {
+      flyCoin('+' + reward, true);
+      showModal('#modal-battle');
+    });
+  }
+
+  // 相手はコードのみ（見た目は不明）なので、ナゾの挑戦者シルエットで表示
+  function mysteryFighterSVG(px) {
+    px = px || 120;
+    return `<svg viewBox="0 0 100 100" width="${px}" height="${px}" aria-hidden="true">
+      <defs><radialGradient id="bfxMg" cx="50%" cy="34%" r="70%"><stop offset="0%" stop-color="#8E7BFF"/><stop offset="100%" stop-color="#3C2F66"/></radialGradient></defs>
+      <circle cx="50" cy="50" r="46" fill="url(#bfxMg)"/>
+      <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2"/>
+      <text x="50" y="70" font-size="58" text-anchor="middle" fill="#fff" font-family="'Baloo 2',sans-serif" font-weight="800">?</text>
+    </svg>`;
+  }
+
+  // 🎬 バトルシネマ演出：ファイター激突 → VS → カウントアップ → 勝敗スタンプ
+  let _bfxCancel = null;  // 再生中の演出を中断するための後始末関数
+  function playBattleIntro(me, opp, ctx, done) {
+    const fx = document.getElementById('battle-fx');
+    if (!fx) { done && done(); return; }
+    if (_bfxCancel) _bfxCancel();  // 前の演出が走っていたら止めてから始める（多重起動ガード）
+    const win = ctx.result === 'win', lose = ctx.result === 'lose', draw = ctx.result === 'draw';
+    const meStage = (typeof conditionStage === 'function') ? conditionStage(state.condition).key : 'genki';
+    const meAv = playerSVG(meStage, 124);
+    const oppAv = mysteryFighterSVG(124);
+    const petCard = (id) => (id && id !== 'pet_none' && PETS[id]) ? petSVG(PETS[id].kind, PETS[id].color, 38) : '';
+    const fighter = (side, name, title, av, pet) => `
+      <div class="bfx-${side === 'l' ? 'l' : 'r'} flex flex-col items-center gap-1" style="width:42%">
+        <div class="bfx-float relative grid place-items-center w-[124px] h-[124px] rounded-3xl"
+             style="background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.04));box-shadow:0 8px 26px rgba(0,0,0,.35),inset 0 0 0 2px rgba(255,255,255,.12)">
+          ${av}
+          ${pet ? `<div class="absolute -bottom-2 ${side === 'l' ? '-right-2' : '-left-2'} drop-shadow-lg">${pet}</div>` : ''}
+        </div>
+        <div class="mt-3 font-pop text-white text-base leading-tight text-center truncate max-w-[120px] drop-shadow">${esc(name)}</div>
+        ${title ? `<div class="text-[11px] text-center truncate max-w-[120px]" style="color:#E6D8FF">『${esc(title)}』</div>` : ''}
+      </div>`;
+    fx.innerHTML = `
+      <div class="absolute inset-0 bfx-lines pointer-events-none"></div>
+      <div id="bfx-rays" class="absolute left-1/2 top-[34%] -translate-x-1/2 -translate-y-1/2 w-[170vmax] h-[170vmax] opacity-0 pointer-events-none bfx-rays"
+           style="background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.16) 0deg 9deg, transparent 9deg 18deg)"></div>
+      <div id="bfx-flash" class="absolute inset-0 bg-white pointer-events-none" style="opacity:0"></div>
+      <div id="bfx-conf" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+      <div id="bfx-stage" class="relative w-full max-w-md px-4">
+        <div class="flex items-start justify-between gap-1">
+          ${fighter('l', me.n, titleNameOf(me.ti), meAv, petCard(me.pet))}
+          ${fighter('r', opp.n, titleNameOf(opp.ti), oppAv, petCard(opp.pet))}
+        </div>
+        <div id="bfx-vs" class="absolute left-1/2 top-[46px] -translate-x-1/2 font-pop text-6xl opacity-0"
+             style="color:#FFE27A;text-shadow:0 0 18px rgba(255,200,60,.9),0 4px 0 #B8860B,0 6px 14px rgba(0,0,0,.5)">VS</div>
+        <div id="bfx-scores" class="mt-7 grid grid-cols-3 items-center text-center opacity-0 transition-opacity duration-300">
+          <div class="font-pop text-4xl text-white" style="text-shadow:0 2px 10px rgba(0,0,0,.5)"><span id="bfx-mt">0</span></div>
+          <div class="text-xs font-bold" style="color:#FFD66B">ごうけい<br><span class="text-[10px] opacity-70" style="color:#fff">じつりょく＋🎲</span></div>
+          <div class="font-pop text-4xl text-white" style="text-shadow:0 2px 10px rgba(0,0,0,.5)"><span id="bfx-ot">0</span></div>
+        </div>
+        <div id="bfx-stamp" class="mt-6 text-center font-pop opacity-0"></div>
+        <div id="bfx-skip" class="mt-5 text-center text-[11px]" style="color:rgba(255,255,255,.55)">タップでスキップ</div>
+      </div>`;
+    fx.classList.remove('hidden'); fx.classList.add('flex');
+
+    const stamp = fx.querySelector('#bfx-stamp');
+    const stampHTML = () => {
+      const txt = ctx.banner[0], col = win ? '#7CFFB0' : lose ? '#FF9DB0' : '#FFE27A';
+      return `<div class="bfx-stamp inline-block px-6 py-2 rounded-2xl text-3xl"
+        style="color:${col};border:3px solid ${col};text-shadow:0 0 14px ${col};box-shadow:0 0 22px ${col}55, inset 0 0 18px ${col}33;background:rgba(0,0,0,.25)">${txt}</div>`;
+    };
+    const dropConfetti = () => {
+      const box = fx.querySelector('#bfx-conf'); if (!box) return;
+      const cols = win ? ['#FFE27A','#7CFFB0','#8FD3FF','#FF9DC2','#C8A2FF'] : ['#C9BFE0','#9AA0C8'];
+      const n = win ? 46 : 16;
+      let h = '';
+      for (let i = 0; i < n; i++) {
+        const l = Math.random() * 100, d = (Math.random() * .5).toFixed(2), du = (1.1 + Math.random() * .9).toFixed(2);
+        const c = cols[i % cols.length], w = 7 + Math.floor(Math.random() * 7);
+        h += `<span style="position:absolute;top:-12vh;left:${l}vw;width:${w}px;height:${w + 4}px;background:${c};border-radius:2px;animation:bfxConf ${du}s linear ${d}s forwards"></span>`;
+      }
+      box.innerHTML = h;
+    };
+
+    let finished = false; const timers = [];
+    // 多重起動ガード：新しい演出が始まったら、この回を done を呼ばずに静かに片付ける
+    _bfxCancel = () => {
+      if (finished) return; finished = true;
+      timers.forEach(clearTimeout);
+      fx.classList.add('hidden'); fx.classList.remove('flex', 'bfx-fadeout');
+      fx.innerHTML = ''; fx.onclick = null;
+    };
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    const flash = () => { const f = fx.querySelector('#bfx-flash'); if (f) { f.classList.remove('bfx-flash'); void f.offsetWidth; f.classList.add('bfx-flash'); } };
+
+    // タイムライン
+    at(360, () => {
+      const vs = fx.querySelector('#bfx-vs'); if (vs) { vs.style.opacity = '1'; vs.classList.add('bfx-vs'); }
+      const stage = fx.querySelector('#bfx-stage'); if (stage) { stage.classList.add('bfx-shake'); }
+      flash();
+    });
+    at(950, () => {
+      const sc = fx.querySelector('#bfx-scores'); if (sc) sc.style.opacity = '1';
+      const me$ = fx.querySelector('#bfx-mt'), op$ = fx.querySelector('#bfx-ot');
+      const t0 = performance.now(), dur = 850;
+      const tick = (now) => {
+        const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        if (me$) me$.textContent = Math.round(ctx.mt * e);
+        if (op$) op$.textContent = Math.round(ctx.ot * e);
+        if (k < 1 && !finished) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    at(1950, () => {
+      flash();
+      const stage = fx.querySelector('#bfx-stage'); if (stage) { stage.classList.remove('bfx-shake'); void stage.offsetWidth; stage.classList.add('bfx-shake'); }
+      if (stamp) stamp.style.opacity = '1', stamp.innerHTML = stampHTML();
+      if (win) { const rays = fx.querySelector('#bfx-rays'); if (rays) rays.style.opacity = '1'; }
+      dropConfetti();
+    });
+    at(3300, () => finish());
+
+    function finish() {
+      if (finished) return; finished = true;
+      _bfxCancel = null;
+      timers.forEach(clearTimeout);
+      fx.classList.add('bfx-fadeout');
+      setTimeout(() => {
+        fx.classList.add('hidden'); fx.classList.remove('flex', 'bfx-fadeout');
+        fx.innerHTML = '';
+        fx.onclick = null;
+        done && done();
+      }, 340);
+    }
+    // タップでスキップ → 即終了して結果へ
+    fx.onclick = () => finish();
+  }
+
+  function copyMyCode() {
+    const code = encodeBattle();
+    const done = () => say('コードをコピーしたよ📋 友だちに渡そう！');
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(done).catch(() => { const i = $('#my-code'); if (i) { i.select(); document.execCommand('copy'); } done(); }); }
+    else { const i = $('#my-code'); if (i) { i.select(); try { document.execCommand('copy'); } catch (_) {} } done(); }
+  }
+
+  function renderProgress() {
+    const el = $('#progress-dash'); if (!el) return;
+    const st = progressStats();
+    const cards = [['🔥', st.maxStreak, '最長つづき'], ['✅', st.total, '累計こなした'], ['📅', st.activeDays, 'がんばった日'], ['🏆', st.perfect, 'パーフェクト']]
+      .map((c) => `<div class="bg-white rounded-2xl py-3 text-center shadow-sm"><div class="text-xl">${c[0]}</div><div class="font-pop text-lg">${c[1]}</div><div class="text-[10px] opacity-70">${c[2]}</div></div>`).join('');
+    const sw = (col) => `<span style="width:11px;height:11px;background:${col};border-radius:2px;display:inline-block"></span>`;
+    const habits = state.items.filter((it) => isHabit(it) && !it.archived);
+    const bars = habits.length ? habits.map((it) => {
+      const r = habitAdherence(it, 30), pct = r == null ? 0 : r;
+      return `<div class="mb-2.5"><div class="flex justify-between text-xs mb-1"><span class="font-bold truncate pr-2">${esc(it.name)}</span><span class="opacity-70 shrink-0">${r == null ? '—' : r + '%'}</span></div>
+        <div class="h-3 rounded-full bg-[#F1E7D8] overflow-hidden"><div class="h-full rounded-full transition-all" style="width:${pct}%;background:linear-gradient(90deg,var(--c-green),var(--c-blue))"></div></div></div>`;
+    }).join('') : '<div class="text-sm opacity-60 text-center py-3">習慣を登録すると、ここに達成率が出るよ。</div>';
+    el.innerHTML = `
+      <div class="grid grid-cols-4 gap-2 mb-4">${cards}</div>
+      <div class="card p-4 mb-4">
+        <div class="font-bold text-sm mb-3">📅 活動の記録（この10週間）</div>
+        ${heatmapSVG()}
+        <div class="flex items-center justify-end gap-1 mt-3 text-[10px] opacity-60"><span>すくない</span>${sw('#ECE3D2')}${sw('#CDEBB0')}${sw('#9FDB7A')}${sw('#6BCB77')}${sw('#46A85A')}<span>おおい</span></div>
+      </div>
+      <div class="card p-4 mb-4">
+        <div class="font-bold text-sm mb-3">⭐ しゅうかんの達成率（30日）</div>
+        ${bars}
+      </div>
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-1">
+          <div class="font-bold text-sm">⚔️ たいせん（コードで勝負）</div>
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded-full" style="background:#EFFAEF;color:var(--c-green)">きょう ${foesToday()} / ${BATTLE_PER_DAY}回</span>
+        </div>
+        <p class="text-xs opacity-70 mb-3">8文字のコードを友だちにわたして、相手のコードを入れると勝負！じつりょく＋🎲運で決まるよ。<b>たいせんは1日${BATTLE_PER_DAY}回まで・同じ相手は1日1回・勝つと+100、負けても+20コイン🪙</b></p>
+        <div class="text-[11px] font-bold opacity-70 mb-1">あなたのコード</div>
+        <div class="flex gap-2 mb-3">
+          <input id="my-code" readonly value="${encodeBattle()}" class="flex-1 min-w-0 rounded-xl border-2 border-[#EEE2CF] px-3 py-2 text-xs bg-[#FBF6EC]" />
+          <button data-act="copycode" class="btn shrink-0 px-3 py-2 text-xs text-white" style="background:var(--c-blue)">コピー</button>
+        </div>
+        <div class="text-[11px] font-bold opacity-70 mb-1">相手のコード</div>
+        <div class="flex gap-2">
+          <input id="vs-code" placeholder="ここにはりつけ" class="flex-1 min-w-0 rounded-xl border-2 border-[#EEE2CF] px-3 py-2 text-xs outline-none focus:border-[var(--c-purple)]" />
+          <button data-act="battle" class="btn shrink-0 px-4 py-2 text-xs text-white" style="background:var(--c-red)">たいせん！</button>
+        </div>
+      </div>`;
+  }
+
+  // =====================================================================
+  //  ショップ（着せ替え＆回復）
+  // =====================================================================
+  function renderShop() {
+    $('#shop-coins').textContent = state.coins;
+    const cats = SHOP_CATS.concat([['pet', 'ペット'], ['furniture', 'かぐ'], ['title', '称号'], ['heal', 'かいふく']]);
+    $('#shop-cats').innerHTML = cats.map(([id, label]) => {
+      const on = ui.shopCat === id;
+      return `<button data-shopcat="${id}" class="btn shrink-0 px-3 py-1.5 text-sm ${on ? 'text-white' : 'bg-white'}" style="${on ? 'background:var(--c-purple)' : ''}">${label}</button>`;
+    }).join('');
+    const grid = $('#shop-grid');
+    if (ui.shopCat === 'pet') {
+      grid.innerHTML = Object.keys(PETS).map((id) => {
+        const p = PETS[id];
+        if (id === 'pet_none') {
+          const eqd = state.pet === 'pet_none';
+          return `<div class="card p-2 text-center" style="${eqd ? 'outline:3px solid var(--c-purple);outline-offset:-1px' : ''}"><div class="grid place-items-center h-[70px] text-3xl opacity-40">🚫</div><div class="text-[11px] font-bold mb-1">なし</div>${eqd ? '<div class="text-xs font-bold py-1.5 rounded-xl" style="background:#EFE9FF;color:var(--c-purple)">そうび中</div>' : '<button data-equippet="pet_none" class="btn w-full py-1.5 text-xs text-white" style="background:var(--c-blue)">はずす</button>'}</div>`;
+        }
+        const owned = ownsId(id, p.price), eqd = state.pet === id, locked = !!p.rare && !owned && !rareUnlocked({ rare: p.rare });
+        let btn;
+        if (eqd) btn = `<div class="text-xs font-bold py-1.5 rounded-xl" style="background:#EFE9FF;color:var(--c-purple)">そうび中</div>`;
+        else if (owned) btn = `<button data-equippet="${id}" class="btn w-full py-1.5 text-xs text-white" style="background:var(--c-blue)">いっしょに</button>`;
+        else if (locked) btn = `<div class="text-[10px] font-bold py-1.5 rounded-xl leading-tight" style="background:#F2ECDD;color:#A98">🔒 ${esc(p.rare.label)}</div>`;
+        else { const can = state.coins >= p.price; btn = `<button data-buypet="${id}" class="btn w-full py-1.5 text-xs ${can ? 'text-white' : 'opacity-40'}" style="background:${can ? 'var(--c-green)' : '#ccc'}">🪙${p.price}</button>`; }
+        return `<div class="card p-2 text-center relative" style="${eqd ? 'outline:3px solid var(--c-purple);outline-offset:-1px' : p.rare ? 'outline:2px solid #FFD24D;outline-offset:-1px' : ''}">${p.rare ? '<span class="absolute top-1 left-1 text-[10px] font-bold px-1.5 rounded-full" style="background:#FFF1C2;color:#C9971B">✨レア</span>' : ''}<div class="grid place-items-center h-[70px] ${locked ? 'opacity-40 grayscale' : ''}">${petSVG(p.kind, p.color, 58)}</div><div class="text-[11px] font-bold truncate mb-1">${esc(p.name)}</div>${btn}</div>`;
+      }).join('');
+      return;
+    }
+    if (ui.shopCat === 'furniture') {
+      grid.innerHTML = Object.keys(FURNITURE).map((id) => {
+        const f = FURNITURE[id], owned = ownsId(id, f.price), locked = !!f.rare && !owned && !rareUnlocked({ rare: f.rare });
+        let btn;
+        if (owned) btn = `<div class="text-xs font-bold py-1.5 rounded-xl" style="background:#EFFAEF;color:var(--c-green)">かざりずみ ✓</div>`;
+        else if (locked) btn = `<div class="text-[10px] font-bold py-1.5 rounded-xl leading-tight" style="background:#F2ECDD;color:#A98">🔒 ${esc(f.rare.label)}</div>`;
+        else { const can = state.coins >= f.price; btn = `<button data-buyfurn="${id}" class="btn w-full py-1.5 text-xs ${can ? 'text-white' : 'opacity-40'}" style="background:${can ? 'var(--c-green)' : '#ccc'}">🪙${f.price}</button>`; }
+        return `<div class="card p-2 text-center relative" style="${f.rare ? 'outline:2px solid #FFD24D;outline-offset:-1px' : ''}">${f.rare ? '<span class="absolute top-1 left-1 text-[10px] font-bold px-1.5 rounded-full" style="background:#FFF1C2;color:#C9971B">✨レア</span>' : ''}<div class="grid place-items-center h-[70px] text-4xl ${locked ? 'opacity-40 grayscale' : ''}">${f.emoji}</div><div class="text-[11px] font-bold truncate mb-1">${esc(f.name)}</div>${btn}</div>`;
+      }).join('');
+      return;
+    }
+    if (ui.shopCat === 'title') {
+      const lvl = levelInfo(state.exp).lvl, nextI = state.titleIdx + 1;
+      const cur = curTitle() || 'まだ称号なし';
+      let html = `<div class="col-span-full card p-3 text-center mb-1">
+        <div class="text-xs opacity-70">いまの称号（${state.titleIdx + 1}/50）・レベル${lvl}</div>
+        <div class="font-pop text-lg" style="color:var(--c-purple)">『${esc(cur)}』</div>
+        <div class="text-xs opacity-60 mt-1">称号は安いものから順に手に入れられるよ。上の称号はレベルが必要！</div>
+      </div>`;
+      html += '<div class="col-span-full space-y-1.5">' + TITLES.map((nm, i) => {
+        const owned = i <= state.titleIdx, isNext = i === nextI;
+        const price = titlePrice(i), req = titleReq(i);
+        let right;
+        if (owned) right = `<span class="text-xs font-bold shrink-0" style="color:var(--c-green)">もっている ✓</span>`;
+        else if (isNext) {
+          const can = state.coins >= price && lvl >= req;
+          right = can
+            ? `<button data-title="${i}" class="btn shrink-0 px-3 py-1.5 text-xs text-white" style="background:var(--c-green)">🪙${price}で手に入れる</button>`
+            : `<span class="text-xs shrink-0 ${state.coins < price ? 'opacity-70' : ''}" style="${lvl < req ? 'color:var(--c-red)' : ''}">🪙${price}${lvl < req ? `・Lv${req}必要` : ''}</span>`;
+        } else right = `<span class="text-xs opacity-40 shrink-0">🔒 Lv${req}・🪙${price}</span>`;
+        const label = owned ? nm : '？？？';   // 買うまでは伏せる
+        return `<div class="card p-2.5 flex items-center justify-between gap-2" style="${owned ? 'background:#F2FBF3' : isNext ? 'outline:2px solid var(--c-green)' : ''}">
+          <div class="min-w-0 flex items-center gap-1.5"><span class="text-[11px] opacity-50 w-5 text-right">${i + 1}</span><span class="font-bold text-sm truncate ${owned ? '' : 'opacity-50'}">${esc(label)}</span></div>
+          ${right}</div>`;
+      }).join('') + '</div>';
+      grid.innerHTML = html;
+      return;
+    }
+    if (ui.shopCat === 'heal') {
+      const healCards = Object.keys(HEALS).map((id) => {
+        const h = HEALS[id], can = state.coins >= h.price;
+        return `<div class="card p-3 text-center">
+          <div class="text-4xl mb-1">${h.emoji}</div>
+          <div class="font-bold text-sm">${esc(h.name)}</div>
+          <div class="text-xs opacity-70 mb-2">コンディション+${h.heal}</div>
+          <button data-heal="${id}" class="btn w-full py-2 text-xs ${can ? 'text-white' : 'opacity-40'}" style="background:${can ? 'var(--c-green)' : '#ccc'}">🪙${h.price} でつかう</button>
+        </div>`;
+      }).join('');
+      const canF = state.coins >= FREEZE.price;
+      const freezeCard = `<div class="card p-3 text-center">
+        <div class="text-4xl mb-1">${FREEZE.emoji}</div>
+        <div class="font-bold text-sm">お守り</div>
+        <div class="text-xs opacity-70 mb-2">連続を1日まもる（もっている：${state.freezes}）</div>
+        <button data-buyfreeze="1" class="btn w-full py-2 text-xs ${canF ? 'text-white' : 'opacity-40'}" style="background:${canF ? 'var(--c-purple)' : '#ccc'}">🪙${FREEZE.price} で買う</button>
+      </div>`;
+      grid.innerHTML = healCards + freezeCard;
+      return;
+    }
+    const cat = ui.shopCat, eqNow = playerEquip();
+    grid.innerHTML = Object.keys(ITEMS[cat]).map((id) => {
+      const it = ITEMS[cat][id], owned = owns(cat, id), equipped = eqNow[cat] === id;
+      const locked = !!it.rare && !owned && !rareUnlocked(it);
+      const peq = Object.assign({}, eqNow); peq[cat] = id;
+      const prev = charSVG('kid', peq, 66, 'genki');
+      let btn;
+      if (equipped) btn = `<div class="text-xs font-bold py-1.5 rounded-xl" style="background:#EFE9FF;color:var(--c-purple)">そうび中</div>`;
+      else if (owned) btn = `<button data-equip="${cat}:${id}" class="btn w-full py-1.5 text-xs text-white" style="background:var(--c-blue)">きせる</button>`;
+      else if (locked) btn = `<div class="text-[10px] font-bold py-1.5 rounded-xl leading-tight" style="background:#F2ECDD;color:#A98">🔒 ${esc(it.rare.label)}</div>`;
+      else { const can = state.coins >= it.price; btn = `<button data-buy="${cat}:${id}" class="btn w-full py-1.5 text-xs ${can ? 'text-white' : 'opacity-40'}" style="background:${can ? 'var(--c-green)' : '#ccc'}">🪙${it.price}</button>`; }
+      return `<div class="card p-2 text-center relative" style="${equipped ? 'outline:3px solid var(--c-purple);outline-offset:-1px' : it.rare ? 'outline:2px solid #FFD24D;outline-offset:-1px' : ''}">
+        ${it.rare ? '<span class="absolute top-1 left-1 text-[10px] font-bold px-1.5 rounded-full" style="background:#FFF1C2;color:#C9971B">✨レア</span>' : ''}
+        <div class="grid place-items-center h-[82px] overflow-hidden ${locked ? 'opacity-40 grayscale' : ''}">${prev}</div>
+        <div class="text-[11px] font-bold truncate mb-1">${esc(it.name)}</div>
+        ${btn}</div>`;
+    }).join('');
+  }
+  function equipItem(cat, id) {
+    if (!owns(cat, id)) return;
+    state.equipped = Object.assign({}, playerEquip()); state.equipped[cat] = id;
+    save(); renderShop(); renderAvatars();
+  }
+  function buyItem(cat, id) {
+    const it = ITEMS[cat] && ITEMS[cat][id]; if (!it || owns(cat, id)) return;
+    if (it.rare && !rareUnlocked(it)) { say(`このレアは「${it.rare.label}」で解放されるよ！`); renderAvatars(); return; }
+    if (state.coins < it.price) { say('コインがたりないよ。習慣をこなして ためよう！'); renderAvatars(); return; }
+    state.coins -= it.price;
+    state.unlocked = state.unlocked || []; state.unlocked.push(id);
+    state.equipped = Object.assign({}, playerEquip()); state.equipped[cat] = id;
+    const m = checkMissions();
+    save(); render(); if (!m) say('やった、ゲット！さっそく きせかえたよ✨');
+  }
+  function useHeal(id) {
+    const h = HEALS[id]; if (!h) return;
+    if (state.coins < h.price) { say('コインがたりないよ。'); renderAvatars(); return; }
+    if (state.condition >= 100) { say('もう げんきいっぱいだよ！'); renderAvatars(); return; }
+    state.coins -= h.price;
+    state.condition = Math.min(100, state.condition + h.heal);
+    save(); render(); say('スッキリ！げんきが もどってきた💪');
+  }
+  function buyFreeze() {
+    if (state.coins < FREEZE.price) { say('コインがたりないよ。'); renderAvatars(); return; }
+    state.coins -= FREEZE.price; state.freezes++;
+    const m = checkMissions();
+    save(); render(); if (!m) say('お守りを 手に入れた🛡️ サボっちゃった日も、連続を1日まもってくれるよ。');
+  }
+  // ペット/家具の所持（unlocked共用。price無し=なし枠は常に所持）
+  function ownsId(id, price) { return !price || price === 0 || (state.unlocked || []).includes(id); }
+  function equipPet(id) { state.pet = id; save(); renderShop(); renderAvatars(); }
+  function buyPet(id) {
+    const p = PETS[id]; if (!p || ownsId(id, p.price)) return;
+    if (p.rare && !rareUnlocked({ rare: p.rare })) { say(`このペットは「${p.rare.label}」で なかまになるよ！`); renderAvatars(); return; }
+    if (state.coins < p.price) { say('コインがたりないよ。'); renderAvatars(); return; }
+    state.coins -= p.price; (state.unlocked = state.unlocked || []).push(id); state.pet = id;
+    const m = checkMissions(); save(); render(); if (!m) say(`${p.name}が なかまになった！いっしょにがんばろう🐾`);
+  }
+  function buyFurniture(id) {
+    const f = FURNITURE[id]; if (!f || ownsId(id, f.price)) return;
+    if (f.rare && !rareUnlocked({ rare: f.rare })) { say(`これは「${f.rare.label}」で 手に入るよ！`); renderAvatars(); return; }
+    if (state.coins < f.price) { say('コインがたりないよ。'); renderAvatars(); return; }
+    state.coins -= f.price; (state.unlocked = state.unlocked || []).push(id);
+    const m = checkMissions(); save(); render(); if (!m) say(`${f.name}を おへやに かざったよ！🏠`);
+  }
+
+  function itemRow(it) {
+    const k = dkey(today());
+    const done = !!(it.done && it.done[k]);
+    const streak = isHabit(it) ? computeStreak(it) : 0;
+    const overdue = it.type === 'todo' && parseKey(it.createdAt) < today();
+    const meta = [];
+    if (isHabit(it)) {
+      meta.push(it.type === 'daily' ? 'まいにち' : (it.days || []).map((d) => WEEK_JP[d]).join('・'));
+      if (streak > 0) meta.push(`🔥${streak}日`);
+    } else {
+      meta.push(overdue ? '⚠️ きげん切れ' : 'きょうまで');
+    }
+    if (it.ifthen) meta.push('⏰' + it.ifthen);
+    return `
+      <div class="card p-3 flex items-center gap-3 ${done ? 'opacity-60' : ''}">
+        <button data-toggle="${it.id}" class="shrink-0 w-11 h-11 rounded-full grid place-items-center text-2xl btn ${done ? 'text-white' : 'bg-[#F4ECDF]'}" style="${done ? 'background:var(--c-green)' : ''}">${done ? '✓' : ''}</button>
+        <button data-edit="${it.id}" class="flex-1 min-w-0 text-left">
+          <div class="font-bold truncate ${done ? 'line-through' : ''}">${esc(it.name)}</div>
+          <div class="text-xs opacity-70 truncate">${esc(meta.join('　'))}</div>
+        </button>
+      </div>`;
+  }
+
+  function renderToday() {
+    $('#today-date').textContent = (() => { const d = today(); return `${d.getMonth() + 1}月${d.getDate()}日（${WEEK_JP[d.getDay()]}）`; })();
+
+    const habits = todaysHabits();
+    const todos = [...activeTodos(), ...doneTodosToday()];
+    $('#list-habits').innerHTML = habits.map(itemRow).join('');
+    $('#list-todos').innerHTML = todos.map(itemRow).join('');
+    $('#empty-habits').classList.toggle('hidden', habits.length > 0);
+    $('#empty-todos').classList.toggle('hidden', todos.length > 0);
+
+    // 達成バー（習慣＋締切到来Todo）
+    const k = dkey(today());
+    const targets = habits.length + todos.length;
+    const done = habits.filter((it) => it.done && it.done[k]).length + doneTodosToday().length;
+    $('#ach-frac').textContent = `${done} / ${targets}`;
+    $('#ach-bar').style.width = (targets ? Math.round(done / targets * 100) : 0) + '%';
+    $('#perfect-badge').classList.toggle('hidden', !state.perfect[k]);
+  }
+
+  function renderAvatars() {
+    const compact = $('#home-avatar');
+    if (compact) compact.innerHTML = avatarBlockHTML({ compact: true });
+    const pane = $('#avatar-pane');
+    if (pane) pane.innerHTML = avatarBlockHTML({ size: 160 });
+    const tab = $('#avatar-tab-body');
+    if (tab) tab.innerHTML = avatarBlockHTML({ size: 180 });
+  }
+
+  function renderCalendar() {
+    const base = addDays(today(), ui.weekOffset * 7);
+    // 月曜はじまりの週
+    const dow = (base.getDay() + 6) % 7;
+    const monday = addDays(base, -dow);
+    const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+    $('#week-range').textContent = `${monday.getMonth() + 1}/${monday.getDate()} 〜 ${days[6].getMonth() + 1}/${days[6].getDate()}` + (ui.weekOffset === 0 ? '（今週）' : '');
+
+    const tkey = dkey(today());
+    // ヘッダ行
+    let head = '<div class="grid gap-1 mb-1" style="grid-template-columns:120px repeat(7,1fr)"><div></div>';
+    days.forEach((d) => {
+      const isToday = dkey(d) === tkey;
+      head += `<div class="text-center text-xs font-bold ${isToday ? 'text-[var(--c-purple)]' : 'opacity-70'}">${WEEK_JP[d.getDay()]}<br>${d.getDate()}</div>`;
+    });
+    head += '</div>';
+
+    const habits = state.items.filter((it) => isHabit(it) && !it.archived);
+    let rows = '';
+    if (!habits.length) {
+      rows = '<div class="text-center text-sm opacity-60 py-8">習慣を追加すると、ここに「鎖」が表示されるよ。</div>';
+    }
+    habits.forEach((it) => {
+      let cells = '';
+      const start = parseKey(it.createdAt || state.createdAt);
+      days.forEach((d) => {
+        const sched = isScheduled(it, d);
+        const dk = dkey(d);
+        const isDone = it.done && it.done[dk];
+        const future = d > today();
+        const beforeStart = d < start;          // その習慣を作る前の日は「サボり」ではない
+        const frozen = it.frozen && it.frozen[dk]; // お守りで守った日（鎖はつながる・数えない）
+        let chip;
+        if (!sched || beforeStart) chip = '<span class="inline-block w-2 h-2 rounded-full bg-[#E7DCC9]"></span>';
+        else if (isDone) chip = '<span class="inline-grid place-items-center w-7 h-7 rounded-lg text-white text-sm" style="background:var(--c-green)">✓</span>';
+        else if (future) chip = '<span class="inline-block w-7 h-7 rounded-lg border-2 border-dashed border-[#E0D2BB]"></span>';
+        else if (frozen) chip = '<span class="inline-grid place-items-center w-7 h-7 rounded-lg text-sm" style="background:#EAF6FF" title="お守りで まもった日">🛡️</span>';
+        else chip = '<span class="inline-grid place-items-center w-7 h-7 rounded-lg text-[#E08AA0] bg-[#FFEdF1] text-sm">✕</span>';
+        cells += `<div class="grid place-items-center">${chip}</div>`;
+      });
+      rows += `<div class="grid gap-1 items-center py-1.5 border-t border-[#F2E9DA]" style="grid-template-columns:120px repeat(7,1fr)">
+          <div class="text-xs font-bold truncate pr-1">🔥${computeStreak(it)} ${esc(it.name)}</div>${cells}</div>`;
+    });
+    $('#calendar').innerHTML = head + rows;
+  }
+
+  // =====================================================================
+  //  演出（コイン/トースト）
+  // =====================================================================
+  function flyCoin(text, big) {
+    const wrap = $('#toast-wrap');
+    const el = document.createElement('div');
+    el.className = 'float-up font-pop ' + (big ? 'text-2xl' : 'text-xl');
+    el.style.color = '#C9971B';
+    el.textContent = '🪙 ' + text;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  // =====================================================================
+  //  タブ切替
+  // =====================================================================
+  function setTab(tab) {
+    ui.tab = tab;
+    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
+    const map = { home: '#tab-home', calendar: '#tab-calendar', shop: '#tab-shop', room: '#tab-room', avatar: '#tab-avatar' };
+    $(map[tab]).classList.remove('hidden');
+    if (ui.tab === 'shop') renderShop();
+    if (ui.tab === 'room') renderRoom();
+    if (ui.tab === 'avatar') renderProgress();
+    // FABは「きょう／カレンダー」だけに表示
+    $('#fab-add').style.display = (ui.tab === 'home' || ui.tab === 'calendar') ? '' : 'none';
+    document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === ui.tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // =====================================================================
+  //  モーダル（追加/編集）
+  // =====================================================================
+  function openAdd(editItem) {
+    ui.editId = editItem ? editItem.id : null;
+    ui.formType = editItem ? editItem.type : 'daily';
+    ui.formDays = editItem && editItem.days ? [...editItem.days] : [];
+    $('#modal-title').textContent = editItem ? 'へんしゅう' : 'なにを習慣にする？';
+    $('#f-name').value = editItem ? editItem.name : '';
+    $('#f-ifthen').value = editItem ? (editItem.ifthen || '') : '';
+    $('#f-delete').classList.toggle('hidden', !editItem);
+    syncTypeButtons();
+    renderWeekdayButtons();
+    showModal('#modal-add');
+    setTimeout(() => $('#f-name').focus(), 50);
+  }
+  function syncTypeButtons() {
+    document.querySelectorAll('.type-btn').forEach((b) => {
+      const on = b.dataset.type === ui.formType;
+      b.style.outline = on ? '3px solid var(--c-purple)' : 'none';
+      b.style.outlineOffset = '2px';
+    });
+    $('#weekday-row').classList.toggle('hidden', ui.formType !== 'weekly');
+  }
+  function renderWeekdayButtons() {
+    const order = [1, 2, 3, 4, 5, 6, 0]; // 月→日
+    $('#weekday-btns').innerHTML = order.map((d) => {
+      const on = ui.formDays.includes(d);
+      return `<button data-wd="${d}" class="btn py-2 text-sm ${on ? 'text-white' : 'bg-[#F4ECDF]'}" style="${on ? 'background:var(--c-blue)' : ''}">${WEEK_JP[d]}</button>`;
+    }).join('');
+  }
+  function saveForm() {
+    const name = $('#f-name').value.trim();
+    if (!name) { $('#f-name').focus(); return; }
+    if (ui.formType === 'weekly' && !ui.formDays.length) { alert('曜日を1つえらんでね'); return; }
+    const ifthen = $('#f-ifthen').value.trim();
+    if (ui.editId) {
+      const it = state.items.find((x) => x.id === ui.editId);
+      it.name = name; it.type = ui.formType; it.ifthen = ifthen;
+      it.days = ui.formType === 'weekly' ? [...ui.formDays] : [];
+    } else {
+      state.items.push({
+        id: 'i' + Date.now() + Math.random().toString(36).slice(2, 6),
+        name, type: ui.formType, days: ui.formType === 'weekly' ? [...ui.formDays] : [],
+        ifthen, createdAt: dkey(today()), done: {}, bestStreak: 0, archived: false,
+      });
+    }
+    refreshPerfectDay();
+    checkMissions();
+    save();
+    hideModal('#modal-add');
+    render();
+  }
+  function deleteItem() {
+    if (!ui.editId) return;
+    if (!confirm('この習慣をけしますか？')) return;
+    state.items = state.items.filter((x) => x.id !== ui.editId);
+    refreshPerfectDay();
+    save();
+    hideModal('#modal-add');
+    render();
+  }
+
+  function showModal(sel) { const m = $(sel); m.classList.remove('hidden'); m.classList.add('flex'); }
+  function hideModal(sel) { const m = $(sel); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+  // =====================================================================
+  //  オンボーディング
+  // =====================================================================
+  let obStyle = 'boy';
+  function maybeOnboard() {
+    if (state.profile) return false;
+    // ボタンに男の子／女の子のプレビューを描画＋初期選択
+    document.querySelectorAll('.ob-style-btn').forEach((b) => {
+      const prev = b.querySelector('.ob-prev');
+      if (prev) prev.innerHTML = avatarSVG(b.dataset.style, 'genki', 72);
+      const on = b.dataset.style === obStyle;
+      b.style.outline = on ? '3px solid var(--c-purple)' : 'none';
+      b.style.outlineOffset = '2px';
+    });
+    const m = $('#onboarding'); m.classList.remove('hidden'); m.classList.add('flex');
+    return true;
+  }
+  function finishOnboard() {
+    const name = $('#ob-name').value.trim() || 'キミ';
+    state.profile = { name, style: obStyle };
+    state.equipped = Object.assign({}, EQ[obStyle] || EQ.boy);
+    state.unlocked = [];
+    state.lastOpenDate = dkey(today());
+    save();
+    const m = $('#onboarding'); m.classList.add('hidden'); m.classList.remove('flex');
+    boot();
+  }
+  // 既存セーブ（装備が無い時代のもの）に初期コーデを補完
+  function ensureEquipped() {
+    if (state.profile && !state.equipped) {
+      state.equipped = Object.assign({}, EQ[state.profile.style] || EQ.boy);
+    }
+    if (state.equipped && !state.equipped.cape) state.equipped.cape = 'cape_green';
+    if (state.equipped && !state.equipped.suit) state.equipped.suit = 'suit_none';
+    if (!Array.isArray(state.unlocked)) state.unlocked = [];
+    if (typeof state.titleIdx !== 'number') state.titleIdx = -1;
+    if (typeof state.freezes !== 'number') state.freezes = 0;
+    if (!state.missionsDone || typeof state.missionsDone !== 'object') state.missionsDone = {};
+    if (!state.dailyDone || typeof state.dailyDone !== 'object') state.dailyDone = {};
+    if (!state.raresSeen || typeof state.raresSeen !== 'object') state.raresSeen = {};
+    if (typeof state.pet !== 'string') state.pet = 'pet_none';
+    if (!state.battleFoes || typeof state.battleFoes !== 'object') state.battleFoes = {};
+  }
+
+  // =====================================================================
+  //  起動
+  // =====================================================================
+  function boot() {
+    ensureEquipped();
+    evaluatePastDays();
+    checkMissions();          // 読み込み時点で達成ずみのミッションを反映
+    save();
+    render();
+    say(openingGreeting());   // 起動あいさつを最終表示
+  }
+
+  function bindEvents() {
+    // オンボーディング
+    document.querySelectorAll('.ob-style-btn').forEach((b) => b.addEventListener('click', () => {
+      obStyle = b.dataset.style;
+      document.querySelectorAll('.ob-style-btn').forEach((x) => { x.style.outline = 'none'; });
+      b.style.outline = '3px solid var(--c-purple)'; b.style.outlineOffset = '2px';
+    }));
+    $('#ob-start').addEventListener('click', finishOnboard);
+
+    // ナビ
+    document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+    // 委譲：チェック/編集
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-toggle]');
+      if (t) { const btn = t; btn.classList.add('animate-pop'); setTimeout(() => btn.classList.remove('animate-pop'), 320); toggleToday(t.dataset.toggle); return; }
+      const ed = e.target.closest('[data-edit]');
+      if (ed) { const it = state.items.find((x) => x.id === ed.dataset.edit); if (it) openAdd(it); return; }
+      const dm = e.target.closest('[data-daily]');
+      if (dm) { const btn = dm; btn.classList.add('animate-pop'); setTimeout(() => btn.classList.remove('animate-pop'), 320); toggleDaily(+dm.dataset.daily); return; }
+      // ショップ
+      const sc = e.target.closest('[data-shopcat]');
+      if (sc) { ui.shopCat = sc.dataset.shopcat; renderShop(); return; }
+      const eq = e.target.closest('[data-equip]');
+      if (eq) { const [c, i] = eq.dataset.equip.split(':'); equipItem(c, i); return; }
+      const by = e.target.closest('[data-buy]');
+      if (by) { const [c, i] = by.dataset.buy.split(':'); buyItem(c, i); return; }
+      const hl = e.target.closest('[data-heal]');
+      if (hl) { useHeal(hl.dataset.heal); return; }
+      const bf = e.target.closest('[data-buyfreeze]');
+      if (bf) { buyFreeze(); return; }
+      const bp = e.target.closest('[data-buypet]');
+      if (bp) { buyPet(bp.dataset.buypet); return; }
+      const ep = e.target.closest('[data-equippet]');
+      if (ep) { equipPet(ep.dataset.equippet); return; }
+      const bfu = e.target.closest('[data-buyfurn]');
+      if (bfu) { buyFurniture(bfu.dataset.buyfurn); return; }
+      const sj = e.target.closest('[data-shopjump]');
+      if (sj) { ui.shopCat = sj.dataset.shopjump; setTab('shop'); return; }
+      const tt = e.target.closest('[data-title]');
+      if (tt) { buyTitle(+tt.dataset.title); return; }
+      const ac = e.target.closest('[data-act]');
+      if (ac) { if (ac.dataset.act === 'copycode') copyMyCode(); else if (ac.dataset.act === 'battle') doBattle(); return; }
+    });
+
+    // FAB / モーダル
+    $('#fab-add').addEventListener('click', () => openAdd(null));
+    $('#modal-close').addEventListener('click', () => hideModal('#modal-add'));
+    $('#modal-add').addEventListener('click', (e) => { if (e.target.id === 'modal-add') hideModal('#modal-add'); });
+    $('#f-save').addEventListener('click', saveForm);
+    $('#f-delete').addEventListener('click', deleteItem);
+    document.querySelectorAll('.type-btn').forEach((b) => b.addEventListener('click', () => { ui.formType = b.dataset.type; if (ui.formType === 'weekly' && !ui.formDays.length) { const wd = today().getDay(); ui.formDays = [wd]; } syncTypeButtons(); renderWeekdayButtons(); }));
+    $('#weekday-btns').addEventListener('click', (e) => { const b = e.target.closest('[data-wd]'); if (!b) return; const d = +b.dataset.wd; ui.formDays = ui.formDays.includes(d) ? ui.formDays.filter((x) => x !== d) : [...ui.formDays, d]; renderWeekdayButtons(); });
+
+    // カレンダー週移動
+    $('#wk-prev').addEventListener('click', () => { ui.weekOffset--; renderCalendar(); });
+    $('#wk-next').addEventListener('click', () => { ui.weekOffset++; renderCalendar(); });
+    $('#wk-today').addEventListener('click', () => { ui.weekOffset = 0; renderCalendar(); });
+
+    // 設定
+    $('#btn-settings').addEventListener('click', () => {
+      const li = levelInfo(state.exp);
+      $('#settings-info').innerHTML = `なまえ：${esc(state.profile?.name || '')}<br>レベル：${li.lvl}（EXP ${state.exp}）<br>コイン：${state.coins}<br>習慣・Todo：${state.items.length}こ`;
+      showModal('#modal-settings');
+    });
+    $('#settings-close').addEventListener('click', () => hideModal('#modal-settings'));
+    $('#modal-settings').addEventListener('click', (e) => { if (e.target.id === 'modal-settings') hideModal('#modal-settings'); });
+    $('#battle-close').addEventListener('click', () => hideModal('#modal-battle'));
+    $('#modal-battle').addEventListener('click', (e) => { if (e.target.id === 'modal-battle') hideModal('#modal-battle'); });
+    $('#btn-reset').addEventListener('click', () => { if (confirm('ぜんぶのデータをけして最初からやり直しますか？')) { localStorage.removeItem(SKEY); location.reload(); } });
+
+    // 画面回転/リサイズでレイアウト整合
+    window.addEventListener('resize', () => { renderAvatars(); });
+  }
+
+  // PWA: Service Worker 登録（http(s)時のみ）
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+
+  // 起動シーケンス
+  bindEvents();
+  if (!maybeOnboard()) boot();
+  </script>
+</body>
+
+</html>

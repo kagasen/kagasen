@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#38BDF8">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>うごきのきろく</title>
+<style>
+:root{
+  --sky:#38BDF8; --sky-dark:#0EA5E9; --sky-deep:#0284C7;
+  --orange:#FB923C; --orange-dark:#F97316;
+  --green:#4ADE80; --green-dark:#22C55E;
+  --pink:#F472B6; --purple:#A78BFA; --yellow:#FACC15;
+  --bg:#F0F9FF; --card:#FFFFFF; --ink:#0F3350; --ink-soft:#5B7A94;
+  --line:#DBEEFB; --shadow:0 4px 14px rgba(14,116,180,.12);
+  --radius:20px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic','Yu Gothic UI','Yu Gothic',sans-serif;
+  background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  user-select:none; -webkit-user-select:none;
+}
+input,select,textarea{user-select:text; -webkit-user-select:text;}
+#app{max-width:640px;margin:0 auto;padding:12px 14px 20px;}
+
+/* ---------- header ---------- */
+.topbar{display:flex;align-items:center;gap:10px;padding:6px 2px 10px;}
+.topbar .logo{font-size:22px;font-weight:800;color:var(--sky-deep);letter-spacing:.02em;}
+.topbar .logo span{color:var(--orange-dark);}
+.back-btn{
+  border:none;background:var(--card);box-shadow:var(--shadow);color:var(--sky-deep);
+  border-radius:14px;min-width:48px;height:44px;font-size:17px;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 14px;
+}
+.page-title{font-size:20px;font-weight:800;margin:4px 0 12px;display:flex;align-items:center;gap:8px;}
+.page-title .em{font-size:26px;}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;}
+.card h3{margin:0 0 10px;font-size:16px;color:var(--sky-deep);display:flex;align-items:center;gap:6px;}
+.muted{color:var(--ink-soft);font-size:13px;}
+.small{font-size:12px;}
+.center{text-align:center;}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:none;border-radius:16px;font-family:inherit;font-weight:800;cursor:pointer;
+  min-height:48px;font-size:16px;padding:10px 18px;color:#fff;
+  background:linear-gradient(180deg,var(--sky),var(--sky-dark));
+  box-shadow:0 4px 0 rgba(2,132,199,.45);transition:transform .06s;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(2,132,199,.45);}
+.btn.orange{background:linear-gradient(180deg,var(--orange),var(--orange-dark));box-shadow:0 4px 0 rgba(194,90,10,.4);}
+.btn.orange:active{box-shadow:0 2px 0 rgba(194,90,10,.4);}
+.btn.green{background:linear-gradient(180deg,var(--green),var(--green-dark));box-shadow:0 4px 0 rgba(21,128,61,.4);}
+.btn.green:active{box-shadow:0 2px 0 rgba(21,128,61,.4);}
+.btn.ghost{background:#EFF8FF;color:var(--sky-deep);box-shadow:inset 0 0 0 2px var(--line);}
+.btn.danger{background:linear-gradient(180deg,#F87171,#EF4444);box-shadow:0 4px 0 rgba(153,27,27,.35);}
+.btn.wide{width:100%;}
+.btn.smallbtn{min-height:40px;font-size:14px;padding:6px 12px;border-radius:12px;}
+.btn:disabled{opacity:.45;cursor:default;}
+
+/* ---------- home ---------- */
+.hero{
+  background:linear-gradient(160deg,#E0F4FF 0%,#FDF6E3 100%);
+  border-radius:24px;box-shadow:var(--shadow);padding:18px 16px 16px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+}
+.hero .char-wrap{display:flex;align-items:center;gap:14px;}
+.hero .char-svg{width:120px;height:120px;flex:none;filter:drop-shadow(0 6px 8px rgba(14,116,180,.18));animation:bob 2.6s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.hero .char-info{flex:1;min-width:0;}
+.hero .char-name{font-size:19px;font-weight:800;}
+.hero .char-stage{font-size:12px;color:var(--ink-soft);margin-bottom:6px;}
+.lv-chip{display:inline-block;background:var(--sky-deep);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:2px 12px;margin-right:6px;}
+.xpbar{height:16px;background:#DCEFFB;border-radius:999px;overflow:hidden;margin-top:8px;box-shadow:inset 0 1px 3px rgba(0,0,0,.08);}
+.xpbar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--sky));transition:width .6s cubic-bezier(.22,1.2,.36,1);}
+.xp-label{font-size:12px;color:var(--ink-soft);margin-top:4px;display:flex;justify-content:space-between;}
+.streak-chip{
+  display:inline-flex;align-items:center;gap:5px;background:#FFF3E4;color:#B45309;
+  border-radius:999px;padding:4px 12px;font-weight:800;font-size:13px;margin-top:10px;
+}
+.kyu-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.kyu-chip{background:#fff;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--sky-deep);box-shadow:0 1px 4px rgba(14,116,180,.15);}
+
+/* ---------- sport grid ---------- */
+.sport-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sport-card{
+  border:none;border-radius:20px;padding:16px 10px 12px;cursor:pointer;color:#fff;
+  display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--shadow);
+  font-family:inherit;transition:transform .08s;min-height:110px;
+}
+.sport-card:active{transform:scale(.96);}
+.sport-card .em{font-size:38px;line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.15));}
+.sport-card .nm{font-weight:800;font-size:16px;}
+.sport-card .sub{font-size:11px;opacity:.92;}
+.sc-nawatobi{background:linear-gradient(160deg,#38BDF8,#2563EB);}
+.sc-tetsubo{background:linear-gradient(160deg,#FB923C,#EA580C);}
+.sc-mat{background:linear-gradient(160deg,#4ADE80,#16A34A);}
+.sc-tobibako{background:linear-gradient(160deg,#F472B6,#DB2777);}
+.sc-suiei{background:linear-gradient(160deg,#22D3EE,#0891B2);}
+.sc-marathon{background:linear-gradient(160deg,#A78BFA,#7C3AED);}
+.sc-soccer{background:linear-gradient(160deg,#34D399,#059669);}
+.sc-basket{background:linear-gradient(160deg,#F59E0B,#B45309);}
+.sc-volley{background:linear-gradient(160deg,#FACC15,#A16207);}
+.sc-baseball{background:linear-gradient(160deg,#94A3B8,#475569);}
+.sc-dodge{background:linear-gradient(160deg,#F87171,#DC2626);}
+.sc-relay{background:linear-gradient(160deg,#2DD4BF,#0D9488);}
+
+/* ---------- skill cards ---------- */
+.skill-card{
+  background:var(--card);border-radius:16px;box-shadow:var(--shadow);
+  padding:12px 14px;margin-bottom:10px;border-left:8px solid var(--line);
+}
+.skill-card.done{border-left-color:var(--green-dark);background:linear-gradient(160deg,#F2FFF5,#fff);}
+.skill-head{display:flex;align-items:center;gap:8px;}
+.skill-name{font-weight:800;font-size:16px;flex:1;}
+.skill-stars{color:var(--yellow);font-size:14px;letter-spacing:1px;text-shadow:0 1px 1px rgba(0,0,0,.12);}
+.skill-kotsu{font-size:12.5px;color:var(--ink-soft);margin-top:5px;background:#F4FAFF;border-radius:10px;padding:7px 10px;}
+.skill-kotsu b{color:var(--sky-deep);}
+.skill-body{display:flex;gap:10px;margin-top:8px;align-items:stretch;flex-wrap:wrap;}
+.skill-body .skill-kotsu{flex:1 1 150px;margin-top:0;}
+.skill-art{flex:none;width:108px;min-height:84px;background:#F0FAFF;border:2px solid #E3F3FC;border-radius:12px;display:flex;align-items:center;}
+.skill-art svg{width:100%;height:auto;display:block;}
+.done-badge{background:var(--green-dark);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;flex:none;}
+.best-chip{background:#E8F6FF;color:var(--sky-deep);font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;flex:none;}
+.kyu-mini{background:var(--orange);color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;flex:none;}
+.check-big{
+  width:46px;height:46px;border-radius:14px;border:3px dashed #BFE3F7;background:#F4FBFF;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:all .15s;
+}
+.check-big.on{border:3px solid var(--green-dark);background:var(--green);color:#fff;}
+
+/* count stepper */
+.count-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.count-row input[type=number]{
+  width:86px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:20px;font-weight:800;
+  text-align:center;font-family:inherit;color:var(--ink);background:#FBFEFF;
+}
+.step-btn{
+  width:48px;height:48px;border-radius:14px;border:none;background:#E8F6FF;color:var(--sky-deep);
+  font-size:22px;font-weight:800;cursor:pointer;flex:none;
+}
+.step-btn:active{background:#D3EDFC;}
+
+/* dan buttons (tobibako) */
+.dan-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.dan-btn{
+  min-width:48px;height:44px;border-radius:12px;border:2px solid var(--line);background:#FBFEFF;
+  font-family:inherit;font-weight:800;font-size:14px;color:var(--ink-soft);cursor:pointer;
+}
+.dan-btn.reached{background:linear-gradient(180deg,var(--pink),#DB2777);border-color:#DB2777;color:#fff;}
+.dan-btn.max{outline:3px solid var(--yellow);}
+
+/* ---------- forms ---------- */
+.form-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.form-row label{font-size:13px;font-weight:700;color:var(--ink-soft);min-width:64px;}
+input[type=date],input[type=text],select{
+  height:48px;border-radius:14px;border:2px solid var(--line);font-size:16px;font-family:inherit;
+  padding:0 12px;color:var(--ink);background:#FBFEFF;
+}
+.quick-chip{
+  border:none;background:#E8F6FF;color:var(--sky-deep);font-weight:800;font-size:13px;
+  border-radius:999px;padding:8px 14px;cursor:pointer;font-family:inherit;
+}
+.quick-chip:active{background:#D3EDFC;}
+
+/* ---------- progress bar ---------- */
+.goalbar{height:20px;background:#E4F2FC;border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.07);}
+.goalbar .fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--yellow));border-radius:999px;transition:width .6s;}
+
+/* ---------- timeline ---------- */
+.tl-date{font-weight:800;color:var(--sky-deep);margin:16px 0 6px;font-size:14px;display:flex;align-items:center;gap:6px;}
+.tl-item{
+  background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:10px 14px;margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;font-size:14px;
+}
+.tl-item .em{font-size:22px;flex:none;}
+.tl-item .xp{margin-left:auto;color:var(--green-dark);font-weight:800;font-size:13px;flex:none;}
+
+/* ---------- badges ---------- */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;}
+.badge-cell{
+  background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:12px 6px 10px;text-align:center;
+}
+.badge-cell .em{font-size:34px;display:block;}
+.badge-cell .nm{font-size:11.5px;font-weight:800;margin-top:4px;line-height:1.3;}
+.badge-cell .cond{font-size:10px;color:var(--ink-soft);margin-top:2px;line-height:1.3;}
+.badge-cell.locked{opacity:.85;}
+.badge-cell.locked .em{filter:grayscale(1);opacity:.45;}
+.badge-cell.locked .nm{color:#9DB4C6;}
+.badge-cell.got{background:linear-gradient(160deg,#FFFBEB,#fff);outline:2px solid #FDE68A;}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-box{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:12px;text-align:center;}
+.stat-box .val{font-size:24px;font-weight:800;color:var(--sky-deep);}
+.stat-box .lbl{font-size:11.5px;color:var(--ink-soft);}
+
+/* ---------- bottom nav ---------- */
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+.nav button{
+  border:none;background:none;font-family:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  font-size:10.5px;font-weight:800;color:#9DB4C6;min-width:56px;padding:4px 2px;border-radius:12px;
+}
+.nav button .em{font-size:22px;line-height:1.2;filter:grayscale(1);opacity:.6;}
+.nav button.active{color:var(--sky-deep);background:#EAF6FF;}
+.nav button.active .em{filter:none;opacity:1;}
+
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(8,47,73,.55);z-index:100;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  animation:fadein .25s;
+}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal-box{
+  background:#fff;border-radius:26px;padding:26px 22px;max-width:340px;width:100%;text-align:center;
+  animation:zoomin .45s cubic-bezier(.18,1.5,.4,1);position:relative;max-height:85vh;overflow-y:auto;
+}
+@keyframes zoomin{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-box .big-em{font-size:76px;line-height:1.1;display:block;animation:pop .6s cubic-bezier(.18,2,.4,1) .15s backwards;}
+@keyframes pop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0)}}
+.modal-box h2{margin:8px 0 4px;font-size:21px;color:var(--orange-dark);}
+.modal-box p{margin:4px 0 14px;color:var(--ink-soft);font-size:14px;}
+.getxp{display:inline-block;background:#ECFDF3;color:var(--green-dark);font-weight:800;border-radius:999px;padding:4px 14px;font-size:14px;margin-bottom:12px;}
+
+/* toast */
+#toast{
+  position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#fff;font-weight:700;font-size:14px;border-radius:999px;
+  padding:10px 20px;opacity:0;transition:all .3s;z-index:90;pointer-events:none;white-space:nowrap;
+}
+#toast.show{opacity:.95;transform:translateX(-50%) translateY(0);}
+
+/* confetti canvas */
+#confetti{position:fixed;inset:0;z-index:110;pointer-events:none;}
+
+/* chart */
+.chart-wrap{overflow-x:auto;}
+.bench-msg{
+  background:linear-gradient(160deg,#FFF9E6,#FFF);border:2px dashed var(--yellow);
+  border-radius:14px;padding:10px 12px;font-size:13.5px;font-weight:700;color:#92600A;margin-top:10px;
+}
+.rec-list{margin:0;padding:0;list-style:none;}
+.rec-list li{display:flex;gap:8px;align-items:center;padding:8px 2px;border-bottom:1px dashed var(--line);font-size:14px;}
+.rec-list li .d{color:var(--ink-soft);font-size:12px;min-width:74px;}
+.rec-list li .v{font-weight:800;}
+.del-x{margin-left:auto;border:none;background:#FEF2F2;color:#DC2626;border-radius:10px;width:34px;height:34px;font-size:15px;cursor:pointer;flex:none;}
+
+.section-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.section-tabs button{
+  flex:1;border:none;border-radius:14px;min-height:44px;font-family:inherit;font-weight:800;font-size:14px;
+  background:#E8F6FF;color:var(--sky-deep);cursor:pointer;
+}
+.section-tabs button.active{background:var(--sky-dark);color:#fff;}
+
+@media (min-width:520px){
+  .sport-grid{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="nav" id="nav"></nav>
+<div id="toast"></div>
+<div id="modal-root"></div>
+<canvas id="confetti"></canvas>
+<script>
+'use strict';
+/* ============================================================
+   うごきのきろく — 小学生向け 運動チャレンジ＆成長ログ
+   完全オフライン(localStorage) / PWA
+   検定・級のデータは栃木県「みんなが使えるチャレンジカード集」
+   (鉄棒検定カード・なわとびチャレンジカード・水泳がんばりカード)を参考
+   ============================================================ */
+
+/* ---------------- 種目データ ---------------- */
+const SPORTS = {
+  nawatobi:{ name:'なわとび', em:'🪢', cls:'sc-nawatobi', sub:'わざ19こ＋30びょうチャレンジ' },
+  tetsubo:{ name:'てつぼう', em:'🤾', cls:'sc-tetsubo', sub:'けんてい20わざ' },
+  mat:{ name:'マットうんどう', em:'🤸', cls:'sc-mat', sub:'わざ10こ' },
+  tobibako:{ name:'とびばこ', em:'🦘', cls:'sc-tobibako', sub:'わざ×なんだん？' },
+  suiei:{ name:'すいえい', em:'🏊', cls:'sc-suiei', sub:'けんてい22だんかい' },
+  marathon:{ name:'マラソン', em:'🏃', cls:'sc-marathon', sub:'きょり・タイム' },
+  soccer:{ name:'サッカー', em:'⚽', cls:'sc-soccer', sub:'チャレンジ7こ' },
+  basket:{ name:'バスケットボール', em:'🏀', cls:'sc-basket', sub:'チャレンジ7こ' },
+  volley:{ name:'バレーボール', em:'🏐', cls:'sc-volley', sub:'チャレンジ7こ' },
+  baseball:{ name:'やきゅう', em:'⚾', cls:'sc-baseball', sub:'チャレンジ7こ' },
+  dodge:{ name:'ドッジボール', em:'🤾', cls:'sc-dodge', sub:'チャレンジ7こ' },
+  relay:{ name:'リレー・かけっこ', em:'🏁', cls:'sc-relay', sub:'チャレンジ7こ' },
+};
+
+/* なわとび: 級ひょう(かいすう→級) 0=特級 0.5=準特級 */
+const NAWATOBI_SKILLS = [
+  { id:'n1',  name:'1かいせん2ちょうやく', kotsu:'なわが1しゅうするあいだに2かいジャンプ。ゆっくりリズムよく！', lv:[[10,5],[9,10]] },
+  { id:'n2',  name:'まえとび', kotsu:'ひじをわきにつけて、手くびで小さくまわそう。目せんはまっすぐ前！', lv:[[9,5],[8,10],[7,20],[6,30],[5,40],[4,50]] },
+  { id:'n3',  name:'うしろとび', kotsu:'なわを後ろへ。かかとの後ろをなわが通るのをかんじよう。', lv:[[8,5],[7,10],[6,15],[5,20],[4,30],[3,40]] },
+  { id:'n4',  name:'かけあしとび', kotsu:'その場でかけあしをしながらとぶよ。1・2・1・2のリズム！', lv:[[8,5],[7,10],[6,15],[5,20]] },
+  { id:'n5',  name:'グーチョキとび', kotsu:'グー(そろえる)→チョキ(まえうしろ)と足をかえながらとぼう。', lv:[[8,4],[7,8],[6,10],[5,20]] },
+  { id:'n6',  name:'グーパーとび', kotsu:'グー(とじる)→パー(ひらく)！足のかたちを声に出すとやりやすいよ。', lv:[[8,4],[7,8],[6,10],[5,20]] },
+  { id:'n7',  name:'よこステップとび', kotsu:'とぶたびに左右へちょっとずつステップ。スキーみたいに！', lv:[[7,5],[6,10],[5,15],[4,20]] },
+  { id:'n8',  name:'まえふりとび', kotsu:'足を前にふり出しながらとぶよ。バランスをくずさないでね。', lv:[[7,4],[6,8],[5,10],[4,20]] },
+  { id:'n9',  name:'あやとび', kotsu:'うでを大きくクロス！むねの前でしっかりバッテンを作ろう。', lv:[[6,3],[5,5],[4,10],[3,15]] },
+  { id:'n10', name:'こうさとび', kotsu:'うでをクロスしたままとびつづける。ひじをおへその前でキープ！', lv:[[6,3],[5,5],[4,10],[3,15]] },
+  { id:'n11', name:'うしろあやとび', kotsu:'うしろまわしでバッテン！まずはうしろとびをかんぺきに。', lv:[[5,3],[4,5],[3,10],[2,15]] },
+  { id:'n12', name:'うしろこうさとび', kotsu:'うしろまわしのままクロスをキープ。手くびのちからで回そう。', lv:[[5,3],[4,5],[3,10],[2,15]] },
+  { id:'n13', name:'にじゅうとび', kotsu:'高くとんで、1かいのジャンプでなわを2かい回す！30びょうで70かい回せたらできるはず！', lv:[[4,3],[3,5],[2,10],[1,20],[0.5,50],[0,100]] },
+  { id:'n14', name:'はやぶさ(あや2じゅう)', kotsu:'にじゅうとびの2かいめをクロスに！「トン・シュシュ」のリズム。', lv:[[4,3],[3,5],[2,10],[1,20],[0.5,30],[0,50]] },
+  { id:'n15', name:'こうさにじゅうとび', kotsu:'クロスしたまま2かい回す上きゅうわざ。はやぶさのつぎにちょうせん！', lv:[[3,3],[2,5],[1,10],[0.5,20],[0,30]] },
+  { id:'n16', name:'うしろにじゅうとび', kotsu:'うしろ回しで2かい回す！たかくとんであわてずに。', lv:[[3,3],[2,10],[1,20],[0.5,30],[0,50]] },
+  { id:'n17', name:'うしろはやぶさ', kotsu:'うしろにじゅうとび＋クロス。せなかがわの音をよく聞いて！', lv:[[2,5],[1,10],[0.5,20],[0,30]] },
+  { id:'n18', name:'うしろこうさにじゅう', kotsu:'ちょうじょうきゅうわざ！うしろ回しクロスのまま2かいてん。', lv:[[2,3],[1,5],[0.5,10],[0,20]] },
+  { id:'n19', name:'さんじゅうとび', kotsu:'でんせつのわざ。30びょうで100かい回せるスピードが目やす！', lv:[[1,3],[0,5]] },
+];
+
+/* てつぼう: 検定カード20わざ(1わざ=1てん, 20てんで特級) */
+const TETSUBO_SKILLS = [
+  { id:'t1',  name:'つばめ', st:1, kotsu:'てつぼうの上でうでをピン! 目せんは前。おなかでバランス。' },
+  { id:'t2',  name:'ふとんほし', st:1, kotsu:'おなかをかけて体のちからをぬいて、ふとんみたいにぶら〜ん。' },
+  { id:'t3',  name:'まえまわりおり', st:1, kotsu:'つばめのしせいから、ゆっくり前にくるん。ひじをまげておりよう。' },
+  { id:'t4',  name:'あしぬきまわり', st:1, kotsu:'ぶらさがって、りょう足をうでの間から通してくるん!' },
+  { id:'t5',  name:'こうもり', st:1, kotsu:'ひざをかけて、さかさまにぶらさがるよ。手をはなすときはゆっくり。' },
+  { id:'t6',  name:'こうもりおり', st:2, kotsu:'こうもりから手を地めんについて、足をはずしておりる。' },
+  { id:'t7',  name:'ちきゅうまわり', st:2, kotsu:'あしぬきまわりのとちゅうで足をはずして、もういちどかけかえる!' },
+  { id:'t8',  name:'ふみこしおり', st:2, kotsu:'ぼうの上に足のうらをのせて、またぎこしながらおりるよ。' },
+  { id:'t9',  name:'あしかけあがり', st:2, kotsu:'かた足をぼうにかけて、ふりこの力でぐいっと上がる!' },
+  { id:'t10', name:'あしかけぜんてん', st:2, kotsu:'足をかけたまま前にまわる。スピードをつけて!' },
+  { id:'t11', name:'あしかけこうてん', st:3, kotsu:'足をかけたまま後ろへまわる。上はんしんを大きくたおすのがコツ。' },
+  { id:'t12', name:'さかあがり', st:2, kotsu:'おへそをぼうにちかづけて、けり足は「上」じゃなく「後ろの上」へ!' },
+  { id:'t13', name:'だるままわり', st:3, kotsu:'ひざをかかえてまるくなって、くるんとまわるよ。' },
+  { id:'t14', name:'プロペラまわり', st:3, kotsu:'体をよこにして、プロペラみたいにくるっと1かいてん!' },
+  { id:'t15', name:'うでたてこうてん', st:3, kotsu:'つばめのしせいから後ろへ大きくまわる。空中さかあがり!' },
+  { id:'t16', name:'ひこうきとび', st:2, kotsu:'ぼうの上にしゃがんで、うでを広げてジャンプ! 手はさいごまでぼうに。' },
+  { id:'t17', name:'じごくまわり', st:3, kotsu:'ひざのうらをかけて後ろへぐるん。名前はこわいけどかっこいい!' },
+  { id:'t18', name:'てんごくまわり', st:3, kotsu:'じごくまわりのぎゃく回り。ゆっくりていねいに。' },
+  { id:'t19', name:'うでたてぜんてん', st:3, kotsu:'つばめから前へ大きく1かいてん。空中前まわり!' },
+  { id:'t20', name:'けんすいさかあがり', st:3, kotsu:'ぶらさがったまま、うでの力だけでさかあがり! 最強のわざ。' },
+];
+
+/* マットうんどう */
+const MAT_SKILLS = [
+  { id:'m1',  name:'ぜんてん(前転)', st:1, kotsu:'手をしっかりついて、あたまの後ろ→せなか→おしりのじゅんに丸く!' },
+  { id:'m2',  name:'こうてん(後転)', st:1, kotsu:'耳のよこに手をかまえて、おへそを見ながらうしろへくるん。' },
+  { id:'m3',  name:'かいきゃくぜんてん', st:2, kotsu:'まわりおわるちょくぜんに足をパッと開いて、手でマットをおす!' },
+  { id:'m4',  name:'かいきゃくこうてん', st:2, kotsu:'後転しながら足を開く。手のおしがポイント!' },
+  { id:'m5',  name:'ブリッジ', st:1, kotsu:'あお向けから手と足でぐーんと体をもち上げる。おへそを天じょうへ!' },
+  { id:'m6',  name:'かべとうりつ', st:2, kotsu:'かべに足をかけてのぼっていくよ。うでをピンとのばして!' },
+  { id:'m7',  name:'そくてん(側転)', st:2, kotsu:'手→手→足→足のじゅんに。「く」の字じゃなく大きな「一」の字に!' },
+  { id:'m8',  name:'とうりつ(倒立)', st:3, kotsu:'ゆびで地めんをつかむ! 目せんは手と手のあいだ。' },
+  { id:'m9',  name:'とうりつぜんてん', st:3, kotsu:'とうりつからあごをひいて、ゆっくり前転につなげるよ。' },
+  { id:'m10', name:'ロンダート', st:3, kotsu:'そくてんの後はんで体をひねって、りょう足でピタッと着地!' },
+];
+
+/* とびばこ: わざ × なん段 */
+const TOBIBAKO_SKILLS = [
+  { id:'b1', name:'またぎのり・またぎおり', st:1, kotsu:'とびばこにまたがって、手のちからで前へすすんでおりるよ。' },
+  { id:'b2', name:'かいきゃくとび', st:1, kotsu:'手はとびばこの「おく」につく! 足をパッとひらいて、目せんは前。' },
+  { id:'b3', name:'かかえこみとび', st:2, kotsu:'ひざをむねにグッとかかえて、手のあいだを通りぬける!' },
+  { id:'b4', name:'だいじょうぜんてん(台上前転)', st:2, kotsu:'とびばこの上で前転! おしりを高く上げて、まっすぐ回ろう。' },
+  { id:'b5', name:'くびはねとび', st:3, kotsu:'台上前転のとちゅうで、体をそらせてはねる! タイミングがカギ。' },
+  { id:'b6', name:'あたまはねとび', st:3, kotsu:'あたまをついてためて、足がおちてくるしゅんかんにバーン!とはねる。' },
+];
+const DAN_LIST = [2,3,4,5,6,7,8];
+
+/* すいえい: 20きゅう→2だん(22だんかい)。はじめは小1でもクリアできるやさしさに */
+const SUIEI_KYU = [
+  { id:'sw20', label:'20きゅう', name:'かおに水をパシャパシャかけられる' },
+  { id:'sw19', label:'19きゅう', name:'口まで水につけられる' },
+  { id:'sw18', label:'18きゅう', name:'はなまで水につけられる' },
+  { id:'sw17', label:'17きゅう', name:'あたままでぜんぶもぐれる' },
+  { id:'sw16', label:'16きゅう', name:'水の中で目をあけられる' },
+  { id:'sw15', label:'15きゅう', name:'水の中でいきをブクブクはけられる' },
+  { id:'sw14', label:'14きゅう', name:'水の中を自由にあるいたり、はしったりできる' },
+  { id:'sw13', label:'13きゅう', name:'もぐって、プールのそこにおなかをつけられる' },
+  { id:'sw12', label:'12きゅう', name:'だるまうきが5びょうできる' },
+  { id:'sw11', label:'11きゅう', name:'ふしうきが5びょうできる' },
+  { id:'sw10', label:'10きゅう', name:'けのびが5mできる' },
+  { id:'sw9',  label:'9きゅう',  name:'ビートばんのばた足・かえる足で13mすすめる' },
+  { id:'sw8',  label:'8きゅう',  name:'めんかぶりばた足で13mおよげる' },
+  { id:'sw7',  label:'7きゅう',  name:'クロールかひらおよぎ、どちらかで13mおよげる' },
+  { id:'sw6',  label:'6きゅう',  name:'クロールとひらおよぎ、りょうほう13mおよげる' },
+  { id:'sw5',  label:'5きゅう',  name:'クロールかひらおよぎ、どちらかで25mおよげる' },
+  { id:'sw4',  label:'4きゅう',  name:'クロールとひらおよぎ、りょうほう25mおよげる' },
+  { id:'sw3',  label:'3きゅう',  name:'クロールとひらおよぎ、りょうほう50mおよげる' },
+  { id:'sw2',  label:'2きゅう',  name:'せおよぎで25mおよげる' },
+  { id:'sw1',  label:'1きゅう',  name:'クロール・ひらおよぎ・せおよぎ、3しゅもくとも50m' },
+  { id:'swS1', label:'しょだん', name:'クロール・ひらおよぎ・せおよぎ(50m×3)を4ぷんいないで' },
+  { id:'swS2', label:'2だん',   name:'クロール・ひらおよぎ・せおよぎ(50m×3)を3ぷんいないで' },
+];
+const STROKES = [
+  { id:'beat', name:'ビートばん', em:'🛟' },
+  { id:'crawl', name:'クロール', em:'🏊' },
+  { id:'breast', name:'ひらおよぎ', em:'🐸' },
+  { id:'back', name:'せおよぎ', em:'🛶' },
+  { id:'fly', name:'バタフライ', em:'🦋' },
+];
+/* ---------------- わざイラスト(SVG) ---------------- */
+const INK='#1E3A5F', SKIN='#FFD9B0', SHIRT='#F43F5E', ARW='#F97316';
+/* あたま(かみの毛つき)。rotでかみの向きを回せる(さかさま=180) */
+function aHead(x,y,rot){
+  return `<g transform="translate(${x},${y})${rot?` rotate(${rot})`:''}">
+    <circle r="6.8" fill="${SKIN}" stroke="${INK}" stroke-width="2.2"/>
+    <path d="M-6,-2.8 A6.8,6.8 0 0 1 6,-2.8" fill="none" stroke="${INK}" stroke-width="4.2" stroke-linecap="round"/>
+  </g>`;
+}
+function aTorso(pts){ return `<polyline points="${pts}" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`; }
+function aLimb(pts){ return `<polyline points="${pts}" fill="none" stroke="${INK}" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>`; }
+function aLn(pts,w){ return `<polyline points="${pts}" fill="none" stroke="${INK}" stroke-width="${w||4}" stroke-linecap="round" stroke-linejoin="round"/>`; }
+function aArr(d){ return `<path d="${d}" fill="none" stroke="${ARW}" stroke-width="3.5" stroke-linecap="round"/>`; }
+function aTip(x,y,ang){ return `<polygon points="0,-5.5 11,0 0,5.5" transform="translate(${x},${y}) rotate(${ang})" fill="${ARW}"/>`; }
+function aSpin(cx,cy,r,back){
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${ARW}" stroke-width="3" stroke-dasharray="5 6" opacity=".9"/>`+aTip(cx+r,cy,back?-90:90);
+}
+function aBar(){
+  return `<line x1="14" y1="87" x2="30" y2="87" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="90" y1="87" x2="106" y2="87" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="22" y1="30" x2="22" y2="86" stroke="#8CA3B8" stroke-width="5"/>
+  <line x1="98" y1="30" x2="98" y2="86" stroke="#8CA3B8" stroke-width="5"/>
+  <line x1="10" y1="30" x2="110" y2="30" stroke="#55677A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="13" y1="28.4" x2="107" y2="28.4" stroke="#C6D6E4" stroke-width="1.6" stroke-linecap="round"/>`;
+}
+function aMat(){
+  return `<rect x="6" y="74" width="108" height="13" rx="6.5" fill="#7DE8A9" stroke="#3FBF77" stroke-width="2.5"/>
+  <line x1="14" y1="79" x2="106" y2="79" stroke="#B8F5CF" stroke-width="2" stroke-linecap="round"/>`;
+}
+/* とびばこ: 下の段ほど大きい台形＋最上段は革のクッション */
+function aBox(tx){
+  return `<g transform="translate(${tx||0},0)">
+    <polygon points="73,57 107,57 109,67 71,67" fill="#FDE68A" stroke="#D97706" stroke-width="2.2"/>
+    <polygon points="71,67 109,67 111,77 69,77" fill="#FBBF24" stroke="#D97706" stroke-width="2.2"/>
+    <polygon points="69,77 111,77 113,88 67,88" fill="#FDE68A" stroke="#D97706" stroke-width="2.2"/>
+    <path d="M72,57 L74,50 Q74.5,47 78,47 L102,47 Q105.5,47 106,50 L108,57 Z" fill="#C2410C" stroke="#7C2D12" stroke-width="2"/>
+  </g>`;
+}
+/* ロイター板(ふみきり板) */
+function aSpring(tx){
+  return `<g transform="translate(${tx||0},0)">
+    <path d="M34,88 L62,88 L59,79 Q45,74 36,83 Z" fill="#D97706" stroke="#92400E" stroke-width="2"/>
+    <line x1="41" y1="83.5" x2="56" y2="80.5" stroke="#FDE68A" stroke-width="2" stroke-linecap="round"/>
+  </g>`;
+}
+function aGround(){ return `<line x1="4" y1="88" x2="116" y2="88" stroke="#86EFAC" stroke-width="4" stroke-linecap="round"/>`; }
+function aLabel(t){ return `<rect x="4" y="3" width="${t.length*11+14}" height="18" rx="9" fill="#E0F2FE"/><text x="11" y="16.5" font-size="11" font-weight="700" fill="#0369A1">${t}</text>`; }
+
+/* つばめのしせい(支持): りょううでで支えて体をまっすぐ */
+function aShiji(){
+  return aTorso('60,15 60,33')+aLimb('60,19 50,30')+aLimb('60,19 70,30')
+    +aLimb('60,33 55,43 52,53')+aLimb('60,33 65,43 68,53')+aHead(60,8);
+}
+/* ひざかけ(こうもり)のしせい: ひざでぶら下がり */
+function aKomori(){
+  return aLimb('60,44 55,31 49,36')+aLimb('60,44 65,31 71,36')+aTorso('60,44 60,59')
+    +aLimb('58,50 47,63')+aLimb('62,50 73,63')+aHead(60,68,180);
+}
+
+const TETSU_ART = {
+  t1: ()=>aShiji(),
+  t2: ()=>aTorso('47,47 56,32 64,32 73,47')+aLimb('51,41 45,57')+aLimb('69,41 75,55')+aHead(44,55,160),
+  t3: ()=>aShiji()+aArr('M76,10 A24,24 0 0 1 90,42')+aTip(90,42,110),
+  t4: ()=>aLimb('52,30 56,44')+aLimb('68,30 64,44')+aTorso('60,44 60,56')
+      +aLimb('60,56 49,60 55,71')+aLimb('60,56 71,60 65,71')+aHead(60,37)
+      +aArr('M82,48 A24,24 0 0 1 64,74')+aTip(64,74,160),
+  t5: ()=>aKomori(),
+  t6: ()=>aKomori()+aLimb('58,50 46,77')+aArr('M76,64 Q86,76 80,86')+aTip(80,86,130),
+  t7: ()=>aLimb('52,30 55,44')+aLimb('68,30 65,44')+aTorso('56,46 51,55 59,62 67,56')
+      +aLimb('65,57 71,63 66,70')+aHead(52,49)+aSpin(60,51,26,false),
+  t8: ()=>aTorso('52,13 55,25')+aLimb('54,17 48,29')+aLimb('55,25 51,30')
+      +aLimb('55,25 66,22 75,30')+aHead(52,7)
+      +aArr('M72,18 Q86,26 84,44')+aTip(84,44,85),
+  t9: ()=>aLimb('57,45 64,30 72,38')+aTorso('57,45 47,55')+aLimb('51,49 55,32')
+      +aLimb('47,55 43,66 40,74')+aHead(43,61)
+      +aArr('M36,68 Q24,46 40,26')+aTip(40,26,-40),
+  t10:()=>aTorso('56,15 56,30')+aLimb('56,19 47,29')+aLimb('56,19 65,29')
+      +aLimb('56,30 65,33 68,42')+aLimb('56,30 47,36 45,46')+aHead(56,9)+aSpin(58,30,27,false),
+  t11:()=>aTorso('56,15 56,30')+aLimb('56,19 47,29')+aLimb('56,19 65,29')
+      +aLimb('56,30 65,33 68,42')+aLimb('56,30 47,36 45,46')+aHead(56,9)+aSpin(58,30,27,true),
+  t12:()=>aTorso('42,45 52,52')+aLimb('44,46 55,31')+aLimb('49,52 59,33')
+      +aLimb('52,52 50,62 46,71')+aLimb('52,52 62,38 69,25')+aHead(38,49)
+      +aArr('M72,17 A19,19 0 0 1 87,38')+aTip(87,38,110),
+  t13:()=>`<circle cx="60" cy="32" r="11" fill="none" stroke="${SHIRT}" stroke-width="7"/>`
+      +aLimb('53,27 57,35')+aLimb('67,27 63,35')+aHead(60,14)+aSpin(60,29,26,false),
+  t14:()=>aTorso('43,26 71,29')+aLimb('71,29 82,24 91,27')+aLimb('55,27 57,36')+aHead(36,23,-10)
+      +`<ellipse cx="62" cy="27" rx="35" ry="12" fill="none" stroke="${ARW}" stroke-width="3" stroke-dasharray="5 6" opacity=".9"/>`+aTip(97,29,80),
+  t15:()=>aShiji()+aSpin(60,30,29,true),
+  t16:()=>aTorso('58,13 58,24')+aLimb('58,17 44,12')+aLimb('58,17 72,11')
+      +aLimb('58,24 50,26 49,30')+aLimb('58,24 66,26 67,30')+aHead(58,6)
+      +aArr('M76,18 Q92,28 90,46')+aTip(90,46,85),
+  t17:()=>aKomori()+aSpin(60,48,27,true),
+  t18:()=>aKomori()+aSpin(60,48,27,false),
+  t19:()=>aShiji()+aSpin(60,30,29,false),
+  t20:()=>aLimb('52,30 56,45')+aLimb('68,30 64,45')+aTorso('60,58 60,70')
+      +aLimb('60,70 55,84')+aLimb('60,70 65,84')+aHead(60,51)
+      +aArr('M74,76 A34,34 0 0 0 90,32')+aTip(90,32,-70),
+};
+
+/* 丸まって回るしせい(マット)。back=うしろ回り, open=かいきゃく */
+function aRoll(back, open){
+  let s = back
+    ? `<path d="M72,54 A12.5,12.5 0 1 0 48,62" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +(open ? aLimb('50,52 30,42')+aLimb('49,60 28,58') : aLimb('50,60 46,50 54,45'))
+      +aLimb('68,60 60,65')+aHead(74,63,30)
+      +aArr('M42,42 A24,24 0 0 0 27,66')+aTip(27,66,140)
+    : `<path d="M48,54 A12.5,12.5 0 1 1 72,62" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +(open ? aLimb('70,52 90,42')+aLimb('71,60 92,58') : aLimb('70,60 74,50 66,45'))
+      +aLimb('52,60 60,65')+aHead(46,63,-30)
+      +aArr('M78,42 A24,24 0 0 1 93,66')+aTip(93,66,100);
+  return s;
+}
+/* とうりつ(倒立)。split=あしをひらく */
+function aHandstand(split){
+  return aLimb('54,72 57,58')+aLimb('66,72 63,58')+aTorso('60,58 60,42')
+    +(split ? aLimb('60,42 46,26')+aLimb('60,42 74,26') : aLimb('60,42 56,20')+aLimb('60,42 64,20'))
+    +aHead(60,66,180);
+}
+const MAT_ART = {
+  m1: ()=>aRoll(false,false),
+  m2: ()=>aRoll(true,false),
+  m3: ()=>aRoll(false,true),
+  m4: ()=>aRoll(true,true),
+  m5: ()=>`<path d="M44,71 Q60,34 82,71" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +aLimb('47,64 42,73')+aLimb('77,60 85,66 83,73')+aHead(39,68,150),
+  m6: ()=>`<rect x="101" y="8" width="9" height="78" rx="3" fill="#CBD5E1" stroke="#94A3B8" stroke-width="2"/>`
+      +aLimb('66,72 69,57')+aLimb('74,72 71,57')+aTorso('70,57 86,40')
+      +aLimb('86,40 99,28')+aLimb('86,40 100,38')+aHead(64,66,180),
+  m7: ()=>aHandstand(true)+aArr('M14,54 A40,40 0 0 1 40,20')+aTip(40,20,-32),
+  m8: ()=>aHandstand(false),
+  m9: ()=>aHandstand(false)+aArr('M80,36 A26,26 0 0 1 88,64')+aTip(88,64,100),
+  m10:()=>aHandstand(true)+aArr('M76,22 Q98,32 92,54')+aTip(92,54,100)+aLn('88,70 100,70',5)+aLabel('ひねる'),
+};
+
+const TOBI_ART = {
+  b1: ()=>aGround()+aBox()+aTorso('90,31 90,45')+aLimb('90,35 82,49')+aLimb('90,35 98,49')
+      +aLimb('90,45 80,53 78,63')+aLimb('90,45 100,53 102,63')+aHead(90,24),
+  b2: ()=>aGround()+aSpring()+aBox()
+      +aTorso('92,21 80,31')+aLimb('90,24 97,45')
+      +aLimb('80,31 62,23')+aLimb('80,31 63,39')
+      +aHead(98,15,20)
+      +aArr('M6,82 Q38,76 54,50')+aTip(54,50,-58),
+  b3: ()=>aGround()+aSpring()+aBox()
+      +aTorso('80,16 78,28')+aLimb('80,20 86,44')
+      +aLimb('78,28 90,23 87,32')+aLimb('78,28 92,26 89,35')
+      +aHead(80,10)
+      +aArr('M6,82 Q38,76 54,50')+aTip(54,50,-58),
+  b4: ()=>aGround()+aSpring()+aBox()
+      +`<path d="M79,33 A10,10 0 1 1 97,39" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +aLimb('95,40 99,32 92,28')+aHead(76,40,180)
+      +aArr('M70,16 A24,24 0 0 1 102,20')+aTip(102,20,70),
+  b5: ()=>aGround()+aSpring(-28)+aBox(-38)
+      +`<path d="M46,39 Q64,10 86,30" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +aLimb('86,30 94,42 92,56')+aLimb('48,42 55,50')+aHead(40,42,180)
+      +aArr('M50,16 Q72,-2 96,14')+aTip(96,14,55),
+  b6: ()=>aGround()+aSpring(-28)+aBox(-38)
+      +`<circle cx="43" cy="50" r="3" fill="${ARW}"/>`
+      +`<path d="M49,40 Q68,8 90,28" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +aLimb('90,28 98,40 96,54')+aLimb('50,44 58,52')+aHead(43,44,180)
+      +aArr('M54,14 Q76,-2 100,14')+aTip(100,14,55),
+};
+
+/* ---------------- すいえいイラスト ---------------- */
+function aWater(){
+  return `<rect x="0" y="40" width="120" height="50" rx="6" fill="#C7ECFF" opacity=".6"/>
+  <path d="M0,40 Q7.5,36.5 15,40 T30,40 T45,40 T60,40 T75,40 T90,40 T105,40 T120,40" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>`;
+}
+function aSplash(x,y){
+  return `<path d="M${x},${y} q-3,-7 2,-9 M${x+6},${y+1} q0,-8 5,-9" fill="none" stroke="#7DD3FC" stroke-width="2.5" stroke-linecap="round"/>`;
+}
+function aTimes(n){ return `<circle cx="104" cy="15" r="12" fill="#FACC15"/><text x="104" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#7C2D12">×${n}</text>`; }
+function aClock(){
+  return `<circle cx="104" cy="16" r="11" fill="#fff" stroke="${INK}" stroke-width="2.5"/>
+  <line x1="104" y1="16" x2="104" y2="9" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="104" y1="16" x2="109" y2="18" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="104" y1="3" x2="104" y2="5.5" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+}
+/* クロール(右へすすむ): かた方のうでを上でまわす */
+function aCrawl(){
+  return aTorso('42,46 70,44')+aLimb('66,44 60,54')+aLimb('66,44 74,30 86,34')
+    +aLimb('42,46 32,40')+aLimb('42,46 33,52')+aSplash(24,38)+aHead(80,42,90);
+}
+/* ひらおよぎ: かおを上げて、かえる足 */
+function aBreast(){
+  return aTorso('46,47 68,43')+aLimb('68,43 80,48 88,45')
+    +aLimb('46,47 36,41 30,47')+aLimb('46,47 37,52 30,49')+aHead(76,34);
+}
+/* せおよぎ: あお向けでうでを上へ */
+function aBack(){
+  return aTorso('44,44 68,42')+aLimb('64,42 70,26')+aLimb('64,43 56,50')
+    +aLimb('44,44 34,40')+aLimb('44,44 35,50')+aSplash(26,38)+aHead(77,38,-90);
+}
+/* けのび: からだをまっすぐ、うでを前にそろえる */
+function aKenobi(){
+  return aTorso('38,44 62,44')+aLimb('68,43 90,41')+aLimb('68,45 90,44')
+    +aLimb('38,44 26,42')+aLimb('38,44 27,48')+aHead(68,44,90);
+}
+/* 水中に立つ(あたまのふかさをかえる)。headY=あたまの中心の高さ */
+function aStandDepth(headY, label){
+  const t = headY+8;
+  return aWater()
+    +aTorso(`56,${t} 56,${t+20}`)+aLimb(`56,${t+6} 48,${t+16}`)+aLimb(`56,${t+6} 64,${t+16}`)
+    +aLimb(`56,${t+20} 50,${Math.min(t+34,84)}`)+aLimb(`56,${t+20} 62,${Math.min(t+34,84)}`)
+    +aHead(56,headY)+(label?aLabel(label):'');
+}
+const SUIEI_ART = {
+  sw20:()=>aWater()+aTorso('56,36 56,58')+aLimb('56,42 47,33')+aLimb('56,42 65,33')
+      +aLimb('56,58 50,74')+aLimb('56,58 62,74')+aHead(56,26)
+      +`<circle cx="45" cy="21" r="2" fill="#7DD3FC"/><circle cx="67" cy="19" r="2.5" fill="#7DD3FC"/>
+       <circle cx="56" cy="12" r="2" fill="#7DD3FC"/><circle cx="50" cy="15" r="1.6" fill="#7DD3FC"/>`,
+  sw19:()=>aStandDepth(37,'くちまで'),
+  sw18:()=>aStandDepth(40,'はなまで'),
+  sw17:()=>aStandDepth(50,'あたままで')
+      +`<circle cx="68" cy="36" r="2.5" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>
+       <circle cx="72" cy="27" r="3" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>`,
+  sw16:()=>aWater()+aTorso('56,58 56,74')+aLimb('56,62 47,70')+aLimb('56,62 65,70')
+      +aLimb('56,74 50,84')+aLimb('56,74 62,84')+aHead(56,50)
+      +`<circle cx="53" cy="51" r="1.7" fill="${INK}"/><circle cx="59.5" cy="51" r="1.7" fill="${INK}"/>`
+      +`<path d="M70,46 h5 M72.5,43.5 v5" stroke="#FACC15" stroke-width="2" stroke-linecap="round"/>`,
+  sw15:()=>aWater()+aTorso('56,64 56,76')+aLimb('56,68 46,74')+aLimb('56,68 66,74')
+      +aLimb('56,76 48,84')+aLimb('56,76 64,84')+aHead(56,57)
+      +`<circle cx="68" cy="48" r="2.5" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>
+       <circle cx="72" cy="38" r="3" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>
+       <circle cx="77" cy="28" r="3.5" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>`,
+  sw14:()=>aWater()+`<line x1="6" y1="86" x2="114" y2="86" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>`
+      +aTorso('54,30 54,52')+aLimb('54,35 44,44')+aLimb('54,35 64,44')
+      +aLimb('54,52 46,68 44,84')+aLimb('54,52 64,66 68,84')+aHead(54,23)
+      +aArr('M78,54 L94,54')+aTip(94,54,0),
+  sw13:()=>aWater()+`<line x1="6" y1="84" x2="114" y2="84" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>`
+      +aTorso('44,78 66,78')+aLimb('44,78 32,74')+aLimb('44,78 33,82')+aLimb('66,78 76,72')
+      +aHead(74,76,90)
+      +`<circle cx="84" cy="60" r="2.5" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>
+       <circle cx="88" cy="48" r="3" fill="#E0F4FF" stroke="#38BDF8" stroke-width="2"/>`,
+  sw12:()=>aWater()
+      +`<path d="M48,44 A12.5,12.5 0 1 1 72,48" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round"/>`
+      +aLimb('66,50 58,56')+aHead(46,50,-140),
+  sw11:()=>aWater()+aTorso('44,43 66,43')+aLimb('66,43 83,39')+aLimb('66,44 83,48')
+      +aLimb('44,43 29,40')+aLimb('44,43 30,49')+aHead(73,45,90),
+  sw10:()=>aWater()+aKenobi()+aLabel('5m'),
+  sw9: ()=>aWater()+`<rect x="86" y="35" width="22" height="7" rx="3.5" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>`
+      +aTorso('44,46 66,44')+aLimb('66,44 88,38')
+      +aLimb('44,46 34,40')+aLimb('44,46 35,52')+aSplash(26,38)+aHead(74,32)+aLabel('13m'),
+  sw8: ()=>aWater()+aKenobi()+aSplash(20,38)+aLabel('13m'),
+  sw7: ()=>aWater()+aCrawl()+aLabel('13m'),
+  sw6: ()=>aWater()+aBreast()+aLabel('13m')+aTimes(2),
+  sw5: ()=>aWater()+aCrawl()+aLabel('25m'),
+  sw4: ()=>aWater()+aBreast()+aLabel('25m')+aTimes(2),
+  sw3: ()=>aWater()+aCrawl()+aLabel('50m')+aTimes(2),
+  sw2: ()=>aWater()+aBack()+aLabel('25m'),
+  sw1: ()=>aWater()+aBreast()+aLabel('50m')+aTimes(3),
+  swS1:()=>aWater()+aCrawl()+aLabel('4ぷんいない')+aClock(),
+  swS2:()=>aWater()+aBack()+aLabel('3ぷんいない')+aClock(),
+};
+
+/* ---------------- ボールしゅもくイラスト ---------------- */
+function aBall(x,y,type){
+  const r = type==='base'?4.5 : type==='dodge'?7 : 6.5;
+  let fill='#fff', line=INK;
+  if(type==='basket'){ fill='#F59E0B'; line='#7C2D12'; }
+  if(type==='dodge'){ fill='#F87171'; line='#B91C1C'; }
+  if(type==='volley'){ fill='#FDE68A'; line='#B45309'; }
+  let s = `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${line}" stroke-width="2.2"/>`;
+  if(type==='soccer') s += `<circle cx="${x}" cy="${y}" r="2.4" fill="${INK}"/>`;
+  if(type==='basket') s += `<path d="M${x-r},${y} h${2*r} M${x},${y-r} v${2*r}" stroke="${line}" stroke-width="1.5" fill="none"/>`;
+  if(type==='volley') s += `<path d="M${x-r+1},${y-2} q${r-1},4 ${2*r-2},0" stroke="${line}" stroke-width="1.5" fill="none"/>`;
+  if(type==='base') s += `<path d="M${x-2.4},${y-3} q2,3 0,6 M${x+2.4},${y-3} q-2,3 0,6" stroke="#DC2626" stroke-width="1.3" fill="none"/>`;
+  return s;
+}
+function aMini(x, flip){
+  const d = flip?-1:1;
+  return aTorso(`${x},46 ${x},58`)+aLimb(`${x},49 ${x+9*d},54`)
+    +aLimb(`${x},58 ${x-5},70 ${x-6},82`)+aLimb(`${x},58 ${x+6},70 ${x+7},82`)+aHead(x,40,flip?-10:10);
+}
+function aRunFig(x,y){ x=x||52; y=y||38;
+  return aTorso(`${x},${y+6} ${x+5},${y+24}`)+aLimb(`${x+1},${y+12} ${x-10},${y+18}`)+aLimb(`${x+1},${y+12} ${x+13},${y+8}`)
+    +aLimb(`${x+5},${y+24} ${x-6},${y+36} ${x-13},${y+46}`)+aLimb(`${x+5},${y+24} ${x+15},${y+34} ${x+13},${y+48}`)+aHead(x,y,12);
+}
+function aThrowFig(){
+  return aTorso('52,34 56,54')+aLimb('54,40 42,48')+aLimb('54,40 64,26')
+    +aLimb('56,54 48,70 46,86')+aLimb('56,54 66,66 72,84')+aHead(52,28,15);
+}
+function aKickFig(){
+  return aTorso('44,32 48,52')+aLimb('46,38 36,46')+aLimb('46,38 56,42')
+    +aLimb('48,52 44,68 43,86')+aLimb('48,52 60,60 70,58')+aHead(44,26,10);
+}
+function aCatchFig(){
+  return aTorso('68,38 68,56')+aLimb('68,44 54,32')+aLimb('68,46 56,40')
+    +aLimb('68,56 60,70 59,86')+aLimb('68,56 76,70 77,86')+aHead(68,32,-12);
+}
+function aTossFig(){
+  return aTorso('60,36 60,56')+aLimb('60,40 50,28')+aLimb('60,40 70,28')
+    +aLimb('60,56 52,70 51,86')+aLimb('60,56 68,70 69,86')+aHead(60,30);
+}
+function aUnderFig(){
+  return aTorso('56,36 58,54')+aLimb('57,42 70,50')+aLimb('57,43 68,53')
+    +aLimb('58,54 50,68 49,86')+aLimb('58,54 66,68 67,86')+aHead(56,30,8);
+}
+function aDribbleFig(){
+  return aTorso('58,32 58,52')+aLimb('58,38 48,46')+aLimb('58,38 72,50')
+    +aLimb('58,52 50,68 49,86')+aLimb('58,52 66,68 65,86')+aHead(58,26);
+}
+function aBatFig(){
+  return aTorso('50,36 52,56')+aLimb('51,42 63,34')+aLimb('51,44 64,38')
+    +`<line x1="63" y1="35" x2="79" y2="15" stroke="#B45309" stroke-width="5" stroke-linecap="round"/>`
+    +aLimb('52,56 44,70 43,86')+aLimb('52,56 60,70 61,86')+aHead(49,30,10);
+}
+function aWallR(){ return `<rect x="102" y="8" width="9" height="80" rx="3" fill="#CBD5E1" stroke="#94A3B8" stroke-width="2"/>`; }
+function aCone(x){ return `<polygon points="${x},68 ${x-7},84 ${x+7},84" fill="#FB923C" stroke="#C2410C" stroke-width="2"/><line x1="${x-4}" y1="76" x2="${x+4}" y2="76" stroke="#fff" stroke-width="2.5"/>`; }
+function aGoalNet(){ return `<path d="M86,38 H113 V86 H86" fill="none" stroke="#64748B" stroke-width="3"/><path d="M91,46 L108,62 M91,62 L108,46 M91,78 L108,64" stroke="#CBD5E1" stroke-width="1.5"/>`; }
+function aHoop(){ return `<line x1="104" y1="10" x2="104" y2="86" stroke="#94A3B8" stroke-width="4"/><rect x="95" y="10" width="12" height="9" fill="none" stroke="#EF4444" stroke-width="2.5"/><ellipse cx="90" cy="21" rx="7" ry="2.6" fill="none" stroke="#EF4444" stroke-width="2.5"/><path d="M84,23 l2,9 M90,24 l0,9 M96,23 l-2,9" stroke="#CBD5E1" stroke-width="1.5" fill="none"/>`; }
+function aVNet(){ return `<line x1="98" y1="18" x2="98" y2="86" stroke="#64748B" stroke-width="3.5"/><path d="M98,22 H116 M98,30 H116 M98,38 H116 M104,22 V38 M110,22 V38" stroke="#94A3B8" stroke-width="1.6" fill="none"/>`; }
+function aTarget(x,y){ return `<circle cx="${x}" cy="${y}" r="12" fill="#fff" stroke="#EF4444" stroke-width="2.4"/><circle cx="${x}" cy="${y}" r="7" fill="none" stroke="#EF4444" stroke-width="2"/><circle cx="${x}" cy="${y}" r="2.4" fill="#EF4444"/>`; }
+function aUpDown(x,y){ return aArr(`M${x},${y} q4,-7 0,-14`)+aTip(x,y-15,-80)+aArr(`M${x+9},${y-14} q-4,7 0,14`)+aTip(x+9,y+1,100); }
+
+/* ボールしゅもく: チャレンジていぎ(type: count=かいすうきろく / check=できたチェック) */
+const BALL_SPORTS = {
+  soccer:{ ball:'soccer', skills:[
+    { id:'sc2', type:'count', unit:'かい', name:'30びょうボールタッチ', st:1, kotsu:'足のうらで左右こうごにチョンチョン。ボールを見すぎず、リズムよく!',
+      art:()=>aGround()+aDribbleFig()+aBall(74,80,'soccer')+aLimb('58,52 68,66 74,74')+aClock() },
+    { id:'sc5', type:'check', unit:'', name:'ピタッとトラップ', st:1, kotsu:'ころがってきたボールを足のうらでピタッ! 力をぬいてむかえにいこう。',
+      art:()=>aGround()+aDribbleFig()+aBall(72,80,'soccer')+aLimb('58,52 66,66 72,73')+aArr('M20,80 H56')+aTip(56,80,0)+aLabel('ピタッ!') },
+    { id:'sc3', type:'check', unit:'', name:'コーンドリブル', st:1, kotsu:'ジグザグにドリブル! ボールは足からはなれすぎないように小さくさわる。',
+      art:()=>aGround()+aCone(48)+aCone(74)+aCone(100)+aMini(20)+aBall(32,80,'soccer')+aArr('M36,76 L48,58 L62,76 L74,58 L88,76 L100,58')+aTip(100,58,-55) },
+    { id:'sc6', type:'count', unit:'かい', name:'ふたりでパスラリー', st:1, kotsu:'あしのうちがわ(インサイド)でパス。あい手のあしもとへやさしく!',
+      art:()=>aGround()+aMini(22)+aMini(98,true)+aBall(60,80,'soccer')+aArr('M34,72 H50')+aTip(50,72,0)+aArr('M86,64 H70')+aTip(70,64,180) },
+    { id:'sc4', type:'count', unit:'ほん', name:'まとあてシュート(10ぽん中)', st:2, kotsu:'ゴールのすみやまとをよくねらって! 10ぽんけって、なんぼん当たるかな?',
+      art:()=>aGround()+aKickFig()+aBall(76,62,'soccer')+aGoalNet()+aTarget(99,58)+aArr('M62,56 Q76,50 88,56')+aTip(88,56,20) },
+    { id:'sc1', type:'count', unit:'かい', name:'リフティング', st:2, kotsu:'ももや足のこうで、おへそのたかさまでやさしくけり上げよう。',
+      art:()=>aGround()+aDribbleFig()+aLimb('58,52 68,58 76,52')+aBall(80,38,'soccer')+aUpDown(76,30) },
+    { id:'sc7', type:'check', unit:'', name:'ヘディング', st:3, kotsu:'ふわっとしたボールをおでこで! 目をつぶらないでボールを見る。',
+      art:()=>aGround()+aTossFig()+aBall(60,12,'soccer')+`<path d="M52,20 l-5,-4 M68,20 l5,-4" stroke="#FACC15" stroke-width="2.5" stroke-linecap="round"/>` },
+  ]},
+  basket:{ ball:'basket', skills:[
+    { id:'bk1', type:'count', unit:'かい', name:'30びょうその場ドリブル', st:1, kotsu:'ゆびをひらいて、ボールをおしだすように。手のひらでたたかない!',
+      art:()=>aGround()+aDribbleFig()+aBall(74,72,'basket')+aUpDown(70,60)+aClock() },
+    { id:'bk2', type:'check', unit:'', name:'ひくいドリブル', st:2, kotsu:'ひざをまげて、ひざよりひくくつづけよう。かおを上げられたらプロ!',
+      art:()=>aGround()+aTorso('54,44 58,60')+aLimb('56,48 46,54')+aLimb('56,48 70,62')+aLimb('58,60 50,72 49,86')+aLimb('58,60 66,72 65,86')+aHead(54,38,8)+aBall(72,78,'basket')+aLabel('ひくく!') },
+    { id:'bk5', type:'check', unit:'', name:'チェストパス10かい', st:1, kotsu:'むねの前から、りょう手でグッとおし出す! あい手のむねへまっすぐ。',
+      art:()=>aGround()+aMini(22)+aMini(98,true)+aBall(60,50,'basket')+aArr('M36,50 H50')+aTip(50,50,0)+aArr('M84,56 H70')+aTip(70,56,180) },
+    { id:'bk6', type:'count', unit:'かい', name:'からだのまわりでボールまわし', st:1, kotsu:'おなかのまわりをぐるぐる! おとさずになんかいまわせる?',
+      art:()=>aGround()+aTossFig()+`<ellipse cx="60" cy="46" rx="21" ry="8" fill="none" stroke="${ARW}" stroke-width="3" stroke-dasharray="5 6"/>`+aTip(81,46,90)+aBall(84,42,'basket') },
+    { id:'bk7', type:'check', unit:'', name:'ドリブルではしる', st:2, kotsu:'ボールをななめ前につきながらはしる。目せんはできるだけ前へ!',
+      art:()=>aGround()+aRunFig(48,36)+aBall(80,74,'basket')+aUpDown(84,62)+`<path d="M24,44 h-12 M22,52 h-9 M24,60 h-12" stroke="#BAE0F5" stroke-width="3" stroke-linecap="round"/>` },
+    { id:'bk3', type:'count', unit:'ほん', name:'ゴールシュート(10ぽん中)', st:2, kotsu:'ひざをつかってフワッと! ゴールのわっかのおくをねらおう。',
+      art:()=>aGround()+aTossFig()+aHoop()+aBall(74,14,'basket')+aArr('M66,24 Q76,6 86,14')+aTip(86,14,55) },
+    { id:'bk4', type:'check', unit:'', name:'レイアップシュート', st:3, kotsu:'「トン・トン・ジャンプ」の1・2ステップでゴールの近くから!',
+      art:()=>aGround()+aRunFig(46,38)+aHoop()+aBall(82,20,'basket')+aArr('M66,36 Q78,14 86,18')+aTip(86,18,55) },
+  ]},
+  volley:{ ball:'volley', skills:[
+    { id:'vb5', type:'check', unit:'', name:'キャッチ&トス', st:1, kotsu:'なげてもらったボールをキャッチして、すぐ上になげかえす。トスのれんしゅう!',
+      art:()=>aGround()+aTossFig()+aBall(60,16,'volley')+aArr('M40,28 Q48,18 54,14')+aTip(54,14,-30) },
+    { id:'vb7', type:'check', unit:'', name:'ふうせんバレー10かい', st:1, kotsu:'ふうせんをおとさずに10かい! ゆっくりおちてくるからねらいやすいよ。',
+      art:()=>aGround()+aTossFig()+`<ellipse cx="74" cy="18" rx="9" ry="11" fill="#FBCFE8" stroke="#EC4899" stroke-width="2"/><path d="M74,29 q-2,5 2,8" stroke="#EC4899" stroke-width="2" fill="none"/>` },
+    { id:'vb1', type:'count', unit:'かい', name:'ちょくじょうアンダーパス', st:2, kotsu:'りょううでをまっすぐそろえて、うでのばんそうこうのあたりでポン!',
+      art:()=>aGround()+aUnderFig()+aBall(72,32,'volley')+aUpDown(68,22) },
+    { id:'vb2', type:'count', unit:'かい', name:'ちょくじょうオーバーパス', st:2, kotsu:'おでこの上で、りょう手でさんかくのまどを作ってポン!',
+      art:()=>aGround()+aTossFig()+aBall(60,14,'volley')+aUpDown(56,6) },
+    { id:'vb6', type:'count', unit:'かい', name:'かべうちパス', st:1, kotsu:'かべにむかってアンダーパス。かべから2〜3ぽはなれてね。',
+      art:()=>aGround()+aUnderFig()+aWallR()+aBall(88,30,'volley')+aArr('M70,40 Q84,22 100,28')+aTip(100,28,40) },
+    { id:'vb4', type:'count', unit:'かい', name:'ふたりでパスラリー', st:2, kotsu:'あい手のとりやすいところへふわっと。「ハイ!」とこえを出そう。',
+      art:()=>aGround()+aMini(22)+aMini(98,true)+aBall(60,26,'volley')+aArr('M34,40 Q60,14 86,40')+aTip(86,40,60) },
+    { id:'vb3', type:'check', unit:'', name:'サーブでネットごえ', st:2, kotsu:'アンダーサーブでOK! うでをふりこにして、ボールをとおくへ。',
+      art:()=>aGround()+aUnderFig()+aVNet()+aBall(84,16,'volley')+aArr('M68,38 Q88,4 110,20')+aTip(110,20,45) },
+  ]},
+  baseball:{ ball:'base', skills:[
+    { id:'bb7', type:'count', unit:'かい', name:'ひとりキャッチ', st:1, kotsu:'上になげて自分でキャッチ! なれたら手をたたいてからキャッチ。',
+      art:()=>aGround()+aTossFig()+aBall(60,14,'base')+aUpDown(56,6) },
+    { id:'bb1', type:'count', unit:'かい', name:'キャッチボールれんぞく', st:1, kotsu:'あい手のむねをねらってなげよう。なんかいつづくかな?',
+      art:()=>aGround()+aMini(22)+aMini(98,true)+aBall(60,28,'base')+aArr('M34,42 Q60,16 86,42')+aTip(86,42,60) },
+    { id:'bb3', type:'check', unit:'', name:'ゴロキャッチ', st:1, kotsu:'こしをひくくして、りょう手をじめんにちかづけてまちかまえる。',
+      art:()=>aGround()+aTorso('66,48 68,62')+aLimb('67,52 56,64')+aLimb('67,54 58,68')+aLimb('68,62 60,74 59,86')+aLimb('68,62 76,74 77,86')+aHead(66,42,-10)+aBall(30,82,'base')+aArr('M14,82 H24')+aTip(24,82,0) },
+    { id:'bb2', type:'check', unit:'', name:'フライキャッチ', st:2, kotsu:'ボールのおちてくるところへ先にうごく! さいごまで目をはなさない。',
+      art:()=>aGround()+aCatchFig()+aBall(56,10,'base')+aArr('M56,18 Q54,26 58,32')+aTip(58,32,80) },
+    { id:'bb6', type:'check', unit:'', name:'バットでまえにとばす', st:1, kotsu:'ボールをよく見て、こしをくるっとまわしてスイング!',
+      art:()=>aGround()+aBatFig()+aBall(92,30,'base')+aArr('M80,38 Q92,30 104,24')+aTip(104,24,-25) },
+    { id:'bb4', type:'count', unit:'ほん', name:'トスバッティング(10きゅう中)', st:2, kotsu:'なげてもらった10きゅうのうち、なんぼん前にとばせるかな?',
+      art:()=>aGround()+aBatFig()+aBall(90,24,'base')+aArr('M80,34 Q90,24 100,20')+aTip(100,20,-30) },
+    { id:'bb5', type:'count', unit:'m', name:'とおくになげる', st:2, kotsu:'ななめ45どの空にむかって! からだぜんたいでなげよう。',
+      art:()=>aGround()+aThrowFig()+aBall(88,14,'base')+aArr('M70,22 Q90,4 112,18')+aTip(112,18,45)+`<path d="M84,88 v-4 M96,88 v-4 M108,88 v-4" stroke="#94A3B8" stroke-width="2.5"/>` },
+  ]},
+  dodge:{ ball:'dodge', skills:[
+    { id:'dg3', type:'check', unit:'', name:'りょう手キャッチ', st:1, kotsu:'むねの前でりょう手キャッチ。おなかでかかえこむようにすると◎',
+      art:()=>aGround()+aTorso('60,36 60,56')+aLimb('60,42 50,48')+aLimb('60,42 70,48')+aLimb('60,56 52,70 51,86')+aLimb('60,56 68,70 69,86')+aHead(60,30)+aBall(60,48,'dodge') },
+    { id:'dg1', type:'count', unit:'かい', name:'かべあてキャッチ', st:1, kotsu:'かべになげて、はねかえってきたボールをキャッチ! れんぞくなんかい?',
+      art:()=>aGround()+aThrowFig()+aWallR()+aBall(88,34,'dodge')+aArr('M70,26 Q86,18 100,28')+aTip(100,28,50)+aArr('M98,44 Q84,52 72,50')+aTip(72,50,170) },
+    { id:'dg6', type:'check', unit:'', name:'みかたへナイスパス', st:1, kotsu:'とりやすいふわっとパス! 「いくよ!」と声をかけてから。',
+      art:()=>aGround()+aMini(22)+aMini(98,true)+aBall(60,30,'dodge')+aArr('M34,44 Q60,18 86,44')+aTip(86,44,60) },
+    { id:'dg4', type:'check', unit:'', name:'かわしのめいじん', st:2, kotsu:'ボールをよく見て、3かいれんぞくでヒラリとかわそう!',
+      art:()=>aGround()+aTorso('66,38 58,56')+aLimb('62,44 52,38')+aLimb('62,44 74,42')+aLimb('58,56 50,70 49,86')+aLimb('58,56 66,70 67,86')+aHead(68,32,-20)+aBall(30,40,'dodge')+aArr('M14,40 H22')+aTip(22,40,0)+`<path d="M80,50 q6,-2 8,-8 M82,58 q7,0 10,-5" stroke="#BAE0F5" stroke-width="2.5" fill="none" stroke-linecap="round"/>` },
+    { id:'dg2', type:'check', unit:'', name:'つよいボールをキャッチ', st:2, kotsu:'こわがらずにからだの正めんで! むねとりょう手でしっかりかかえる。',
+      art:()=>aGround()+aCatchFig()+aBall(38,34,'dodge')+`<path d="M26,30 h-8 M27,38 h-6" stroke="#F87171" stroke-width="3" stroke-linecap="round"/>`+aArr('M44,36 H54')+aTip(54,36,0) },
+    { id:'dg7', type:'count', unit:'m', name:'とおくへなげる', st:2, kotsu:'かたのちからだけじゃなく、あしをふみこんでなげよう!',
+      art:()=>aGround()+aThrowFig()+aBall(90,14,'dodge')+aArr('M72,22 Q92,4 112,18')+aTip(112,18,45) },
+    { id:'dg5', type:'check', unit:'', name:'ないやでさいごまでのこる', st:3, kotsu:'にげてよし、キャッチしてよし! さいごの1人までのこれたらヒーロー!',
+      art:()=>aGround()+`<rect x="14" y="34" width="92" height="52" rx="4" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5"/>`+aMini(60)+`<path d="M60,20 l2.5,6 6.5,0.5 -5,4.5 1.5,6.5 -5.5,-3.5 -5.5,3.5 1.5,-6.5 -5,-4.5 6.5,-0.5 Z" fill="#FACC15" stroke="#D97706" stroke-width="1.5"/>` },
+  ]},
+  relay:{ ball:null, skills:[
+    { id:'rl3', type:'check', unit:'', name:'スタートダッシュ', st:1, kotsu:'「よーい」でしずかにかまえて、「ドン!」でひくくとび出す!',
+      art:()=>aGround()+aTorso('52,60 66,56')+aLimb('64,58 72,74 72,86')+aLimb('52,60 46,72 50,86')+aLimb('52,60 38,68 30,74')+aHead(70,52,20)+aArr('M84,60 H104')+aTip(104,60,0) },
+    { id:'rl6', type:'check', unit:'', name:'スキップで50m', st:1, kotsu:'「タッ・タン」のリズムでうでを大きくふってスキップ!',
+      art:()=>aGround()+aRunFig(52,34)+`<path d="M30,86 q8,-10 16,0 M56,86 q8,-10 16,0" stroke="#7DD3FC" stroke-width="2.5" fill="none" stroke-linecap="round"/>` },
+    { id:'rl7', type:'check', unit:'', name:'ゴールをかけぬける', st:1, kotsu:'ゴールでとまらない! ゴールの先までぜんりょくではしりぬけよう。',
+      art:()=>aGround()+aRunFig(52,38)+`<path d="M20,50 Q60,44 108,50" stroke="#F43F5E" stroke-width="3" fill="none"/><circle cx="96" cy="30" r="2" fill="#FACC15"/><circle cx="104" cy="22" r="2" fill="#F472B6"/><circle cx="88" cy="20" r="2" fill="#38BDF8"/>` },
+    { id:'rl2', type:'count', unit:'cm', name:'たちはばとび', st:1, kotsu:'うでを大きくふって、りょう足でジャンプ! とんだきょりをはかろう。',
+      art:()=>aGround()+aTorso('56,32 58,46')+aLimb('57,36 46,28')+aLimb('57,36 68,28')+aLimb('58,46 50,56 54,64')+aLimb('58,46 66,56 62,64')+aHead(56,26,8)+aArr('M20,84 Q56,52 96,80')+aTip(96,80,60)+`<path d="M96,88 v-5 M106,88 v-5" stroke="#94A3B8" stroke-width="2.5"/>` },
+    { id:'rl4', type:'check', unit:'', name:'バトンパス', st:2, kotsu:'まえを見たまま、手をうしろにのばして「ハイ!」でもらう。',
+      art:()=>aGround()+aMini(34)+aRunFig(78,38)+`<line x1="46" y1="52" x2="62" y2="48" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>` },
+    { id:'rl5', type:'count', unit:'かい', name:'シャトルラン', st:2, kotsu:'おんがくにあわせて、むこうのせんまではしってターン!',
+      art:()=>aGround()+`<line x1="16" y1="40" x2="16" y2="86" stroke="#94A3B8" stroke-width="3"/><line x1="104" y1="40" x2="104" y2="86" stroke="#94A3B8" stroke-width="3"/>`+aRunFig(52,40)+aArr('M28,36 H88')+aTip(88,36,0)+aArr('M88,46 H36')+aTip(36,46,180) },
+    { id:'rl1', type:'count', unit:'びょう', low:true, name:'50mそう', st:2, kotsu:'うでをしっかりふって、さいごまで前を見てはしろう! タイムをきろく。',
+      art:()=>aGround()+aRunFig(48,38)+`<line x1="100" y1="46" x2="100" y2="86" stroke="#F43F5E" stroke-width="3" stroke-dasharray="5 4"/>`+aClock()+`<path d="M24,46 h-12 M22,54 h-9 M24,62 h-12" stroke="#BAE0F5" stroke-width="3" stroke-linecap="round"/>` },
+  ]},
+};
+
+/* なわとび: パラメータからイラスト生成 */
+const NAWA_ART = {
+  n1:{label:'トン・トン'}, n2:{}, n3:{back:1}, n4:{feet:'run'},
+  n5:{feet:'choki',label:'チョキ'}, n6:{feet:'pa',label:'パー'},
+  n7:{feet:'side',label:'よこへ'}, n8:{feet:'swing',label:'まえへふる'},
+  n9:{cross:1,label:'ひらく⇄クロス'}, n10:{cross:1,label:'クロスのまま'},
+  n11:{back:1,cross:1,label:'ひらく⇄クロス'}, n12:{back:1,cross:1,label:'クロスのまま'},
+  n13:{multi:2}, n14:{cross:1,multi:2}, n15:{cross:1,multi:2,label:'クロスのまま'},
+  n16:{back:1,multi:2}, n17:{back:1,cross:1,multi:2}, n18:{back:1,cross:1,multi:2,label:'クロスのまま'},
+  n19:{multi:3,label:'でんせつ!'},
+};
+function nawaArt(o){
+  o = o||{};
+  let s = `<ellipse cx="60" cy="71" rx="17" ry="3.2" fill="rgba(30,58,95,.12)"/>`;
+  s += `<path d="M46,46 C30,86 90,86 74,46" fill="none" stroke="${ARW}" stroke-width="3"/>`;
+  s += `<path d="M46,46 C30,6 90,6 74,46" fill="none" stroke="${ARW}" stroke-width="2.5" stroke-dasharray="4 5" opacity=".55"/>`;
+  s += aTip(60,16,o.back?180:0);
+  s += `<line x1="46" y1="42.5" x2="46" y2="49" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
+  s += `<line x1="74" y1="42.5" x2="74" y2="49" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
+  s += aTorso('60,33 60,48');
+  if(o.cross){ s += aLimb('56,36 64,41 72,44')+aLimb('64,36 56,41 48,44'); }
+  else { s += aLimb('60,37 52,42 47,45')+aLimb('60,37 68,42 73,45'); }
+  const legs = {
+    both:'60,48 55,57 54,66|60,48 65,57 66,66',
+    run:'60,48 50,54 52,63|60,48 64,56 66,65',
+    pa:'60,48 48,56 46,66|60,48 72,56 74,66',
+    choki:'60,48 51,55 50,63|60,48 69,53 71,60',
+    side:'60,48 67,56 69,64|60,48 73,52 76,58',
+    swing:'60,48 69,54 77,52|60,48 63,57 64,66',
+  }[o.feet||'both'];
+  legs.split('|').forEach(l=>{ s += aLimb(l); });
+  s += aHead(60,26);
+  if(o.multi) s += `<circle cx="103" cy="16" r="13" fill="#FACC15"/><text x="103" y="21" text-anchor="middle" font-size="13" font-weight="800" fill="#7C2D12">×${o.multi}</text>`;
+  if(o.label) s += aLabel(o.label);
+  return s;
+}
+
+function skillArt(sport, id){
+  let inner = '';
+  if(sport==='nawatobi') inner = nawaArt(NAWA_ART[id]);
+  else if(sport==='tetsubo') inner = aBar()+(TETSU_ART[id]?TETSU_ART[id]():'');
+  else if(sport==='mat') inner = aMat()+(MAT_ART[id]?MAT_ART[id]():'');
+  else if(sport==='tobibako') inner = (TOBI_ART[id]?TOBI_ART[id]():'');
+  else if(sport==='suiei') inner = (SUIEI_ART[id]?SUIEI_ART[id]():'');
+  else if(BALL_SPORTS[sport]){
+    const sk = BALL_SPORTS[sport].skills.find(k=>k.id===id);
+    inner = (sk && sk.art) ? sk.art() : '';
+  }
+  if(!inner) return '';
+  return `<div class="skill-art"><svg viewBox="0 0 120 92" xmlns="http://www.w3.org/2000/svg">${inner}</svg></div>`;
+}
+
+/* ---------------- バッジ(ぜんぶで100こ!) ---------------- */
+function uniqueDays(s){ return new Set(s.records.map(r=>r.date)).size; }
+function swimTotal(s){ return s.suiei.log.reduce((a,l)=>a+l.m,0); }
+function lvl(s){ return levelInfo(s.profile.totalXp).level; }
+function tridaySports(s){
+  const m = {};
+  for(const r of s.records){ (m[r.date]||(m[r.date]=new Set())).add(r.sport); }
+  for(const k in m){ if(m[k].size>=3) return true; }
+  return false;
+}
+const nawaBest = (s,id,n)=>(s.nawatobi.best[id]||0)>=n;
+const nawaKyuLe = (s,k)=>{ const v=nawaKyu(s); return v!==null && v<=k; };
+const danMax = s=>Math.max(0,...Object.values(s.tobibako.dan));
+
+const BADGES = [
+  // きろく
+  { cat:'きろく', id:'first',   em:'🥉', name:'はじめのいっぽ',     cond:'はじめてきろくした',        test:s=>s.records.length>=1 },
+  { cat:'きろく', id:'rec5',    em:'🎈', name:'きろくビギナー',     cond:'きろく5かい',               test:s=>s.records.length>=5 },
+  { cat:'きろく', id:'rec10',   em:'🥈', name:'がんばりや',         cond:'きろく10かい',              test:s=>s.records.length>=10 },
+  { cat:'きろく', id:'rec30',   em:'🥇', name:'つづけるちから',     cond:'きろく30かい',              test:s=>s.records.length>=30 },
+  { cat:'きろく', id:'rec50',   em:'🏆', name:'きろくのたつじん',   cond:'きろく50かい',              test:s=>s.records.length>=50 },
+  { cat:'きろく', id:'rec100',  em:'💎', name:'きろくマニア',       cond:'きろく100かい',             test:s=>s.records.length>=100 },
+  { cat:'きろく', id:'rec250',  em:'🌌', name:'きろくのでんせつ',   cond:'きろく250かい',             test:s=>s.records.length>=250 },
+  { cat:'きろく', id:'day10',   em:'📅', name:'コツコツさん',       cond:'10日うんどうした',          test:s=>uniqueDays(s)>=10 },
+  { cat:'きろく', id:'day30',   em:'🗓️', name:'うんどうずき',       cond:'30日うんどうした',          test:s=>uniqueDays(s)>=30 },
+  { cat:'きろく', id:'day100',  em:'🎊', name:'100日のヒーロー',    cond:'100日うんどうした',         test:s=>uniqueDays(s)>=100 },
+  // れんぞく
+  { cat:'れんぞく', id:'streak3',   em:'🕯️', name:'みっかぼうずそつぎょう', cond:'3日れんぞくできろく',   test:s=>s.streak.best>=3 },
+  { cat:'れんぞく', id:'streak7',   em:'🔥', name:'1しゅうかんファイター',  cond:'7日れんぞくできろく',   test:s=>s.streak.best>=7 },
+  { cat:'れんぞく', id:'streak14',  em:'🎇', name:'2しゅうかんマスター',    cond:'14日れんぞくできろく',  test:s=>s.streak.best>=14 },
+  { cat:'れんぞく', id:'streak30',  em:'🌋', name:'1か月チャンピオン',      cond:'30日れんぞくできろく',  test:s=>s.streak.best>=30 },
+  { cat:'れんぞく', id:'streak100', em:'☄️', name:'100日れんぞくでんせつ',  cond:'100日れんぞくできろく', test:s=>s.streak.best>=100 },
+  // レベル
+  { cat:'レベル', id:'lv3',  em:'🐣', name:'ひよこたんじょう', cond:'レベル3(たまごがかえった!)', test:s=>lvl(s)>=3 },
+  { cat:'レベル', id:'lv6',  em:'🐦', name:'とりにせいちょう', cond:'レベル6',                    test:s=>lvl(s)>=6 },
+  { cat:'レベル', id:'lv11', em:'🕊️', name:'つばさをひろげて', cond:'レベル11',                   test:s=>lvl(s)>=11 },
+  { cat:'レベル', id:'lv21', em:'🦅', name:'でんせつのとり',   cond:'レベル21',                   test:s=>lvl(s)>=21 },
+  { cat:'レベル', id:'lv30', em:'✨', name:'かがやくたましい', cond:'レベル30',                   test:s=>lvl(s)>=30 },
+  // なわとび
+  { cat:'なわとび', id:'mae10',        em:'🪢', name:'まえとびビギナー',     cond:'まえとび10かい',              test:s=>nawaBest(s,'n2',10) },
+  { cat:'なわとび', id:'mae50',        em:'🎏', name:'まえとびマスター',     cond:'まえとび50かい',              test:s=>nawaBest(s,'n2',50) },
+  { cat:'なわとび', id:'mae100',       em:'💯', name:'まえとび100かい!',     cond:'まえとび100かい',             test:s=>nawaBest(s,'n2',100) },
+  { cat:'なわとび', id:'ushiro20',     em:'🔄', name:'うしろとびめいじん',   cond:'うしろとび20かい',            test:s=>nawaBest(s,'n3',20) },
+  { cat:'なわとび', id:'kakeashi20',   em:'🏇', name:'かけあしとびめいじん', cond:'かけあしとび20かい',          test:s=>nawaBest(s,'n4',20) },
+  { cat:'なわとび', id:'aya10',        em:'✖️', name:'あやとびめいじん',     cond:'あやとび10かい',              test:s=>nawaBest(s,'n9',10) },
+  { cat:'なわとび', id:'kosa10',       em:'➰', name:'こうさとびめいじん',   cond:'こうさとび10かい',            test:s=>nawaBest(s,'n10',10) },
+  { cat:'なわとび', id:'nijuu1',       em:'💫', name:'にじゅうとびデビュー', cond:'にじゅうとびはじめてせいこう', test:s=>nawaBest(s,'n13',1) },
+  { cat:'なわとび', id:'nijuu10',      em:'⚡', name:'にじゅうとびめいじん', cond:'にじゅうとび10かい',          test:s=>nawaBest(s,'n13',10) },
+  { cat:'なわとび', id:'nijuu50',      em:'🌪️', name:'じゅんとっきゅう!',    cond:'にじゅうとび50かい',          test:s=>nawaBest(s,'n13',50) },
+  { cat:'なわとび', id:'nijuu100',     em:'🌀', name:'とっきゅう100かい!',   cond:'にじゅうとび100かい',         test:s=>nawaBest(s,'n13',100) },
+  { cat:'なわとび', id:'hayabusa1',    em:'🦉', name:'はやぶさデビュー',     cond:'はやぶさはじめてせいこう',    test:s=>nawaBest(s,'n14',1) },
+  { cat:'なわとび', id:'ushironijuu1', em:'🌙', name:'うしろにじゅうデビュー', cond:'うしろにじゅうとびせいこう', test:s=>nawaBest(s,'n16',1) },
+  { cat:'なわとび', id:'sanju1',       em:'👻', name:'さんじゅうとびでんせつ', cond:'さんじゅうとびせいこう',    test:s=>nawaBest(s,'n19',1) },
+  { cat:'なわとび', id:'speed50',      em:'💨', name:'はやまわし50',         cond:'30びょうで50かい(まえまわし)', test:s=>s.nawatobi.speed.some(r=>r.mae>=50) },
+  { cat:'なわとび', id:'speed70',      em:'🚤', name:'はやまわしのたつじん', cond:'30びょうで70かい(まえまわし)', test:s=>s.nawatobi.speed.some(r=>r.mae>=70) },
+  { cat:'なわとび', id:'speed90',      em:'🚄', name:'はやまわしエース',     cond:'30びょうで90かい(まえまわし)', test:s=>s.nawatobi.speed.some(r=>r.mae>=90) },
+  { cat:'なわとび', id:'speed100',     em:'🛸', name:'おとのはやさ!?',       cond:'30びょうで100かい(まえまわし)', test:s=>s.nawatobi.speed.some(r=>r.mae>=100) },
+  { cat:'なわとび', id:'nawaK8',       em:'🌱', name:'なわとび8きゅう',      cond:'なわとびで8きゅうたっせい',   test:s=>nawaKyuLe(s,8) },
+  { cat:'なわとび', id:'nawaK5',       em:'🎗️', name:'なわとび5きゅう',      cond:'なわとびで5きゅうたっせい',   test:s=>nawaKyuLe(s,5) },
+  { cat:'なわとび', id:'nawaK3',       em:'🎽', name:'なわとび3きゅう',      cond:'なわとびで3きゅうたっせい',   test:s=>nawaKyuLe(s,3) },
+  { cat:'なわとび', id:'nawaK1',       em:'🏵️', name:'なわとび1きゅう',      cond:'なわとびで1きゅうたっせい',   test:s=>nawaKyuLe(s,1) },
+  { cat:'なわとび', id:'nawaTok',      em:'🌟', name:'なわとびとっきゅう',   cond:'なわとびとっきゅうたっせい',  test:s=>nawaKyu(s)===0 },
+  { cat:'なわとび', id:'nawaAll',      em:'🧵', name:'なわとびはかせ',       cond:'ぜん19わざを1かいいじょう',   test:s=>NAWATOBI_SKILLS.every(k=>(s.nawatobi.best[k.id]||0)>0) },
+  // てつぼう
+  { cat:'てつぼう', id:'tetsu1',    em:'🐒', name:'てつぼうデビュー',     cond:'はじめてのわざたっせい',      test:s=>s.tetsubo.done.length>=1 },
+  { cat:'てつぼう', id:'tsubame',   em:'🐥', name:'つばめポーズ',         cond:'つばめたっせい',              test:s=>s.tetsubo.done.includes('t1') },
+  { cat:'てつぼう', id:'sakaagari', em:'💪', name:'さかあがりせいこう',   cond:'さかあがりたっせい',          test:s=>s.tetsubo.done.includes('t12') },
+  { cat:'てつぼう', id:'ashikake',  em:'🦵', name:'あしかけあがり',       cond:'あしかけあがりたっせい',      test:s=>s.tetsubo.done.includes('t9') },
+  { cat:'てつぼう', id:'tetsu5',    em:'🖐️', name:'わざハンター',         cond:'てつぼうのわざ5こ',           test:s=>s.tetsubo.done.length>=5 },
+  { cat:'てつぼう', id:'tetsuK5',   em:'🎖️', name:'てつぼう5きゅう',      cond:'てつぼうのわざ10こ',          test:s=>s.tetsubo.done.length>=10 },
+  { cat:'てつぼう', id:'tetsu15',   em:'🥋', name:'てつぼうのたつじん',   cond:'てつぼうのわざ15こ',          test:s=>s.tetsubo.done.length>=15 },
+  { cat:'てつぼう', id:'tetsuTok',  em:'🌠', name:'てつぼうとっきゅう',   cond:'てつぼうのわざ20こぜんぶ!',   test:s=>s.tetsubo.done.length>=20 },
+  { cat:'てつぼう', id:'kuchu',     em:'🛰️', name:'くうちゅうさかあがり', cond:'うでたてこうてんたっせい',    test:s=>s.tetsubo.done.includes('t15') },
+  { cat:'てつぼう', id:'kensui',    em:'🦾', name:'さいきょうのうで',     cond:'けんすいさかあがりたっせい',  test:s=>s.tetsubo.done.includes('t20') },
+  // マット
+  { cat:'マット', id:'zenten',       em:'🤸', name:'ぜんてんマスター',   cond:'ぜんてんたっせい',            test:s=>s.mat.done.includes('m1') },
+  { cat:'マット', id:'kouten',       em:'🔙', name:'こうてんマスター',   cond:'こうてんたっせい',            test:s=>s.mat.done.includes('m2') },
+  { cat:'マット', id:'kaikyakuZen',  em:'📐', name:'かいきゃくのわざ',   cond:'かいきゃくぜんてんたっせい',  test:s=>s.mat.done.includes('m3') },
+  { cat:'マット', id:'bridge',       em:'🌉', name:'がんじょうブリッジ', cond:'ブリッジたっせい',            test:s=>s.mat.done.includes('m5') },
+  { cat:'マット', id:'kabetouritsu', em:'🧱', name:'かべのぼりめいじん', cond:'かべとうりつたっせい',        test:s=>s.mat.done.includes('m6') },
+  { cat:'マット', id:'densetsu',     em:'🤹', name:'でんせつのかいてん', cond:'そくてんかとうりつたっせい',  test:s=>s.mat.done.includes('m7')||s.mat.done.includes('m8') },
+  { cat:'マット', id:'rondato',      em:'🎢', name:'ロンダートせいこう', cond:'ロンダートたっせい',          test:s=>s.mat.done.includes('m10') },
+  { cat:'マット', id:'mat5',         em:'🎋', name:'マットのたつじん',   cond:'マットのわざ5こ',             test:s=>s.mat.done.length>=5 },
+  { cat:'マット', id:'mat8',         em:'🎍', name:'マットめいじん',     cond:'マットのわざ8こ',             test:s=>s.mat.done.length>=8 },
+  { cat:'マット', id:'matAll',       em:'🌈', name:'マットはかせ',       cond:'マットのわざぜんぶ!',         test:s=>s.mat.done.length>=MAT_SKILLS.length },
+  // とびばこ
+  { cat:'とびばこ', id:'kaikyaku',  em:'🦘', name:'かいきゃくとびせいこう',   cond:'かいきゃくとびたっせい',      test:s=>(s.tobibako.dan.b2||0)>=2 },
+  { cat:'とびばこ', id:'kakaekomi', em:'📦', name:'かかえこみとびせいこう',   cond:'かかえこみとびたっせい',      test:s=>(s.tobibako.dan.b3||0)>=2 },
+  { cat:'とびばこ', id:'daijou',    em:'🎡', name:'だいじょうぜんてんせいこう', cond:'だいじょうぜんてんたっせい', test:s=>(s.tobibako.dan.b4||0)>=2 },
+  { cat:'とびばこ', id:'hane',      em:'🎆', name:'はねとびせいこう',         cond:'くびはねかあたまはねたっせい', test:s=>(s.tobibako.dan.b5||0)>=2||(s.tobibako.dan.b6||0)>=2 },
+  { cat:'とびばこ', id:'dan4',      em:'🪜', name:'4だんクリア',              cond:'どれかのわざで4だん',         test:s=>danMax(s)>=4 },
+  { cat:'とびばこ', id:'dan6',      em:'🗼', name:'6だんジャンパー',          cond:'どれかのわざで6だん',         test:s=>danMax(s)>=6 },
+  { cat:'とびばこ', id:'dan8',      em:'🏯', name:'8だんでんせつ',            cond:'どれかのわざで8だん',         test:s=>danMax(s)>=8 },
+  { cat:'とびばこ', id:'bakoAll',   em:'🎪', name:'とびばこはかせ',           cond:'とびばこのわざぜんぶ!',       test:s=>TOBIBAKO_SKILLS.every(k=>(s.tobibako.dan[k.id]||0)>=2) },
+  // すいえい
+  { cat:'すいえい', id:'swFace',      em:'💦', name:'みずとなかよし',     cond:'かおに水をつけられた(20きゅう)', test:s=>s.suiei.kyu.includes('sw20') },
+  { cat:'すいえい', id:'swMoguru',    em:'🤿', name:'もぐりめいじん',     cond:'あたままでもぐれた(17きゅう)',   test:s=>s.suiei.kyu.includes('sw17') },
+  { cat:'すいえい', id:'swEye',       em:'👀', name:'水中たんけんか',     cond:'水の中で目をあけた(16きゅう)',   test:s=>s.suiei.kyu.includes('sw16') },
+  { cat:'すいえい', id:'swDaruma',    em:'🍙', name:'だるまうきめいじん', cond:'だるまうきせいこう(12きゅう)',   test:s=>s.suiei.kyu.includes('sw12') },
+  { cat:'すいえい', id:'kenobi',      em:'🐟', name:'けのびマスター',     cond:'けのび5m(10きゅう)',             test:s=>s.suiei.kyu.includes('sw10') },
+  { cat:'すいえい', id:'swBeat',      em:'🛟', name:'バタあしエンジン',   cond:'ビートばんで13m(9きゅう)',       test:s=>s.suiei.kyu.includes('sw9') },
+  { cat:'すいえい', id:'swMenkaburi', em:'🐠', name:'めんかぶりスイマー', cond:'めんかぶりばた足13m(8きゅう)',   test:s=>s.suiei.kyu.includes('sw8') },
+  { cat:'すいえい', id:'swimK5',      em:'🐬', name:'13mスイマー',        cond:'クロールかひらおよぎで13m(7きゅう)', test:s=>s.suiei.kyu.includes('sw7') },
+  { cat:'すいえい', id:'sw25',        em:'🐳', name:'25mスイマー',        cond:'25mおよげた(5きゅう)',           test:s=>s.suiei.kyu.includes('sw5') },
+  { cat:'すいえい', id:'swimK1',      em:'🦈', name:'50mスイマー',        cond:'りょうほう50m(3きゅう)',         test:s=>s.suiei.kyu.includes('sw3') },
+  { cat:'すいえい', id:'swSeoyogi',   em:'🛶', name:'せおよぎスイスイ',   cond:'せおよぎ25m(2きゅう)',           test:s=>s.suiei.kyu.includes('sw2') },
+  { cat:'すいえい', id:'swimDan',     em:'🐋', name:'3しゅもくマスター',  cond:'3しゅもく50m(1きゅう)',          test:s=>s.suiei.kyu.includes('sw1') },
+  { cat:'すいえい', id:'swShodan',    em:'🧜', name:'しょだんスイマー',   cond:'しょだんたっせい',               test:s=>s.suiei.kyu.includes('swS1') },
+  { cat:'すいえい', id:'swDist1k',    em:'🌊', name:'うみをめざして',     cond:'るいけい1kmおよいだ',            test:s=>swimTotal(s)>=1000 },
+  // マラソン
+  { cat:'マラソン', id:'run1',      em:'🏃', name:'はじめてのラン',     cond:'はじめてはしったきろく', test:s=>s.marathon.log.length>=1 },
+  { cat:'マラソン', id:'run5',      em:'👟', name:'ランナーのたまご',   cond:'5かいはしった',          test:s=>s.marathon.log.length>=5 },
+  { cat:'マラソン', id:'run20',     em:'🥾', name:'はしるのだいすき',   cond:'20かいはしった',         test:s=>s.marathon.log.length>=20 },
+  { cat:'マラソン', id:'runLong2k', em:'🛣️', name:'ロングランナー',     cond:'1かいで2kmはしった',     test:s=>s.marathon.log.some(r=>r.m>=2000) },
+  { cat:'マラソン', id:'run5km',    em:'🗺️', name:'るいけい5km',        cond:'るいけい5kmたっせい',    test:s=>marathonTotal(s)>=5000 },
+  { cat:'マラソン', id:'run10k',    em:'🎯', name:'10kmランナー',       cond:'るいけい10kmたっせい',   test:s=>marathonTotal(s)>=10000 },
+  { cat:'マラソン', id:'run42k',    em:'🏅', name:'マラソンおう',       cond:'るいけい42.195kmたっせい', test:s=>marathonTotal(s)>=42195 },
+  { cat:'マラソン', id:'run100k',   em:'🚀', name:'100kmレジェンド',    cond:'るいけい100kmたっせい',  test:s=>marathonTotal(s)>=100000 },
+  // サッカー
+  { cat:'サッカー', id:'scFirst',   em:'⚽', name:'サッカーデビュー',   cond:'サッカーではじめてきろく',        test:s=>s.records.some(r=>r.sport==='soccer') },
+  { cat:'サッカー', id:'scTouch30', em:'🦶', name:'ボールタッチめいじん', cond:'30びょうで30かいタッチ',        test:s=>(s.soccer.best.sc2||0)>=30 },
+  { cat:'サッカー', id:'scLift10',  em:'🎩', name:'リフティング10かい', cond:'リフティング10かい',              test:s=>(s.soccer.best.sc1||0)>=10 },
+  { cat:'サッカー', id:'scShoot5',  em:'🥅', name:'シュートハンター',   cond:'まとあて10ぽん中5ほん',           test:s=>(s.soccer.best.sc4||0)>=5 },
+  { cat:'サッカー', id:'scAll',     em:'🌿', name:'サッカーはかせ',     cond:'サッカーのチャレンジぜんぶ!',     test:s=>ballAll(s,'soccer') },
+  // バスケットボール
+  { cat:'バスケットボール', id:'bkFirst',     em:'🏀', name:'バスケデビュー',     cond:'バスケではじめてきろく',      test:s=>s.records.some(r=>r.sport==='basket') },
+  { cat:'バスケットボール', id:'bkDribble50', em:'🫳', name:'ドリブルマスター',   cond:'30びょうでドリブル50かい',    test:s=>(s.basket.best.bk1||0)>=50 },
+  { cat:'バスケットボール', id:'bkShoot3',    em:'🧺', name:'シュート3ほん',      cond:'ゴールシュート10ぽん中3ぼん', test:s=>(s.basket.best.bk3||0)>=3 },
+  { cat:'バスケットボール', id:'bkLayup',     em:'🆙', name:'レイアップせいこう', cond:'レイアップシュートたっせい',  test:s=>s.basket.done.includes('bk4') },
+  { cat:'バスケットボール', id:'bkAll',       em:'🧡', name:'バスケはかせ',       cond:'バスケのチャレンジぜんぶ!',   test:s=>ballAll(s,'basket') },
+  // バレーボール
+  { cat:'バレーボール', id:'vbFirst',   em:'🏐', name:'バレーデビュー',     cond:'バレーではじめてきろく',        test:s=>s.records.some(r=>r.sport==='volley') },
+  { cat:'バレーボール', id:'vbUnder10', em:'🙌', name:'アンダーパス10かい', cond:'ちょくじょうアンダーパス10かい', test:s=>(s.volley.best.vb1||0)>=10 },
+  { cat:'バレーボール', id:'vbServe',   em:'✈️', name:'サーブせいこう',     cond:'サーブでネットごえたっせい',    test:s=>s.volley.done.includes('vb3') },
+  { cat:'バレーボール', id:'vbRally10', em:'🔁', name:'ラリー10かい',       cond:'ふたりでパスラリー10かい',      test:s=>(s.volley.best.vb4||0)>=10 },
+  { cat:'バレーボール', id:'vbAll',     em:'💛', name:'バレーはかせ',       cond:'バレーのチャレンジぜんぶ!',     test:s=>ballAll(s,'volley') },
+  // やきゅう
+  { cat:'やきゅう', id:'bbFirst',   em:'⚾', name:'やきゅうデビュー',       cond:'やきゅうではじめてきろく',        test:s=>s.records.some(r=>r.sport==='baseball') },
+  { cat:'やきゅう', id:'bbCatch10', em:'🧤', name:'キャッチボール10かい',   cond:'キャッチボールれんぞく10かい',    test:s=>(s.baseball.best.bb1||0)>=10 },
+  { cat:'やきゅう', id:'bbThrow20', em:'🪃', name:'とおなげ20m',            cond:'ボールを20mなげた',               test:s=>(s.baseball.best.bb5||0)>=20 },
+  { cat:'やきゅう', id:'bbBat5',    em:'🏏', name:'バッティングめいじん',   cond:'トスバッティング10きゅうで5ほん', test:s=>(s.baseball.best.bb4||0)>=5 },
+  { cat:'やきゅう', id:'bbAll',     em:'🧢', name:'やきゅうはかせ',         cond:'やきゅうのチャレンジぜんぶ!',     test:s=>ballAll(s,'baseball') },
+  // ドッジボール
+  { cat:'ドッジボール', id:'dgFirst',  em:'🤾', name:'ドッジデビュー',       cond:'ドッジではじめてきろく',        test:s=>s.records.some(r=>r.sport==='dodge') },
+  { cat:'ドッジボール', id:'dgWall10', em:'🎾', name:'かべあて10かい',       cond:'かべあてキャッチ10かい',        test:s=>(s.dodge.best.dg1||0)>=10 },
+  { cat:'ドッジボール', id:'dgCatch',  em:'🛡️', name:'キャッチのゆうしゃ',   cond:'つよいボールをキャッチした',    test:s=>s.dodge.done.includes('dg2') },
+  { cat:'ドッジボール', id:'dgDodge',  em:'🌬️', name:'かわしのたつじん',     cond:'かわしのめいじんたっせい',      test:s=>s.dodge.done.includes('dg4') },
+  { cat:'ドッジボール', id:'dgAll',    em:'🔴', name:'ドッジはかせ',         cond:'ドッジのチャレンジぜんぶ!',     test:s=>ballAll(s,'dodge') },
+  // リレー・かけっこ
+  { cat:'リレー・かけっこ', id:'rlFirst',     em:'🏁', name:'リレーデビュー',     cond:'リレー・かけっこではじめてきろく', test:s=>s.records.some(r=>r.sport==='relay') },
+  { cat:'リレー・かけっこ', id:'rlBaton',     em:'🤝', name:'バトンパスめいじん', cond:'バトンパスたっせい',              test:s=>s.relay.done.includes('rl4') },
+  { cat:'リレー・かけっこ', id:'rlJump100',   em:'🐸', name:'たちはばとび1m',     cond:'たちはばとび100cm',               test:s=>(s.relay.best.rl2||0)>=100 },
+  { cat:'リレー・かけっこ', id:'rlShuttle20', em:'🔂', name:'シャトルラン20かい', cond:'シャトルラン20かい',              test:s=>(s.relay.best.rl5||0)>=20 },
+  { cat:'リレー・かけっこ', id:'rlAll',       em:'🏎️', name:'リレーはかせ',       cond:'リレーのチャレンジぜんぶ!',       test:s=>ballAll(s,'relay') },
+  // スペシャル
+  { cat:'スペシャル', id:'allsports',   em:'🌍', name:'うんどうおう',           cond:'6しゅもくいじょうできろくした', test:s=>new Set(s.records.map(r=>r.sport)).size>=6 },
+  { cat:'スペシャル', id:'allsports12', em:'🌏', name:'スポーツマスター',       cond:'ぜん12しゅもくできろくした',    test:s=>Object.keys(SPORTS).every(sp=>s.records.some(r=>r.sport===sp)) },
+  { cat:'スペシャル', id:'triday',      em:'🎭', name:'なんでもチャレンジャー', cond:'1日に3しゅもくきろくした',      test:s=>tridaySports(s) },
+  { cat:'スペシャル', id:'badge10',     em:'🧿', name:'バッジコレクター',       cond:'バッジ10こあつめた',            test:s=>s.badges.length>=10 },
+  { cat:'スペシャル', id:'badge30',     em:'🪅', name:'バッジマニア',           cond:'バッジ30こあつめた',            test:s=>s.badges.length>=30 },
+  { cat:'スペシャル', id:'badge50',     em:'🎁', name:'バッジマスター',         cond:'バッジ50こあつめた',            test:s=>s.badges.length>=50 },
+  { cat:'スペシャル', id:'badge100',    em:'🏰', name:'バッジのおしろ',         cond:'バッジ100こあつめた',           test:s=>s.badges.length>=100 },
+  { cat:'スペシャル', id:'allbadges',   em:'👑', name:'でんせつのうんどうか',   cond:'ほかのバッジぜんぶゲット!',     test:s=>BADGES.filter(b=>b.id!=='allbadges').every(b=>s.badges.includes(b.id)) },
+];
+/* ボールしゅもく: ぜんチャレンジたっせい判定 */
+function ballAll(s, sport){
+  return BALL_SPORTS[sport].skills.every(k=>
+    k.type==='check' ? s[sport].done.includes(k.id) : (s[sport].best[k.id]||0)>0
+  );
+}
+
+/* ---------------- XPルール ---------------- */
+const XP = { record:10, firstSkill:30, best:20, badge:50, streak7:100 };
+
+/* ---------------- キャラクター ---------------- */
+const CHAR_STAGES = [
+  { min:1,  name:'たまご',        desc:'なにかがねむっている…' },
+  { min:3,  name:'ひよこ',        desc:'うまれたばかり。いっしょにうんどうしよう!' },
+  { min:6,  name:'とり',          desc:'ずいぶんたくましくなってきた!' },
+  { min:11, name:'つばさ',        desc:'大きなつばさで、どこまでもとべそう!' },
+  { min:21, name:'でんせつのとり', desc:'きみのどりょくが、でんせつをうんだ!' },
+];
+function charStage(level){
+  let st = CHAR_STAGES[0];
+  for(const c of CHAR_STAGES){ if(level>=c.min) st=c; }
+  return st;
+}
+function charSvg(level, size){
+  const stage = charStage(level).name;
+  const s = size||120;
+  const open = `<svg class="char-svg" style="width:${s}px;height:${s}px" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">`;
+  if(stage==='たまご') return open+`
+    <ellipse cx="60" cy="100" rx="30" ry="8" fill="rgba(14,116,180,.10)"/>
+    <path d="M60 22 C38 22 28 52 28 72 a32 30 0 0 0 64 0 C92 52 82 22 60 22Z" fill="#FFF7E0" stroke="#F3D9A4" stroke-width="3"/>
+    <path d="M42 62 l8 8 8-8 8 8 8-8" fill="none" stroke="#F3C56B" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="49" cy="48" r="3" fill="#D9A94F"/><circle cx="71" cy="48" r="3" fill="#D9A94F"/></svg>`;
+  if(stage==='ひよこ') return open+`
+    <ellipse cx="60" cy="104" rx="28" ry="7" fill="rgba(14,116,180,.10)"/>
+    <circle cx="60" cy="66" r="34" fill="#FFE066" stroke="#F3C947" stroke-width="3"/>
+    <circle cx="60" cy="40" r="22" fill="#FFE879" stroke="#F3C947" stroke-width="3"/>
+    <circle cx="52" cy="38" r="3.5" fill="#333"/><circle cx="68" cy="38" r="3.5" fill="#333"/>
+    <polygon points="56,45 64,45 60,52" fill="#FB923C"/>
+    <path d="M32 66 q-10 4 -8 14" stroke="#F3C947" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M88 66 q10 4 8 14" stroke="#F3C947" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M50 100 l0 6 M70 100 l0 6" stroke="#FB923C" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(stage==='とり') return open+`
+    <ellipse cx="60" cy="106" rx="30" ry="7" fill="rgba(14,116,180,.10)"/>
+    <ellipse cx="60" cy="68" rx="34" ry="32" fill="#7DD3FC" stroke="#38BDF8" stroke-width="3"/>
+    <circle cx="60" cy="38" r="21" fill="#A5E3FF" stroke="#38BDF8" stroke-width="3"/>
+    <circle cx="52" cy="36" r="3.5" fill="#0F3350"/><circle cx="68" cy="36" r="3.5" fill="#0F3350"/>
+    <polygon points="55,43 65,43 60,51" fill="#FB923C"/>
+    <path d="M28 62 q-14 2 -16 16 q10 2 20 -6" fill="#38BDF8"/>
+    <path d="M92 62 q14 2 16 16 q-10 2 -20 -6" fill="#38BDF8"/>
+    <ellipse cx="60" cy="74" rx="16" ry="14" fill="#E8F8FF"/>
+    <path d="M50 100 l0 8 M70 100 l0 8" stroke="#FB923C" stroke-width="4" stroke-linecap="round"/>
+    <path d="M43 22 q4 -10 12 -8" stroke="#38BDF8" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
+  if(stage==='つばさ') return open+`
+    <ellipse cx="60" cy="108" rx="32" ry="7" fill="rgba(14,116,180,.10)"/>
+    <path d="M25 60 Q2 46 6 26 Q26 32 36 50Z" fill="#60A5FA"/>
+    <path d="M95 60 Q118 46 114 26 Q94 32 84 50Z" fill="#60A5FA"/>
+    <ellipse cx="60" cy="70" rx="33" ry="32" fill="#60A5FA" stroke="#3B82F6" stroke-width="3"/>
+    <circle cx="60" cy="38" r="21" fill="#93C5FD" stroke="#3B82F6" stroke-width="3"/>
+    <circle cx="52" cy="36" r="3.5" fill="#0F3350"/><circle cx="68" cy="36" r="3.5" fill="#0F3350"/>
+    <polygon points="55,43 65,43 60,51" fill="#F97316"/>
+    <ellipse cx="60" cy="76" rx="16" ry="15" fill="#EAF4FF"/>
+    <path d="M50 102 l0 8 M70 102 l0 8" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
+    <path d="M40 20 q6 -12 16 -9 M64 11 q8 -2 12 6" stroke="#3B82F6" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
+  return open+`
+    <ellipse cx="60" cy="108" rx="34" ry="7" fill="rgba(14,116,180,.10)"/>
+    <path d="M24 58 Q-4 44 2 20 Q28 26 36 48Z" fill="#FBBF24"/>
+    <path d="M96 58 Q124 44 118 20 Q92 26 84 48Z" fill="#FBBF24"/>
+    <ellipse cx="60" cy="70" rx="33" ry="32" fill="#FCD34D" stroke="#F59E0B" stroke-width="3"/>
+    <circle cx="60" cy="38" r="21" fill="#FDE68A" stroke="#F59E0B" stroke-width="3"/>
+    <circle cx="52" cy="36" r="3.5" fill="#7C2D12"/><circle cx="68" cy="36" r="3.5" fill="#7C2D12"/>
+    <polygon points="55,43 65,43 60,51" fill="#EA580C"/>
+    <ellipse cx="60" cy="76" rx="16" ry="15" fill="#FFFBEB"/>
+    <path d="M50 102 l0 8 M70 102 l0 8" stroke="#EA580C" stroke-width="4" stroke-linecap="round"/>
+    <path d="M60 8 l4 9 9 1 -6.5 6.5 1.5 9 -8 -4.5 -8 4.5 1.5 -9 -6.5 -6.5 9 -1Z" fill="#FBBF24" stroke="#F59E0B" stroke-width="2"/></svg>`;
+}
+
+/* ---------------- 状態管理 ---------------- */
+const LS_KEY = 'ugokiNoKiroku_v1';
+function defaultState(){
+  return {
+    profile:{ name:'', grade:0, charName:'ぴよ', totalXp:0 },
+    records:[],                                  // {id, sport, date, label, xp}
+    nawatobi:{ best:{}, speed:[] },              // best: skillId->回数 / speed: {date,mae,ushiro}
+    tetsubo:{ done:[] },
+    mat:{ done:[] },
+    tobibako:{ dan:{} },                         // skillId -> さいこう段
+    suiei:{ kyu:[], log:[] },                    // log: {date, stroke, m}
+    marathon:{ log:[] },                         // {date, m, sec|null}
+    soccer:{ best:{}, done:[] },                 // ボールしゅもく: best=カウント自己ベスト / done=できたチェック
+    basket:{ best:{}, done:[] },
+    volley:{ best:{}, done:[] },
+    baseball:{ best:{}, done:[] },
+    dodge:{ best:{}, done:[] },
+    relay:{ best:{}, done:[] },
+    badges:[],
+    streak:{ last:'', count:0, best:0 },
+  };
+}
+let S = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return defaultState();
+    const d = defaultState(), s = JSON.parse(raw);
+    // ふるいデータにあたらしいキーをおぎなう
+    for(const k of Object.keys(d)) if(s[k]===undefined) s[k]=d[k];
+    // 旧すいえい12だんかい(s10〜sS2)のごうかくを、22だんかい版(sw〜)へひきつぐ
+    const mig = { s10:['sw14'], s9:['sw16','sw15'], s8:['sw11','sw10'], s7:['sw9'], s6:['sw8'],
+                  s5:['sw7'], s4:['sw6'], s3:['sw5'], s2:['sw4'], s1:['sw3'], sS1:['sw1'], sS2:['swS2'] };
+    const remap = a=>{ const out=[]; (a||[]).forEach(id=>{ if(mig[id]) out.push(...mig[id]); else out.push(id); }); return [...new Set(out)]; };
+    if(s.suiei && s.suiei.kyu.some(id=>mig[id])) s.suiei.kyu = remap(s.suiei.kyu);
+    if(s.ever_suiei && s.ever_suiei.some(id=>mig[id])) s.ever_suiei = remap(s.ever_suiei);
+    return s;
+  }catch(e){ return defaultState(); }
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function fmtDate(iso){
+  const [y,m,d] = iso.split('-');
+  return Number(m)+'月'+Number(d)+'日';
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+/* ---------------- レベル計算 ---------------- */
+function levelInfo(xp){
+  let level=1, acc=0, need=100;
+  while(xp >= acc+need){ acc+=need; level++; need = 100+(level-1)*25; }
+  return { level, cur:xp-acc, need };
+}
+
+/* ---------------- 級の計算 ---------------- */
+function rankLabel(k){ return k===0?'とっきゅう':(k===0.5?'じゅんとっきゅう':k+'きゅう'); }
+/* なわとび: 各わざのベスト回数から とうたつ級(いちばん良いもの) */
+function nawaSkillKyu(skill, count){
+  if(!count) return null;
+  let best = null;
+  for(const [kyu,need] of skill.lv){ if(count>=need && (best===null||kyu<best)) best=kyu; }
+  return best;
+}
+function nawaKyu(s){
+  let best = null;
+  for(const sk of NAWATOBI_SKILLS){
+    const k = nawaSkillKyu(sk, s.nawatobi.best[sk.id]||0);
+    if(k!==null && (best===null||k<best)) best=k;
+  }
+  return best;
+}
+/* てつぼう: できたわざの数 → 級 (20=特級, 2きざみ) */
+function tetsuKyu(s){
+  const n = s.tetsubo.done.length;
+  if(n>=20) return 'とっきゅう';
+  if(n<2) return '10きゅう';
+  return (10-Math.floor(n/2))+'きゅう';
+}
+function suieiKyuLabel(s){
+  let label = null;
+  for(const k of SUIEI_KYU){ if(s.suiei.kyu.includes(k.id)) label = k.label; }
+  return label;
+}
+function marathonTotal(s){ return s.marathon.log.reduce((a,r)=>a+r.m,0); }
+
+/* ---------------- XP・きろく・バッジ判定 ---------------- */
+let celebrationQueue = [];
+function gainXp(n){
+  const before = levelInfo(S.profile.totalXp).level;
+  S.profile.totalXp += n;
+  const after = levelInfo(S.profile.totalXp).level;
+  if(after>before) celebrationQueue.push({type:'levelup', level:after});
+}
+function touchStreak(date){
+  if(date!==todayStr()) return;                 // きょうのきろくだけ連続にカウント
+  if(S.streak.last===date) return;
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const yStr = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+  S.streak.count = (S.streak.last===yStr) ? S.streak.count+1 : 1;
+  S.streak.last = date;
+  if(S.streak.count>S.streak.best) S.streak.best = S.streak.count;
+  if(S.streak.count>0 && S.streak.count%7===0){
+    gainXp(XP.streak7);
+    celebrationQueue.push({type:'streak', days:S.streak.count});
+  }
+}
+/* きろくのとりけし: 該当するさいしんの1件をけして、もらったXPをもどす(レベルも自動でもどる) */
+function removeRecordXp(pred){
+  for(let i=S.records.length-1; i>=0; i--){
+    if(pred(S.records[i])){
+      S.profile.totalXp = Math.max(0, S.profile.totalXp - S.records[i].xp);
+      S.records.splice(i,1);
+      return true;
+    }
+  }
+  return false;
+}
+/* きろく1件ついか(+10XP)。extraXp: わざ初達成やベスト更新のボーナス */
+function addRecord(sport, label, extraXp, date){
+  const d = date || todayStr();
+  const xp = XP.record + (extraXp||0);
+  S.records.push({ id:uid(), sport, date:d, label, xp });
+  gainXp(xp);
+  touchStreak(d);
+  checkBadges();
+  save();
+}
+function checkBadges(){
+  for(const b of BADGES){
+    if(S.badges.includes(b.id)) continue;
+    let ok=false;
+    try{ ok = b.test(S); }catch(e){ ok=false; }
+    if(ok){
+      S.badges.push(b.id);
+      gainXp(XP.badge);
+      celebrationQueue.push({type:'badge', badge:b});
+      checkBadges();                            // でんせつのうんどうか の連鎖チェック
+      return;
+    }
+  }
+}
+
+/* ---------------- 演出(モーダル・コンフェッティ・トースト) ---------------- */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function playCelebrations(){
+  if(celebrationQueue.length===0) return;
+  const c = celebrationQueue.shift();
+  const root = document.getElementById('modal-root');
+  let html='';
+  if(c.type==='badge'){
+    html = `<span class="big-em">${c.badge.em}</span>
+      <h2>バッジゲット!</h2>
+      <p>「${c.badge.name}」をかくとくした!<br><span class="small">${c.badge.cond}</span></p>
+      <span class="getxp">+${XP.badge} XP</span>`;
+  }else if(c.type==='levelup'){
+    const stage = charStage(c.level);
+    html = `${charSvg(c.level,110)}
+      <h2>レベルアップ!</h2>
+      <p>${esc(S.profile.charName)}は <b>Lv.${c.level}</b> になった!<br><span class="small">${stage.desc}</span></p>`;
+  }else if(c.type==='streak'){
+    html = `<span class="big-em">🔥</span>
+      <h2>${c.days}日れんぞく!</h2>
+      <p>まいにちのつみかさねが、いちばんのちから!</p>
+      <span class="getxp">+${XP.streak7} XP</span>`;
+  }
+  root.innerHTML = `<div class="modal-overlay"><div class="modal-box">${html}
+    <button class="btn orange wide" id="cele-close">やったー!</button></div></div>`;
+  confettiBurst();
+  document.getElementById('cele-close').onclick = ()=>{
+    root.innerHTML='';
+    render();
+    playCelebrations();                          // つぎの演出へ
+  };
+}
+
+/* かんたんコンフェッティ(CDNなし・オフラインOK) */
+const confCanvas = document.getElementById('confetti');
+const confCtx = confCanvas.getContext('2d');
+let confParts = [], confRunning = false;
+function confettiBurst(){
+  confCanvas.width = innerWidth; confCanvas.height = innerHeight;
+  const colors = ['#38BDF8','#FB923C','#4ADE80','#F472B6','#FACC15','#A78BFA'];
+  for(let i=0;i<120;i++){
+    confParts.push({
+      x: innerWidth/2 + (Math.random()-.5)*160,
+      y: innerHeight*0.35,
+      vx: (Math.random()-.5)*11,
+      vy: -Math.random()*11-4,
+      w: 6+Math.random()*6, h: 8+Math.random()*8,
+      rot: Math.random()*Math.PI*2, vr:(Math.random()-.5)*.3,
+      color: colors[i%colors.length], life: 130+Math.random()*60,
+    });
+  }
+  if(!confRunning){ confRunning=true; confettiTick(); }
+}
+function confettiTick(){
+  confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+  confParts = confParts.filter(p=>p.life>0 && p.y<confCanvas.height+30);
+  for(const p of confParts){
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.28; p.vx*=0.99; p.rot+=p.vr; p.life--;
+    confCtx.save();
+    confCtx.translate(p.x,p.y); confCtx.rotate(p.rot);
+    confCtx.globalAlpha = Math.min(1, p.life/40);
+    confCtx.fillStyle = p.color;
+    confCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    confCtx.restore();
+  }
+  if(confParts.length>0){ requestAnimationFrame(confettiTick); }
+  else { confRunning=false; confCtx.clearRect(0,0,confCanvas.width,confCanvas.height); }
+}
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* ---------------- ルーター ---------------- */
+const app = document.getElementById('app');
+function go(route){ location.hash = '#/'+route; }
+function currentRoute(){
+  const h = location.hash.replace(/^#\//,'');
+  return h || 'home';
+}
+window.addEventListener('hashchange', ()=>{ render(); scrollTo(0,0); });
+
+const NAV_ITEMS = [
+  { route:'home',     em:'🏠', label:'ホーム' },
+  { route:'sports',   em:'🏃', label:'きろく' },
+  { route:'progress', em:'👣', label:'あしあと' },
+  { route:'badges',   em:'🏅', label:'バッジ' },
+  { route:'settings', em:'⚙️', label:'せってい' },
+];
+function renderNav(){
+  const r = currentRoute();
+  const active = r.startsWith('sport/') ? 'sports' : r;
+  document.getElementById('nav').innerHTML = NAV_ITEMS.map(n=>
+    `<button class="${active===n.route?'active':''}" onclick="go('${n.route}')">
+       <span class="em">${n.em}</span>${n.label}</button>`).join('');
+}
+
+function render(){
+  const r = currentRoute();
+  if(r.startsWith('sport/')){
+    const sp = r.slice(6);
+    const fn = SPORT_VIEWS[sp];
+    app.innerHTML = fn ? fn() : viewHome();
+  }else{
+    const views = { home:viewHome, sports:viewSports, progress:viewProgress, badges:viewBadges, settings:viewSettings };
+    app.innerHTML = (views[r]||viewHome)();
+  }
+  renderNav();
+}
+
+function headerHtml(title, em, backTo){
+  return `<div class="topbar">
+    ${backTo?`<button class="back-btn" onclick="go('${backTo}')">◀ もどる</button>`:`<div class="logo">うごきの<span>きろく</span></div>`}
+  </div>
+  ${title?`<div class="page-title"><span class="em">${em||''}</span>${title}</div>`:''}`;
+}
+
+/* ---------------- ホーム ---------------- */
+function viewHome(){
+  const li = levelInfo(S.profile.totalXp);
+  const stage = charStage(li.level);
+  const pct = Math.min(100, Math.round(li.cur/li.need*100));
+  const recent = S.badges.slice(-3).reverse().map(id=>BADGES.find(b=>b.id===id)).filter(Boolean);
+  const todayRecs = S.records.filter(r=>r.date===todayStr()).length;
+
+  // 級サマリー
+  const chips = [];
+  const nk = nawaKyu(S);
+  if(nk!==null) chips.push('🪢 なわとび '+rankLabel(nk));
+  if(S.tetsubo.done.length>0) chips.push('🤾 てつぼう '+tetsuKyu(S));
+  const sk = suieiKyuLabel(S);
+  if(sk) chips.push('🏊 すいえい '+sk);
+  if(marathonTotal(S)>0) chips.push('🏃 るいけい '+(marathonTotal(S)/1000).toFixed(1)+'km');
+
+  return headerHtml('')+`
+  <div class="hero">
+    <div class="char-wrap">
+      ${charSvg(li.level)}
+      <div class="char-info">
+        <div class="char-name">${esc(S.profile.charName)||'ぴよ'}</div>
+        <div class="char-stage">${stage.name} — ${stage.desc}</div>
+        <span class="lv-chip">Lv.${li.level}</span><span class="muted small">つぎまで あと ${li.need-li.cur} XP</span>
+        <div class="xpbar"><div class="fill" style="width:${pct}%"></div></div>
+        <div class="xp-label"><span>XP ${li.cur} / ${li.need}</span><span>ごうけい ${S.profile.totalXp} XP</span></div>
+      </div>
+    </div>
+    ${S.streak.count>0?`<span class="streak-chip">🔥 ${S.streak.count}日 れんぞくきろくちゅう!</span>`:`<span class="streak-chip">きょうのきろくで れんぞくスタート!</span>`}
+    ${chips.length?`<div class="kyu-chips">${chips.map(c=>`<span class="kyu-chip">${c}</span>`).join('')}</div>`:''}
+  </div>
+
+  <div class="card">
+    <h3>📝 きょうは なにをした?${todayRecs?` <span class="done-badge">きょう ${todayRecs}けん</span>`:''}</h3>
+    <div class="sport-grid">${sportCardsHtml()}</div>
+  </div>
+
+  ${recent.length?`<div class="card">
+    <h3>🏅 さいきんゲットしたバッジ</h3>
+    <div class="badge-grid">
+      ${recent.map(b=>`<div class="badge-cell got"><span class="em">${b.em}</span><span class="nm">${b.name}</span></div>`).join('')}
+    </div>
+    <div class="center" style="margin-top:10px"><button class="btn ghost smallbtn" onclick="go('badges')">バッジずかんを見る ▶</button></div>
+  </div>`:''}
+
+  <div class="card center">
+    <div class="muted small">きろくがたまると「あしあと」でせいちょうが見えるよ</div>
+    <button class="btn wide" style="margin-top:8px" onclick="go('progress')">👣 せいちょうのあしあと</button>
+  </div>`;
+}
+
+function sportCardsHtml(){
+  return Object.entries(SPORTS).map(([id,sp])=>
+    `<button class="sport-card ${sp.cls}" onclick="go('sport/${id}')">
+      <span class="em">${sp.em}</span><span class="nm">${sp.name}</span><span class="sub">${sp.sub}</span>
+    </button>`).join('');
+}
+
+/* ---------------- しゅもく一覧 ---------------- */
+function viewSports(){
+  return headerHtml('どのうんどうを きろくする?','🏃')+`
+  <div class="sport-grid">${sportCardsHtml()}</div>
+  <div class="card" style="margin-top:14px">
+    <h3>💡 XPのため方</h3>
+    <div class="muted" style="font-size:13.5px">
+      きろく1けん <b>+${XP.record}XP</b> ／ わざをはじめてたっせい <b>+${XP.firstSkill}XP</b> ／
+      じこベストこうしん <b>+${XP.best}XP</b> ／ バッジゲット <b>+${XP.badge}XP</b> ／
+      7日れんぞく <b>+${XP.streak7}XP</b>
+    </div>
+  </div>`;
+}
+/* ---------------- SVG折れ線グラフ ---------------- */
+function lineChart(series, opts){
+  // series: [{color, points:[数値...]}] 同じ長さ / labels: X軸ラベル
+  const o = Object.assign({w:560,h:180,pad:30}, opts||{});
+  const all = series.flatMap(s=>s.points).filter(v=>v!=null);
+  if(all.length===0) return '';
+  const maxV = Math.max(...all, o.minMax||10);
+  const n = Math.max(...series.map(s=>s.points.length));
+  const iw = o.w-o.pad*2, ih = o.h-o.pad*2;
+  const x = i => o.pad + (n<=1 ? iw/2 : i*(iw/(n-1)));
+  const y = v => o.pad + ih - (v/maxV)*ih;
+  let g = `<svg viewBox="0 0 ${o.w} ${o.h}" style="width:100%;min-width:280px" xmlns="http://www.w3.org/2000/svg">`;
+  // よこ線
+  for(let i=0;i<=4;i++){
+    const vy = o.pad + ih*i/4;
+    const vv = Math.round(maxV*(4-i)/4);
+    g += `<line x1="${o.pad}" y1="${vy}" x2="${o.w-o.pad}" y2="${vy}" stroke="#E3F1FA" stroke-width="1.5"/>
+          <text x="${o.pad-6}" y="${vy+4}" font-size="10" fill="#8AA8BF" text-anchor="end">${vv}</text>`;
+  }
+  for(const s of series){
+    const pts = s.points.map((v,i)=>v==null?null:[x(i),y(v)]).filter(Boolean);
+    if(pts.length>1) g += `<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${s.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    for(const p of pts) g += `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${s.color}" stroke="#fff" stroke-width="2"/>`;
+  }
+  if(o.labels) o.labels.forEach((lb,i)=>{ if(i<n) g += `<text x="${x(i)}" y="${o.h-8}" font-size="10" fill="#8AA8BF" text-anchor="middle">${lb}</text>`; });
+  return g+'</svg>';
+}
+
+/* ---------------- なわとび ---------------- */
+function viewNawatobi(){
+  const kyu = nawaKyu(S);
+  return headerHtml('なわとび','🪢','sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#E7F6FF,#fff)">
+    <div class="muted small">いまのきみは…</div>
+    <div style="font-size:30px;font-weight:800;color:var(--sky-deep)">${kyu===null?'これから!':'なわとび '+rankLabel(kyu)}</div>
+    <div class="muted small">わざのかいすうをのばすと きゅうが上がるよ(がっこうのけんていカードとおなじ!)</div>
+  </div>
+  <div class="section-tabs">
+    <button class="${nawaTab==='waza'?'active':''}" onclick="setNawaTab('waza')">わざにちょうせん</button>
+    <button class="${nawaTab==='speed'?'active':''}" onclick="setNawaTab('speed')">30びょうチャレンジ</button>
+  </div>
+  ${nawaTab==='waza' ? nawaWazaHtml() : nawaSpeedHtml()}`;
+}
+let nawaTab = 'waza';
+function setNawaTab(t){ nawaTab=t; render(); }
+
+function nawaWazaHtml(){
+  return NAWATOBI_SKILLS.map(sk=>{
+    const best = S.nawatobi.best[sk.id]||0;
+    const k = nawaSkillKyu(sk, best);
+    const next = sk.lv.find(([kyu,need])=>best<need);
+    return `<div class="skill-card ${best>0?'done':''}">
+      <div class="skill-head">
+        <span class="skill-name">${sk.name}</span>
+        ${k!==null?`<span class="kyu-mini">${rankLabel(k)}</span>`:''}
+        ${best>0?`<span class="best-chip">ベスト ${best}かい</span>`:''}
+      </div>
+      <div class="skill-body">${skillArt('nawatobi',sk.id)}
+        <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}${next?`<br><b>つぎのもくひょう:</b> ${next[1]}かいで${rankLabel(next[0])}!`:'<br>🎉 このわざはさいこうきゅうまでたっせい!'}</div>
+      </div>
+      <div class="count-row">
+        <button class="step-btn" onclick="stepCount('${sk.id}',-1)">−</button>
+        <input type="number" id="cnt-${sk.id}" min="0" max="9999" inputmode="numeric" placeholder="0">
+        <button class="step-btn" onclick="stepCount('${sk.id}',1)">＋</button>
+        <button class="btn green smallbtn" onclick="saveNawa('${sk.id}')">きろく!</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function stepCount(id, d){
+  const el = document.getElementById('cnt-'+id);
+  el.value = Math.max(0,(parseInt(el.value)||0)+d);
+}
+function saveNawa(id){
+  const el = document.getElementById('cnt-'+id);
+  const n = parseInt(el.value)||0;
+  if(n<=0){ showToast('かいすうを入れてね'); return; }
+  const sk = NAWATOBI_SKILLS.find(s=>s.id===id);
+  const prev = S.nawatobi.best[id]||0;
+  let extra = 0, msg = sk.name+' '+n+'かい きろく!';
+  if(prev===0){ extra += XP.firstSkill; msg = '🎉 '+sk.name+' はじめてせいこう!'; }
+  else if(n>prev){ extra += XP.best; msg = '🏆 じこベストこうしん! '+prev+'→'+n+'かい'; }
+  if(n>prev) S.nawatobi.best[id]=n;
+  addRecord('nawatobi', sk.name+' '+n+'かい', extra);
+  showToast(msg+' +'+(XP.record+extra)+'XP');
+  render(); playCelebrations();
+}
+
+function nawaSpeedHtml(){
+  const log = S.nawatobi.speed.slice(-8);
+  const bestMae = Math.max(0,...S.nawatobi.speed.map(r=>r.mae||0));
+  let bench = '';
+  if(bestMae>=100) bench = '💥 100かいごえ! <b>さんじゅうとび</b>ができるスピードだ!';
+  else if(bestMae>=90) bench = '🌟 90かいごえ! <b>れんぞくにじゅうとび</b>がなん十かいもできるようになるよ!';
+  else if(bestMae>=70) bench = '⚡ 70かいごえ! もう<b>にじゅうとび</b>ができる回すちからがついているよ!';
+  else if(bestMae>0) bench = 'まずは70かいをめざそう! 70かいこえたら にじゅうとびができるサイン!';
+  return `<div class="card">
+    <h3>⏱️ 30びょうかん はやまわしチャレンジ</h3>
+    <div class="muted small" style="margin-bottom:8px">30びょうで なんかいとべるかな? わきをしめて手くびで小さくはやく回そう!</div>
+    <div class="form-row"><label>まえまわし</label>
+      <input type="number" id="sp-mae" min="0" max="300" inputmode="numeric" placeholder="かい" style="width:90px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:18px;text-align:center;font-family:inherit"></div>
+    <div class="form-row"><label>うしろまわし</label>
+      <input type="number" id="sp-ushiro" min="0" max="300" inputmode="numeric" placeholder="かい" style="width:90px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:18px;text-align:center;font-family:inherit"></div>
+    <button class="btn wide green" onclick="saveSpeed()">きろくする!</button>
+    ${bench?`<div class="bench-msg">${bench}</div>`:''}
+  </div>
+  ${log.length?`<div class="card">
+    <h3>📈 きろくののび <span class="small" style="color:#EF4444">●まえ</span> <span class="small" style="color:#2563EB">●うしろ</span></h3>
+    <div class="chart-wrap">${lineChart(
+      [{color:'#EF4444',points:log.map(r=>r.mae??null)},{color:'#2563EB',points:log.map(r=>r.ushiro??null)}],
+      {labels:log.map(r=>fmtDate(r.date)), minMax:50}
+    )}</div>
+  </div>`:''}`;
+}
+function saveSpeed(){
+  const mae = parseInt(document.getElementById('sp-mae').value)||0;
+  const ushiro = parseInt(document.getElementById('sp-ushiro').value)||0;
+  if(mae<=0 && ushiro<=0){ showToast('かいすうを入れてね'); return; }
+  const prevBest = Math.max(0,...S.nawatobi.speed.map(r=>r.mae||0));
+  S.nawatobi.speed.push({date:todayStr(), mae:mae||null, ushiro:ushiro||null});
+  let extra = 0;
+  if(mae>prevBest && prevBest>0) extra = XP.best;
+  const parts = [];
+  if(mae) parts.push('まえ'+mae+'かい');
+  if(ushiro) parts.push('うしろ'+ushiro+'かい');
+  addRecord('nawatobi', '30びょうはやまわし '+parts.join('・'), extra);
+  showToast(extra?'🏆 じこベストこうしん! +'+(XP.record+extra)+'XP':'きろくした! +'+XP.record+'XP');
+  render(); playCelebrations();
+}
+
+/* ---------------- チェックカードしき (てつぼう・マット) ---------------- */
+function checkSkillsHtml(sport, skills){
+  const done = S[sport].done;
+  return skills.map(sk=>{
+    const on = done.includes(sk.id);
+    return `<div class="skill-card ${on?'done':''}">
+      <div class="skill-head">
+        <div class="check-big ${on?'on':''}" onclick="toggleSkill('${sport}','${sk.id}')">${on?'✓':''}</div>
+        <span class="skill-name">${sk.name}</span>
+        <span class="skill-stars">${'★'.repeat(sk.st)}${'☆'.repeat(3-sk.st)}</span>
+        ${on?'<span class="done-badge">できた!</span>':''}
+      </div>
+      <div class="skill-body">${skillArt(sport,sk.id)}
+        <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleSkill(sport, id){
+  const arr = S[sport].done;
+  const skills = sport==='tetsubo' ? TETSUBO_SKILLS
+               : sport==='mat' ? MAT_SKILLS
+               : BALL_SPORTS[sport].skills;
+  const sk = skills.find(s=>s.id===id);
+  const everKey = 'ever_'+sport;
+  if(arr.includes(id)){
+    if(!confirm('「'+sk.name+'」のチェックをはずす?\n(もらったXPももどるよ)')) return;
+    S[sport].done = arr.filter(x=>x!==id);
+    removeRecordXp(r=>r.sport===sport && r.label===sk.name+' できた!');
+    S[everKey] = (S[everKey]||[]).filter(x=>x!==id);
+    save(); render();
+    showToast('チェックをはずして XPをもどしたよ');
+    return;
+  }
+  arr.push(id);
+  if(!S[everKey]) S[everKey]=[];
+  let extra = 0;
+  if(!S[everKey].includes(id)){ S[everKey].push(id); extra = XP.firstSkill; }
+  addRecord(sport, sk.name+' できた!', extra);
+  showToast('🎉 '+sk.name+' たっせい! +'+(XP.record+extra)+'XP');
+  render(); playCelebrations();
+}
+
+function viewTetsubo(){
+  const n = S.tetsubo.done.length;
+  return headerHtml('てつぼうけんてい','🤾','sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#FFF3E4,#fff)">
+    <div class="muted small">できたわざ <b>${n} / 20</b></div>
+    <div style="font-size:30px;font-weight:800;color:var(--orange-dark)">${tetsuKyu(S)}</div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${n/20*100}%"></div></div>
+    <div class="muted small" style="margin-top:6px">20わざぜんぶで とっきゅう! (がっこうのてつぼうけんていカードとおなじ)</div>
+  </div>
+  ${checkSkillsHtml('tetsubo', TETSUBO_SKILLS)}`;
+}
+function viewMat(){
+  const n = S.mat.done.length;
+  return headerHtml('マットうんどう','🤸','sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#EFFFF4,#fff)">
+    <div class="muted small">できたわざ</div>
+    <div style="font-size:30px;font-weight:800;color:var(--green-dark)">${n} / ${MAT_SKILLS.length}</div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${n/MAT_SKILLS.length*100}%"></div></div>
+  </div>
+  ${checkSkillsHtml('mat', MAT_SKILLS)}`;
+}
+
+/* ---------------- とびばこ ---------------- */
+function viewTobibako(){
+  const cleared = TOBIBAKO_SKILLS.filter(k=>(S.tobibako.dan[k.id]||0)>=2).length;
+  const maxDan = Math.max(0,...Object.values(S.tobibako.dan));
+  return headerHtml('とびばこ','🦘','sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#FFEDF5,#fff)">
+    <div class="muted small">できたわざ <b>${cleared} / ${TOBIBAKO_SKILLS.length}</b></div>
+    <div style="font-size:30px;font-weight:800;color:#DB2777">${maxDan?('さいこう '+maxDan+'だん!'):'これから!'}</div>
+    <div class="muted small">とべた「だんすう」のボタンをおしてきろくしよう</div>
+  </div>
+  ${TOBIBAKO_SKILLS.map(sk=>{
+    const cur = S.tobibako.dan[sk.id]||0;
+    return `<div class="skill-card ${cur>0?'done':''}">
+      <div class="skill-head">
+        <span class="skill-name">${sk.name}</span>
+        <span class="skill-stars">${'★'.repeat(sk.st)}${'☆'.repeat(3-sk.st)}</span>
+        ${cur>0?`<span class="best-chip">さいこう ${cur}だん</span>`:''}
+      </div>
+      <div class="skill-body">${skillArt('tobibako',sk.id)}
+        <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
+      </div>
+      <div class="dan-row">
+        ${DAN_LIST.map(d=>`<button class="dan-btn ${cur>=d?'reached':''} ${cur===d?'max':''}"
+          onclick="saveDan('${sk.id}',${d})">${d}だん</button>`).join('')}
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+function saveDan(id, dan){
+  const sk = TOBIBAKO_SKILLS.find(s=>s.id===id);
+  const prev = S.tobibako.dan[id]||0;
+  let extra = 0, msg = sk.name+' '+dan+'だん きろく!';
+  if(prev===0){ extra += XP.firstSkill; msg = '🎉 '+sk.name+' はじめてせいこう!'; }
+  else if(dan>prev){ extra += XP.best; msg = '🏆 きろくこうしん! '+prev+'だん→'+dan+'だん'; }
+  if(dan>prev) S.tobibako.dan[id]=dan;
+  addRecord('tobibako', sk.name+' '+dan+'だん', extra);
+  showToast(msg+' +'+(XP.record+extra)+'XP');
+  render(); playCelebrations();
+}
+
+/* ---------------- すいえい ---------------- */
+function viewSuiei(){
+  const label = suieiKyuLabel(S);
+  const totals = {};
+  for(const l of S.suiei.log) totals[l.stroke]=(totals[l.stroke]||0)+l.m;
+  const maxT = Math.max(100,...Object.values(totals));
+  return headerHtml('すいえい','🏊','sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#E4FAFF,#fff)">
+    <div class="muted small">いまのきみは…</div>
+    <div style="font-size:30px;font-weight:800;color:#0891B2">${label?('すいえい '+label):'これから!'}</div>
+    <div class="muted small">20きゅうから2だんまで、ぜんぶで22だんかい! かおに水をつけるところからスタート!</div>
+  </div>
+
+  <div class="card">
+    <h3>🏆 けんていにちょうせん</h3>
+    ${SUIEI_KYU.map(k=>{
+      const on = S.suiei.kyu.includes(k.id);
+      return `<div class="skill-card ${on?'done':''}" style="margin-bottom:8px">
+        <div class="skill-head">
+          <div class="check-big ${on?'on':''}" onclick="toggleSuiei('${k.id}')">${on?'✓':''}</div>
+          <span class="skill-name" style="color:${on?'var(--green-dark)':'var(--sky-deep)'}">${k.label}</span>
+          ${on?'<span class="done-badge">ごうかく!</span>':''}
+        </div>
+        <div class="skill-body">${skillArt('suiei',k.id)}
+          <div class="skill-kotsu">${k.name}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="card">
+    <h3>🌊 きょうおよいだきょり</h3>
+    <div class="form-row">
+      <select id="sw-stroke">${STROKES.map(st=>`<option value="${st.id}">${st.em} ${st.name}</option>`).join('')}</select>
+      <input type="number" id="sw-m" min="1" max="5000" inputmode="numeric" placeholder="m" style="width:84px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:18px;text-align:center;font-family:inherit">
+      <button class="btn green smallbtn" onclick="saveSwim()">きろく!</button>
+    </div>
+    <div class="form-row" style="gap:6px">
+      ${[5,10,25,50,100].map(m=>`<button class="quick-chip" onclick="document.getElementById('sw-m').value=${m}">${m}m</button>`).join('')}
+    </div>
+    ${Object.keys(totals).length?`
+      <h3 style="margin-top:14px">📊 るいけいきょり</h3>
+      ${STROKES.filter(st=>totals[st.id]).map(st=>`
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700">
+            <span>${st.em} ${st.name}</span><span>${totals[st.id]}m</span></div>
+          <div class="goalbar" style="height:14px"><div class="fill" style="width:${Math.min(100,totals[st.id]/maxT*100)}%"></div></div>
+        </div>`).join('')}`:''}
+  </div>`;
+}
+function toggleSuiei(id){
+  const k = SUIEI_KYU.find(x=>x.id===id);
+  if(S.suiei.kyu.includes(id)){
+    if(!confirm('「'+k.label+'」のごうかくをとりけす?\n(もらったXPももどるよ)')) return;
+    S.suiei.kyu = S.suiei.kyu.filter(x=>x!==id);
+    removeRecordXp(r=>r.sport==='suiei' && r.label==='すいえいけんてい '+k.label+' ごうかく!');
+    S.ever_suiei = (S.ever_suiei||[]).filter(x=>x!==id);
+    save(); render();
+    showToast('とりけして XPをもどしたよ');
+    return;
+  }
+  S.suiei.kyu.push(id);
+  if(!S.ever_suiei) S.ever_suiei=[];
+  let extra = 0;
+  if(!S.ever_suiei.includes(id)){ S.ever_suiei.push(id); extra = XP.firstSkill; }
+  addRecord('suiei', 'すいえいけんてい '+k.label+' ごうかく!', extra);
+  showToast('🎉 '+k.label+' ごうかく! +'+(XP.record+extra)+'XP');
+  render(); playCelebrations();
+}
+function saveSwim(){
+  const stroke = document.getElementById('sw-stroke').value;
+  const m = parseInt(document.getElementById('sw-m').value)||0;
+  if(m<=0){ showToast('きょりを入れてね'); return; }
+  const st = STROKES.find(x=>x.id===stroke);
+  S.suiei.log.push({date:todayStr(), stroke, m});
+  addRecord('suiei', st.name+' '+m+'m およいだ', 0);
+  showToast('きろくした! +'+XP.record+'XP');
+  render(); playCelebrations();
+}
+
+/* ---------------- マラソン ---------------- */
+function viewMarathon(){
+  const total = marathonTotal(S);
+  const goal = total<10000?10000:(total<42195?42195:100000);
+  const goalName = goal===10000?'10km':(goal===42195?'フルマラソン 42.195km':'100km');
+  const log = S.marathon.log.slice(-30).slice().reverse();
+  const chartLog = S.marathon.log.slice(-8);
+  return headerHtml('マラソン・じきゅうそう','🏃','sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#F3EFFF,#fff)">
+    <div class="muted small">いままでにはしったきょり</div>
+    <div style="font-size:32px;font-weight:800;color:#7C3AED">${(total/1000).toFixed(2)} km</div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${Math.min(100,total/goal*100)}%"></div></div>
+    <div class="muted small" style="margin-top:4px">つぎのもくひょう: ${goalName} まで あと${((goal-total)/1000).toFixed(2)}km</div>
+  </div>
+
+  <div class="card">
+    <h3>✏️ きょうのラン</h3>
+    <div class="form-row"><label>日づけ</label><input type="date" id="mr-date" value="${todayStr()}"></div>
+    <div class="form-row"><label>きょり</label>
+      <input type="number" id="mr-m" min="1" max="50000" inputmode="numeric" placeholder="m" style="width:100px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:18px;text-align:center;font-family:inherit">
+      <span class="muted small">メートル</span></div>
+    <div class="form-row" style="gap:6px">
+      ${[400,600,800,1000,1500,2000,3000].map(m=>`<button class="quick-chip" onclick="document.getElementById('mr-m').value=${m}">${m>=1000?(m/1000+'km'):(m+'m')}</button>`).join('')}
+    </div>
+    <div class="form-row"><label>タイム</label>
+      <input type="number" id="mr-min" min="0" max="300" inputmode="numeric" placeholder="ふん" style="width:76px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:18px;text-align:center;font-family:inherit">
+      <span class="muted">:</span>
+      <input type="number" id="mr-sec" min="0" max="59" inputmode="numeric" placeholder="びょう" style="width:76px;height:48px;border-radius:14px;border:2px solid var(--line);font-size:18px;text-align:center;font-family:inherit">
+      <span class="muted small">(なくてもOK)</span></div>
+    <button class="btn wide green" onclick="saveRun()">きろくする!</button>
+  </div>
+
+  ${chartLog.length>=2?`<div class="card">
+    <h3>📈 1かいのきょりののび (m)</h3>
+    <div class="chart-wrap">${lineChart(
+      [{color:'#7C3AED',points:chartLog.map(r=>r.m)}],
+      {labels:chartLog.map(r=>fmtDate(r.date)), minMax:500}
+    )}</div>
+  </div>`:''}
+
+  ${log.length?`<div class="card">
+    <h3>📚 これまでのきろく</h3>
+    <ul class="rec-list">
+      ${log.map(r=>`<li><span class="d">${fmtDate(r.date)}</span>
+        <span class="v">${r.m>=1000?(r.m/1000).toFixed(2)+'km':r.m+'m'}</span>
+        ${r.sec?`<span class="muted small">${Math.floor(r.sec/60)}ふん${r.sec%60}びょう</span>`:''}
+        ${r.sec&&r.m?`<span class="muted small">(${paceStr(r.m,r.sec)})</span>`:''}
+        <button class="del-x" onclick="delRun('${r.id}')">✕</button></li>`).join('')}
+    </ul>
+  </div>`:''}`;
+}
+function paceStr(m, sec){
+  const spk = sec/(m/1000);
+  return '1kmあたり'+Math.floor(spk/60)+'ふん'+Math.round(spk%60)+'びょう';
+}
+function saveRun(){
+  const date = document.getElementById('mr-date').value || todayStr();
+  const m = parseInt(document.getElementById('mr-m').value)||0;
+  if(m<=0){ showToast('きょりを入れてね'); return; }
+  const min = parseInt(document.getElementById('mr-min').value)||0;
+  const s = parseInt(document.getElementById('mr-sec').value)||0;
+  const sec = (min*60+s)||null;
+  S.marathon.log.push({id:uid(), date, m, sec});
+  S.marathon.log.sort((a,b)=>a.date<b.date?-1:1);
+  addRecord('marathon', m+'m はしった'+(sec?(' ('+Math.floor(sec/60)+'ふん'+(sec%60)+'びょう)'):''), 0, date);
+  showToast('きろくした! +'+XP.record+'XP');
+  render(); playCelebrations();
+}
+function delRun(id){
+  const run = S.marathon.log.find(r=>r.id===id);
+  if(!run) return;
+  if(!confirm('このきろくをけす?\n(もらったXPももどるよ)')) return;
+  S.marathon.log = S.marathon.log.filter(r=>r.id!==id);
+  removeRecordXp(r=>r.sport==='marathon' && r.date===run.date && r.label.indexOf(run.m+'m ')===0);
+  save(); render();
+  showToast('きろくをけして XPをもどしたよ');
+}
+
+/* ---------------- ボールしゅもく(サッカーなど6しゅもく) ---------------- */
+function ballDoneCount(sportId){
+  return BALL_SPORTS[sportId].skills.filter(k=>
+    k.type==='check' ? S[sportId].done.includes(k.id) : (S[sportId].best[k.id]||0)>0
+  ).length;
+}
+function viewBallSport(sportId){
+  const cfg = BALL_SPORTS[sportId], sp = SPORTS[sportId];
+  const total = cfg.skills.length, done = ballDoneCount(sportId);
+  return headerHtml(sp.name, sp.em, 'sports')+`
+  <div class="card center" style="background:linear-gradient(160deg,#F0FDF9,#fff)">
+    <div class="muted small">できたチャレンジ</div>
+    <div style="font-size:30px;font-weight:800;color:var(--sky-deep)">${done} / ${total}</div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${done/total*100}%"></div></div>
+    <div class="muted small" style="margin-top:6px">かんたんなチャレンジからじゅんばんにならんでいるよ!</div>
+  </div>
+  ${cfg.skills.map(sk=>{
+    if(sk.type==='check'){
+      const on = S[sportId].done.includes(sk.id);
+      return `<div class="skill-card ${on?'done':''}">
+        <div class="skill-head">
+          <div class="check-big ${on?'on':''}" onclick="toggleSkill('${sportId}','${sk.id}')">${on?'✓':''}</div>
+          <span class="skill-name">${sk.name}</span>
+          <span class="skill-stars">${'★'.repeat(sk.st)}${'☆'.repeat(3-sk.st)}</span>
+          ${on?'<span class="done-badge">できた!</span>':''}
+        </div>
+        <div class="skill-body">${skillArt(sportId,sk.id)}
+          <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
+        </div>
+      </div>`;
+    }
+    const best = S[sportId].best[sk.id]||0;
+    return `<div class="skill-card ${best>0?'done':''}">
+      <div class="skill-head">
+        <span class="skill-name">${sk.name}</span>
+        <span class="skill-stars">${'★'.repeat(sk.st)}${'☆'.repeat(3-sk.st)}</span>
+        ${best>0?`<span class="best-chip">ベスト ${best}${sk.unit}</span>`:''}
+      </div>
+      <div class="skill-body">${skillArt(sportId,sk.id)}
+        <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
+      </div>
+      <div class="count-row">
+        <button class="step-btn" onclick="stepCount('${sk.id}',-1)">−</button>
+        <input type="number" id="cnt-${sk.id}" min="0" max="99999" step="${sk.low?'0.1':'1'}" inputmode="decimal" placeholder="${sk.unit}">
+        <button class="step-btn" onclick="stepCount('${sk.id}',1)">＋</button>
+        <button class="btn green smallbtn" onclick="saveBallCount('${sportId}','${sk.id}')">きろく!</button>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+function saveBallCount(sportId, id){
+  const sk = BALL_SPORTS[sportId].skills.find(k=>k.id===id);
+  const el = document.getElementById('cnt-'+id);
+  const n = Math.round((parseFloat(el.value)||0)*10)/10;
+  if(n<=0){ showToast(sk.low?'タイムを入れてね':'かずを入れてね'); return; }
+  const prev = S[sportId].best[id]||0;
+  let extra = 0, msg = sk.name+' '+n+sk.unit+' きろく!';
+  if(prev===0){
+    extra = XP.firstSkill; msg = '🎉 '+sk.name+' はじめてのきろく!';
+    S[sportId].best[id] = n;
+  }else if(sk.low ? n<prev : n>prev){
+    extra = XP.best; msg = '🏆 じこベストこうしん! '+prev+sk.unit+'→'+n+sk.unit;
+    S[sportId].best[id] = n;
+  }
+  addRecord(sportId, sk.name+' '+n+sk.unit, extra);
+  showToast(msg+' +'+(XP.record+extra)+'XP');
+  render(); playCelebrations();
+}
+
+const SPORT_VIEWS = {
+  nawatobi:viewNawatobi, tetsubo:viewTetsubo, mat:viewMat,
+  tobibako:viewTobibako, suiei:viewSuiei, marathon:viewMarathon,
+  soccer:()=>viewBallSport('soccer'), basket:()=>viewBallSport('basket'),
+  volley:()=>viewBallSport('volley'), baseball:()=>viewBallSport('baseball'),
+  dodge:()=>viewBallSport('dodge'), relay:()=>viewBallSport('relay'),
+};
+/* ---------------- せいちょうのあしあと ---------------- */
+function viewProgress(){
+  const days = [...new Set(S.records.map(r=>r.date))].sort().reverse();
+  const li = levelInfo(S.profile.totalXp);
+  const recent = days.slice(0,14);
+  return headerHtml('せいちょうのあしあと','👣')+`
+  <div class="stat-grid" style="margin-bottom:14px">
+    <div class="stat-box"><div class="val">${S.records.length}</div><div class="lbl">きろくしたかいすう</div></div>
+    <div class="stat-box"><div class="val">${days.length}</div><div class="lbl">うんどうした日</div></div>
+    <div class="stat-box"><div class="val">Lv.${li.level}</div><div class="lbl">${esc(S.profile.charName)||'ぴよ'}のレベル</div></div>
+    <div class="stat-box"><div class="val">${S.badges.length}<span style="font-size:13px;color:var(--ink-soft)">/${BADGES.length}</span></div><div class="lbl">あつめたバッジ</div></div>
+    <div class="stat-box"><div class="val">🔥${S.streak.best}</div><div class="lbl">さいこうれんぞく日すう</div></div>
+    <div class="stat-box"><div class="val">${(marathonTotal(S)/1000).toFixed(1)}<span style="font-size:13px;color:var(--ink-soft)">km</span></div><div class="lbl">はしったきょり</div></div>
+  </div>
+  ${recent.length===0?`<div class="card center">
+      <div style="font-size:44px">🌱</div>
+      <p class="muted">まだきろくがないよ。<br>きょうのうんどうをきろくして、あしあとをのこそう!</p>
+      <button class="btn wide orange" onclick="go('sports')">きろくをはじめる!</button>
+    </div>`
+  : recent.map(d=>{
+      const recs = S.records.filter(r=>r.date===d).slice().reverse();
+      return `<div class="tl-date">📅 ${fmtDate(d)}${d===todayStr()?' (きょう)':''}</div>`+
+        recs.map(r=>`<div class="tl-item">
+          <span class="em">${SPORTS[r.sport]?SPORTS[r.sport].em:'🏅'}</span>
+          <span>${esc(r.label)}</span>
+          <span class="xp">+${r.xp}XP</span></div>`).join('');
+    }).join('')}
+  ${days.length>14?`<div class="center muted small" style="margin-top:10px">さいきん14日ぶんをひょうじしているよ</div>`:''}`;
+}
+
+/* ---------------- バッジずかん ---------------- */
+function viewBadges(){
+  const got = S.badges.filter(id=>BADGES.some(b=>b.id===id)).length;
+  const cats = [...new Set(BADGES.map(b=>b.cat))];
+  return headerHtml('バッジずかん','🏅')+`
+  <div class="card center" style="background:linear-gradient(160deg,#FFFBEB,#fff)">
+    <div style="font-size:26px;font-weight:800;color:var(--orange-dark)">${got} / ${BADGES.length} こ</div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${got/BADGES.length*100}%"></div></div>
+    <div class="muted small" style="margin-top:6px">${BADGES.length}こぜんぶあつめたら…でんせつのうんどうか!</div>
+  </div>
+  ${cats.map(c=>{
+    const list = BADGES.filter(b=>b.cat===c);
+    const g = list.filter(b=>S.badges.includes(b.id)).length;
+    return `<div class="tl-date">🏷️ ${c} <span class="muted small" style="font-weight:700">${g} / ${list.length}</span></div>
+    <div class="badge-grid" style="margin-bottom:6px">
+      ${list.map(b=>{
+        const on = S.badges.includes(b.id);
+        return `<div class="badge-cell ${on?'got':'locked'}">
+          <span class="em">${b.em}</span>
+          <span class="nm">${on?b.name:'？？？'}</span>
+          <span class="cond">${b.cond}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('')}`;
+}
+
+/* ---------------- せってい ---------------- */
+function viewSettings(){
+  return headerHtml('せってい','⚙️')+`
+  <div class="card">
+    <h3>👤 きみのこと</h3>
+    <div class="form-row"><label>なまえ</label>
+      <input type="text" id="set-name" maxlength="12" value="${esc(S.profile.name)}" placeholder="なまえ" style="flex:1"></div>
+    <div class="form-row"><label>がくねん</label>
+      <select id="set-grade">
+        <option value="0" ${!S.profile.grade?'selected':''}>えらぶ</option>
+        ${[1,2,3,4,5,6].map(g=>`<option value="${g}" ${S.profile.grade===g?'selected':''}>${g}年生</option>`).join('')}
+      </select></div>
+    <div class="form-row"><label>あいぼうのなまえ</label>
+      <input type="text" id="set-char" maxlength="10" value="${esc(S.profile.charName)}" placeholder="ぴよ" style="flex:1"></div>
+    <button class="btn wide" onclick="saveProfile()">ほぞんする</button>
+  </div>
+  <div class="card">
+    <h3>💾 データ</h3>
+    <button class="btn ghost wide" onclick="exportData()" style="margin-bottom:8px">データをほぞん(ダウンロード)</button>
+    <div class="muted small" style="margin-bottom:12px">きろくをファイルにのこせるよ。おうちの人といっしょにつかってね。</div>
+    <button class="btn danger wide" onclick="resetData()">ぜんぶリセットする</button>
+  </div>
+  <div class="card muted small">
+    うごきのきろく — インターネットがなくてもつかえるよ。<br>
+    けんてい・きゅうのひょうは「みんなが使えるチャレンジカード集」(栃木県教育委員会)をさんこうにしています。
+  </div>`;
+}
+function saveProfile(){
+  S.profile.name = document.getElementById('set-name').value.trim();
+  S.profile.grade = parseInt(document.getElementById('set-grade').value)||0;
+  S.profile.charName = document.getElementById('set-char').value.trim()||'ぴよ';
+  save();
+  showToast('ほぞんしたよ!');
+  render();
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(S,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ugoki-no-kiroku_'+todayStr()+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function resetData(){
+  if(!confirm('ほんとうにぜんぶけす?\nきろく・バッジ・レベルがすべてきえます!')) return;
+  if(!confirm('もういちどかくにん。ほんとうにリセットする?')) return;
+  localStorage.removeItem(LS_KEY);
+  S = defaultState();
+  showToast('リセットしたよ');
+  go('home'); render();
+}
+
+/* ---------------- はじめてのセットアップ ---------------- */
+function firstRunModal(){
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="modal-overlay"><div class="modal-box">
+    ${charSvg(1,100)}
+    <h2>うごきのきろくへようこそ!</h2>
+    <p>うんどうをきろくすると、たまごのあいぼうがそだつよ。<br>きみのなまえをおしえて!</p>
+    <input type="text" id="fr-name" maxlength="12" placeholder="なまえ(あとでもOK)" style="width:100%;margin-bottom:8px">
+    <input type="text" id="fr-char" maxlength="10" placeholder="あいぼうのなまえ(れい: ぴよ)" style="width:100%;margin-bottom:14px">
+    <button class="btn orange wide" id="fr-go">ぼうけんスタート!</button>
+  </div></div>`;
+  document.getElementById('fr-go').onclick = ()=>{
+    S.profile.name = document.getElementById('fr-name').value.trim();
+    S.profile.charName = document.getElementById('fr-char').value.trim()||'ぴよ';
+    S.profile.createdAt = todayStr();
+    save();
+    root.innerHTML='';
+    confettiBurst();
+    render();
+  };
+}
+
+/* ---------------- 起動 ---------------- */
+window.addEventListener('resize', ()=>{ confCanvas.width=innerWidth; confCanvas.height=innerHeight; });
+render();
+if(!S.profile.createdAt){
+  firstRunModal();
+}else{
+  // アップデートであたらしいバッジがふえたとき、これまでのがんばりぶんをさかのぼってプレゼント
+  checkBadges();
+  save();
+  render();
+  playCelebrations();
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>

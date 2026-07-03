@@ -1,0 +1,15 @@
+{
+  "name": "うごきのきろく",
+  "short_name": "うごきログ",
+  "description": "なわとび・てつぼう・マット・とびばこ・すいえい・マラソンのきろくをつけて、あいぼうをそだてよう！",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F0F9FF",
+  "theme_color": "#38BDF8",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

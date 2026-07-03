@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7DD8FF"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <!-- ひよこキャラ -->
+  <ellipse cx="256" cy="420" rx="130" ry="22" fill="rgba(2,80,130,.18)"/>
+  <circle cx="256" cy="290" r="128" fill="#FFE066" stroke="#F3C947" stroke-width="10"/>
+  <circle cx="256" cy="182" r="84" fill="#FFE879" stroke="#F3C947" stroke-width="10"/>
+  <circle cx="226" cy="174" r="12" fill="#333"/>
+  <circle cx="286" cy="174" r="12" fill="#333"/>
+  <polygon points="240,200 272,200 256,226" fill="#FB923C"/>
+  <path d="M150 290 q-38 14 -30 52" stroke="#F3C947" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <path d="M362 290 q38 14 30 52" stroke="#F3C947" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <!-- なわとびのなわ -->
+  <path d="M110 120 Q256 20 402 120" stroke="#FB923C" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <circle cx="110" cy="122" r="14" fill="#EA580C"/>
+  <circle cx="402" cy="122" r="14" fill="#EA580C"/>
+</svg>

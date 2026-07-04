@@ -6,6 +6,13 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8766"],
       "port": 8766
+    },
+    {
+      "name": "static-8934",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8934"],
+      "port": 8934,
+      "autoPort": false
     }
   ]
 }

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>体育授業用 作戦ボード | 小学生向けの安全な教育アプリ</title>
     <meta name="description" content="体育授業用 作戦ボードは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +12,13 @@
             background-color: #f3f4f6;
             touch-action: none; /* スクロール防止 */
             user-select: none; /* テキスト選択防止 */
+            -webkit-user-select: none;
+            -webkit-touch-callout: none; /* iPad長押しメニュー防止 */
             height: 100dvh; /* iOS Safariのアドレスバー対応 */
+        }
+        input, textarea {
+            user-select: text;
+            -webkit-user-select: text;
         }
         /* iOS safe area 対応 */
         #bottomBar {
@@ -25,6 +31,18 @@
         .sheet-tab.active {
             background-color: #3b82f6;
             color: white;
+        }
+        .color-swatch {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .color-swatch.active {
+            border-color: #1f2937;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #3b82f6;
         }
         .court-line {
             fill: none;
@@ -90,7 +108,7 @@
             user-select: none;
         }
         .drawing-board {
-            cursor: crosshair;
+            touch-action: none;
         }
         .soccer-goal {
             fill: none;
@@ -106,7 +124,7 @@
             display: block;
             width: 100%;
             text-align: left;
-            padding: 8px 16px;
+            padding: 10px 16px;
             font-size: 14px;
             border: none;
             cursor: pointer;
@@ -120,11 +138,6 @@
             z-index: 100;
             overflow: hidden;
             min-width: 150px;
-        }
-        .arrow-preview, .line-preview {
-            position: absolute;
-            pointer-events: none;
-            z-index: 100;
         }
         .animation-target {
             position: absolute;
@@ -142,28 +155,46 @@
             stroke: #333;
             stroke-width: 3;
         }
+        /* 選択中の線の削除ボタン */
+        #shapeActions {
+            position: absolute;
+            display: none;
+            z-index: 60;
+            transform: translate(-50%, 0);
+        }
+        #shapeActions button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="flex flex-col overflow-hidden" style="height: 100dvh;">
     <div class="container mx-auto px-2 pt-1 pb-0 flex-grow flex flex-col" style="height: 100%; min-height: 0;">
         <!-- ツールバー：コート選択 -->
         <div class="mb-1 flex flex-wrap gap-1 justify-center">
-            <button id="basketballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md active">
+            <button id="basketballBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md active">
                 🏀 バスケ
             </button>
-            <button id="soccerBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="soccerBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 ⚽ サッカー
             </button>
-            <button id="baseballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="baseballBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 ⚾ 野球
             </button>
-            <button id="dodgeballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="dodgeballBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 🔴 ドッジ
             </button>
-            <button id="volleyballBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="volleyballBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 🏐 バレー
             </button>
-            <button id="otherBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="otherBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 ⬜ その他
             </button>
         </div>
@@ -172,27 +203,39 @@
         <div class="mb-1 flex flex-wrap gap-1 justify-center items-center">
             <!-- シートタブ -->
             <div class="flex gap-1 overflow-x-auto flex-nowrap" id="sheetTabsContainer">
-                <button class="sheet-tab bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md active whitespace-nowrap" data-sheet-id="sheet-1">
+                <button class="sheet-tab bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md active whitespace-nowrap" data-sheet-id="sheet-1">
                     シート1
                 </button>
-                <button class="sheet-tab bg-green-500 text-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md whitespace-nowrap" id="addSheetBtn">
+                <button class="sheet-tab bg-green-500 text-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md whitespace-nowrap" id="addSheetBtn">
                     ＋ 新規
                 </button>
             </div>
             <!-- 仕切り -->
             <div class="w-px h-5 bg-gray-300 mx-0.5 hidden sm:block"></div>
             <!-- 描画ツール -->
-            <button id="drawBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="drawBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 ✏️ フリー
             </button>
-            <button id="straightLineBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="straightLineBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 📏 直線
             </button>
-            <button id="arrowBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="arrowBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 ➡️ 矢印
             </button>
-            <button id="undoBtn" class="tool-button bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md">
+            <button id="selectBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
+                👆 えらぶ
+            </button>
+            <!-- 色えらび -->
+            <div class="flex gap-1 items-center mx-0.5">
+                <button id="colorBlack" class="color-swatch active" style="background:#111827;" title="黒"></button>
+                <button id="colorRed" class="color-swatch" style="background:#ef4444;" title="赤"></button>
+                <button id="colorBlue" class="color-swatch" style="background:#2563eb;" title="青"></button>
+            </div>
+            <button id="undoBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
                 ↩️ 戻る
+            </button>
+            <button id="clearBtn" class="tool-button bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md">
+                🗑️ 全消し
             </button>
         </div>
 
@@ -205,14 +248,14 @@
 
         <!-- メインキャンバスエリア -->
         <div class="flex-grow flex justify-center overflow-hidden relative" style="min-height: 0;">
-            <div class="relative w-full max-w-4xl h-full aspect-video bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div id="boardWrapper" class="relative w-full max-w-4xl h-full aspect-video bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                 <!-- シートコンテナ -->
                 <div id="sheetsContainer" class="w-full h-full">
                     <!-- シート1 (デフォルト) -->
                     <div id="sheet-1" class="sheet w-full h-full relative">
                         <!-- 描画キャンバス -->
                         <canvas id="drawingCanvas-sheet-1" class="absolute top-0 left-0 w-full h-full z-10 drawing-board"></canvas>
-                        
+
                         <!-- コートレイヤー -->
                         <div id="court-sheet-1" class="absolute top-0 left-0 w-full h-full z-0 select-none">
                             <!-- バスケットボールコート (デフォルト) -->
@@ -245,7 +288,7 @@
                                     <path d="M920,100 L750,100 A170,170 0 0,0 750,400 L920,400" class="court-line" fill="none" />
                                 </svg>
                             </div>
-                            
+
                             <!-- サッカーコート -->
                             <div id="soccerCourt-sheet-1" class="w-full h-full bg-green-700 hidden flex items-center justify-center">
                                 <svg class="w-full h-full" viewBox="0 0 940 500" preserveAspectRatio="none">
@@ -270,43 +313,43 @@
                                 <svg class="w-full h-full" viewBox="0 0 940 500" preserveAspectRatio="none">
                                     <!-- 芝生 -->
                                     <rect x="0" y="0" width="940" height="500" fill="#16a34a" />
-                                    
+
                                     <!-- 内野土エリア (円形) - 半径拡大 -->
                                     <circle cx="470" cy="280" r="230" fill="#b45309" opacity="0.8" />
-                                    
+
                                     <!-- ダイヤモンド内の芝生エリア -->
                                     <rect x="470" y="180" width="130" height="130" transform="rotate(45 470 180)" fill="#16a34a" />
 
                                     <!-- ファウルライン -->
                                     <line x1="470" y1="440" x2="50" y2="20" stroke="white" stroke-width="3" />
                                     <line x1="470" y1="440" x2="890" y2="20" stroke="white" stroke-width="3" />
-                                    
+
                                     <!-- 外野フェンス -->
                                     <path d="M50,20 Q470,-100 890,20" stroke="white" stroke-width="3" fill="none" />
-                                    
+
                                     <!-- ダイヤモンド -->
                                     <path d="M470,440 L600,310 L470,180 L340,310 Z" fill="#b45309" stroke="white" stroke-width="3" />
-                                    
+
                                     <!-- ベース -->
                                     <rect x="461" y="171" width="18" height="18" transform="rotate(45 470 180)" fill="white" />
                                     <rect x="331" y="301" width="18" height="18" transform="rotate(45 340 310)" fill="white" />
                                     <rect x="591" y="301" width="18" height="18" transform="rotate(45 600 310)" fill="white" />
                                     <polygon points="470,440 480,430 480,422 460,422 460,430" fill="white" />
-                                    
+
                                     <!-- ピッチャーマウンド -->
                                     <circle cx="470" cy="323" r="12" fill="#b45309" stroke="white" stroke-width="1" />
                                     <rect x="462" y="320" width="16" height="6" fill="white" />
-                                    
+
                                     <!-- バッターボックス -->
                                     <rect x="425" y="420" width="30" height="40" fill="none" stroke="white" stroke-width="2" />
                                     <rect x="485" y="420" width="30" height="40" fill="none" stroke="white" stroke-width="2" />
-                                    
+
                                     <!-- コーチャーズボックス -->
                                     <rect x="240" y="300" width="30" height="60" fill="none" stroke="white" stroke-width="2" />
                                     <rect x="670" y="300" width="30" height="60" fill="none" stroke="white" stroke-width="2" />
                                 </svg>
                             </div>
-                            
+
                             <!-- ドッジボールコート -->
                             <div id="dodgeballCourt-sheet-1" class="w-full h-full bg-amber-100 hidden flex items-center justify-center p-4">
                                 <div class="w-full h-full border-4 border-red-800 bg-amber-50 relative box-border">
@@ -314,7 +357,7 @@
                                     <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-0 h-full border-l-4 border-dashed border-red-800"></div>
                                 </div>
                             </div>
-                            
+
                             <!-- バレーボールコート -->
                             <div id="volleyballCourt-sheet-1" class="w-full h-full bg-amber-100 hidden flex items-center justify-center p-4">
                                 <div class="w-full h-full border-4 border-blue-800 bg-amber-50 relative box-border">
@@ -345,22 +388,16 @@
                         </div>
 
                         <!-- アニメーションパス -->
-                        <svg id="animationPaths-sheet-1" class="absolute top-0 left-0 w-full h-full z-15 pointer-events-none">
+                        <svg id="animationPaths-sheet-1" class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index:15;">
                             <!-- アニメーションパスはJSで動的に追加 -->
                         </svg>
                     </div>
                 </div>
 
-                <!-- 矢印プレビュー用の要素 -->
-                <svg id="arrowPreview" class="arrow-preview" style="display: none;">
-                    <line id="arrowLine" x1="0" y1="0" x2="0" y2="0" stroke="black" stroke-width="3"></line>
-                    <polygon id="arrowHead" points="" fill="black"></polygon>
-                </svg>
-
-                <!-- 直線プレビュー用の要素 -->
-                <svg id="linePreview" class="line-preview" style="display: none;">
-                    <line id="straightLine" x1="0" y1="0" x2="0" y2="0" stroke="black" stroke-width="3"></line>
-                </svg>
+                <!-- 選択中の線の操作ボタン -->
+                <div id="shapeActions">
+                    <button id="deleteShapeBtn">🗑 削除</button>
+                </div>
             </div>
         </div>
 
@@ -405,7 +442,7 @@
     </div>
 
     <!-- 名前変更モーダル -->
-    <div id="renameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; display:none; align-items:center; justify-content:center;">
+    <div id="renameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; align-items:center; justify-content:center;">
         <div style="background:white; border-radius:12px; padding:20px; min-width:260px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
             <p style="font-size:15px; font-weight:bold; margin-bottom:10px; color:#374151;">名前を入力してください</p>
             <input id="renameInput" type="text" maxlength="6" placeholder="名前（最大6文字）"
@@ -438,97 +475,79 @@
     // シート管理
     let currentSheetId = 'sheet-1';
     let sheetCounter = 1;
-    let currentCourtType = 'basketball'; // デフォルトのコートタイプ
+    let currentCourtType = 'basketball';
     let sheetNames = { 'sheet-1': 'シート1' };
-    
-    // コートタイプ一覧（その他を追加）
+
     const courtTypes = ['basketball', 'soccer', 'baseball', 'dodgeball', 'volleyball', 'other'];
 
-    // 描画履歴の保存
-    let drawingHistory = {
-        'sheet-1': []
-    };
-    
-    // シートごとのプレイヤーカウンター（黄色を追加）
+    // 図形データ（座標は 0〜1 に正規化して保存。リサイズ・画面回転でもズレない）
+    let sheetShapes = { 'sheet-1': [] };
+    let undoStacks = { 'sheet-1': [] };
+    let shapeIdCounter = 0;
+    let selectedShapeId = null;
+
+    // シートごとのプレイヤーカウンター
     let playerCounters = {
-        'sheet-1': {
-            red: 0,
-            blue: 0,
-            yellow: 0,
-            ball: 0
-        }
+        'sheet-1': { red: 0, blue: 0, yellow: 0, ball: 0 }
     };
-    
+
+    // シートごとの直近レイアウトサイズ（リサイズ時のスケーリング用）
+    let sheetLastSize = {};
+
     // 作戦名の入力イベント
     document.getElementById('strategyName').addEventListener('input', function(e) {
         const name = e.target.value || `シート${currentSheetId.split('-')[1]}`;
         sheetNames[currentSheetId] = name;
-        
-        // タブの名前を更新
         const tab = document.querySelector(`.sheet-tab[data-sheet-id="${currentSheetId}"]`);
-        if (tab) {
-            tab.textContent = name;
-        }
+        if (tab) tab.textContent = name;
     });
-    
-    // シート切り替え時に作戦名を更新
+
     function updateStrategyNameInput() {
-        const input = document.getElementById('strategyName');
-        input.value = sheetNames[currentSheetId] || '';
+        document.getElementById('strategyName').value = sheetNames[currentSheetId] || '';
     }
-    
+
     // シート追加ボタン
     document.getElementById('addSheetBtn').addEventListener('click', () => {
         sheetCounter++;
         const newSheetId = `sheet-${sheetCounter}`;
         const defaultName = `シート${sheetCounter}`;
         sheetNames[newSheetId] = defaultName;
-        
-        // 描画履歴の初期化
-        drawingHistory[newSheetId] = [];
-        
-        // 新しいシートのプレイヤーカウンターを初期化（黄色含む）
-        playerCounters[newSheetId] = {
-            red: 0,
-            blue: 0,
-            yellow: 0,
-            ball: 0
-        };
-        
+
+        sheetShapes[newSheetId] = [];
+        undoStacks[newSheetId] = [];
+        playerCounters[newSheetId] = { red: 0, blue: 0, yellow: 0, ball: 0 };
+
         // タブを追加
         const tabsContainer = document.getElementById('sheetTabsContainer');
         const newTab = document.createElement('button');
-        newTab.className = 'sheet-tab bg-white px-2 py-0.5 text-xs rounded-lg shadow hover:shadow-md whitespace-nowrap';
+        newTab.className = 'sheet-tab bg-white px-2.5 py-1 text-xs rounded-lg shadow hover:shadow-md whitespace-nowrap';
         newTab.dataset.sheetId = newSheetId;
         newTab.textContent = defaultName;
         tabsContainer.insertBefore(newTab, document.getElementById('addSheetBtn'));
-        
+
         // シートを追加
         const sheetsContainer = document.getElementById('sheetsContainer');
         const newSheet = document.createElement('div');
         newSheet.id = newSheetId;
         newSheet.className = 'sheet w-full h-full relative hidden';
-        
-        // キャンバスを追加
+
         const canvas = document.createElement('canvas');
         canvas.id = `drawingCanvas-${newSheetId}`;
         canvas.className = 'absolute top-0 left-0 w-full h-full z-10 drawing-board';
         newSheet.appendChild(canvas);
-        
-        // コートを追加
+
         const court = document.createElement('div');
         court.id = `court-${newSheetId}`;
         court.className = 'absolute top-0 left-0 w-full h-full z-0 select-none';
-        
-        // 各種コートを追加
+
         courtTypes.forEach(type => {
             const source = document.getElementById(`${type}Court-sheet-1`);
-            if(source) {
+            if (source) {
                 const courtElement = source.cloneNode(true);
                 courtElement.id = `${type}Court-${newSheetId}`;
                 if (type !== currentCourtType) {
                     courtElement.classList.add('hidden');
-                    courtElement.classList.remove('flex'); // hiddenがつくとflexも消えるが、表示時に戻すため
+                    courtElement.classList.remove('flex');
                 } else {
                     courtElement.classList.remove('hidden');
                     courtElement.classList.add('flex');
@@ -536,89 +555,69 @@
                 court.appendChild(courtElement);
             }
         });
-        
+
         newSheet.appendChild(court);
-        
-        // プレイヤーコンテナを追加
+
         const playersContainer = document.createElement('div');
         playersContainer.id = `players-${newSheetId}`;
         playersContainer.className = 'absolute top-0 left-0 w-full h-full z-20 pointer-events-none overflow-hidden';
         newSheet.appendChild(playersContainer);
-        
-        // アニメーションパスコンテナを追加
-        const animationPathsContainer = document.createElement('svg');
+
+        // アニメーションパスコンテナ（SVGは名前空間付きで生成しないと描画されない）
+        const animationPathsContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         animationPathsContainer.id = `animationPaths-${newSheetId}`;
-        animationPathsContainer.className = 'absolute top-0 left-0 w-full h-full z-15 pointer-events-none';
+        animationPathsContainer.setAttribute('class', 'absolute top-0 left-0 w-full h-full pointer-events-none');
+        animationPathsContainer.style.zIndex = '15';
         newSheet.appendChild(animationPathsContainer);
-        
+
         sheetsContainer.appendChild(newSheet);
-        
-        // 新しいシートに切り替え
+
         switchToSheet(newSheetId);
-        
-        // キャンバスの初期化
         initializeCanvas(canvas);
     });
-    
+
     // シート切り替え
     function switchToSheet(sheetId) {
-        // 現在のシートを非表示
         document.getElementById(currentSheetId).classList.add('hidden');
-        
-        // 新しいシートを表示
         document.getElementById(sheetId).classList.remove('hidden');
-        
-        // タブのアクティブ状態を更新
+
         document.querySelectorAll('.sheet-tab').forEach(tab => {
-            if (tab.dataset.sheetId === sheetId) {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-            }
+            if (tab.dataset.sheetId === sheetId) tab.classList.add('active');
+            else tab.classList.remove('active');
         });
-        
+
         currentSheetId = sheetId;
         updateStrategyNameInput();
-        
-        // 選択中のプレイヤーをクリア
+
         selectedPlayer = null;
         hidePlayerMenu();
         animationMode = false;
-        
-        // アニメーションターゲットを削除
         removeAnimationTarget();
-        
-        // キャンバスサイズ再計算
-        const canvas = document.getElementById(`drawingCanvas-${sheetId}`);
-        if(canvas) initializeCanvas(canvas);
+        deselectShape();
+
+        // 非表示中に画面サイズが変わっていた場合に合わせて再レイアウト
+        ensureSheetLayout(sheetId);
     }
-    
-    // タブクリックイベント
+
     document.getElementById('sheetTabsContainer').addEventListener('click', (e) => {
         if (e.target.classList.contains('sheet-tab') && e.target.id !== 'addSheetBtn') {
             switchToSheet(e.target.dataset.sheetId);
         }
     });
 
-    // コート切り替えボタンの設定（その他を追加）
+    // コート切り替えボタンの設定
     const courtButtons = ['basketballBtn', 'soccerBtn', 'baseballBtn', 'dodgeballBtn', 'volleyballBtn', 'otherBtn'];
-    
+
     courtButtons.forEach((btnId, index) => {
         document.getElementById(btnId).addEventListener('click', () => {
-            // ボタンのアクティブ状態を更新
-            courtButtons.forEach(id => {
-                document.getElementById(id).classList.remove('active');
-            });
+            courtButtons.forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById(btnId).classList.add('active');
-            
-            // 全シートのコートを切り替え
+
             const courtType = courtTypes[index];
             currentCourtType = courtType;
-            
+
             document.querySelectorAll('.sheet').forEach(sheet => {
                 const sheetId = sheet.id;
-                
-                // コートの表示を切り替え
                 courtTypes.forEach(type => {
                     const courtElement = document.getElementById(`${type}Court-${sheetId}`);
                     if (courtElement) {
@@ -632,8 +631,7 @@
                     }
                 });
             });
-            
-            // ボールのデザインを更新
+
             document.querySelectorAll('.player[data-type="ball"]').forEach(ball => {
                 ball.innerHTML = getBallEmoji(courtType);
             });
@@ -644,8 +642,7 @@
     let selectedPlayer = null;
     let animationMode = false;
     let playerAnimations = {};
-    
-    // ボールの絵文字
+
     const getBallEmoji = (type) => {
         switch(type) {
             case 'basketball': return `<div class="ball-emoji">🏀</div>`;
@@ -656,8 +653,7 @@
             default: return `<div class="ball-emoji">⚾</div>`;
         }
     };
-    
-    // プレイヤーメニュー
+
     const playerMenu = document.getElementById('playerMenu');
     const movePlayerBtn = document.getElementById('movePlayerBtn');
     const animatePlayerBtn = document.getElementById('animatePlayerBtn');
@@ -667,43 +663,43 @@
     const renameInput = document.getElementById('renameInput');
     const renameConfirmBtn = document.getElementById('renameConfirmBtn');
     const renameCancelBtn = document.getElementById('renameCancelBtn');
-    
+
     function showPlayerMenu(player, x, y) {
         playerMenu.style.display = 'block';
-        
-        // メニューが画面外に出ないように調整
+
+        // ボールには「名前の変更」を出さない
+        renamePlayerBtn.style.display = player.dataset.type === 'ball' ? 'none' : 'block';
+
         const menuWidth = 150;
         const menuHeight = 155;
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
-        
+
         let finalX = x;
         let finalY = y;
-        
         if (x + menuWidth > screenWidth) finalX = screenWidth - menuWidth - 10;
         if (y + menuHeight > screenHeight) finalY = screenHeight - menuHeight - 10;
-        
+
         playerMenu.style.left = `${finalX}px`;
         playerMenu.style.top = `${finalY}px`;
-        
+
         selectedPlayer = player;
-        
+
         document.querySelectorAll('.player').forEach(p => {
             if (p !== player) p.classList.remove('selected');
         });
         player.classList.add('selected');
     }
-    
+
     function hidePlayerMenu() {
         playerMenu.style.display = 'none';
     }
-    
+
     movePlayerBtn.addEventListener('click', () => {
         hidePlayerMenu();
         showMessage('プレイヤーをドラッグして移動できます', 1000);
     });
-    
-    // アニメーションターゲット要素
+
     function createAnimationTarget() {
         removeAnimationTarget();
         const target = document.createElement('div');
@@ -712,20 +708,19 @@
         document.getElementById(currentSheetId).appendChild(target);
         return target;
     }
-    
+
     function removeAnimationTarget() {
         const target = document.getElementById('animationTarget');
         if (target) target.remove();
     }
-    
+
     animatePlayerBtn.addEventListener('click', () => {
         hidePlayerMenu();
         animationMode = true;
         createAnimationTarget();
-        showMessage('移動先をクリックしてください', 2000);
+        showMessage('移動先をタップしてください', 2000);
     });
-    
-    // 名前変更ボタン
+
     renamePlayerBtn.addEventListener('click', () => {
         hidePlayerMenu();
         if (!selectedPlayer || selectedPlayer.dataset.type === 'ball') return;
@@ -741,7 +736,6 @@
         const span = selectedPlayer.querySelector('.player-number');
         if (span) {
             span.textContent = name !== '' ? name : span.dataset.originalNumber || span.textContent;
-            // 文字数に応じてフォントサイズ調整
             if (name.length >= 5) span.style.fontSize = '0.55rem';
             else if (name.length >= 3) span.style.fontSize = '0.75rem';
             else span.style.fontSize = '1.2rem';
@@ -761,44 +755,41 @@
         if (e.key === 'Escape') renameModal.style.display = 'none';
     });
 
+    function removePlayerAnimation(playerId) {
+        const path = document.getElementById(`path-${playerId}`);
+        if (path) path.remove();
+        const arrow = document.getElementById(`arrow-${playerId}`);
+        if (arrow) arrow.remove();
+        if (playerAnimations[playerId]) delete playerAnimations[playerId];
+    }
+
     deletePlayerBtn.addEventListener('click', () => {
         if (selectedPlayer) {
-            const playerId = selectedPlayer.dataset.id;
-            
-            const pathId = `path-${playerId}`;
-            const path = document.getElementById(pathId);
-            if (path) path.remove();
-            
-            const arrowId = `arrow-${playerId}`;
-            const arrow = document.getElementById(arrowId);
-            if (arrow) arrow.remove();
-            
-            if (playerAnimations[playerId]) delete playerAnimations[playerId];
-            
+            removePlayerAnimation(selectedPlayer.dataset.id);
             selectedPlayer.remove();
             selectedPlayer = null;
         }
         hidePlayerMenu();
     });
-    
+
     function showMessage(text, duration = 2000) {
         const existingMsg = document.getElementById('message-box');
         if (existingMsg) existingMsg.remove();
-        
+
         const msg = document.createElement('div');
         msg.id = 'message-box';
         msg.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg z-50 pointer-events-none transition-opacity';
         msg.textContent = text;
-        
         document.body.appendChild(msg);
-        
+
         setTimeout(() => {
             msg.style.opacity = '0';
             setTimeout(() => msg.remove(), 500);
         }, duration);
     }
-    
-    document.addEventListener('click', (e) => {
+
+    // メニュー外をタッチしたらメニューを閉じる（クリックではなくpointerdownでタッチでも確実に動く）
+    document.addEventListener('pointerdown', (e) => {
         if (!e.target.closest('#playerMenu') && !e.target.closest('.player')) {
             hidePlayerMenu();
             if (!animationMode) {
@@ -807,35 +798,25 @@
             }
         }
     });
-    
+
     function createPlayer(color, isPlayer = true) {
         const playersContainer = document.getElementById(`players-${currentSheetId}`);
         let playerNumber;
-        
+
         if (isPlayer) {
-            if (color === 'red') {
-                playerCounters[currentSheetId].red++;
-                playerNumber = playerCounters[currentSheetId].red;
-            } else if (color === 'blue') {
-                playerCounters[currentSheetId].blue++;
-                playerNumber = playerCounters[currentSheetId].blue;
-            } else if (color === 'yellow') {
-                playerCounters[currentSheetId].yellow++;
-                playerNumber = playerCounters[currentSheetId].yellow;
-            }
+            playerCounters[currentSheetId][color]++;
+            playerNumber = playerCounters[currentSheetId][color];
         } else {
             playerCounters[currentSheetId].ball++;
         }
-        
+
         const player = document.createElement('div');
-        // IDにyellowを追加できるように修正
         const countVal = isPlayer ? playerNumber : playerCounters[currentSheetId].ball;
-        player.className = `player absolute z-30 pointer-events-auto select-none touch-none`; // touch-noneを追加
+        player.className = `player absolute z-30 pointer-events-auto select-none touch-none`;
         player.dataset.type = isPlayer ? color : 'ball';
         player.dataset.id = `${color}-${countVal}-${currentSheetId}`;
-        
+
         if (isPlayer) {
-            // 色クラスの決定
             let bgClass = '';
             if (color === 'red') bgClass = 'bg-red-500';
             else if (color === 'blue') bgClass = 'bg-blue-500';
@@ -843,212 +824,194 @@
 
             const playerDiv = document.createElement('div');
             playerDiv.className = `w-10 h-10 md:w-12 md:h-12 rounded-full ${bgClass} flex items-center justify-center relative shadow-md`;
-            
+
             const numberSpan = document.createElement('span');
             numberSpan.className = 'player-number';
             numberSpan.textContent = playerNumber;
             numberSpan.dataset.originalNumber = playerNumber;
             playerDiv.appendChild(numberSpan);
-            
+
             player.appendChild(playerDiv);
         } else {
             player.innerHTML = getBallEmoji(currentCourtType);
         }
-        
-        // 配置位置（少し中央寄りに）
+
         const courtEl = document.getElementById(`court-${currentSheetId}`);
         const cw = courtEl.offsetWidth || 800;
         const ch = courtEl.offsetHeight || 500;
-        
+
         player.style.left = `${Math.random() * (cw * 0.5) + cw * 0.25}px`;
         player.style.top = `${Math.random() * (ch * 0.5) + ch * 0.25}px`;
-        
+
         playersContainer.appendChild(player);
-        
-        // イベント設定
-        player.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (animationMode) return;
-            const rect = player.getBoundingClientRect();
-            showPlayerMenu(player, rect.right + 5, rect.top);
-        });
-        
-        // ドラッグ処理
+
+        // ドラッグ＆タップ処理（Pointer Eventsに統一：iPadでもPCでも同じ動作）
         let isDragging = false;
-        let startX, startY;
-        let initLeft, initTop;
-        
-        const startDrag = (e) => {
-            // アニメーションモードやメニュー表示中はドラッグしない
-            if(animationMode) return;
-            
-            e.preventDefault(); // タッチスクロール防止
-            e.stopPropagation();
-            
+        let hasMoved = false;
+        let dragPointerId = null;
+        let startX, startY, initLeft, initTop;
+
+        player.addEventListener('pointerdown', (e) => {
+            if (animationMode) return;
+            if (!e.isPrimary) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+            e.preventDefault();
             isDragging = true;
-            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
-            startX = clientX;
-            startY = clientY;
+            hasMoved = false;
+            dragPointerId = e.pointerId;
+            startX = e.clientX;
+            startY = e.clientY;
             initLeft = parseFloat(player.style.left) || 0;
             initTop = parseFloat(player.style.top) || 0;
-            
-            // ドラッグ中のリスナー追加
-            if (e.type.includes('touch')) {
-                document.addEventListener('touchmove', onDrag, { passive: false });
-                document.addEventListener('touchend', endDrag);
-            } else {
-                document.addEventListener('mousemove', onDrag);
-                document.addEventListener('mouseup', endDrag);
-            }
-        };
-        
-        const onDrag = (e) => {
-            if (!isDragging) return;
+
+            try { player.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+
+        player.addEventListener('pointermove', (e) => {
+            if (!isDragging || e.pointerId !== dragPointerId) return;
             e.preventDefault();
-            
-            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
-            const dx = clientX - startX;
-            const dy = clientY - startY;
-            
-            const container = document.getElementById(`sheetsContainer`);
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            // 数px以内はタップとみなす（ドラッグ後にメニューが誤って開くのを防止）
+            if (!hasMoved && Math.hypot(dx, dy) < 5) return;
+            hasMoved = true;
+
+            const container = document.getElementById('sheetsContainer');
             const rect = container.getBoundingClientRect();
             const maxW = rect.width - player.offsetWidth;
             const maxH = rect.height - player.offsetHeight;
 
-            let newLeft = initLeft + dx;
-            let newTop = initTop + dy;
-            
-            // 画面外にはみ出し防止
-            newLeft = Math.max(0, Math.min(newLeft, maxW));
-            newTop = Math.max(0, Math.min(newTop, maxH));
-            
+            let newLeft = Math.max(0, Math.min(initLeft + dx, maxW));
+            let newTop = Math.max(0, Math.min(initTop + dy, maxH));
+
             player.style.left = `${newLeft}px`;
             player.style.top = `${newTop}px`;
-            
-            // パスがあれば削除（位置が変わったため）
+
+            // 位置が変わったらアニメーションパスは削除
             if (playerAnimations[player.dataset.id]) {
-                const pid = player.dataset.id;
-                const path = document.getElementById(`path-${pid}`);
-                if(path) path.remove();
-                const arrow = document.getElementById(`arrow-${pid}`);
-                if(arrow) arrow.remove();
-                delete playerAnimations[pid];
+                removePlayerAnimation(player.dataset.id);
+            }
+        });
+
+        const endPointer = (e) => {
+            if (!isDragging || e.pointerId !== dragPointerId) return;
+            isDragging = false;
+            dragPointerId = null;
+
+            // 動かしていなければ「タップ」→ メニューを開く
+            if (!hasMoved && !animationMode) {
+                const rect = player.getBoundingClientRect();
+                showPlayerMenu(player, rect.right + 5, rect.top);
             }
         };
-        
-        const endDrag = () => {
-            isDragging = false;
-            document.removeEventListener('mousemove', onDrag);
-            document.removeEventListener('mouseup', endDrag);
-            document.removeEventListener('touchmove', onDrag);
-            document.removeEventListener('touchend', endDrag);
-        };
-        
-        player.addEventListener('mousedown', startDrag);
-        player.addEventListener('touchstart', startDrag, { passive: false });
+
+        player.addEventListener('pointerup', endPointer);
+        player.addEventListener('pointercancel', endPointer);
     }
-    
+
     document.getElementById('addRedPlayer').addEventListener('click', () => createPlayer('red'));
     document.getElementById('addBluePlayer').addEventListener('click', () => createPlayer('blue'));
     document.getElementById('addYellowPlayer').addEventListener('click', () => createPlayer('yellow'));
     document.getElementById('addBall').addEventListener('click', () => createPlayer('ball', false));
 
-    // アニメーションパス設定
-    document.addEventListener('click', (e) => {
-        if (!animationMode || !selectedPlayer) return;
-        
-        const sheet = document.getElementById(currentSheetId);
-        // プレイヤー自身やメニューをクリックした場合は除外
-        if (e.target.closest('.player') || e.target.closest('#playerMenu')) return;
-        
-        const rect = sheet.getBoundingClientRect();
-        
-        // シート外クリックは無視
-        if (e.clientX < rect.left || e.clientX > rect.right || 
-            e.clientY < rect.top || e.clientY > rect.bottom) return;
+    // アニメーションのパス（点線と矢印）を描き直す
+    function rebuildAnimationPath(player) {
+        const playerId = player.dataset.id;
+        const anim = playerAnimations[playerId];
+        if (!anim) return;
 
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const target = document.getElementById('animationTarget');
-        if (target) {
-            target.style.left = `${x}px`;
-            target.style.top = `${y}px`;
-        }
-        
-        const playerRect = selectedPlayer.getBoundingClientRect();
-        // 親要素内での相対座標を計算
-        const pLeft = parseFloat(selectedPlayer.style.left);
-        const pTop = parseFloat(selectedPlayer.style.top);
-        const playerCenterX = pLeft + selectedPlayer.offsetWidth / 2;
-        const playerCenterY = pTop + selectedPlayer.offsetHeight / 2;
-        
-        const pathsContainer = document.getElementById(`animationPaths-${currentSheetId}`);
-        const playerId = selectedPlayer.dataset.id;
-        const pathId = `path-${playerId}`;
-        
-        // 既存削除
-        const existingPath = document.getElementById(pathId);
+        const sheet = player.closest('.sheet');
+        const pathsContainer = sheet ? document.getElementById(`animationPaths-${sheet.id}`) : null;
+        if (!pathsContainer) return;
+
+        const pw = player.offsetWidth;
+        const ph = player.offsetHeight;
+        const sx = anim.startX + pw / 2;
+        const sy = anim.startY + ph / 2;
+        const ex = anim.endX + pw / 2;
+        const ey = anim.endY + ph / 2;
+
+        let strokeColor = '#000';
+        if (player.dataset.type === 'red') strokeColor = '#ef4444';
+        else if (player.dataset.type === 'blue') strokeColor = '#3b82f6';
+        else if (player.dataset.type === 'yellow') strokeColor = '#eab308';
+        else strokeColor = '#f97316';
+
+        const existingPath = document.getElementById(`path-${playerId}`);
         if (existingPath) existingPath.remove();
         const existingArrow = document.getElementById(`arrow-${playerId}`);
         if (existingArrow) existingArrow.remove();
-        
-        // 線の色設定（黄色チーム対応）
-        let strokeColor = '#000';
-        if (selectedPlayer.dataset.type === 'red') strokeColor = '#ef4444';
-        else if (selectedPlayer.dataset.type === 'blue') strokeColor = '#3b82f6';
-        else if (selectedPlayer.dataset.type === 'yellow') strokeColor = '#eab308'; // 黄色
-        else strokeColor = '#f97316'; // ボール
-        
-        // パス作成
+
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.id = pathId;
-        path.setAttribute('d', `M${playerCenterX},${playerCenterY} L${x},${y}`);
+        path.id = `path-${playerId}`;
+        path.setAttribute('d', `M${sx},${sy} L${ex},${ey}`);
         path.setAttribute('stroke', strokeColor);
         path.setAttribute('stroke-width', '3');
         path.setAttribute('fill', 'none');
         path.setAttribute('stroke-dasharray', '5');
         path.classList.add('animation-path');
         pathsContainer.appendChild(path);
-        
-        // 矢印先端
-        const arrowId = `arrow-${playerId}`;
-        const angle = Math.atan2(y - playerCenterY, x - playerCenterX);
+
+        const angle = Math.atan2(ey - sy, ex - sx);
         const arrowLen = 15;
-        const arrowX = x - 5 * Math.cos(angle);
-        const arrowY = y - 5 * Math.sin(angle);
-        
-        const x1 = arrowX - arrowLen * Math.cos(angle - Math.PI / 6);
-        const y1 = arrowY - arrowLen * Math.sin(angle - Math.PI / 6);
-        const x2 = arrowX - arrowLen * Math.cos(angle + Math.PI / 6);
-        const y2 = arrowY - arrowLen * Math.sin(angle + Math.PI / 6);
-        
+        const ax = ex - 5 * Math.cos(angle);
+        const ay = ey - 5 * Math.sin(angle);
+        const x1 = ax - arrowLen * Math.cos(angle - Math.PI / 6);
+        const y1 = ay - arrowLen * Math.sin(angle - Math.PI / 6);
+        const x2 = ax - arrowLen * Math.cos(angle + Math.PI / 6);
+        const y2 = ay - arrowLen * Math.sin(angle + Math.PI / 6);
+
         const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        arrow.id = arrowId;
-        arrow.setAttribute('points', `${arrowX},${arrowY} ${x1},${y1} ${x2},${y2}`);
+        arrow.id = `arrow-${playerId}`;
+        arrow.setAttribute('points', `${ax},${ay} ${x1},${y1} ${x2},${y2}`);
         arrow.setAttribute('fill', strokeColor);
         pathsContainer.appendChild(arrow);
-        
-        // 保存
-        playerAnimations[playerId] = {
+    }
+
+    // アニメーション移動先の設定（タップでも動くようpointerdownで処理）
+    document.addEventListener('pointerdown', (e) => {
+        if (!animationMode || !selectedPlayer) return;
+        if (!e.isPrimary) return;
+        if (e.target.closest('.player') || e.target.closest('#playerMenu')) return;
+
+        const sheet = document.getElementById(currentSheetId);
+        const rect = sheet.getBoundingClientRect();
+
+        if (e.clientX < rect.left || e.clientX > rect.right ||
+            e.clientY < rect.top || e.clientY > rect.bottom) return;
+
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const target = document.getElementById('animationTarget');
+        if (target) {
+            target.style.left = `${x}px`;
+            target.style.top = `${y}px`;
+        }
+
+        const pLeft = parseFloat(selectedPlayer.style.left);
+        const pTop = parseFloat(selectedPlayer.style.top);
+
+        playerAnimations[selectedPlayer.dataset.id] = {
             startX: pLeft,
             startY: pTop,
             endX: x - selectedPlayer.offsetWidth / 2,
             endY: y - selectedPlayer.offsetHeight / 2
         };
-        
+
+        rebuildAnimationPath(selectedPlayer);
+
         animationMode = false;
         selectedPlayer.classList.remove('selected');
         selectedPlayer = null;
-        
+
         setTimeout(() => removeAnimationTarget(), 500);
         showMessage('移動先を設定しました', 1500);
     });
-    
+
     // 再生・停止
     document.getElementById('playAnimation').addEventListener('click', () => {
         const players = document.getElementById(`players-${currentSheetId}`).querySelectorAll('.player');
@@ -1062,10 +1025,10 @@
                 p.style.top = `${anim.endY}px`;
             }
         });
-        if(count > 0) showMessage('再生中...', 1500);
+        if (count > 0) showMessage('再生中...', 1500);
         else showMessage('アニメーションが設定されていません', 1500);
     });
-    
+
     document.getElementById('stopAnimation').addEventListener('click', () => {
         const players = document.getElementById(`players-${currentSheetId}`).querySelectorAll('.player');
         players.forEach(p => {
@@ -1079,303 +1042,593 @@
         showMessage('位置をリセットしました', 1000);
     });
 
-    // 描画機能 (Canvas) - 修正済み: エラー対策とリサイズ時の描画保持
-    function initializeCanvas(canvas) {
-        // コンテナのサイズに合わせる
-        const parent = canvas.parentElement;
-        const rect = parent.getBoundingClientRect();
-        
-        // サイズが0の場合は処理しない（エラー回避）
-        if (rect.width === 0 || rect.height === 0) return;
+    // ================= 描画機能 =================
+    // 図形は正規化座標(0〜1)で保存し、毎回キャンバスへ描き直す方式。
+    // 直線・矢印は後から「えらぶ」で選択して移動・端点変更・削除・色変更ができる。
 
-        // 現在のサイズと同じならリサイズしない（内容保持）
-        if (canvas.width !== rect.width || canvas.height !== rect.height) {
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            
-            // サイズが変わると内容が消えるので履歴から再描画
-            const sheetId = canvas.id.split('drawingCanvas-')[1];
-            redrawCanvasForSheet(sheetId);
+    const LINE_WIDTH = 3;
+    const HIT_DIST = 12;       // 線の当たり判定(px)
+    const HANDLE_HIT = 16;     // 端点ハンドルの当たり判定(px)
+    const HANDLE_R = 7;        // 端点ハンドルの表示半径(px)
+
+    let currentTool = 'none';
+    let currentColor = '#111827';
+    let drawState = null; // 進行中の操作 {mode, ...}
+    let lineEditHintShown = false;
+
+    function getCanvas(sheetId) {
+        return document.getElementById(`drawingCanvas-${sheetId || currentSheetId}`);
+    }
+
+    function canvasSize(canvas) {
+        return { w: canvas.clientWidth, h: canvas.clientHeight };
+    }
+
+    // 高解像度対応：CSSサイズ×devicePixelRatioでバックバッファを確保
+    function resizeCanvasBuffer(canvas) {
+        const parent = canvas.parentElement;
+        const w = parent.clientWidth;
+        const h = parent.clientHeight;
+        if (!w || !h) return false;
+
+        const dpr = window.devicePixelRatio || 1;
+        const bw = Math.round(w * dpr);
+        const bh = Math.round(h * dpr);
+        if (canvas.width !== bw || canvas.height !== bh) {
+            canvas.width = bw;
+            canvas.height = bh;
         }
-        
         const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
-        // リサイズ時の処理
-        if(!canvas.dataset.resizeListenerAttached) {
-            window.addEventListener('resize', () => {
-                // 非表示などでサイズが0の時は無視
-                if (parent.clientWidth === 0 || parent.clientHeight === 0) return;
-                
-                canvas.width = parent.clientWidth;
-                canvas.height = parent.clientHeight;
-                
-                // コンテキスト設定もリセットされるため再設定
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                
-                // 履歴から再描画
-                const sheetId = canvas.id.split('drawingCanvas-')[1];
-                redrawCanvasForSheet(sheetId);
-            });
-            canvas.dataset.resizeListenerAttached = 'true';
+        return true;
+    }
+
+    function drawShape(ctx, s, w, h) {
+        ctx.strokeStyle = s.color;
+        ctx.fillStyle = s.color;
+        ctx.lineWidth = s.width;
+
+        if (s.type === 'free') {
+            if (s.points.length === 0) return;
+            ctx.beginPath();
+            ctx.moveTo(s.points[0].x * w, s.points[0].y * h);
+            if (s.points.length === 1) {
+                // 点だけの場合は小さな丸
+                ctx.arc(s.points[0].x * w, s.points[0].y * h, s.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+                return;
+            }
+            for (let i = 1; i < s.points.length; i++) {
+                ctx.lineTo(s.points[i].x * w, s.points[i].y * h);
+            }
+            ctx.stroke();
+        } else {
+            const x1 = s.x1 * w, y1 = s.y1 * h, x2 = s.x2 * w, y2 = s.y2 * h;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            if (s.type === 'arrow') {
+                const headLength = 15;
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                ctx.beginPath();
+                ctx.moveTo(x2, y2);
+                ctx.lineTo(x2 - headLength * Math.cos(angle - Math.PI / 6), y2 - headLength * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(x2 - headLength * Math.cos(angle + Math.PI / 6), y2 - headLength * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fill();
+            }
         }
     }
 
-    // 指定シートのキャンバスを履歴から再描画する関数
-    function redrawCanvasForSheet(sheetId) {
-        const canvas = document.getElementById(`drawingCanvas-${sheetId}`);
-        if (!canvas) return;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const history = drawingHistory[sheetId];
-        if(!history) return;
-        
-        history.forEach(item => {
-            ctx.beginPath();
-            ctx.strokeStyle = item.color;
-            ctx.lineWidth = item.width;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            
-            if (item.type === 'line') {
-                ctx.moveTo(item.startX, item.startY);
-                ctx.lineTo(item.endX, item.endY);
-                ctx.stroke();
-            } else if (item.type === 'arrow') {
-                drawArrowOnCanvas(ctx, item.startX, item.startY, item.endX, item.endY, item.color, item.width);
-            } else if (item.type === 'straightLine') {
-                ctx.moveTo(item.startX, item.startY);
-                ctx.lineTo(item.endX, item.endY);
-                ctx.stroke();
-            }
-        });
-    }
-    
-    // 初期化
-    initializeCanvas(document.getElementById('drawingCanvas-sheet-1'));
-    
-    // 描画ツール
-    let currentTool = 'none';
-    let isDrawing = false;
-    let lastX = 0, lastY = 0;
-    let drawStartX = 0, drawStartY = 0;
-    
-    const arrowPreview = document.getElementById('arrowPreview');
-    const arrowLine = document.getElementById('arrowLine');
-    const arrowHead = document.getElementById('arrowHead');
-    const linePreview = document.getElementById('linePreview');
-    const straightLine = document.getElementById('straightLine');
-    
-    const toolButtons = ['drawBtn', 'straightLineBtn', 'arrowBtn', 'undoBtn'];
-    
-    toolButtons.forEach(btnId => {
-        document.getElementById(btnId).addEventListener('click', () => {
-            if (btnId === 'undoBtn') {
-                undoLastDrawing();
-                return;
-            }
-            toolButtons.forEach(id => {
-                if(id !== 'undoBtn') document.getElementById(id).classList.remove('active');
+    function shapeBounds(s, w, h) {
+        if (s.type === 'free') {
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            s.points.forEach(p => {
+                minX = Math.min(minX, p.x * w); maxX = Math.max(maxX, p.x * w);
+                minY = Math.min(minY, p.y * h); maxY = Math.max(maxY, p.y * h);
             });
-            
-            if (currentTool === btnId.replace('Btn', '')) {
-                currentTool = 'none';
-            } else {
-                document.getElementById(btnId).classList.add('active');
-                currentTool = btnId.replace('Btn', '');
+            return { minX, minY, maxX, maxY };
+        }
+        return {
+            minX: Math.min(s.x1, s.x2) * w, maxX: Math.max(s.x1, s.x2) * w,
+            minY: Math.min(s.y1, s.y2) * h, maxY: Math.max(s.y1, s.y2) * h
+        };
+    }
+
+    function drawSelectionOverlay(ctx, s, w, h) {
+        // 選択中の強調（半透明の太線）
+        ctx.save();
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.35)';
+        ctx.lineWidth = s.width + 8;
+        ctx.lineCap = 'round';
+        if (s.type === 'free') {
+            const b = shapeBounds(s, w, h);
+            ctx.setLineDash([6, 4]);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#3b82f6';
+            ctx.strokeRect(b.minX - 8, b.minY - 8, (b.maxX - b.minX) + 16, (b.maxY - b.minY) + 16);
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(s.x1 * w, s.y1 * h);
+            ctx.lineTo(s.x2 * w, s.y2 * h);
+            ctx.stroke();
+
+            // 端点ハンドル（○を掴んで動かせる）
+            [[s.x1 * w, s.y1 * h], [s.x2 * w, s.y2 * h]].forEach(([hx, hy]) => {
+                ctx.beginPath();
+                ctx.arc(hx, hy, HANDLE_R, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#2563eb';
+                ctx.setLineDash([]);
+                ctx.stroke();
+            });
+        }
+        ctx.restore();
+    }
+
+    function redrawCanvas(sheetId, tempShape) {
+        const canvas = getCanvas(sheetId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const { w, h } = canvasSize(canvas);
+        ctx.clearRect(0, 0, w, h);
+
+        const shapes = sheetShapes[sheetId] || [];
+        shapes.forEach(s => {
+            drawShape(ctx, s, w, h);
+            if (sheetId === currentSheetId && s.id === selectedShapeId) {
+                drawSelectionOverlay(ctx, s, w, h);
             }
         });
-    });
-    
+
+        if (tempShape) drawShape(ctx, tempShape, w, h);
+    }
+
+    // ---- 当たり判定 ----
+    function distToSegment(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1, dy = y2 - y1;
+        const lenSq = dx * dx + dy * dy;
+        let t = lenSq === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        const cx = x1 + t * dx, cy = y1 + t * dy;
+        return Math.hypot(px - cx, py - cy);
+    }
+
+    function hitHandle(s, x, y, w, h) {
+        if (s.type === 'free') return null;
+        if (Math.hypot(x - s.x1 * w, y - s.y1 * h) <= HANDLE_HIT) return 'p1';
+        if (Math.hypot(x - s.x2 * w, y - s.y2 * h) <= HANDLE_HIT) return 'p2';
+        return null;
+    }
+
+    function hitShape(s, x, y, w, h) {
+        if (s.type === 'free') {
+            if (s.points.length === 1) {
+                return Math.hypot(x - s.points[0].x * w, y - s.points[0].y * h) <= HIT_DIST;
+            }
+            for (let i = 1; i < s.points.length; i++) {
+                if (distToSegment(x, y,
+                    s.points[i - 1].x * w, s.points[i - 1].y * h,
+                    s.points[i].x * w, s.points[i].y * h) <= HIT_DIST) return true;
+            }
+            return false;
+        }
+        return distToSegment(x, y, s.x1 * w, s.y1 * h, s.x2 * w, s.y2 * h) <= HIT_DIST;
+    }
+
+    function findShapeAt(x, y, w, h) {
+        const shapes = sheetShapes[currentSheetId] || [];
+        for (let i = shapes.length - 1; i >= 0; i--) {
+            if (hitShape(shapes[i], x, y, w, h)) return shapes[i];
+        }
+        return null;
+    }
+
+    // ---- 元に戻す ----
+    function pushUndo(sheetId) {
+        const stack = undoStacks[sheetId];
+        stack.push(JSON.parse(JSON.stringify(sheetShapes[sheetId])));
+        if (stack.length > 60) stack.shift();
+    }
+
     function undoLastDrawing() {
-        const history = drawingHistory[currentSheetId];
-        if (history && history.length > 0) {
-            history.pop();
-            redrawCanvasForSheet(currentSheetId); // 修正：汎用関数を使用
+        const stack = undoStacks[currentSheetId];
+        if (stack && stack.length > 0) {
+            sheetShapes[currentSheetId] = stack.pop();
+            deselectShape();
+            redrawCanvas(currentSheetId);
             showMessage('1つ戻りました', 1000);
         } else {
             showMessage('これ以上戻れません', 1000);
         }
     }
-    
-    // 描画イベントハンドラ
-    const canvasContainer = document.getElementById('sheetsContainer');
-    
-    const getCanvasCoords = (e, canvas) => {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-        return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
-        };
-    };
-    
-    const startDrawing = (e) => {
-        if (currentTool === 'none') return;
-        if (e.target.closest('.player')) return; // プレイヤー上は描画しない
-        
-        const canvas = document.getElementById(`drawingCanvas-${currentSheetId}`);
-        // イベントターゲットがCanvasであることを確認
-        if(e.target !== canvas) return;
-        
-        e.preventDefault();
-        
-        isDrawing = true;
-        const coords = getCanvasCoords(e, canvas);
-        lastX = coords.x;
-        lastY = coords.y;
-        drawStartX = coords.x;
-        drawStartY = coords.y;
-        
-        const rect = canvas.getBoundingClientRect();
-        
-        if (currentTool === 'arrow') {
-            arrowPreview.style.display = 'block';
-            arrowPreview.style.left = rect.left + 'px'; // Canvasではなく親基準の場合は注意
-            arrowPreview.style.top = rect.top + 'px';
-            arrowPreview.style.width = rect.width + 'px';
-            arrowPreview.style.height = rect.height + 'px';
-            
-            arrowLine.setAttribute('x1', drawStartX);
-            arrowLine.setAttribute('y1', drawStartY);
-            arrowLine.setAttribute('x2', drawStartX);
-            arrowLine.setAttribute('y2', drawStartY);
-        } else if (currentTool === 'straightLine') {
-            linePreview.style.display = 'block';
-            linePreview.style.left = rect.left + 'px';
-            linePreview.style.top = rect.top + 'px';
-            linePreview.style.width = rect.width + 'px';
-            linePreview.style.height = rect.height + 'px';
-            
-            straightLine.setAttribute('x1', drawStartX);
-            straightLine.setAttribute('y1', drawStartY);
-            straightLine.setAttribute('x2', drawStartX);
-            straightLine.setAttribute('y2', drawStartY);
-        }
-    };
-    
-    const processDrawing = (e) => {
-        if (!isDrawing) return;
-        e.preventDefault();
-        
-        const canvas = document.getElementById(`drawingCanvas-${currentSheetId}`);
-        const coords = getCanvasCoords(e, canvas);
-        const ctx = canvas.getContext('2d');
-        
-        if (currentTool === 'draw') {
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(coords.x, coords.y);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            drawingHistory[currentSheetId].push({
-                type: 'line',
-                startX: lastX,
-                startY: lastY,
-                endX: coords.x,
-                endY: coords.y,
-                color: '#000',
-                width: 3
-            });
-            
-            lastX = coords.x;
-            lastY = coords.y;
-        } else if (currentTool === 'arrow') {
-            arrowLine.setAttribute('x2', coords.x);
-            arrowLine.setAttribute('y2', coords.y);
-            
-            // 矢印先端計算
-            const headLen = 15;
-            const angle = Math.atan2(coords.y - drawStartY, coords.x - drawStartX);
-            const x1 = coords.x - headLen * Math.cos(angle - Math.PI / 6);
-            const y1 = coords.y - headLen * Math.sin(angle - Math.PI / 6);
-            const x2 = coords.x - headLen * Math.cos(angle + Math.PI / 6);
-            const y2 = coords.y - headLen * Math.sin(angle + Math.PI / 6);
-            arrowHead.setAttribute('points', `${coords.x},${coords.y} ${x1},${y1} ${x2},${y2}`);
-            
-        } else if (currentTool === 'straightLine') {
-            straightLine.setAttribute('x2', coords.x);
-            straightLine.setAttribute('y2', coords.y);
-        }
-    };
-    
-    const stopDrawing = (e) => {
-        if (!isDrawing) return;
-        isDrawing = false;
-        
-        const canvas = document.getElementById(`drawingCanvas-${currentSheetId}`);
-        const ctx = canvas.getContext('2d');
-        
-        // 直線ツールの確定処理
-        if (currentTool === 'arrow') {
-            const x1 = parseFloat(arrowLine.getAttribute('x1'));
-            const y1 = parseFloat(arrowLine.getAttribute('y1'));
-            const x2 = parseFloat(arrowLine.getAttribute('x2'));
-            const y2 = parseFloat(arrowLine.getAttribute('y2'));
-            
-            drawArrowOnCanvas(ctx, x1, y1, x2, y2, '#000', 3);
-            drawingHistory[currentSheetId].push({ type: 'arrow', startX: x1, startY: y1, endX: x2, endY: y2, color: '#000', width: 3 });
-            arrowPreview.style.display = 'none';
-            
-        } else if (currentTool === 'straightLine') {
-            const x1 = parseFloat(straightLine.getAttribute('x1'));
-            const y1 = parseFloat(straightLine.getAttribute('y1'));
-            const x2 = parseFloat(straightLine.getAttribute('x2'));
-            const y2 = parseFloat(straightLine.getAttribute('y2'));
-            
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            drawingHistory[currentSheetId].push({ type: 'straightLine', startX: x1, startY: y1, endX: x2, endY: y2, color: '#000', width: 3 });
-            linePreview.style.display = 'none';
-        }
-    };
-    
-    function drawArrowOnCanvas(ctx, x1, y1, x2, y2, color, width) {
-        const headLength = 15;
-        const angle = Math.atan2(y2 - y1, x2 - x1);
-        
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - headLength * Math.cos(angle - Math.PI / 6), y2 - headLength * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(x2 - headLength * Math.cos(angle + Math.PI / 6), y2 - headLength * Math.sin(angle + Math.PI / 6));
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-    }
-    
-    // イベントリスナー登録
-    document.addEventListener('mousedown', startDrawing);
-    document.addEventListener('mousemove', processDrawing);
-    document.addEventListener('mouseup', stopDrawing);
-    document.addEventListener('touchstart', startDrawing, { passive: false });
-    document.addEventListener('touchmove', processDrawing, { passive: false });
-    document.addEventListener('touchend', stopDrawing);
 
-    // 初期配置
+    // ---- 選択 ----
+    const shapeActions = document.getElementById('shapeActions');
+
+    function getSelectedShape() {
+        if (selectedShapeId === null) return null;
+        return (sheetShapes[currentSheetId] || []).find(s => s.id === selectedShapeId) || null;
+    }
+
+    function selectShape(id) {
+        selectedShapeId = id;
+        redrawCanvas(currentSheetId);
+        updateShapeActions();
+    }
+
+    function deselectShape() {
+        if (selectedShapeId === null) {
+            shapeActions.style.display = 'none';
+            return;
+        }
+        selectedShapeId = null;
+        shapeActions.style.display = 'none';
+        redrawCanvas(currentSheetId);
+    }
+
+    function updateShapeActions() {
+        const s = getSelectedShape();
+        if (!s) { shapeActions.style.display = 'none'; return; }
+
+        const canvas = getCanvas();
+        const { w, h } = canvasSize(canvas);
+        const b = shapeBounds(s, w, h);
+
+        const midX = (b.minX + b.maxX) / 2;
+        let top = b.minY - 44;
+        if (top < 4) top = Math.min(b.maxY + 14, h - 40);
+
+        const clampedX = Math.max(50, Math.min(midX, w - 50));
+        shapeActions.style.left = `${clampedX}px`;
+        shapeActions.style.top = `${top}px`;
+        shapeActions.style.display = 'block';
+    }
+
+    document.getElementById('deleteShapeBtn').addEventListener('click', () => {
+        const s = getSelectedShape();
+        if (!s) return;
+        pushUndo(currentSheetId);
+        sheetShapes[currentSheetId] = sheetShapes[currentSheetId].filter(x => x.id !== s.id);
+        deselectShape();
+        redrawCanvas(currentSheetId);
+        showMessage('削除しました', 1000);
+    });
+
+    // ---- ツールボタン ----
+    const toolButtons = ['drawBtn', 'straightLineBtn', 'arrowBtn', 'selectBtn'];
+
+    function setTool(tool) {
+        currentTool = tool;
+        toolButtons.forEach(id => {
+            const btn = document.getElementById(id);
+            const t = id.replace('Btn', '');
+            btn.classList.toggle('active', t === tool);
+        });
+        // カーソル切り替え
+        const cursor = (tool === 'draw' || tool === 'straightLine' || tool === 'arrow') ? 'crosshair' : 'default';
+        document.querySelectorAll('.drawing-board').forEach(c => c.style.cursor = cursor);
+        if (tool !== 'select' && tool !== 'none') deselectShape();
+    }
+
+    toolButtons.forEach(btnId => {
+        document.getElementById(btnId).addEventListener('click', () => {
+            const tool = btnId.replace('Btn', '');
+            if (currentTool === tool) {
+                setTool('none');
+            } else {
+                setTool(tool);
+                if (tool === 'select') showMessage('線をタップすると移動・削除できます', 1800);
+            }
+        });
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', undoLastDrawing);
+
+    // 全消し（2回押しで確定）
+    let clearConfirmTimer = null;
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        const shapes = sheetShapes[currentSheetId] || [];
+        if (shapes.length === 0) {
+            showMessage('消す線がありません', 1000);
+            return;
+        }
+        if (clearConfirmTimer) {
+            clearTimeout(clearConfirmTimer);
+            clearConfirmTimer = null;
+            pushUndo(currentSheetId);
+            sheetShapes[currentSheetId] = [];
+            deselectShape();
+            redrawCanvas(currentSheetId);
+            showMessage('全部消しました（↩️戻るで復活できます）', 1500);
+        } else {
+            showMessage('もう一度押すと全部消えます', 2000);
+            clearConfirmTimer = setTimeout(() => { clearConfirmTimer = null; }, 2500);
+        }
+    });
+
+    // ---- 色えらび ----
+    const colorButtons = [
+        { id: 'colorBlack', color: '#111827' },
+        { id: 'colorRed', color: '#ef4444' },
+        { id: 'colorBlue', color: '#2563eb' }
+    ];
+    colorButtons.forEach(({ id, color }) => {
+        document.getElementById(id).addEventListener('click', () => {
+            currentColor = color;
+            colorButtons.forEach(c => document.getElementById(c.id).classList.toggle('active', c.id === id));
+            // 選択中の線があればその色も変える
+            const s = getSelectedShape();
+            if (s) {
+                pushUndo(currentSheetId);
+                s.color = color;
+                redrawCanvas(currentSheetId);
+                showMessage('色を変えました', 1000);
+            }
+        });
+    });
+
+    // ---- キャンバスのポインタ操作 ----
+    function getCoords(e, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function onCanvasPointerDown(e) {
+        if (!e.isPrimary) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (animationMode) return;
+
+        const canvas = e.currentTarget;
+        if (canvas.id !== `drawingCanvas-${currentSheetId}`) return;
+        if (drawState) return;
+
+        const { x, y } = getCoords(e, canvas);
+        const { w, h } = canvasSize(canvas);
+
+        if (currentTool === 'draw' || currentTool === 'straightLine' || currentTool === 'arrow') {
+            e.preventDefault();
+            try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+
+            if (currentTool === 'draw') {
+                drawState = {
+                    mode: 'free',
+                    pointerId: e.pointerId,
+                    temp: { type: 'free', color: currentColor, width: LINE_WIDTH, points: [{ x: x / w, y: y / h }] }
+                };
+            } else {
+                drawState = {
+                    mode: currentTool,
+                    pointerId: e.pointerId,
+                    temp: {
+                        type: currentTool === 'arrow' ? 'arrow' : 'line',
+                        color: currentColor, width: LINE_WIDTH,
+                        x1: x / w, y1: y / h, x2: x / w, y2: y / h
+                    }
+                };
+            }
+            redrawCanvas(currentSheetId, drawState.temp);
+            return;
+        }
+
+        // 選択モード（「えらぶ」またはツール未選択時）
+        const sel = getSelectedShape();
+        if (sel) {
+            const handle = hitHandle(sel, x, y, w, h);
+            if (handle) {
+                e.preventDefault();
+                try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+                drawState = {
+                    mode: 'handle', pointerId: e.pointerId, shape: sel, which: handle,
+                    snapshot: JSON.parse(JSON.stringify(sheetShapes[currentSheetId])), changed: false
+                };
+                shapeActions.style.display = 'none';
+                return;
+            }
+        }
+
+        const s = findShapeAt(x, y, w, h);
+        if (s) {
+            e.preventDefault();
+            try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+            selectShape(s.id);
+            drawState = {
+                mode: 'move', pointerId: e.pointerId, shape: s,
+                startX: x, startY: y,
+                orig: JSON.parse(JSON.stringify(s)),
+                snapshot: JSON.parse(JSON.stringify(sheetShapes[currentSheetId])),
+                changed: false
+            };
+            shapeActions.style.display = 'none';
+        } else {
+            deselectShape();
+        }
+    }
+
+    function onCanvasPointerMove(e) {
+        if (!drawState || e.pointerId !== drawState.pointerId) return;
+        e.preventDefault();
+
+        const canvas = getCanvas();
+        const { x, y } = getCoords(e, canvas);
+        const { w, h } = canvasSize(canvas);
+        const nx = Math.max(0, Math.min(x / w, 1));
+        const ny = Math.max(0, Math.min(y / h, 1));
+
+        if (drawState.mode === 'free') {
+            drawState.temp.points.push({ x: nx, y: ny });
+            redrawCanvas(currentSheetId, drawState.temp);
+        } else if (drawState.mode === 'straightLine' || drawState.mode === 'arrow') {
+            drawState.temp.x2 = nx;
+            drawState.temp.y2 = ny;
+            redrawCanvas(currentSheetId, drawState.temp);
+        } else if (drawState.mode === 'handle') {
+            const s = drawState.shape;
+            if (drawState.which === 'p1') { s.x1 = nx; s.y1 = ny; }
+            else { s.x2 = nx; s.y2 = ny; }
+            drawState.changed = true;
+            redrawCanvas(currentSheetId);
+        } else if (drawState.mode === 'move') {
+            const dx = (x - drawState.startX) / w;
+            const dy = (y - drawState.startY) / h;
+            if (!drawState.changed && Math.hypot(x - drawState.startX, y - drawState.startY) < 3) return;
+            drawState.changed = true;
+
+            const s = drawState.shape;
+            const o = drawState.orig;
+            if (s.type === 'free') {
+                s.points = o.points.map(p => ({ x: p.x + dx, y: p.y + dy }));
+            } else {
+                s.x1 = o.x1 + dx; s.y1 = o.y1 + dy;
+                s.x2 = o.x2 + dx; s.y2 = o.y2 + dy;
+            }
+            redrawCanvas(currentSheetId);
+        }
+    }
+
+    function onCanvasPointerUp(e) {
+        if (!drawState || e.pointerId !== drawState.pointerId) return;
+
+        const canvas = getCanvas();
+        const { w, h } = canvasSize(canvas);
+
+        if (drawState.mode === 'free') {
+            pushUndo(currentSheetId);
+            drawState.temp.id = ++shapeIdCounter;
+            sheetShapes[currentSheetId].push(drawState.temp);
+            redrawCanvas(currentSheetId);
+        } else if (drawState.mode === 'straightLine' || drawState.mode === 'arrow') {
+            const t = drawState.temp;
+            const lenPx = Math.hypot((t.x2 - t.x1) * w, (t.y2 - t.y1) * h);
+            if (lenPx >= 5) {
+                pushUndo(currentSheetId);
+                t.id = ++shapeIdCounter;
+                sheetShapes[currentSheetId].push(t);
+                if (!lineEditHintShown) {
+                    lineEditHintShown = true;
+                    showMessage('👆「えらぶ」で線を後から動かせます', 2200);
+                }
+            }
+            redrawCanvas(currentSheetId);
+        } else if (drawState.mode === 'handle' || drawState.mode === 'move') {
+            if (drawState.changed) {
+                // 変更前の状態をアンドゥ履歴に積む
+                undoStacks[currentSheetId].push(drawState.snapshot);
+                if (undoStacks[currentSheetId].length > 60) undoStacks[currentSheetId].shift();
+            }
+            redrawCanvas(currentSheetId);
+            updateShapeActions();
+        }
+
+        drawState = null;
+    }
+
+    function initializeCanvas(canvas) {
+        resizeCanvasBuffer(canvas);
+        if (!canvas.dataset.listenersAttached) {
+            canvas.addEventListener('pointerdown', onCanvasPointerDown);
+            canvas.addEventListener('pointermove', onCanvasPointerMove);
+            canvas.addEventListener('pointerup', onCanvasPointerUp);
+            canvas.addEventListener('pointercancel', onCanvasPointerUp);
+            canvas.dataset.listenersAttached = 'true';
+        }
+        const sheetId = canvas.id.split('drawingCanvas-')[1];
+        redrawCanvas(sheetId);
+    }
+
+    // ---- リサイズ・画面回転対応 ----
+    // 図形は正規化座標なので再描画するだけでOK。プレイヤーとアニメ座標はpxなので比率でスケーリング。
+    function ensureSheetLayout(sheetId) {
+        const sheet = document.getElementById(sheetId);
+        if (!sheet) return;
+        const w = sheet.clientWidth;
+        const h = sheet.clientHeight;
+        if (!w || !h) return;
+
+        const last = sheetLastSize[sheetId];
+        if (last && (last.w !== w || last.h !== h)) {
+            const rx = w / last.w;
+            const ry = h / last.h;
+
+            const players = document.getElementById(`players-${sheetId}`).querySelectorAll('.player');
+            players.forEach(p => {
+                const left = (parseFloat(p.style.left) || 0) * rx;
+                const top = (parseFloat(p.style.top) || 0) * ry;
+                p.style.transition = 'none';
+                p.style.left = `${Math.max(0, Math.min(left, w - p.offsetWidth))}px`;
+                p.style.top = `${Math.max(0, Math.min(top, h - p.offsetHeight))}px`;
+
+                const anim = playerAnimations[p.dataset.id];
+                if (anim) {
+                    anim.startX *= rx; anim.startY *= ry;
+                    anim.endX *= rx; anim.endY *= ry;
+                    rebuildAnimationPath(p);
+                }
+            });
+        }
+        sheetLastSize[sheetId] = { w, h };
+
+        const canvas = getCanvas(sheetId);
+        if (canvas) {
+            resizeCanvasBuffer(canvas);
+            redrawCanvas(sheetId);
+        }
+        if (sheetId === currentSheetId) updateShapeActions();
+    }
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => ensureSheetLayout(currentSheetId), 100);
+    });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => ensureSheetLayout(currentSheetId), 300);
+    });
+
+    // ---- キーボードショートカット（PC向け） ----
+    document.addEventListener('keydown', (e) => {
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            const s = getSelectedShape();
+            if (s) {
+                e.preventDefault();
+                pushUndo(currentSheetId);
+                sheetShapes[currentSheetId] = sheetShapes[currentSheetId].filter(x => x.id !== s.id);
+                deselectShape();
+                redrawCanvas(currentSheetId);
+                showMessage('削除しました', 1000);
+            }
+        } else if (e.key === 'Escape') {
+            deselectShape();
+            hidePlayerMenu();
+            if (animationMode) {
+                animationMode = false;
+                removeAnimationTarget();
+            }
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+            e.preventDefault();
+            undoLastDrawing();
+        }
+    });
+
+    // ---- 初期化 ----
+    initializeCanvas(document.getElementById('drawingCanvas-sheet-1'));
+    ensureSheetLayout('sheet-1');
+
     createPlayer('red');
     createPlayer('red');
     createPlayer('blue');
     createPlayer('blue');
     createPlayer('ball', false);
-    
+
 </script>
 </body>
 </html>

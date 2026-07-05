@@ -326,6 +326,7 @@
         <button id="settings-close" class="w-9 h-9 grid place-items-center rounded-full bg-[#F4ECDF] text-lg">✕</button>
       </div>
       <div id="settings-info" class="text-sm space-y-1 mb-4 opacity-80"></div>
+      <button id="btn-backup" class="btn w-full py-3 mb-3 bg-[#DFF3E4] text-[#2E7D4F]">💾 きろくを まもる（バックアップ）</button>
       <button id="btn-reset" class="btn w-full py-3 bg-[#FFE3E8] text-[#D5566E]">さいしょから やりなおす</button>
       <p class="text-xs opacity-50 mt-3">※データはこの端末だけに保存されます（同期なし）。</p>
     </div>
@@ -346,6 +347,7 @@
   <!-- トースト -->
   <div id="toast-wrap" class="fixed inset-x-0 bottom-28 lg:bottom-10 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
+  <script src="backup-kit.js?v=1"></script>
   <script>
   // =====================================================================
   //  自分レベルアップアドベンチャー — Stage1（動く骨格）
@@ -2430,11 +2432,33 @@
     $('#modal-settings').addEventListener('click', (e) => { if (e.target.id === 'modal-settings') hideModal('#modal-settings'); });
     $('#battle-close').addEventListener('click', () => hideModal('#modal-battle'));
     $('#modal-battle').addEventListener('click', (e) => { if (e.target.id === 'modal-battle') hideModal('#modal-battle'); });
+    $('#btn-backup').addEventListener('click', () => { hideModal('#modal-settings'); BackupKit.open(); });
     $('#btn-reset').addEventListener('click', () => { if (confirm('ぜんぶのデータをけして最初からやり直しますか？')) { localStorage.removeItem(SKEY); location.reload(); } });
 
     // 画面回転/リサイズでレイアウト整合
     window.addEventListener('resize', () => { renderAvatars(); });
   }
+
+  // きろくの「バックアップ＆ひきつぎ」（backup-kit.js 共通部品・3アプリ同梱コピー方式）
+  BackupKit.init({
+    appId: 'level-up-adventure',
+    appName: '自分レベルアップアドベンチャー',
+    storageKey: SKEY,
+    looksLike: (d) => !!(d && typeof d === 'object' && typeof d.coins === 'number' && Array.isArray(d.items)),
+    summarize(d) {
+      const li = levelInfo(d.exp || 0);
+      const totalDone = (d.items || []).reduce((a, it) => a + Object.keys(it.done || {}).length, 0);
+      const title = (typeof d.titleIdx === 'number' && d.titleIdx >= 0 && TITLES[d.titleIdx]) ? TITLES[d.titleIdx] : '（まだ なし）';
+      return [
+        { label: 'なまえ', value: (d.profile && d.profile.name) || '（なし）' },
+        { label: 'レベル', value: 'Lv.' + li.lvl },
+        { label: 'コイン', value: String(d.coins || 0) },
+        { label: 'しゅうかん・Todo', value: (d.items || []).length + 'こ' },
+        { label: 'できた かいすう', value: totalDone + 'かい' },
+        { label: 'しょうごう', value: title },
+      ];
+    },
+  });
 
   // PWA: Service Worker 登録（http(s)時のみ）
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

@@ -4,6 +4,7 @@
 
 ## 構成
 - `index.html` … 本体（CSS/JS込みの単一ファイル、ビルド不要）
+- `backup-kit.js` … きろくの「バックアップ＆ひきつぎ」共通部品（3アプリ同梱コピー方式。下記参照）
 - `manifest.json` / `sw.js` / `icon.svg` … PWA。**アセット更新時は sw.js の `CACHE` バージョンを繰り上げる**（v1→v2…）
 - ポータル登録は ルートの `apps.js`、サムネイルは `images/ugoki-no-kiroku.svg`
 
@@ -39,6 +40,12 @@
 - 連続記録: 「今日の日付での記録」のみ streak にカウント。7の倍数日で+100XP
 - **取り消し時はXPも巻き戻す**: チェック外し・水泳検定取り消し・マラソン記録削除は、対応する records の1件を `removeRecordXp()` で消して totalXp から差し引く（レベルは totalXp 由来なので自動で戻る）。ever_◯◯ からも外すので、付け直せば初達成+30も再付与される＝トグルの往復でXPは増減ゼロ。獲得済みバッジは取り消さない方針（バッジXPは初回のみなので farming 不可）
 - 全技にSVGイラスト付き（`TETSU_ART`/`MAT_ART`/`TOBI_ART` は棒人間＋オレンジの動き矢印、なわとびは `nawaArt()` がパラメータ{back,cross,multi,feet,label}から生成）
+
+## バックアップ＆ひきつぎ（backup-kit.js・2026-07-04）
+- せってい画面「💾 きろくを まもる」→ `BackupKit.open()`。書き出し＝封筒JSON `{kagasenBackup:1, app, appName, exportedAt, data}` のファイルDL＋テキストコピーの2方式。読み込み＝ファイル or 貼り付け → 検証 → プレビュー（いまの きろく vs ファイルの きろく：なまえ/レベル/XP/きろく数/バッジ数/最終記録日）→ 確認して全置換。
+- **安全設計**: 壊れたJSON・別アプリの封筒（app不一致）は既存データに触れず拒否。置換直前に現データを `ugokiNoKiroku_v1_mae` へ1世代退避（誤操作時は手で戻せる）。旧「データをほぞん」の封筒なしJSONも `looksLike`（profile＋records配列）判定で後方互換読み込み可。外部送信なし。
+- **共通部品の流儀**: `backup-kit.js` は3アプリ（ugoki / level-up-adventure / kanji-bouken）に同一ファイルを同梱コピー（three.min.js と同じ方式）。アプリ固有部分（appId・storageKey・looksLike・summarize）は各 index.html の `BackupKit.init({...})` に置く。**部品を直したら3フォルダ全部に配り直し、各 index.html の `?v=` と各 sw.js の CACHE を繰り上げる**。
+- 旧 `exportData()`（素のJSONダウンロード）はこの部品に置き換えて撤去済み。
 
 ## データ構造（localStorage）
 ```

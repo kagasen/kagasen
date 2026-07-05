@@ -315,6 +315,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--sky);color:var(--
 <div id="topbar">
   <button class="pill" id="coinPill" onclick="go('shop')"><span class="av" id="barAv"></span><span class="coin">💰 <span id="barCoins">0</span></span></button>
   <div class="bar-right">
+    <button class="icon-btn" onclick="BackupKit.open()" title="きろくを まもる（バックアップ）">💾</button>
     <button class="icon-btn" id="soundBtn" onclick="toggleSound()" title="おと">🔊</button>
     <button class="btn coin sm" onclick="go('dex')">📖 ずかん</button>
     <button class="btn go sm" onclick="go('room')">🏠 へや</button>
@@ -481,6 +482,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--sky);color:var(--
 
 <!-- 同梱データ（実行時CDN不要＝オフライン動作） -->
 <!-- Three.jsは3Dルーム使用時に遅延ロード。1・2年のみ同期ロード。3〜6年はマップ表示後にバックグラウンドで遅延ロード -->
+<script src="backup-kit.js?v=1"></script>
 <script src="grade1-strokes.js?v=1"></script>
 <script src="grade1-data.js?v=1"></script>
 <script src="grade2-strokes.js?v=4"></script>
@@ -963,6 +965,27 @@ function loadSave(id){
 }
 function persist(){if(profileId)localStorage.setItem(saveKey(profileId),JSON.stringify(save));}
 function hasSave(id){return !!localStorage.getItem(saveKey(id));}
+/* きろくの「バックアップ＆ひきつぎ」（backup-kit.js 共通部品・3アプリ同梱コピー方式）。
+ * 読み込み後は loadSave() が全フィールドを検証・補完するので、多少古い形の封筒でも安全。 */
+BackupKit.init({
+  appId:'kanji-bouken',
+  appName:'漢字の冒険',
+  storageKey:saveKey('me'),
+  looksLike:d=>!!(d&&typeof d==='object'&&typeof d.coins==='number'&&d.mastery&&typeof d.mastery==='object'),
+  summarize(d){
+    return [
+      {label:'コイン', value:String(d.coins||0)},
+      {label:'ずかんの かんじ', value:Object.keys(d.dex||{}).length+'字'},
+      {label:'クリアした テスト', value:Object.keys(d.cleared||{}).length+'こ'},
+      {label:'もっている かぐ', value:(Array.isArray(d.furn)?d.furn.length:0)+'こ'},
+      {label:'きせかえ', value:(Array.isArray(d.unlocked)?d.unlocked.length:0)+'こ'},
+    ];
+  },
+  /* 新端末への引き継ぎ直後に resetProgressOnce()（端末ごと1回のコイン矯正）が
+   * 復元したてのコインを0にしてしまうのを防ぐ。バックアップはリセット後の
+   * データなので、この端末では実行済み扱いにしてから反映する。 */
+  onImported(){ localStorage.setItem(RESET_FLAG,'1'); location.reload(); },
+});
 /* お金と「これまで買ったもの」の 一斉リセット（端末ごとに 1回だけ）。
  * ズルした お金で 本来 頑張らないと買えない物を 買った対策。これから 勉強を 頑張って
  * 本当に貯めた お金で 買ってほしい、という ねらい。

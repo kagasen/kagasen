@@ -206,6 +206,12 @@
 - 併せて十字を「もっと見やすく」：色 `#8a98a8`・lineWidth=`max(s*.01,3)`・dash `[1,max(s*.026,8)]`、中心ドット `#74859a`・半径`max(s*.015,4)` に強化。
 - 検証（getImageData・canvasはpreview_screenshotに写らない既知仕様）：①computed background＝bg `rgb(255,253,247)` / gu・dr ともに `rgba(0,0,0,0)`透明に。②**3キャンバス合成（drawImageでbg+gu+dr重ね＝実機の見た目）**で 中心ドット[116,133,154]=#74859a・たて/よこ点線[138,152,168]・十字以外は[255,253,247]クリーム・合成上のたて線の点319個＝**画面に十字が出ることを確認**。test(1年あ・ユーザー報告と同じ画面)で検証。console errorなし。※ユーザーは file:// を開いているのでリロードで反映（index.html内インラインCSSのためキャッシュ繰り上げ不要）。
 
+■ 追加実装（2026-07-04・第26回）＝きろくの「バックアップ＆ひきつぎ」
+- 共通部品 `backup-kit.js`（3アプリ＝ugoki-no-kiroku/level-up-adventure/kanji-bouken に同一ファイルを同梱コピー。設計詳細・運用ルールは ugoki-no-kiroku/HANDOFF.md 参照）。`<script src="backup-kit.js?v=1">` を grade1-strokes より前に読込。入り口＝トップバーの💾ボタン（🔊の左）→ `BackupKit.open()`。
+- 対象データ＝ `kanji_save_me` のみ（`kanji_sound`＝端末の音設定・`RESET_FLAG`＝端末フラグは対象外）。書き出し＝封筒JSON（`{kagasenBackup:1,app:'kanji-bouken',...,data}`）のファイルDL＋テキストコピー／読み込み＝検証→プレビュー（コイン/ずかん字数/クリアテスト数/かぐ/きせかえ）→確認→全置換→reload（loadSaveが全フィールドを検証・補完）。置換前に `kanji_save_me_mae` へ1世代退避。壊れたJSON・別アプリ封筒は既存データに触れず拒否。
+- **重要: onImported が `RESET_FLAG` を立ててから reload する**。新端末でひきつぎ直後に resetProgressOnce()（端末ごと1回のコイン矯正）が走り、復元したてのコインが0になるのを防ぐため（バックアップはリセット後のデータ＝二重矯正防止。リセット機能自体は温存）。検証済み：フラグ無し端末で5000コインをひきつぎ→reload後も5000維持。
+- このアプリは sw.js/manifest 未整備（PWA化前）のため CACHE 繰り上げは無し。PWA化するときは backup-kit.js?v=1 をキャッシュ対象に入れること。
+
 ■ 残（別フェーズ＝段取り6）
 - GRADE1_INFO（80字）／GRADE2_INFO（160字）／GRADE3_INFO（200字）／GRADE4_INFO（202字）／GRADE5_INFO（193字）／GRADE6_INFO（191字）の読み/熟語/quiz・かなのことば例の★先生添削。
 - 収録済：1年=かな46+46+漢字80、2年=**160字（全字）**、3年=200字、4年=202字、5年=193字、6年=191字（視〜済）＝**全学年すべて全字そろった**。同じ仕組み（build-gradeN.mjs→GRADE_DATA1行追加）で増設する設計は実証済み。

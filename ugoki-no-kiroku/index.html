@@ -279,6 +279,7 @@ input[type=date],input[type=text],select{
 <div id="toast"></div>
 <div id="modal-root"></div>
 <canvas id="confetti"></canvas>
+<script src="backup-kit.js?v=1"></script>
 <script>
 'use strict';
 /* ============================================================
@@ -1995,9 +1996,9 @@ function viewSettings(){
     <button class="btn wide" onclick="saveProfile()">ほぞんする</button>
   </div>
   <div class="card">
-    <h3>💾 データ</h3>
-    <button class="btn ghost wide" onclick="exportData()" style="margin-bottom:8px">データをほぞん(ダウンロード)</button>
-    <div class="muted small" style="margin-bottom:12px">きろくをファイルにのこせるよ。おうちの人といっしょにつかってね。</div>
+    <h3>💾 きろくを まもる</h3>
+    <button class="btn wide" onclick="BackupKit.open()" style="margin-bottom:8px">バックアップ＆ひきつぎ</button>
+    <div class="muted small" style="margin-bottom:12px">きろくをファイルにのこしたり、あたらしいたんまつにひきつげるよ。おうちの人といっしょにつかってね。</div>
     <button class="btn danger wide" onclick="resetData()">ぜんぶリセットする</button>
   </div>
   <div class="card muted small">
@@ -2013,14 +2014,26 @@ function saveProfile(){
   showToast('ほぞんしたよ!');
   render();
 }
-function exportData(){
-  const blob = new Blob([JSON.stringify(S,null,2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'ugoki-no-kiroku_'+todayStr()+'.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
+/* バックアップ＆ひきつぎ（backup-kit.js 共通部品）。
+   旧「データをほぞん」の封筒なしJSONも looksLike 判定で読み込める */
+BackupKit.init({
+  appId: 'ugoki-no-kiroku',
+  appName: 'うごきのきろく',
+  storageKey: LS_KEY,
+  looksLike: d => !!(d && typeof d==='object' && d.profile && Array.isArray(d.records)),
+  summarize(d){
+    const xp = (d.profile&&d.profile.totalXp)||0;
+    const last = (d.records||[]).reduce((a,r)=>(r.date&&r.date>a)?r.date:a, '');
+    return [
+      {label:'なまえ', value:(d.profile&&d.profile.name)||'（なし）'},
+      {label:'レベル', value:'Lv.'+levelInfo(xp).level},
+      {label:'XP', value:String(xp)},
+      {label:'きろくのかず', value:(d.records||[]).length+'こ'},
+      {label:'バッジ', value:(d.badges||[]).length+'こ'},
+      {label:'さいごのきろく', value:last?fmtDate(last):'—'},
+    ];
+  },
+});
 function resetData(){
   if(!confirm('ほんとうにぜんぶけす?\nきろく・バッジ・レベルがすべてきえます!')) return;
   if(!confirm('もういちどかくにん。ほんとうにリセットする?')) return;

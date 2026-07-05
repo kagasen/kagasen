@@ -212,6 +212,12 @@
 - **重要: onImported が `RESET_FLAG` を立ててから reload する**。新端末でひきつぎ直後に resetProgressOnce()（端末ごと1回のコイン矯正）が走り、復元したてのコインが0になるのを防ぐため（バックアップはリセット後のデータ＝二重矯正防止。リセット機能自体は温存）。検証済み：フラグ無し端末で5000コインをひきつぎ→reload後も5000維持。
 - このアプリは sw.js/manifest 未整備（PWA化前）のため CACHE 繰り上げは無し。PWA化するときは backup-kit.js?v=1 をキャッシュ対象に入れること。
 
+■ 追加実装（2026-07-05・第27回）＝フォント同梱（脱Google Fonts）＋PWA化
+- **フォント同梱**: `@import`(fonts.googleapis.com)を廃止し、`fonts/*.woff2` 5書体（Zen Maru Gothic 400/700/900・Klee One 400/600、SIL OFL 1.1）の `@font-face` に置換。**アプリの使用文字1510字だけにサブセット化**（全字だと数十MBになるため）して合計約2MB。生成は `node kanji-bouken/build-fonts.mjs`（要 python3＋fontTools。index.html/grade*-data/strokes/backup-kit から文字を機械収集→google/fontsリポジトリからTTF取得→サブセット）。**漢字・語句データを増やしたら build-fonts.mjs を再実行**（未収録字はシステムフォント代替＝崩れないが字体が変わる）。フォントURLは `?v=1` 付き＝更新時は繰り上げ。
+- **PWA化**: `manifest.json`（standalone・theme #7ec8f0）／`icon.svg`（空グラデ＋漢＋島＋旗）／`sw.js`（`CACHE='kanji-cache-v1'`、プリキャッシュ23点＝index/backup-kit/grade1〜6のstrokes+data(遅延ロード分も)/three.min.js/フォント5/manifest/icon。ネットワーク優先+失敗時キャッシュ）。index.html に theme-color・manifest link・apple-touch-icon・SW登録（http(s)のみ、file://では登録しない）を追加。**以後、アセット更新時は sw.js の CACHE 繰り上げ必須**（?v= と一致させること）。
+- release-check.mjs の KNOWN_EXTERNAL から kanji-bouken を削除（外部読み込みが再発したら❌検出される）。
+- 検証: SW active・kanji-cache-v1 に23点キャッシュ・ページのリクエストが全てローカル（gstaticへのアクセスなし）・document.fonts.check で5書体ロード確認・れんしゅう画面で「読」が教科書体表示・console errorなし。
+
 ■ 残（別フェーズ＝段取り6）
 - GRADE1_INFO（80字）／GRADE2_INFO（160字）／GRADE3_INFO（200字）／GRADE4_INFO（202字）／GRADE5_INFO（193字）／GRADE6_INFO（191字）の読み/熟語/quiz・かなのことば例の★先生添削。
 - 収録済：1年=かな46+46+漢字80、2年=**160字（全字）**、3年=200字、4年=202字、5年=193字、6年=191字（視〜済）＝**全学年すべて全字そろった**。同じ仕組み（build-gradeN.mjs→GRADE_DATA1行追加）で増設する設計は実証済み。

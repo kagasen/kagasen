@@ -3,9 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#7ec8f0">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon.svg">
 <title>漢字の冒険</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Klee+One:wght@400;600&display=swap');
+/* フォントは同梱（完全オフライン）。fonts/*.woff2 は build-fonts.mjs が
+   アプリの使用文字だけにサブセット化して生成（未収録字はシステムフォントで代替）。
+   Zen Maru Gothic / Klee One: SIL Open Font License 1.1 */
+@font-face{font-family:'Zen Maru Gothic';font-weight:400;font-display:swap;src:url('fonts/ZenMaruGothic-Regular.woff2?v=1') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:700;font-display:swap;src:url('fonts/ZenMaruGothic-Bold.woff2?v=1') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:900;font-display:swap;src:url('fonts/ZenMaruGothic-Black.woff2?v=1') format('woff2')}
+@font-face{font-family:'Klee One';font-weight:400;font-display:swap;src:url('fonts/KleeOne-Regular.woff2?v=1') format('woff2')}
+@font-face{font-family:'Klee One';font-weight:600;font-display:swap;src:url('fonts/KleeOne-SemiBold.woff2?v=1') format('woff2')}
 
 :root{
   --sky:linear-gradient(160deg,#7ec8f0,#a8e0f5 45%,#d8f3e0);
@@ -3001,6 +3011,11 @@ window.addEventListener('load',()=>{
   go('map');
   pumpLazyGrades();
 });
+
+/* PWA: Service Worker 登録（http(s)時のみ。file://で開いたときは登録しない） */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});
+}
 </script>
 </body>
 </html>

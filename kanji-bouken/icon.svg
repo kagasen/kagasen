@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 漢字の冒険 アプリアイコン: 空と島のグラデ + 「漢」 + ぼうけんの旗 -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7ec8f0"/>
+      <stop offset=".55" stop-color="#a8e0f5"/>
+      <stop offset="1" stop-color="#d8f3e0"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+  <!-- 島 -->
+  <ellipse cx="256" cy="428" rx="182" ry="46" fill="#f6d98a"/>
+  <ellipse cx="256" cy="418" rx="150" ry="34" fill="#8bd17c"/>
+  <!-- 漢 -->
+  <text x="248" y="300" font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="252" font-weight="700"
+        text-anchor="middle" fill="#ffffff" stroke="#2E86E8" stroke-width="10" paint-order="stroke">漢</text>
+  <!-- ぼうけんの旗 -->
+  <g transform="translate(414,214)">
+    <rect x="-4" y="0" width="9" height="150" rx="4" fill="#8a5a2b"/>
+    <path d="M5 6 L82 26 L5 50 Z" fill="#E8552E"/>
+  </g>
+</svg>

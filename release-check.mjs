@@ -28,7 +28,7 @@ const ROOT = path.dirname(fileURLToPath(import.meta.url));
        新たに見つかったら「エラー」。解消できたらこのリストから削ること。
        '.' はルートのポータル index.html。 --- */
 const KNOWN_EXTERNAL = new Set([
-  '.', 'classroom-board', 'group-maker', 'hiraganarensyu', 'kanji-bouken',
+  '.', 'classroom-board', 'group-maker', 'hiraganarensyu',
   'kannjibusyu-ta', 'katakanarensyu', 'kyushoku-kuji', 'level-up-adventure',
   'mainitimondai', 'marumarusaitekikai', 'sakkanojikan', 'sekigae',
   'shinmatorikusu', 'shiritori', 'shukudai', 'sikou-tool-app', 'taiiku-league',
@@ -55,7 +55,8 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const exists = (p) => fs.existsSync(path.join(ROOT, p));
 
 function git(...args) {
-  try { return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }); }
+  // stderrは捨てる（BASEに無い新規ファイルの git show が fatal を出すのは想定内）
+  try { return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }); }
   catch { return null; }
 }
 

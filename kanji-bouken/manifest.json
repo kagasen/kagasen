@@ -1,0 +1,15 @@
+{
+  "name": "漢字の冒険",
+  "short_name": "かんじ",
+  "description": "学年の島を冒険しながら漢字を手書きでマスター！れんしゅう・テスト・漢字図鑑・マイルームで楽しく学ぼう。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#a8e0f5",
+  "theme_color": "#7ec8f0",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

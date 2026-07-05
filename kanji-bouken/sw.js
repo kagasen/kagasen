@@ -2,23 +2,23 @@
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセット（データ.js・フォント・index.html等）を更新したら CACHE のバージョン番号を上げる(v1->v2...)。
 // 注意: データ.jsの ?v= と、ここのURLの ?v= は index.html の読み込みと一致させること。
-const CACHE = 'kanji-cache-v1';
+const CACHE = 'kanji-cache-v2';
 const ASSETS = [
   './',
   './index.html',
   './backup-kit.js?v=1',
-  './grade1-strokes.js?v=1', './grade1-data.js?v=1',
-  './grade2-strokes.js?v=4', './grade2-data.js?v=4',
-  './grade3-strokes.js?v=1', './grade3-data.js?v=1',
-  './grade4-strokes.js?v=1', './grade4-data.js?v=1',
-  './grade5-strokes.js?v=1', './grade5-data.js?v=1',
-  './grade6-strokes.js?v=1', './grade6-data.js?v=1',
+  './grade1-strokes.js?v=1', './grade1-data.js?v=2',
+  './grade2-strokes.js?v=4', './grade2-data.js?v=5',
+  './grade3-strokes.js?v=1', './grade3-data.js?v=2',
+  './grade4-strokes.js?v=1', './grade4-data.js?v=2',
+  './grade5-strokes.js?v=1', './grade5-data.js?v=2',
+  './grade6-strokes.js?v=1', './grade6-data.js?v=2',
   './three.min.js',
-  './fonts/ZenMaruGothic-Regular.woff2?v=1',
-  './fonts/ZenMaruGothic-Bold.woff2?v=1',
-  './fonts/ZenMaruGothic-Black.woff2?v=1',
-  './fonts/KleeOne-Regular.woff2?v=1',
-  './fonts/KleeOne-SemiBold.woff2?v=1',
+  './fonts/ZenMaruGothic-Regular.woff2?v=2',
+  './fonts/ZenMaruGothic-Bold.woff2?v=2',
+  './fonts/ZenMaruGothic-Black.woff2?v=2',
+  './fonts/KleeOne-Regular.woff2?v=2',
+  './fonts/KleeOne-SemiBold.woff2?v=2',
   './manifest.json',
   './icon.svg',
 ];

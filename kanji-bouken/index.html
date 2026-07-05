@@ -11,11 +11,11 @@
 /* フォントは同梱（完全オフライン）。fonts/*.woff2 は build-fonts.mjs が
    アプリの使用文字だけにサブセット化して生成（未収録字はシステムフォントで代替）。
    Zen Maru Gothic / Klee One: SIL Open Font License 1.1 */
-@font-face{font-family:'Zen Maru Gothic';font-weight:400;font-display:swap;src:url('fonts/ZenMaruGothic-Regular.woff2?v=1') format('woff2')}
-@font-face{font-family:'Zen Maru Gothic';font-weight:700;font-display:swap;src:url('fonts/ZenMaruGothic-Bold.woff2?v=1') format('woff2')}
-@font-face{font-family:'Zen Maru Gothic';font-weight:900;font-display:swap;src:url('fonts/ZenMaruGothic-Black.woff2?v=1') format('woff2')}
-@font-face{font-family:'Klee One';font-weight:400;font-display:swap;src:url('fonts/KleeOne-Regular.woff2?v=1') format('woff2')}
-@font-face{font-family:'Klee One';font-weight:600;font-display:swap;src:url('fonts/KleeOne-SemiBold.woff2?v=1') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:400;font-display:swap;src:url('fonts/ZenMaruGothic-Regular.woff2?v=2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:700;font-display:swap;src:url('fonts/ZenMaruGothic-Bold.woff2?v=2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:900;font-display:swap;src:url('fonts/ZenMaruGothic-Black.woff2?v=2') format('woff2')}
+@font-face{font-family:'Klee One';font-weight:400;font-display:swap;src:url('fonts/KleeOne-Regular.woff2?v=2') format('woff2')}
+@font-face{font-family:'Klee One';font-weight:600;font-display:swap;src:url('fonts/KleeOne-SemiBold.woff2?v=2') format('woff2')}
 
 :root{
   --sky:linear-gradient(160deg,#7ec8f0,#a8e0f5 45%,#d8f3e0);
@@ -494,9 +494,9 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--sky);color:var(--
 <!-- Three.jsは3Dルーム使用時に遅延ロード。1・2年のみ同期ロード。3〜6年はマップ表示後にバックグラウンドで遅延ロード -->
 <script src="backup-kit.js?v=1"></script>
 <script src="grade1-strokes.js?v=1"></script>
-<script src="grade1-data.js?v=1"></script>
+<script src="grade1-data.js?v=2"></script>
 <script src="grade2-strokes.js?v=4"></script>
-<script src="grade2-data.js?v=4"></script>
+<script src="grade2-data.js?v=5"></script>
 <script>
 /* ============================================================
  * 漢字の冒険  ─ 小2検証版（KanjiVGデータ・オフライン）
@@ -2961,10 +2961,10 @@ window.addEventListener('keydown',e=>{
  * そこで各エントリの get() が ロード後に その const を 名前で参照して返す。
  * → 学年を ふやす時は LAZY_GRADES に 1行 足すだけでOK。 */
 const LAZY_GRADES=[
-  {n:3,sv:'grade3-strokes.js?v=1',dv:'grade3-data.js?v=1',label:'3年生',get:()=>({s:GRADE3_STROKES,i:GRADE3_INFO})},
-  {n:4,sv:'grade4-strokes.js?v=1',dv:'grade4-data.js?v=1',label:'4年生',get:()=>({s:GRADE4_STROKES,i:GRADE4_INFO})},
-  {n:5,sv:'grade5-strokes.js?v=1',dv:'grade5-data.js?v=1',label:'5年生',get:()=>({s:GRADE5_STROKES,i:GRADE5_INFO})},
-  {n:6,sv:'grade6-strokes.js?v=1',dv:'grade6-data.js?v=1',label:'6年生',get:()=>({s:GRADE6_STROKES,i:GRADE6_INFO})},
+  {n:3,sv:'grade3-strokes.js?v=1',dv:'grade3-data.js?v=2',label:'3年生',get:()=>({s:GRADE3_STROKES,i:GRADE3_INFO})},
+  {n:4,sv:'grade4-strokes.js?v=1',dv:'grade4-data.js?v=2',label:'4年生',get:()=>({s:GRADE4_STROKES,i:GRADE4_INFO})},
+  {n:5,sv:'grade5-strokes.js?v=1',dv:'grade5-data.js?v=2',label:'5年生',get:()=>({s:GRADE5_STROKES,i:GRADE5_INFO})},
+  {n:6,sv:'grade6-strokes.js?v=1',dv:'grade6-data.js?v=2',label:'6年生',get:()=>({s:GRADE6_STROKES,i:GRADE6_INFO})},
 ];
 let lazyIdx=0, lazyBusy=false;
 /* テスト/れんしゅう中（write画面）は ロードを止める。巨大データ(各約850KB)の

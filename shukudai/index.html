@@ -5,15 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>宿題提出管理アプリ | 小学生向けの安全な教育アプリ</title>
     <meta name="description" content="宿題提出管理アプリは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- 完全オフライン化(2026-07-06): CDN読み込みを同梱ファイルへ置換（HANDOFF.md参照）。
+         tailwind.css は使用クラスだけの静的ビルド＝クラスを追加したら再生成が必要。
+         フォントは Noto Sans JP CDN をやめてシステムフォントに（任意の子ども名を表示するためサブセット不可）。 -->
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="qrcode.min.js"></script>
     <!-- 複数QR同時読み取り対応スキャナ: ネイティブBarcodeDetectorが無い端末(iPad/Safari等)向けのZXing-wasmフォールバック。
          ネイティブが使える端末(Chromebook/Android Chrome)では読み込んでもwasmは取得されない(遅延初期化)。 -->
-    <script src="https://cdn.jsdelivr.net/npm/barcode-detector@3.2.0/dist/iife/index.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="barcode-detector.min.js"></script>
+    <script>
+        // ZXing-wasm の wasm取得先を同梱の zxing_reader.wasm へ（フォールバック時もオフラインで動く）
+        if (window.BarcodeDetectionAPI && BarcodeDetectionAPI.prepareZXingModule) {
+            BarcodeDetectionAPI.prepareZXingModule({ overrides: { locateFile:
+                (path, prefix) => path.endsWith('.wasm') ? 'zxing_reader.wasm' : prefix + path } });
+        }
+    </script>
     <style>
         body {
-            font-family: 'Noto Sans JP', sans-serif;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'BIZ UDGothic', Meiryo, sans-serif;
             background-color: #f3f4f6; /* Tailwind bg-gray-100 */
         }
         .tab-button.active {
@@ -1025,10 +1034,9 @@
                 <html>
                 <head>
                     <title>生成されたQRコード (印刷用)</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
                     <style>
-                        body { 
-                            font-family: 'Noto Sans JP', sans-serif; 
+                        body {
+                            font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'BIZ UDGothic', Meiryo, sans-serif;
                             margin: 10mm; 
                             background-color: #ffffff; 
                         }

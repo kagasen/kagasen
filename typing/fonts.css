@@ -1,0 +1,8 @@
+/* typing 同梱フォント（Google Fonts CDNの置き換え・完全オフライン）
+   fonts/*.woff2 は build-fonts.mjs がアプリの使用文字だけにサブセット化して生成。
+   出題語を増やしたら node typing/build-fonts.mjs で再生成すること。
+   Mochiy Pop One / Zen Maru Gothic: SIL Open Font License 1.1 */
+@font-face{font-family:'Mochiy Pop One';font-weight:400;font-display:swap;src:url('fonts/MochiyPopOne-Regular.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:400;font-display:swap;src:url('fonts/ZenMaruGothic-Regular.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:700;font-display:swap;src:url('fonts/ZenMaruGothic-Bold.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:900;font-display:swap;src:url('fonts/ZenMaruGothic-Black.woff2') format('woff2')}

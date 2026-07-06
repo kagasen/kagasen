@@ -31,8 +31,9 @@ const KNOWN_EXTERNAL = new Set([
   '.', 'classroom-board', 'group-maker', 'hiraganarensyu',
   'kannjibusyu-ta', 'katakanarensyu', 'kyushoku-kuji', 'level-up-adventure',
   'mainitimondai', 'marumarusaitekikai', 'sakkanojikan', 'sekigae',
-  'shinmatorikusu', 'shiritori', 'shukudai', 'sikou-tool-app', 'taiiku-league',
-  'taiiku-relay', 'taiiku-tournament', 'taiikusakusennbo-do', 'typing',
+  'shinmatorikusu', 'shiritori', 'sikou-tool-app', 'taiiku-league',
+  'taiiku-relay', 'taiiku-tournament', 'taiikusakusennbo-do',
+  'typing',  // Tailwind/フォント/Reactは同梱済み。残りはFirebase(オンラインカウンター=機能依存)のみ
   'vision-training',
 ]);
 

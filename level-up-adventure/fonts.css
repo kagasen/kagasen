@@ -1,0 +1,9 @@
+/* 同梱フォント（Google Fonts CDNの置き換え・完全オフライン）
+   fonts/*.woff2 はリポジトリ全体の使用文字にサブセット済み（未収録字はシステムフォント代替）。
+   再生成はリポジトリの scratchpad/build-shared-fonts.mjs 相当（HANDOFF.md参照）。
+   Mochiy Pop One / Zen Maru Gothic: SIL Open Font License 1.1 */
+@font-face{font-family:'Mochiy Pop One';font-weight:400;font-display:swap;src:url('fonts/MochiyPopOne-Regular.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:400;font-display:swap;src:url('fonts/ZenMaruGothic-Regular.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:500;font-display:swap;src:url('fonts/ZenMaruGothic-Medium.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:700;font-display:swap;src:url('fonts/ZenMaruGothic-Bold.woff2') format('woff2')}
+@font-face{font-family:'Zen Maru Gothic';font-weight:900;font-display:swap;src:url('fonts/ZenMaruGothic-Black.woff2') format('woff2')}

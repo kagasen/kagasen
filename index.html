@@ -7,14 +7,11 @@
     <title>かがせんのHAPPYアプリ集 | 小学生向けの安全な無料教育アプリ</title>
     <meta name="description" content="かがせんのHAPPYアプリ集は、小学生・先生向けのシンプルで安全な教育・学習アプリ集です。学校の授業やご家庭で安心して使えるよう、広告なし・フィルタリング（i-フィルター等）対応済みの安全なサイトです。">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fonts.css">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="tailwind.css">
 
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="vendor/lucide.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -459,9 +456,11 @@
             messagingSenderId: "1082992889425",
             appId: "1:1082992889425:web:c18a56904f358d750fb270"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        // オフライン時は gstatic の firebase スクリプトが読めない → カウント機能だけ止めて他は動かす
+        const fbOk = typeof firebase !== 'undefined';
+        if (fbOk) firebase.initializeApp(firebaseConfig);
+        const db = fbOk ? firebase.firestore() : null;
+        const auth = fbOk ? firebase.auth() : null;
 
         // クリックカウント管理
         let appCounts = {};
@@ -479,6 +478,7 @@
         }
 
         async function incrementCount(appId) {
+            if (!db) return;
             if (hasCountedToday(appId)) return;
             if (!auth.currentUser) {
                 await auth.signInAnonymously();
@@ -512,8 +512,8 @@
             });
         }
 
-        // 匿名認証してカウントを読み込む
-        auth.signInAnonymously()
+        // 匿名認証してカウントを読み込む（オフライン時はスキップ）
+        if (auth) auth.signInAnonymously()
             .then(() => loadCounts())
             .catch(e => console.error('認証エラー:', e));
 

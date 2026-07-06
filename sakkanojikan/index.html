@@ -5,15 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>作家の時間</title>
-    <!-- Tailwindはローカルファイルから読み込む（オフラインのiPadでも動くように）。無い場合だけCDNを使う -->
+    <!-- Tailwindは同梱のローカルファイルから読み込む（オフラインのiPadでも動くように）。
+         CDNフォールバックは完全オフライン化(2026-07-06)で撤去した（tailwind.min.js 同梱済みのため不要） -->
     <script src="tailwind.min.js"></script>
-    <script>
-        if (!window.tailwind) {
-            document.write('<script src="https://cdn.tailwindcss.com/3.4.17" integrity="sha384-igm5BeiBt36UU4gqwWS7imYmelpTsZlQ45FZf+XBn9MuJbn4nQr7yx1yFydocC/K" crossorigin="anonymous"><\/script>');
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap"
-        rel="stylesheet">
     <style>
         /* Tailwindが読み込めなかったときの保険（画面の表示・非表示だけは必ず動くように） */
         .hidden {
@@ -22,7 +16,7 @@
 
         /* === アプリ専用のスタイル（他の要素に干渉しないように #sakka-app に限定） === */
         #sakka-app {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: 'Hiragino Maru Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             background-color: #FFF9E6;
             background-image: radial-gradient(#FDE68A 1px, transparent 1px);
             background-size: 20px 20px;

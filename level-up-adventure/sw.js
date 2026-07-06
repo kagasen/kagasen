@@ -1,11 +1,18 @@
 // 自分レベルアップアドベンチャー — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // 仕様変更でアセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'lua-cache-v2';
+const CACHE = 'lua-cache-v3';
 const ASSETS = [
   './',
   './index.html',
   './backup-kit.js?v=1',
+  './tailwind.css',
+  './fonts.css',
+  './fonts/MochiyPopOne-Regular.woff2',
+  './fonts/ZenMaruGothic-Regular.woff2',
+  './fonts/ZenMaruGothic-Medium.woff2',
+  './fonts/ZenMaruGothic-Bold.woff2',
+  './fonts/ZenMaruGothic-Black.woff2',
   './manifest.json',
   './icon.svg',
 ];

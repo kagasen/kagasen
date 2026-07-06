@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <link rel="stylesheet" href="fonts.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>カタカナれんしゅう</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-text-size-adjust:100%}
 .cw,.cw canvas{touch-action:none}
@@ -265,7 +265,7 @@ const GOJUON_GRID=[
   ['', 'レ','', 'メ','ヘ','ネ','テ','セ','ケ','エ'],
   ['ン','ロ','ヨ','モ','ホ','ノ','ト','ソ','コ','オ']
 ];
-const CDN='https://cdn.jsdelivr.net/npm/kana-svg-data/dist/katakana/';
+const CDN='kana/';  // カナの筆順データは同梱（旧: cdn.jsdelivr.net の kana-svg-data）
 const cache={};
 async function loadCh(ch){
   if(cache[ch])return cache[ch];

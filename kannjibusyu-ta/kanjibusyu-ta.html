@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>漢字部首シューティング！</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="tailwind.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap');
         
         body {
             margin: 0;
             padding: 0;
             background-color: #111;
             color: white;
-            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
+            font-family: 'Hiragino Maru Gothic ProN', 'Hiragino Sans', Meiryo, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             overflow: hidden;
             touch-action: none; /* タッチスクロール防止 */
         }
@@ -277,7 +276,7 @@
 
     /** mimneko/kanji-data の漢検級（数値は10級=10…1級=1）。辞書に無い成字は小学校帯に寄せて優先扱い */
     const KANKEN_LEVEL_BY_KANJI = {"仁":5,"仏":6,"仕":8,"他":8,"付":7,"代":8,"仮":6,"仰":4,"仲":7,"件":6,"任":6,"休":10,"伝":7,"伺":4,"似":6,"位":7,"低":7,"住":8,"佐":7,"体":9,"何":9,"作":9,"使":8,"例":7,"供":5,"依":4,"価":6,"侵":4,"便":7,"係":8,"俗":4,"保":6,"信":7,"俳":5,"俵":5,"個":6,"倍":8,"倒":4,"借":7,"値":5,"偉":4,"停":6,"健":7,"側":7,"傍":4,"備":6,"傷":5,"傾":4,"働":7,"像":6,"僧":4,"儀":4,"億":7,"優":5,"化":8,"古":9,"叫":4,"右":10,"各":7,"名":10,"吐":4,"吸":5,"吹":4,"味":8,"呼":5,"咲":4,"品":8,"員":8,"唱":7,"問":8,"札":7,"机":5,"朽":4,"材":7,"村":10,"杯":4,"松":7,"板":8,"林":10,"枚":5,"枝":6,"枯":4,"柄":4,"柚":1,"柱":8,"栃":7,"校":10,"株":5,"根":8,"格":6,"桃":4,"桜":6,"梅":7,"械":7,"棒":5,"植":8,"検":6,"極":7,"構":6,"様":8,"標":7,"模":5,"権":5,"横":8,"樹":5,"橋":8,"機":7,"欄":4,"汗":4,"汚":4,"池":9,"決":8,"汽":9,"沈":4,"沖":7,"沢":4,"河":6,"油":8,"治":7,"沼":4,"沿":5,"況":4,"泊":4,"法":7,"波":8,"泣":7,"注":8,"泳":8,"洋":8,"洗":5,"活":9,"派":5,"流":8,"浅":7,"浜":4,"浮":4,"浴":7,"海":9,"浸":4,"消":8,"涙":4,"液":6,"淡":4,"深":8,"混":6,"添":4,"清":7,"済":5,"減":6,"渡":4,"温":8,"測":6,"港":8,"湖":8,"湯":8,"満":7,"源":5,"溶":4,"滋":7,"滴":4,"漁":7,"演":6,"漢":8,"漫":4,"潔":6,"潟":7,"潮":5,"澄":4,"激":5,"濁":4,"濃":4,"相":8,"計":9,"討":5,"訓":7,"記":9,"訪":5,"設":6,"許":6,"訳":5,"訴":4,"証":6,"評":6,"詞":5,"試":7,"詩":8,"詰":4,"話":9,"詳":4,"誇":4,"誌":5,"認":5,"誕":5,"語":9,"誠":5,"誤":5,"説":7,"読":9,"課":7,"調":8,"談":8,"論":5,"諸":5,"講":6,"謝":6,"謡":4,"識":6,"議":7,"護":6,"酒":8,"鳴":9};
-    const FONT_FAMILY = '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif';
+    const FONT_FAMILY = ''Hiragino Maru Gothic ProN', 'Hiragino Sans', Meiryo, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif';
     function pickWeightedTsukuri(bushu, list) {
         const primary = [];
         const secondary = [];

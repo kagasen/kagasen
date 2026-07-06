@@ -28,13 +28,11 @@ const ROOT = path.dirname(fileURLToPath(import.meta.url));
        新たに見つかったら「エラー」。解消できたらこのリストから削ること。
        '.' はルートのポータル index.html。 --- */
 const KNOWN_EXTERNAL = new Set([
-  '.', 'classroom-board', 'group-maker', 'hiraganarensyu',
-  'kannjibusyu-ta', 'katakanarensyu', 'kyushoku-kuji', 'level-up-adventure',
-  'mainitimondai', 'marumarusaitekikai', 'sakkanojikan', 'sekigae',
-  'shinmatorikusu', 'shiritori', 'sikou-tool-app', 'taiiku-league',
-  'taiiku-relay', 'taiiku-tournament', 'taiikusakusennbo-do',
-  'typing',  // Tailwind/フォント/Reactは同梱済み。残りはFirebase(オンラインカウンター=機能依存)のみ
-  'vision-training',
+  // 2026-07-06 の脱CDNで全アプリの Tailwind/フォント/ライブラリを同梱化済み。
+  // 残る外部参照は Firebase（オンライン機能＝サービス依存で同梱不可）だけ。
+  '.',              // ポータル: 訪問カウンター（オフライン時はガードでスキップ）
+  'typing',         // 訪問カウンター（同上）
+  'mainitimondai',  // 2〜6年ページの成績記録（firebase v11 ESM）
 ]);
 
 /* --- クレジット表記（消えていたらエラー）。アプリを増やしたらここに足す --- */
@@ -112,6 +110,10 @@ function externalRefs(html) {
     /url\(\s*["']?(https?:\/\/[^"')]+)/gi,
   ];
   for (const re of res) for (const m of html.matchAll(re)) out.add(m[1]);
+  // タグ以外（JS内の fetch 等）から既知CDNホストへの参照も拾う
+  // 前例: hiraganarensyu が かな筆順データを 実行時に cdn.jsdelivr.net から fetch していた
+  const cdnHosts = /https?:\/\/(cdn\.jsdelivr\.net|fastly\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|cdn\.tailwindcss\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)[^"'`\s)\\]*/g;
+  for (const m of html.matchAll(cdnHosts)) out.add(m[0]);
   return [...out];
 }
 /* 検査対象HTML: ポータル・各アプリの index.html に加え、apps.js の link 先が

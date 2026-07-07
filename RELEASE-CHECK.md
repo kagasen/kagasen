@@ -35,6 +35,8 @@ node release-check.mjs
    text/babel 以外）を構文検査。エラーがあれば❌。構文エラーは1個でスクリプト全体を
    殺して「何も押せない」アプリになるため（前例: 2026-07-06 の脱CDNフォント置換で
    classroom-board / kannjibusyu-ta がクォート崩れで全滅→翌日発覚）。
+8. **外部JSの構文チェック** — HTMLから `<script src>` で読み込まれるローカル.jsも構文検査（同上の全滅対策）。
+9. **CSS順序の hidden×display 衝突** — `tailwind.css` の `<link>` をインライン`<style>`より先に置くと、後のカスタムCSSの `display` が Tailwind の `.hidden` に勝ち、モーダル/オーバーレイが起動時から画面を覆って操作不能になる（taiiku-tournament/shukudai の前例）。該当したら❌。直しは`<link>`を`</style>`の後へ。
 
 4・5 の「変更」は **origin/main との差分**（＝まだ公開されていない変更。未コミット分も含む）。
 origin/main が無い環境では HEAD と比較する。

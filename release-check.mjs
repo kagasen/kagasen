@@ -256,6 +256,40 @@ for (const [abs, referrer] of localScripts) {
   }
 }
 
+/* ---------- 9. CSS順序による hidden×display 衝突 ---------- */
+/* 前例: 2026-07-06の脱CDNで tailwind.css を<head>先頭に置いたため、後に来る
+   カスタムCSS（.victory-overlay/.message-modal 等の display:flex）が Tailwind の
+   .hidden（display:none）に勝ち、オーバーレイ/モーダルが起動時から出っぱなしに
+   なって操作不能になった（taiiku-tournament / shukudai）。
+   検出: ①tailwind.css の<link>がインライン<style>より前 ②<style>内に display を
+   設定するカスタムクラス ③そのクラスが要素上で単独の「hidden」と同居。→ 該当は❌。
+   直し方: tailwind.css の<link>を </style> の後（=最後）へ移す（CDN時代と同じ順序）。 */
+for (const file of walkHtml(ROOT)) {
+  const rel = path.relative(ROOT, file);
+  const app = rel.includes(path.sep) ? rel.split(path.sep)[0] : '.';
+  const src = fs.readFileSync(file, 'utf8');
+  const head = src.split('</head>')[0];
+  const mLink = head.match(/<link[^>]*href="[^"]*tailwind\.css"/i);
+  const mStyle = head.match(/<style/i);
+  if (!mLink || !mStyle) continue;
+  if (head.indexOf(mLink[0]) >= head.indexOf(mStyle[0])) continue;   // 順序OK（tailwindが後）
+  const styleTxt = [...src.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]).join('\n');
+  const displayClasses = new Set();
+  for (const b of styleTxt.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+    if (/display\s*:\s*(flex|grid|block|inline-flex|table)/.test(b[2]))
+      for (const c of b[1].matchAll(/\.([a-zA-Z0-9_-]+)/g)) displayClasses.add(c[1]);
+  }
+  if (displayClasses.size === 0) continue;
+  const conflicts = new Set();
+  for (const t of src.matchAll(/class="([^"]*)"/g)) {
+    const classes = new Set(t[1].split(/\s+/));
+    if (!classes.has('hidden')) continue;                            // 単独の hidden のみ
+    for (const c of classes) if (displayClasses.has(c)) conflicts.add(c);
+  }
+  if (conflicts.size)
+    err(app, `${rel}: tailwind.css を<style>より先に読み込むため .hidden が効かない（.${[...conflicts].join(' .')} の display が勝つ→モーダル/オーバーレイが出っぱなし）。tailwindの<link>を</style>の後へ移すこと`);
+}
+
 /* ---------- 結果表示 ---------- */
 const errors = findings.filter(f => f.level === 'error');
 const warns  = findings.filter(f => f.level === 'warn');

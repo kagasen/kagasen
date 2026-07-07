@@ -7,8 +7,9 @@
     <meta name="description" content="宿題提出管理アプリは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
     <!-- 完全オフライン化(2026-07-06): CDN読み込みを同梱ファイルへ置換（HANDOFF.md参照）。
          tailwind.css は使用クラスだけの静的ビルド＝クラスを追加したら再生成が必要。
-         フォントは Noto Sans JP CDN をやめてシステムフォントに（任意の子ども名を表示するためサブセット不可）。 -->
-    <link rel="stylesheet" href="tailwind.css">
+         フォントは Noto Sans JP CDN をやめてシステムフォントに（任意の子ども名を表示するためサブセット不可）。
+         ※Tailwind の <link> は下（</style>の後）に置く＝CDN時代と同じ最後読み込み。先頭だと .hidden が
+           カスタムCSSの display に負けてモーダルが出っぱなしになる。 -->
     <script src="qrcode.min.js"></script>
     <!-- 複数QR同時読み取り対応スキャナ: ネイティブBarcodeDetectorが無い端末(iPad/Safari等)向けのZXing-wasmフォールバック。
          ネイティブが使える端末(Chromebook/Android Chrome)では読み込んでもwasmは取得されない(遅延初期化)。 -->
@@ -239,6 +240,7 @@
         .toast.info    { background: #4f46e5; }  /* indigo-600 */
         .toast.error   { background: #dc2626; }  /* red-600 */
     </style>
+    <link rel="stylesheet" href="tailwind.css">
     <meta name="theme-color" content="#EF4444">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.svg">

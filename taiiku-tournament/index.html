@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>体育トーナメントメーカー | 小学生向けの安全な教育アプリ</title>
     <meta name="description" content="体育トーナメントメーカーは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
-    <!-- Tailwind CSS (スタイリング用) -->
-    <link rel="stylesheet" href="tailwind.css">
     <!-- Google Fonts -->
 
     <style>
@@ -370,6 +368,9 @@
             cursor: grabbing;
         }
     </style>
+    <!-- Tailwind CSS は最後に読み込む（CDN時代と同じ順序＝ユーティリティがカスタムCSSに勝つ。
+         先頭に置くと .hidden が .victory-overlay 等の display に負けてオーバーレイが出っぱなしになる） -->
+    <link rel="stylesheet" href="tailwind.css">
     <meta name="theme-color" content="#F59E0B">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.svg">

@@ -1,11 +1,11 @@
 // スポーツグループ分け — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'group-maker-cache-v1';
+const CACHE = 'group-maker-cache-v2';
 const ASSETS = [
   './',
   './index.html',
-  './tailwind.css',
+  './tailwind.css?v=2',
   './manifest.json',
   './icon.svg',
 ];

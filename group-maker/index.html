@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スポーツグループ分けアプリ | 小学生向けの安全な教育アプリ</title>
     <meta name="description" content="スポーツグループ分けアプリは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
-    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="tailwind.css?v=2">
     <style>
 
         body {
@@ -259,10 +259,20 @@
                     <h2 class="text-xl font-bold mb-4 text-blue-700 border-b-2 border-blue-300 pb-2">ステップ1: 名前入力</h2>
 
                     <div class="mb-4">
-                        <label for="bulk-data" class="block text-sm font-medium text-gray-700 mb-1">メンバーの名前</label>
-                        <textarea id="bulk-data" rows="6"
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="bulk-data" class="block text-sm font-medium text-gray-700">メンバーの名前</label>
+                            <span id="name-count" class="text-sm font-bold text-blue-600">0人</span>
+                        </div>
+                        <textarea id="bulk-data" rows="8"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="1行に1人ずつ名前を入力してください&#10;例:&#10;山田太郎&#10;佐藤花子&#10;鈴木一郎"></textarea>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <span class="text-xs text-gray-500">かんたん準備:</span>
+                            <button type="button" class="quick-fill text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full" data-count="30">番号だけ30人</button>
+                            <button type="button" class="quick-fill text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full" data-count="35">35人</button>
+                            <button type="button" class="quick-fill text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full" data-count="40">40人</button>
+                            <button type="button" id="clear-names" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-full">クリア</button>
+                        </div>
                     </div>
 
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
@@ -403,6 +413,17 @@
                 </div>
 
                 <div class="mt-8 text-center flex flex-wrap justify-center gap-4">
+                    <button id="reshuffle-groups"
+                        class="btn-sports bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md shadow-md inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        もう一度組み直す
+                    </button>
+
                     <button id="back-to-input"
                         class="btn-sports bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-md shadow-md inline-flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
@@ -457,6 +478,7 @@
             const results = document.getElementById('results');
             const groupsContainer = document.getElementById('groups-container');
             const backToInputBtn = document.getElementById('back-to-input');
+            const reshuffleBtn = document.getElementById('reshuffle-groups');
             const bulkDataTextarea = document.getElementById('bulk-data');
             const printGroupsBtn = document.getElementById('print-groups');
             const toggleSkillBtn = document.getElementById('toggle-skill-btn');
@@ -530,7 +552,8 @@
                         members.push({
                             number: number++,
                             name: name,
-                            skill: 'neutral'
+                            skill: 'neutral',
+                            gender: 'unset'
                         });
                     }
                     maxStudentNumber = members.length;
@@ -562,16 +585,41 @@
 
             // 出席番号自動生成（初期化用・30人）
             function generateDefaultNumbers() {
-                maxStudentNumber = 30;
+                generateNumberedMembers(30);
+            }
+
+            // 番号だけのメンバーを n 人ぶん用意する（名前は空）
+            function generateNumberedMembers(n) {
+                maxStudentNumber = n;
                 members = [];
-                for (let i = 1; i <= 30; i++) {
-                    members.push({
-                        number: i,
-                        name: '',
-                        skill: 'neutral'
-                    });
+                for (let i = 1; i <= n; i++) {
+                    members.push({ number: i, name: '', skill: 'neutral', gender: 'unset' });
                 }
             }
+
+            // --- 名前入力の「かんたん化」: 人数カウンター / 番号プリセット / クリア ---
+            const nameCountEl = document.getElementById('name-count');
+            function updateNameCount() {
+                const n = bulkDataTextarea.value.split('\n').filter(l => l.trim()).length;
+                nameCountEl.textContent = n + '人';
+            }
+            bulkDataTextarea.addEventListener('input', updateNameCount);
+
+            document.getElementById('clear-names').addEventListener('click', function () {
+                bulkDataTextarea.value = '';
+                updateNameCount();
+                bulkDataTextarea.focus();
+            });
+
+            // 「番号だけ○人」→ その人数の番号メンバーを用意してステップ2へ直行
+            document.querySelectorAll('.quick-fill').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const n = parseInt(this.getAttribute('data-count'));
+                    generateNumberedMembers(n);
+                    updateStepDisplay(2);
+                    updateMemberList();
+                });
+            });
 
             // メンバーリストの更新
             function updateMemberList() {
@@ -590,12 +638,20 @@
 
                     const displayName = member.name ? `${member.number}. ${member.name}` : `${member.number}`;
 
+                    const g = member.gender || 'unset';
+                    const genderStyle = g === 'male'
+                        ? 'bg-blue-100 text-blue-800 border-blue-300'
+                        : (g === 'female' ? 'bg-pink-100 text-pink-800 border-pink-300'
+                            : 'bg-gray-100 text-gray-500 border-gray-300');
+                    const genderText = g === 'male' ? '男子' : (g === 'female' ? '女子' : '未設定');
+
                     li.innerHTML = `
                         <div>
                             <span class="font-medium">${displayName}</span>
                         </div>
                         <div class="flex items-center">
-                            <div class="mr-4">
+                            <button type="button" class="gender-toggle mr-2 px-3 py-1 border rounded text-sm font-medium min-w-[3.5rem] ${genderStyle}" data-index="${index}" title="タップで 男子→女子→未設定 と切り替え">${genderText}</button>
+                            <div>
                                 <select class="skill-select px-2 py-1 border border-gray-300 rounded text-sm" data-index="${index}">
                                     <option value="very-good" ${member.skill === 'very-good' ? 'selected' : ''}>得意</option>
                                     <option value="good" ${member.skill === 'good' ? 'selected' : ''}>少し得意</option>
@@ -614,6 +670,23 @@
                     select.addEventListener('change', function () {
                         const index = parseInt(this.getAttribute('data-index'));
                         members[index].skill = this.value;
+                    });
+                });
+
+                // 男女トグル（タップで 男子→女子→未設定 と循環。スクロール位置を保つためその場で更新）
+                const genderCycle = { unset: 'male', male: 'female', female: 'unset' };
+                const genderStyles = {
+                    male:   { cls: 'bg-blue-100 text-blue-800 border-blue-300', txt: '男子' },
+                    female: { cls: 'bg-pink-100 text-pink-800 border-pink-300', txt: '女子' },
+                    unset:  { cls: 'bg-gray-100 text-gray-500 border-gray-300', txt: '未設定' },
+                };
+                document.querySelectorAll('.gender-toggle').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        const next = genderCycle[members[index].gender || 'unset'];
+                        members[index].gender = next;
+                        this.className = `gender-toggle mr-2 px-3 py-1 border rounded text-sm font-medium min-w-[3.5rem] ${genderStyles[next].cls}`;
+                        this.textContent = genderStyles[next].txt;
                     });
                 });
             }
@@ -643,55 +716,62 @@
                 showResults(groupsResult);
             });
 
-            // バランスの取れたグループ分け (5段階対応)
+            // スキルの点数（得意5・少し得意4・普通3・少し苦手2・苦手1）
+            const SKILL_SCORE = { 'very-good': 5, 'good': 4, 'neutral': 3, 'bad': 2, 'very-bad': 1 };
+            function skillScore(m) { return SKILL_SCORE[m.skill] != null ? SKILL_SCORE[m.skill] : 3; }
+
+            // グループの現在の集計（合計点・男女の人数）
+            function groupStats(group) {
+                let sum = 0, male = 0, female = 0;
+                for (const m of group) {
+                    sum += skillScore(m);
+                    if (m.gender === 'male') male++;
+                    else if (m.gender === 'female') female++;
+                }
+                return { sum, male, female, avg: group.length ? sum / group.length : 0 };
+            }
+
+            // バランスの取れたグループ分け
+            //   ①人数をできるだけ均等（差は最大1人） ②各チームの平均点を均等
+            //   ③男子どうし・女子どうしの人数を均等 になるように貪欲法で割り当てる。
+            //   毎回ランダム性を混ぜるので「もう一度組み直す」で違う組み合わせになる。
             function createBalancedGroups(membersList, count) {
-                // メンバーをスキルでソート
-                const veryGoodMembers = membersList.filter(m => m.skill === 'very-good');
-                const goodMembers = membersList.filter(m => m.skill === 'good');
-                const neutralMembers = membersList.filter(m => m.skill === 'neutral');
-                const badMembers = membersList.filter(m => m.skill === 'bad');
-                const veryBadMembers = membersList.filter(m => m.skill === 'very-bad');
-
-                // 各グループ内をシャッフル
-                shuffleArray(veryGoodMembers);
-                shuffleArray(goodMembers);
-                shuffleArray(neutralMembers);
-                shuffleArray(badMembers);
-                shuffleArray(veryBadMembers);
-
-                // グループ初期化
+                const GENDER_W = 2.5; // 男女比の重み（点数バランスと同程度に効かせる）
                 const groups = Array.from({ length: count }, () => []);
+                const targetMax = Math.ceil(membersList.length / count); // 1グループの上限人数
 
-                // 両極端から順に均等に分配し、グループのバランスを取る
-                distributeMembers(veryGoodMembers, groups);
-                distributeMembers(veryBadMembers, groups);
-                distributeMembers(goodMembers, groups);
-                distributeMembers(badMembers, groups);
-                distributeMembers(neutralMembers, groups);
+                // スキルの高い順に並べる（同点はシャッフルして毎回変化させる）
+                const ordered = shuffleArray(membersList.slice())
+                    .sort((a, b) => skillScore(b) - skillScore(a));
 
+                for (const m of ordered) {
+                    // まだ上限に達していないグループのうち、最も人数が少ないものだけを候補に（人数を均等に保つ）
+                    const minSize = Math.min(...groups.map(g => g.length));
+                    let best = null, bestCost = Infinity;
+                    const order = shuffleArray([...groups.keys()]); // 同コスト時のためランダム順で見る
+                    for (const gi of order) {
+                        const g = groups[gi];
+                        if (g.length !== minSize || g.length >= targetMax) continue;
+                        const st = groupStats(g);
+                        // コスト＝現在の合計点（低い所へ高スキルを入れて均等化）＋同性の人数×重み
+                        let cost = st.sum;
+                        if (m.gender === 'male') cost += GENDER_W * st.male;
+                        else if (m.gender === 'female') cost += GENDER_W * st.female;
+                        if (cost < bestCost) { bestCost = cost; best = gi; }
+                    }
+                    if (best === null) best = groups.indexOf(groups.reduce((a, b) => a.length <= b.length ? a : b));
+                    groups[best].push(m);
+                }
                 return groups;
             }
 
-            // メンバーを均等に分配
-            function distributeMembers(membersList, groups) {
-                for (let i = 0; i < membersList.length; i++) {
-                    // 最も人数が少ないグループを見つける
-                    let minGroupIndex = 0;
-                    for (let j = 1; j < groups.length; j++) {
-                        if (groups[j].length < groups[minGroupIndex].length) {
-                            minGroupIndex = j;
-                        }
-                    }
-                    groups[minGroupIndex].push(membersList[i]);
-                }
-            }
-
-            // 配列をシャッフル
+            // 配列をシャッフル（同じ配列を返す）
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [array[i], array[j]] = [array[j], array[i]];
                 }
+                return array;
             }
 
             // スキル表示のトグル切り替え
@@ -704,6 +784,9 @@
                 });
 
                 toggleSkillText.textContent = isSkillVisible ? 'スキルを隠す' : 'スキルを表示';
+
+                // サマリーの平均点表示も連動して出し入れ
+                if (typeof updateGroupSummaries === 'function') updateGroupSummaries();
             });
 
             // 結果表示
@@ -735,6 +818,11 @@
                         <span class="text-2xl flex-shrink-0">${sportsIcons[iconIndex]}</span>
                     `;
 
+                    // グループのバランス表示（人数・男女比・平均点）
+                    const summary = document.createElement('div');
+                    summary.className = 'group-summary text-xs text-gray-500 mb-2 flex-shrink-0';
+                    summary.dataset.groupIndex = index;
+
                     const membersList = document.createElement('ul');
                     membersList.className = 'member-drop-area space-y-2 flex-grow';
                     membersList.dataset.groupIndex = index;
@@ -748,6 +836,7 @@
                     });
 
                     groupDiv.appendChild(groupHeader);
+                    groupDiv.appendChild(summary);
                     groupDiv.appendChild(membersList);
                     groupsContainer.appendChild(groupDiv);
                 });
@@ -755,8 +844,27 @@
                 // ドラッグ＆ドロップの設定
                 setupDragAndDrop();
 
+                // 各グループのバランス表示を更新
+                updateGroupSummaries();
+
                 // ページの上部にスクロール
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // 各グループの人数・男女比・平均点を見出しの下に表示（ドラッグ移動後も呼ぶ）
+            function updateGroupSummaries() {
+                document.querySelectorAll('.group-summary').forEach(el => {
+                    const gi = parseInt(el.dataset.groupIndex);
+                    const group = groupsResult[gi] || [];
+                    const st = groupStats(group);
+                    const genderParts = [];
+                    if (st.male) genderParts.push(`<span class="text-blue-700 font-semibold">男${st.male}</span>`);
+                    if (st.female) genderParts.push(`<span class="text-pink-700 font-semibold">女${st.female}</span>`);
+                    const genderStr = genderParts.length ? '・' + genderParts.join(' ') : '';
+                    // 平均点はスキル表示中のみ
+                    const avgStr = isSkillVisible ? `・平均 <span class="font-semibold text-gray-700">${st.avg.toFixed(1)}</span>点` : '';
+                    el.innerHTML = `${group.length}人${genderStr}${avgStr}`;
+                });
             }
 
             // メンバーアイテムの作成
@@ -805,12 +913,21 @@
 
                 const displayStyle = isSkillVisible ? 'inline-block' : 'none';
 
+                // 男女バッジ（未設定のときは出さない）
+                let genderBadge = '';
+                if (member.gender === 'male') {
+                    genderBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 flex-shrink-0 mr-1">男子</span>`;
+                } else if (member.gender === 'female') {
+                    genderBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 flex-shrink-0 mr-1">女子</span>`;
+                }
+
                 li.innerHTML = `
                     <div class="flex items-center w-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                         </svg>
                         <span class="flex-grow truncate mr-2">${displayName}</span>
+                        ${genderBadge}
                         <span class="skill-label text-xs font-semibold px-2 py-0.5 rounded-full ${skillBgColor} ${skillTextColor} flex-shrink-0" style="display: ${displayStyle};">${skillText}</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="drag-icon h-4 w-4 ml-2 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -880,6 +997,9 @@
                                     // UIを更新
                                     this.appendChild(draggedItem);
                                     draggedItem.dataset.groupIndex = toGroupIndex;
+
+                                    // バランス表示を更新
+                                    updateGroupSummaries();
                                 }
                             }
                         }
@@ -898,6 +1018,14 @@
                 setupContainer.classList.remove('hidden');
                 updateStepDisplay(1);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // もう一度組み直す（同じメンバー・同じグループ数で別の組み合わせを作る）
+            reshuffleBtn.addEventListener('click', function () {
+                const count = groupsResult.length;
+                if (!count) return;
+                groupsResult = createBalancedGroups(members, count);
+                showResults(groupsResult);
             });
         });
     </script>

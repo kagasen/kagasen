@@ -2,11 +2,13 @@
 
 ## 脱CDN（2026-07-06・完全オフライン化）
 - `tailwind.css` … Tailwind CDN の置き換え。**使用クラスだけの静的ビルド**。
-  新しい Tailwind クラスを書いたら再生成:
+- **重要（2026-07-07 修正）**: このアプリはReact製で**UIのTailwindクラスはすべてビルドされたJS（`app.bundle.js`）の中にある**。当初の脱CDNビルドが `--content "…/**/*.html"` でHTMLしか走査せず、JS内のクラスが全部purgeされて**レイアウト崩壊（左に素のまま縦積み）していた**。生成時は必ず `app.bundle.js` を走査対象に含めること:
   ```
   printf '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n' > /tmp/tw.css
-  npx tailwindcss@3.4.17 -i /tmp/tw.css -o sikou-tool-app/tailwind.css --content "sikou-tool-app/**/*.html" --minify
+  npx tailwindcss@3.4.17 -i /tmp/tw.css -o sikou-tool-app/tailwind.css \
+    --content "sikou-tool-app/index.html,sikou-tool-app/app.bundle.js,sikou-tool-app/topicsData.js" --minify
   ```
+  Reactソースを変えたら **app.bundle.js を再ビルド → その後 tailwind.css を再生成**（順序重要。tailwindはバンドル内のクラス文字列リテラルを走査する）。config無し=デフォルト（元CDNもカスタムconfig無し）。CSSサイズの目安: 約24KB（4.8KBに縮んでいたら走査漏れ＝崩壊のサイン）。
 - フォント … Google Fonts CDN をやめて**システムフォント**へ置換（任意の入力文字を表示するアプリのためサブセット同梱は不可）。
 
 ## PWA化（2026-07-07・全アプリ一括）

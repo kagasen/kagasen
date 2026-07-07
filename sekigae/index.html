@@ -281,7 +281,7 @@
                     </div>
                     <div class="flex items-center">
                         <div class="w-4 h-4 bg-[#ecfdf5] border-2 border-[#10b981] rounded"></div>
-                        <span class="ml-1 text-sm font-medium text-gray-700">目が悪い人の固定席</span>
+                        <span class="ml-1 text-sm font-medium text-gray-700">視力の席（目が悪い人用）</span>
                     </div>
                     <div class="flex items-center">
                         <div class="w-4 h-4 bg-[#e5e7eb] border-2 border-[#9ca3af] rounded"></div>
@@ -335,7 +335,7 @@
                             <label class="inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="student-needs-front"
                                     class="form-checkbox h-5 w-5 text-emerald-500 rounded border-gray-300 focus:ring-emerald-500">
-                                <span class="ml-2 text-sm font-medium text-gray-700">目が悪い（固定席）</span>
+                                <span class="ml-2 text-sm font-medium text-gray-700">視力（目が悪い）</span>
                             </label>
                             <button id="add-student"
                                 class="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">追加</button>
@@ -536,7 +536,15 @@
 
                 // クリック処理
                 el.addEventListener('click', () => {
-                    if (seatData.type === 'none') return;
+                    // × (使わない席) をクリック → 生徒を選択していなければ種類を次へ進めて「何もなし」に戻す
+                    // （×→empty→男子→女子→視力→×… とぐるぐる循環させる。以前はここで return して固まっていた）
+                    if (seatData.type === 'none') {
+                        if (selectedSeat) return; // 生徒の入れ替え先にはできない
+                        const currentIndex = seatTypes.indexOf(seatData.type);
+                        seatData.type = seatTypes[(currentIndex + 1) % seatTypes.length];
+                        updateSeatUI(seatData);
+                        return;
+                    }
 
                     // 生徒がいる席のクリック → 選択・入れ替えモード
                     if (seatData.studentId) {
@@ -680,7 +688,7 @@
                     }
                 } else if (seatData.type !== 'empty') {
                     // 属性付きの空席
-                    let lbl = seatData.type === 'boy' ? '男子' : (seatData.type === 'girl' ? '女子' : '固定席');
+                    let lbl = seatData.type === 'boy' ? '男子' : (seatData.type === 'girl' ? '女子' : '視力');
                     let color = seatData.type === 'boy' ? 'text-blue-300' : (seatData.type === 'girl' ? 'text-pink-300' : 'text-emerald-300');
                     innerHTML += `<span class="text-xs ${color} font-medium">${lbl}</span>`;
                 }

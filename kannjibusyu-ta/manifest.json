@@ -3,7 +3,7 @@
   "short_name": "部首シューター",
   "description": "部首とつくりを組み合わせて漢字を作ろう！シューティングゲームで楽しく漢字を覚えられるよ。",
   "lang": "ja",
-  "start_url": "./kanjibusyu-ta.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

@@ -12,6 +12,7 @@
      4. ?v= 付きで読まれる .js が変更されたのに ?v= が据え置きのケース
      5. アプリ内ファイルが変更されたのに sw.js の CACHE が据え置きのケース
      6. 出典・ライセンスクレジットの存在（KanjiVG／栃木県チャレンジカード集）
+     7. 全HTMLのインラインJSの構文チェック（構文エラー=アプリ全滅の検出）
 
    エラー（❌ 公開を止めるべき）と 警告（⚠️ 既知の負債・要らない心配かも）を区別する。
    Node標準機能のみ・外部パッケージなし（このリポジトリのオフライン主義に合わせる）。
@@ -32,7 +33,7 @@ const KNOWN_EXTERNAL = new Set([
   // 残る外部参照は Firebase（オンライン機能＝サービス依存で同梱不可）だけ。
   '.',              // ポータル: 訪問カウンター（オフライン時はガードでスキップ）
   'typing',         // 訪問カウンター（同上）
-  'mainitimondai',  // 2〜6年ページの成績記録（firebase v11 ESM）
+  // mainitimondai は 2026-07-07 に Firebase 撤去（未使用の死にコードだった）。再発したら❌検出される。
 ]);
 
 /* --- クレジット表記（消えていたらエラー）。アプリを増やしたらここに足す --- */
@@ -182,6 +183,77 @@ for (const c of CREDITS) {
   const html = read(p);
   if (!c.patterns.every(re => re.test(html)))
     err(c.app, `${c.label} が見つからない（ライセンス上、絶対に消してはいけない表記）`);
+}
+
+/* ---------- 7. インラインJSの構文チェック ---------- */
+/* 前例: 2026-07-06の脱CDNフォント置換で classroom-board / kannjibusyu-ta の
+   インラインJSがクォート崩れ（'px 'Hiragino…）の構文エラーになり、
+   スクリプト全体が死んで「何も押せない」事故が起きた（発覚は翌日）。
+   構文エラーは1個でもスクリプト全体を殺すので、サブページ含む全HTMLを検査する。 */
+function* walkHtml(dir) {
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (ent.isDirectory()) {
+      if (IGNORE_DIRS.has(ent.name) || ent.name === 'vendor' || ent.name.startsWith('.')) continue;
+      yield* walkHtml(path.join(dir, ent.name));
+    } else if (ent.name.endsWith('.html')) {
+      yield path.join(dir, ent.name);
+    }
+  }
+}
+for (const file of walkHtml(ROOT)) {
+  const rel = path.relative(ROOT, file);
+  const app = rel.includes(path.sep) ? rel.split(path.sep)[0] : '.';
+  const src = fs.readFileSync(file, 'utf8');
+  for (const m of src.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const attrs = m[1];
+    if (/\bsrc\s*=/i.test(attrs)) continue;                       // 外部ファイルは対象外
+    const type = (attrs.match(/type\s*=\s*["']([^"']+)/i) || [])[1] || '';
+    if (type && !/module|javascript/i.test(type)) continue;       // text/babel(JSX)・JSON等はスキップ
+    const code = m[2];
+    if (!code.trim()) continue;
+    if (/module/i.test(type)) {
+      // ESモジュールは import/export があるため node --check で検査
+      const tmp = path.join(ROOT, `.rc-tmp-${Math.random().toString(36).slice(2)}.mjs`);
+      fs.writeFileSync(tmp, code);
+      try { execFileSync(process.execPath, ['--check', tmp], { stdio: ['pipe', 'pipe', 'pipe'] }); }
+      catch (e) {
+        const firstLine = String(e.stderr).split('\n').find(l => l.includes('Error')) || '構文エラー';
+        err(app, `${rel} のインラインJS(module)に構文エラー: ${firstLine.trim()}（スクリプト全体が動かなくなる）`);
+      }
+      finally { fs.unlinkSync(tmp); }
+    } else {
+      // new Function はパース（構文検査）だけに使い、実行はしない（返り値を呼ばない）
+      try { new Function(code); }
+      catch (e) { err(app, `${rel} のインラインJSに構文エラー: ${e.message}（スクリプト全体が死んで「何も押せない」状態になる）`); }
+    }
+  }
+}
+
+/* ---------- 8. 外部JS（HTMLから読み込まれる .js）の構文チェック ---------- */
+/* インライン(項目7)だけでなく <script src="…local.js"> の実体も検査する。
+   実際に読み込まれるファイルだけを対象にするので、JSXソース(typing/app.js は
+   app.compiled.js だけが読まれる)やビルドスクリプトは自然に除外される。 */
+const localScripts = new Map();  // 絶対パス -> 参照元(rel)
+for (const file of walkHtml(ROOT)) {
+  const dir = path.dirname(file);
+  const src = fs.readFileSync(file, 'utf8');
+  for (const m of src.matchAll(/<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)) {
+    const ref = m[1];
+    if (/^(https?:)?\/\//i.test(ref)) continue;            // 外部URLは項目2で扱う
+    const abs = path.resolve(dir, ref.split('?')[0]);      // ?v= を除去
+    if (abs.includes('/vendor/') || abs.includes('/node_modules/')) continue;
+    if (!abs.endsWith('.js') || !fs.existsSync(abs)) continue;
+    if (!localScripts.has(abs)) localScripts.set(abs, path.relative(ROOT, file));
+  }
+}
+for (const [abs, referrer] of localScripts) {
+  const rel = path.relative(ROOT, abs);
+  const app = rel.includes(path.sep) ? rel.split(path.sep)[0] : '.';
+  try { execFileSync(process.execPath, ['--check', abs], { stdio: ['pipe', 'pipe', 'pipe'] }); }
+  catch (e) {
+    const firstLine = String(e.stderr).split('\n').find(l => l.includes('Error')) || '構文エラー';
+    err(app, `${rel}（${referrer} から読込）に構文エラー: ${firstLine.trim()}（アプリ全体が動かなくなる）`);
+  }
 }
 
 /* ---------- 結果表示 ---------- */

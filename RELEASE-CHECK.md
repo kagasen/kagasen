@@ -31,6 +31,10 @@ node release-check.mjs
    `CACHE` バージョンが据え置きなら❌（PWAに反映されない）。
 6. **クレジット表記** — kanji-bouken の KanjiVG（CC BY-SA 3.0＝表記必須）、
    ugoki-no-kiroku の栃木県チャレンジカード集の出典。消えていたら❌。
+7. **インラインJSの構文チェック** — サブページ含む全HTMLの `<script>`（src なし・
+   text/babel 以外）を構文検査。エラーがあれば❌。構文エラーは1個でスクリプト全体を
+   殺して「何も押せない」アプリになるため（前例: 2026-07-06 の脱CDNフォント置換で
+   classroom-board / kannjibusyu-ta がクォート崩れで全滅→翌日発覚）。
 
 4・5 の「変更」は **origin/main との差分**（＝まだ公開されていない変更。未コミット分も含む）。
 origin/main が無い環境では HEAD と比較する。

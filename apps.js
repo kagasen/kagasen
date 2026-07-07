@@ -261,7 +261,7 @@ const appsData = [
         date: "2026/03/17",
         colorClass: "subject-red",
         image: "images/kannjibusyu-ta.jpg",
-        link: "kannjibusyu-ta/kanjibusyu-ta.html"
+        link: "kannjibusyu-ta/index.html"
     },
     {
         id: "kotobasagashi",

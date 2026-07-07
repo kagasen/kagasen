@@ -1,10 +1,10 @@
 // 漢字部首シューティング — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'kannjibusyu-ta-cache-v1';
+const CACHE = 'kannjibusyu-ta-cache-v3';
 const ASSETS = [
   './',
-  './kanjibusyu-ta.html',
+  './index.html',
   './tailwind.css',
   './manifest.json',
   './icon.svg',
@@ -44,7 +44,7 @@ self.addEventListener('fetch', (e) => {
             const idx = await caches.match(u.pathname + 'index.html');
             if (idx) return idx;
           }
-          return caches.match('./kanjibusyu-ta.html');
+          return caches.match('./index.html');
         }
         return Response.error();
       })

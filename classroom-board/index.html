@@ -2471,7 +2471,7 @@
                     }
                     ctx.stroke();
                 } else if (s.type === 'text') {
-                    ctx.globalCompositeOperation = 'source-over'; ctx.font = s.fontSize + 'px 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo';
+                    ctx.globalCompositeOperation = 'source-over'; ctx.font = s.fontSize + "px 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo";
                     ctx.fillStyle = s.color;
                     ctx.fillText(s.text, s.x, s.y)
                 }
@@ -2487,7 +2487,7 @@
             /* アイテムヒットテスト */
             function getItemBounds(s) {
                 if (s.type === 'text') {
-                    ctx.font = s.fontSize + 'px 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo'; const w = ctx.measureText(s.text).width;
+                    ctx.font = s.fontSize + "px 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo"; const w = ctx.measureText(s.text).width;
                     return { bx: s.x - 4, by: s.y - s.fontSize, bw: w + 8, bh: s.fontSize + 8 };
                 } else if (['rect', 'ellipse', 'triangle', 'line'].includes(s.type)) {
                     const minX = Math.min(s.x, s.x + s.w);
@@ -2547,7 +2547,7 @@
                     for (const p of s.points) { if ((p.x - x) ** 2 + (p.y - y) ** 2 <= r * r) { hit = true; break; } }
                 }
                 else if (s.type === 'text') {
-                    ctx.font = s.fontSize + 'px 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo'; const w = ctx.measureText(s.text).width;
+                    ctx.font = s.fontSize + "px 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo"; const w = ctx.measureText(s.text).width;
                     hit = x >= s.x - r && x <= s.x + w + r && y >= s.y - s.fontSize - r && y <= s.y + r;
                 }
                 else if (['rect', 'ellipse', 'triangle', 'line'].includes(s.type)) {
@@ -3037,7 +3037,7 @@
                 pollPie.innerHTML = '';
                 if (total === 0 && pollData.opts.length > 0) {
                     /* 投票なし — 等分の灰色円 */
-                    pollPie.innerHTML = '<circle cx="100" cy="100" r="80" fill="#e5e7eb"/><text x="100" y="106" text-anchor="middle" font-size="14" fill="#94a3b8" font-family='Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo>投票待ち</text>';
+                    pollPie.innerHTML = '<circle cx="100" cy="100" r="80" fill="#e5e7eb"/><text x="100" y="106" text-anchor="middle" font-size="14" fill="#94a3b8" font-family="Hiragino Kaku Gothic ProN, Hiragino Sans, Meiryo, sans-serif">投票待ち</text>';
                 } else if (total > 0) {
                     let angle = -90;
                     pollData.opts.forEach((o, i) => {
@@ -3059,7 +3059,7 @@
                         angle = endAngle;
                     });
                 } else {
-                    pollPie.innerHTML = '<circle cx="100" cy="100" r="80" fill="#f1f5f9"/><text x="100" y="106" text-anchor="middle" font-size="13" fill="#94a3b8" font-family='Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo>選択肢を追加</text>';
+                    pollPie.innerHTML = '<circle cx="100" cy="100" r="80" fill="#f1f5f9"/><text x="100" y="106" text-anchor="middle" font-size="13" fill="#94a3b8" font-family="Hiragino Kaku Gothic ProN, Hiragino Sans, Meiryo, sans-serif">選択肢を追加</text>';
                 }
                 /* 凡例 */
                 pollLegend.innerHTML = '';

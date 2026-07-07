@@ -102,6 +102,9 @@
             /* orange-500 */
         }
     </style>
+    <meta name="theme-color" content="#3B82F6">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body class="p-4 md:p-8 flex items-center justify-center">
@@ -290,6 +293,11 @@
             }).catch(function () {});
         })();
     </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 
 </html>

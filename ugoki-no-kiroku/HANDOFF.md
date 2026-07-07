@@ -56,3 +56,6 @@
   suiei:{kyu:[], log:[{date,stroke,m}]}, marathon:{log:[{id,date,m,sec}]},
   badges:[], streak:{last,count,best}, ever_◯◯:[] }
 ```
+
+## sw.js の activate 修正（2026-07-07）
+- **バグ修正**: activate の古キャッシュ掃除が `k !== CACHE`（自分以外全部削除）だったため、同一オリジン（GitHub Pages）で他アプリのオフラインキャッシュを消していた。自アプリのプレフィックスだけ削除する条件（`k.startsWith('(自分のキャッシュ名)-') && k !== CACHE`）に修正。CACHE名・ASSETSは不変（キャッシュ繰り上げ不要、sw.js自体の更新はバイト差分で自動配布される）。

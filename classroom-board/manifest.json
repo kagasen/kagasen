@@ -1,0 +1,20 @@
+{
+  "name": "教室サポートボード",
+  "short_name": "サポートボード",
+  "description": "タイマーや時間割、お絵かきツールなど、授業をサポートする機能が一つになった電子黒板アプリです。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#E0F2FE",
+  "theme_color": "#38BDF8",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

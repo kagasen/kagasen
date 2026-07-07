@@ -1,0 +1,20 @@
+{
+  "name": "体育リーグ戦メーカー",
+  "short_name": "リーグ戦",
+  "description": "総当たりのリーグ戦スケジュールを自動作成！コート数も指定できて順位表も自動計算。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F0FDF4",
+  "theme_color": "#16A34A",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

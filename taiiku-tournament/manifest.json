@@ -1,0 +1,20 @@
+{
+  "name": "体育トーナメントメーカー",
+  "short_name": "トーナメント",
+  "description": "4〜41チームのトーナメント表を自動作成！試合タイマーつきで本番も万全。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFBEB",
+  "theme_color": "#F59E0B",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

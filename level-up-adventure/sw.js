@@ -24,7 +24,8 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      // Cache Storageは全アプリ共有(同一オリジン)。自分の旧キャッシュだけ消す。
+      Promise.all(keys.filter((k) => k.startsWith('lua-cache-') && k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });

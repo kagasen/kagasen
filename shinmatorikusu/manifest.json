@@ -1,0 +1,20 @@
+{
+  "name": "心マトリクス",
+  "short_name": "心マトリクス",
+  "description": "今の心の状態をマトリクスで可視化して言葉にしよう。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFF1F2",
+  "theme_color": "#FB7185",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

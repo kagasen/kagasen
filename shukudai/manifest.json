@@ -1,0 +1,20 @@
+{
+  "name": "宿題提出ポスト",
+  "short_name": "宿題ポスト",
+  "description": "先生の仕事を減らす!? QRコードで提出状況が一瞬でわかるよ。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FEF2F2",
+  "theme_color": "#EF4444",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

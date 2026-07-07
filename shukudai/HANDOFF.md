@@ -26,3 +26,9 @@ CDN読み込みをすべて同梱に置き換えた（release-check の既知リ
 
 ## 残
 - PWA化（manifest.json / sw.js / icon.svg）は未対応。
+
+## PWA化（2026-07-07・全アプリ一括）
+- `manifest.json` / `sw.js` / `icon.svg` を追加。エントリHTMLに theme-color / manifest / apple-touch-icon / SW登録（http(s)のみ・file://では登録しない）を追記。
+- SWキャッシュ名は「(アプリID)-cache-v1」。ローカルアセット全部をプリキャッシュ（ネットワーク優先・失敗時キャッシュ）。**アセットを更新したら sw.js の CACHE を繰り上げ、ASSETS の顔ぶれも見直す**こと。
+- **注意: Cache Storage は同一オリジン（GitHub Pages）で全アプリ共有**。activate の古キャッシュ掃除は自アプリのプレフィックス（`(アプリID)-cache-`）だけを対象にしてある。`k !== CACHE` だけの条件に戻すと他アプリのオフラインキャッシュを消してしまうので戻さない。
+- **罠: index.html は印刷（QR一括印刷）ウィンドウ用HTMLをテンプレート文字列で組み立てており、`</head>` と `</body>` がファイル内に2回ある**。機械的に「最初の `</body>` の前に挿入」するとテンプレート内に混入し、テンプレート内の `</script>` がメインスクリプトを分断して**アプリ全体が壊れる**（2026-07-07のPWA一括適用で実際に発生→修正済み）。挿入系の編集は必ずファイル末尾の本物のタグ位置で行うこと（taiikuti-muwake も同じ構造）。

@@ -1,0 +1,20 @@
+{
+  "name": "しりとり魔神",
+  "short_name": "しりとり魔神",
+  "description": "最強しりとり魔神と何回ラリーできるかな？。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F3FF",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

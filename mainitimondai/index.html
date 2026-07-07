@@ -344,6 +344,9 @@
             transform-origin: center;
         }
     </style>
+    <meta name="theme-color" content="#EAB308">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body>
@@ -449,6 +452,11 @@
             ripple.addEventListener('animationend', () => ripple.remove());
         }
     </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 
 </html>

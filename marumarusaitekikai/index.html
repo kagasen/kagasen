@@ -57,6 +57,9 @@
             background-size: 1rem 1rem;
         }
     </style>
+    <meta name="theme-color" content="#A78BFA">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body
@@ -200,6 +203,11 @@
     <script>
         lucide.createIcons();
     </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 
 </html>

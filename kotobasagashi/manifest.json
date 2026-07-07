@@ -1,0 +1,20 @@
+{
+  "name": "言葉さがし",
+  "short_name": "言葉さがし",
+  "description": "10×10の文字の中にかくれた言葉をドラッグで見つけよう！たて・よこ・ななめ・逆さ読みもOK！1分間で何語見つけられるかな？。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F0FDFA",
+  "theme_color": "#14B8A6",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

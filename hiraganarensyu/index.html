@@ -181,6 +181,9 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,
 .tprompt{font-size:clamp(16px,4vw,26px);font-weight:700;color:#333}
 .tprompt em{color:#E8552E;font-style:normal;font-size:1.4em}
 </style>
+    <meta name="theme-color" content="#F472B6">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 <body>
 
@@ -988,6 +991,11 @@ window.addEventListener('load',()=>{
   wireStylusUiClicks();
   suppressIosZoomGestures();
 });
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
 </script>
 </body>
 </html>

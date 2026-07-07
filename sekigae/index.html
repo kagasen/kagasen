@@ -200,6 +200,9 @@
             .teacher-desk { margin-bottom: 6mm !important; padding: 0.4rem 2rem !important; }
         }
     </style>
+    <meta name="theme-color" content="#2DD4BF">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -1018,6 +1021,11 @@
             });
         });
     </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 
 </html>

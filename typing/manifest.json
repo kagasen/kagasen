@@ -1,0 +1,20 @@
+{
+  "name": "キッズタイピング",
+  "short_name": "タイピング",
+  "description": "学年を選んでローマ字タイピングを練習しよう！短文タイピングや70のとっくんもあるよ。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EFF6FF",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

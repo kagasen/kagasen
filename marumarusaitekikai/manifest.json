@@ -1,0 +1,20 @@
+{
+  "name": "〇〇な最適解",
+  "short_name": "最適解",
+  "description": "みんなの答えを予想してお題に一番合う「最適解」を見つけるゲーム！。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F3FF",
+  "theme_color": "#A78BFA",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -257,3 +257,6 @@ MVPのカテゴリ（合意済み）：
 Tailwind CDN → `tailwind.css`（静的ビルド・font-pop/maru config付き。クラス追加時は再生成）、
 Google Fonts → `fonts.css`+`fonts/`（リポジトリ全体3232字のサブセット・Medium(500)含む5書体）。
 sw.js に tailwind.css/fonts を追加し CACHE v2→v3。習慣名に めずらしい漢字を使うと その字だけ システムフォントで表示される（仕様）。
+
+## sw.js の activate 修正（2026-07-07）
+- **バグ修正**: activate の古キャッシュ掃除が `k !== CACHE`（自分以外全部削除）だったため、同一オリジン（GitHub Pages）で他アプリのオフラインキャッシュを消していた。自アプリのプレフィックスだけ削除する条件（`k.startsWith('(自分のキャッシュ名)-') && k !== CACHE`）に修正。CACHE名・ASSETSは不変（キャッシュ繰り上げ不要、sw.js自体の更新はバイト差分で自動配布される）。

@@ -33,6 +33,9 @@
             border-radius: 8px;
         }
     </style>
+    <meta name="theme-color" content="#6366F1">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 <body>
 
@@ -1450,6 +1453,11 @@
     initStars();
     requestAnimationFrame(gameLoop);
 
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
 </script>
 </body>
 </html>

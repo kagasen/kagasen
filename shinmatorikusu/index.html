@@ -122,6 +122,9 @@
     }
     .picker-sheet { animation: sheetUp 0.22s ease-out forwards; }
   </style>
+    <meta name="theme-color" content="#FB7185">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body class="min-h-screen" style="background:linear-gradient(135deg,#f0f4ff 0%,#f5f0ff 50%,#f0fff4 100%);">
@@ -1085,5 +1088,10 @@
     // ==================== Boot ====================
     render();
   </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 </html>

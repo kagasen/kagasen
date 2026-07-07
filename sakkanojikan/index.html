@@ -302,6 +302,9 @@
             /* ページの外側に15mmの余白を設け、ヘッダやフッタの場所を確保する */
         }
     </style>
+    <meta name="theme-color" content="#D97706">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body class="antialiased">
@@ -1682,6 +1685,11 @@
         });
 
     </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 
 </html>

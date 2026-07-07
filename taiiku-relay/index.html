@@ -193,6 +193,9 @@
             }
         }
     </style>
+    <meta name="theme-color" content="#65A30D">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
 <body class="text-slate-800 antialiased min-h-screen pb-20">
@@ -844,6 +847,11 @@
             }
         }
     </script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
 </body>
 
 </html>

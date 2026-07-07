@@ -1,0 +1,20 @@
+{
+  "name": "思考ツール",
+  "short_name": "思考ツール",
+  "description": "考えを整理しよう！ふせんや図解・テンプレートを自由に配置できるボードアプリです。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ECFEFF",
+  "theme_color": "#06B6D4",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

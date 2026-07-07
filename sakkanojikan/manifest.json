@@ -1,0 +1,20 @@
+{
+  "name": "作家の時間",
+  "short_name": "作家の時間",
+  "description": "しつもんに答えるだけで、キミだけの本ができる！お話づくりサポートアプリです。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFBEB",
+  "theme_color": "#D97706",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

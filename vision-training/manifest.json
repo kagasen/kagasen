@@ -1,0 +1,20 @@
+{
+  "name": "ビジョントレーニング",
+  "short_name": "ビジョントレ",
+  "description": "目を動かす練習をして、見つける力や集中力を高めよう！色々なトレーニングを選べるよ。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F0F9FF",
+  "theme_color": "#0EA5E9",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 /* =====================================================================
-   backup-kit.js v1 — きろくの「バックアップ＆ひきつぎ」共通部品
-   うごきのきろく / 自分レベルアップアドベンチャー / 漢字の冒険 で共通。
-   修正するときは3アプリすべてのフォルダに同じファイルを配り直し、
+   backup-kit.js v2 — きろくの「バックアップ＆ひきつぎ」共通部品
+   同梱している全アプリで共通（どのフォルダのも同一ファイル）。
+   修正するときは全アプリのフォルダに同じファイルを配り直し、
    各 index.html の ?v= と 各 sw.js の CACHE バージョンを繰り上げること。
 
    使い方（各アプリの index.html 側で1回だけ呼ぶ）:
@@ -14,6 +14,10 @@
          return [{label:'レベル', value:'3'}, ...];
        },
        onImported(){ location.reload(); }, // 反映後の処理（省略時 reload）
+
+       // ▼ v2: localStorage キーが複数あるアプリ用（両方セットで指定。storageKey は不要になる）
+       collect(){ return {...}; },         // いまの記録を1つのオブジェクトにまとめて返す（無ければ null）
+       restore(data){ ... },               // data を localStorage に書き戻す（置換前の _mae 退避も自分で行う）
      });
    開く: BackupKit.open()
 
@@ -36,6 +40,7 @@ function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'
 /* ---------- データの読み書き ---------- */
 function currentRaw(){ return localStorage.getItem(cfg.storageKey); }
 function currentData(){
+  if(cfg.collect){ try{ return cfg.collect(); }catch(e){ return null; } }
   try{ const raw = currentRaw(); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
 }
 function makeEnvelope(){
@@ -62,6 +67,7 @@ function parseBackup(text){
   return {err:'broken'};
 }
 function applyImport(data){
+  if(cfg.restore){ cfg.restore(data); return; }  // v2: 複数キーのアプリは restore 側で退避も行う
   const raw = currentRaw();
   if(raw !== null) localStorage.setItem(cfg.storageKey + '_mae', raw);  // 1世代だけ退避
   localStorage.setItem(cfg.storageKey, JSON.stringify(data));

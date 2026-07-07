@@ -247,6 +247,9 @@
     <div class="container mx-auto max-w-5xl bg-white shadow-xl rounded-lg p-4 sm:p-6">
         <header class="mb-6">
             <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-700">宿題提出管理アプリ</h1>
+            <p class="text-center mt-2">
+                <button onclick="BackupKit.open()" class="text-sm text-indigo-400 hover:text-indigo-600 font-medium underline">💾 記録のバックアップ・ひきつぎ</button>
+            </p>
         </header>
 
         <div class="mb-6 border-b border-gray-300">
@@ -1147,6 +1150,25 @@
 
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
+<script src="backup-kit.js?v=2"></script>
+<script>
+/* 記録の「バックアップ＆ひきつぎ」 */
+BackupKit.init({
+  appId: 'shukudai',
+  appName: '宿題提出ポスト',
+  storageKey: 'homeworkSubmissionData',
+  looksLike(d){ return !!d && typeof d === 'object' && !Array.isArray(d); },
+  summarize(d){
+    const days = Object.keys(d);
+    let marks = 0; days.forEach(day => { marks += Object.keys(d[day] || {}).length; });
+    return [
+      { label:'記録のある日', value: days.length + '日' },
+      { label:'チェックの数', value: marks + 'こ' },
+      { label:'最終記録日', value: days.sort().slice(-1)[0] || '—' },
+    ];
+  },
+});
+</script>
 <script>
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });

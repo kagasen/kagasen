@@ -272,6 +272,11 @@
             💾 記録はこのブラウザにずっと保存されます。<br>
             同じ端末・同じブラウザを使えばいつでも見返せます。
           </div>
+          <button id="backupBtn"
+            class="text-slate-400 hover:text-slate-600 text-xs font-bold px-3 py-1.5
+                   rounded-xl hover:bg-white/70 transition-all">
+            💾 記録をバックアップ・ひきつぎ
+          </button>
           <a href="../index.html" class="text-slate-300 hover:text-slate-500 text-xs font-bold transition-colors">← 一覧へ</a>
         </div>
       `;
@@ -882,6 +887,7 @@
       /* Home */
       on('startBtn',    () => { state.screen = 'session'; state.step = 1; render(); });
       on('recordsBtn',  () => { state.screen = 'records'; render(); });
+      on('backupBtn',   () => BackupKit.open());
 
       /* Session header */
       on('prevStepBtn', () => {
@@ -1088,6 +1094,23 @@
     // ==================== Boot ====================
     render();
   </script>
+<script src="backup-kit.js?v=2"></script>
+<script>
+/* 記録の「バックアップ＆ひきつぎ」 */
+BackupKit.init({
+  appId: 'shinmatorikusu',
+  appName: '心マトリクス',
+  storageKey: 'shinmatorikusu_v2',
+  looksLike(d){ return Array.isArray(d); },
+  summarize(d){
+    const last = d.length ? String(d[d.length - 1].savedAt || '').slice(0, 10) : '—';
+    return [
+      { label:'記録の数', value: d.length + 'こ' },
+      { label:'最終記録日', value: last },
+    ];
+  },
+});
+</script>
 <script>
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });

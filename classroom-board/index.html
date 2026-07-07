@@ -1964,6 +1964,7 @@
         <button class="tb-btn active" data-tool="pen" data-tip="ペン">✏️</button>
         <button class="tb-btn" data-tool="text" data-tip="テキスト">T</button>
         <button class="tb-btn" data-tool="eraser" data-tip="消しゴム">🧹</button>
+        <button class="tb-btn" id="bk-open" data-tip="バックアップ">💾</button>
         <div id="confirm-bar" class="confirm-bar">
             <span>本当に全て消去しますか？</span>
             <button id="confirm-yes" class="tb-btn"
@@ -3468,6 +3469,36 @@
             loadData()
         });
     </script>
+<script src="backup-kit.js?v=2"></script>
+<script>
+/* 設定・手がきの「バックアップ＆ひきつぎ」— cb-v2-h(手がき) と cb-v2-s(ウィジェット状態) の2キーをまとめる */
+BackupKit.init({
+  appId: 'classroom-board',
+  appName: '教室サポートボード',
+  looksLike(d){ return !!d && typeof d === 'object' && ('h' in d || 's' in d); },
+  collect(){
+    const parse = k => { try{ const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; }catch(e){ return null; } };
+    const h = parse('cb-v2-h'), s = parse('cb-v2-s');
+    if(!h && !s) return null;
+    return { h, s };
+  },
+  restore(d){
+    ['cb-v2-h','cb-v2-s'].forEach(k=>{
+      const r = localStorage.getItem(k);
+      if(r !== null) localStorage.setItem(k + '_mae', r);  // 1世代だけ退避
+    });
+    if(d.h) localStorage.setItem('cb-v2-h', JSON.stringify(d.h)); else localStorage.removeItem('cb-v2-h');
+    if(d.s) localStorage.setItem('cb-v2-s', JSON.stringify(d.s)); else localStorage.removeItem('cb-v2-s');
+  },
+  summarize(d){
+    return [
+      { label:'手がきの線', value: (Array.isArray(d.h) ? d.h.length : 0) + '本' },
+      { label:'ウィジェット設定', value: d.s ? 'あり' : 'なし' },
+    ];
+  },
+});
+document.getElementById('bk-open').addEventListener('click', () => BackupKit.open());
+</script>
 <script>
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });

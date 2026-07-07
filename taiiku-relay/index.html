@@ -207,10 +207,16 @@
                     <i data-lucide="users" class="w-6 h-6"></i>
                     <span class="font-bold text-xl tracking-tight">リレーチーム編成メーカー</span>
                 </div>
-                <button onclick="clearAllData()"
-                    class="text-indigo-100 hover:text-white text-sm font-medium flex items-center gap-1 transition-colors">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> 全データ消去
-                </button>
+                <div class="flex items-center gap-5">
+                    <button onclick="BackupKit.open()"
+                        class="text-indigo-100 hover:text-white text-sm font-medium flex items-center gap-1 transition-colors">
+                        💾 バックアップ
+                    </button>
+                    <button onclick="clearAllData()"
+                        class="text-indigo-100 hover:text-white text-sm font-medium flex items-center gap-1 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> 全データ消去
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -847,6 +853,19 @@
             }
         }
     </script>
+<script src="backup-kit.js?v=2"></script>
+<script>
+/* 名簿・タイムの「バックアップ＆ひきつぎ」 */
+BackupKit.init({
+  appId: 'taiiku-relay',
+  appName: '体育リレーチーム編成メーカー',
+  storageKey: 'relay_runners_v1',
+  looksLike(d){ return Array.isArray(d); },
+  summarize(d){
+    return [ { label:'登録した走者', value: d.length + '人' } ];
+  },
+});
+</script>
 <script>
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });

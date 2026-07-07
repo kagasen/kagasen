@@ -129,6 +129,9 @@
                 <div class="text-4xl font-black text-amber-500 title-font" id="total-pts-val">0</div>
                 <div class="text-amber-600 text-sm font-bold">pt</div>
             </div>
+            <div class="mt-2">
+                <button onclick="BackupKit.open()" class="text-blue-400 hover:text-blue-600 text-sm font-bold underline">💾 きろくを まもる（バックアップ・ひきつぎ）</button>
+            </div>
         </div>
         <script>
             (function() {
@@ -293,6 +296,39 @@
             }).catch(function () {});
         })();
     </script>
+<script src="backup-kit.js?v=2"></script>
+<script>
+/* きろくの「バックアップ＆ひきつぎ」— ポイント・ペット・とっくんの3キーをまとめて封筒に入れる */
+BackupKit.init({
+  appId: 'typing',
+  appName: 'キッズタイピング',
+  looksLike(d){ return !!d && typeof d === 'object' && !Array.isArray(d) && ('points' in d || 'pet' in d || 'tokkun' in d); },
+  collect(){
+    const parse = k => { try{ const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; }catch(e){ return null; } };
+    const points = Number(localStorage.getItem('typing_total_points')) || 0;
+    const pet = parse('typing-pet-save-v2');
+    const tokkun = parse('kagasen_tokkun70_cleared');
+    if(!points && !pet && !tokkun) return null;
+    return { points, pet, tokkun };
+  },
+  restore(d){
+    ['typing_total_points','typing-pet-save-v2','kagasen_tokkun70_cleared'].forEach(k=>{
+      const r = localStorage.getItem(k);
+      if(r !== null) localStorage.setItem(k + '_mae', r);  // 1世代だけ退避
+    });
+    localStorage.setItem('typing_total_points', String(Number(d.points) || 0));
+    if(d.pet) localStorage.setItem('typing-pet-save-v2', JSON.stringify(d.pet)); else localStorage.removeItem('typing-pet-save-v2');
+    if(d.tokkun) localStorage.setItem('kagasen_tokkun70_cleared', JSON.stringify(d.tokkun)); else localStorage.removeItem('kagasen_tokkun70_cleared');
+  },
+  summarize(d){
+    return [
+      { label:'ポイント', value: String(Number(d.points) || 0) + ' pt' },
+      { label:'ペット', value: d.pet && Array.isArray(d.pet.pets) ? d.pet.pets.length + 'ひき' : '—' },
+      { label:'とっくんクリア', value: (d.tokkun ? Object.keys(d.tokkun).length : 0) + 'こ' },
+    ];
+  },
+});
+</script>
 <script>
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });

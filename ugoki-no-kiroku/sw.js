@@ -1,11 +1,11 @@
 // うごきのきろく — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'ugoki-cache-v7';
+const CACHE = 'ugoki-cache-v8';
 const ASSETS = [
   './',
   './index.html',
-  './backup-kit.js?v=1',
+  './backup-kit.js?v=2',
   './manifest.json',
   './icon.svg',
 ];

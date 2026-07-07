@@ -17,6 +17,22 @@
 
     <!-- esbuild で事前ビルド（npm run build）。ブラウザ内 Babel / esm.sh に依存しない -->
     <script defer src="app.bundle.js"></script>
+
+    <!-- 作ったページの「バックアップ＆ひきつぎ」（Reactの外に置く固定ボタン） -->
+    <button onclick="BackupKit.open()" title="バックアップ・ひきつぎ"
+        style="position:fixed;left:12px;bottom:12px;z-index:9999;width:48px;height:48px;border-radius:50%;border:1px solid #cbd5e1;background:#fff;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)">💾</button>
+    <script src="backup-kit.js?v=2"></script>
+    <script>
+    BackupKit.init({
+      appId: 'sikou-tool-app',
+      appName: '思考ツール',
+      storageKey: 'sikou-tool-app-pages-v1',
+      looksLike(d){ return !!d && Array.isArray(d.pages); },
+      summarize(d){
+        return [ { label:'ページ数', value: d.pages.length + 'まい' } ];
+      },
+    });
+    </script>
 <script>
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });

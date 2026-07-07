@@ -260,3 +260,6 @@ sw.js に tailwind.css/fonts を追加し CACHE v2→v3。習慣名に めずら
 
 ## sw.js の activate 修正（2026-07-07）
 - **バグ修正**: activate の古キャッシュ掃除が `k !== CACHE`（自分以外全部削除）だったため、同一オリジン（GitHub Pages）で他アプリのオフラインキャッシュを消していた。自アプリのプレフィックスだけ削除する条件（`k.startsWith('(自分のキャッシュ名)-') && k !== CACHE`）に修正。CACHE名・ASSETSは不変（キャッシュ繰り上げ不要、sw.js自体の更新はバイト差分で自動配布される）。
+
+## backup-kit v2 へ更新（2026-07-07）
+- 共通部品を v2 に差し替え（複数キーアプリ用の collect/restore フック追加。このアプリは従来の storageKey 方式のまま＝挙動不変）。`backup-kit.js?v=1`→`?v=2`、sw.js の CACHE 繰り上げ済み。同梱アプリは3→9個に増えた（+typing/shukudai/shinmatorikusu/classroom-board/taiiku-relay/sikou-tool-app）。

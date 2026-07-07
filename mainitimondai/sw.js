@@ -1,15 +1,17 @@
 // 毎日問題 — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'mainitimondai-cache-v1';
+const CACHE = 'mainitimondai-cache-v2';
 const ASSETS = [
   './',
+  './quiz.css?v=1',
+  './quiz.js?v=1',
   './1nen/index.html',
-  './2nen/index.html',
-  './3nen/index.html',
-  './4nen/index.html',
-  './5nen/index.html',
-  './6nen/index.html',
+  './2nen/index.html', './2nen/data.js?v=1',
+  './3nen/index.html', './3nen/data.js?v=1',
+  './4nen/index.html', './4nen/data.js?v=1',
+  './5nen/index.html', './5nen/data.js?v=1',
+  './6nen/index.html', './6nen/data.js?v=1',
   './fonts.css',
   './fonts/MochiyPopOne-Regular.woff2',
   './fonts/ZenMaruGothic-Black.woff2',

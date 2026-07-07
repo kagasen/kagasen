@@ -1,0 +1,298 @@
+/* 毎日謎解き（2〜6年）共通スタイル。本体は ../quiz.js */
+/* 全体のスタイル設定 */
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    /* フォントをInterに設定 */
+    background-color: #f0f9ff;
+    /* 背景色を薄い青に設定 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* 画面の高さいっぱいにする */
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    /* パディングを含めて要素のサイズを計算 */
+}
+
+/* コンテナのスタイル設定 */
+.container {
+    background-color: #ffffff;
+    /* 背景色を白に設定 */
+    border-radius: 20px;
+    /* 角を丸くする */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    /* 影を追加 */
+    padding: 30px;
+    max-width: 600px;
+    /* 最大幅を設定 */
+    width: 100%;
+    text-align: center;
+    border: 4px solid #a78bfa;
+    /* 紫色の枠線を追加 */
+}
+
+/* 問題表示ボックスのスタイル設定 */
+.question-box {
+    background-color: #e0f2fe;
+    /* 薄い青色の背景 */
+    border-radius: 15px;
+    /* 角を丸くする */
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 2px dashed #93c5fd;
+    /* 破線の青い枠線 */
+    text-align: left;
+    /* 問題文を左寄せ */
+}
+
+/* 選択肢ボタンのスタイル */
+.choice-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.choice-btn {
+    background-color: #8b5cf6;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    border: none;
+    margin-top: 0;
+    text-align: left;
+}
+
+.choice-btn:hover {
+    background-color: #7c3aed;
+    transform: translateY(-2px);
+}
+
+.choice-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.choice-btn.correct-choice {
+    background-color: #10b981;
+}
+
+.choice-btn.incorrect-choice {
+    background-color: #ef4444;
+}
+
+/* 入力フィールドのスタイル設定 */
+input[type="text"],
+input[type="date"],
+input[type="number"] {
+    padding: 12px 20px;
+    border: 2px solid #a78bfa;
+    /* 紫色の枠線 */
+    border-radius: 10px;
+    /* 角を丸くする */
+    width: calc(100% - 40px);
+    /* 幅を計算 */
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    text-align: center;
+    color: #4c1d95;
+    /* 濃い紫色の文字 */
+    display: block;
+    /* ブロック要素として表示 */
+    margin-left: auto;
+    /* 中央寄せ */
+    margin-right: auto;
+    /* 中央寄せ */
+}
+
+/* ボタンのスタイル設定 */
+button {
+    background-color: #8b5cf6;
+    /* 鮮やかな紫色の背景 */
+    color: white;
+    /* 文字色を白に */
+    padding: 14px 28px;
+    border-radius: 10px;
+    /* 角を丸くする */
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    /* カーソルをポインターに */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    /* ホバー時のアニメーション */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    /* 影を追加 */
+    border: none;
+    /* 枠線をなくす */
+    margin-top: 10px;
+    /* ボタン上部の余白 */
+}
+
+/* ボタンのホバー時のスタイル */
+button:hover {
+    background-color: #7c3aed;
+    /* 暗い紫色の背景 */
+    transform: translateY(-2px);
+    /* 少し上に移動 */
+}
+
+/* ボタンのアクティブ時のスタイル */
+button:active {
+    transform: translateY(0);
+    /* 元の位置に戻す */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* 影を小さく */
+}
+
+/* フィードバックメッセージのスタイル */
+.feedback {
+    margin-top: 20px;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* 正解時のフィードバック色 */
+.feedback.correct {
+    color: #10b981;
+    /* 緑色 */
+}
+
+/* 不正解時のフィードバック色 */
+.feedback.incorrect {
+    color: #ef4444;
+    /* 赤色 */
+}
+
+/* 解説のスタイル */
+.explanation {
+    margin-top: 15px;
+    font-size: 1.1rem;
+    color: #4b5563;
+    /* 濃い灰色 */
+    background-color: #f8fafc;
+    /* 薄い灰色背景 */
+    border-left: 5px solid #a78bfa;
+    /* 紫色の左ボーダー */
+    padding: 15px;
+    text-align: left;
+    border-radius: 8px;
+    line-height: 1.6;
+}
+
+/* 戻るボタンのスタイル */
+.back-button {
+    background-color: #6b7280;
+    /* 灰色背景 */
+    margin-top: 20px;
+    display: inline-block;
+    /* インラインブロックで並べる */
+    margin-left: 10px;
+    /* 左側に余白 */
+    margin-right: 10px;
+    /* 右側に余白 */
+}
+
+/* 戻るボタンのホバー時のスタイル */
+.back-button:hover {
+    background-color: #4b5563;
+}
+
+/* 結果を見るボタンのスタイル */
+.view-results-button {
+    background-color: #0ea5e9;
+    /* 青色背景 */
+    margin-top: 20px;
+}
+
+.view-results-button:hover {
+    background-color: #0284c7;
+}
+
+/* カスタムメッセージボックスのスタイル */
+.message-box {
+    position: fixed;
+    /* 画面に固定 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* 中央に配置 */
+    background-color: #fff;
+    /* 白い背景 */
+    padding: 30px;
+    border-radius: 15px;
+    /* 角を丸くする */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    /* 影を追加 */
+    z-index: 1000;
+    /* 最前面に表示 */
+    display: none;
+    /* 初期状態では非表示 */
+    border: 3px solid #6366f1;
+    /* 藍色の枠線 */
+    max-width: 90%;
+    /* モバイル対応 */
+    width: 400px;
+    /* PC対応 */
+}
+
+.message-box p {
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    color: #333;
+    white-space: pre-wrap;
+    /* 改行を有効にする */
+}
+
+.message-box button {
+    background-color: #6366f1;
+    /* 藍色のボタン */
+    padding: 12px 25px;
+    font-size: 1.1rem;
+}
+
+.message-box button:hover {
+    background-color: #4f46e5;
+}
+
+/* レスポンシブデザインのためのメディアクエリ */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .question-box {
+        padding: 20px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"] {
+        padding: 10px 15px;
+        font-size: 1rem;
+    }
+
+    button {
+        padding: 12px 24px;
+        font-size: 1.1rem;
+    }
+
+    .feedback {
+        font-size: 1.1rem;
+    }
+
+    .message-box p {
+        font-size: 1.2rem;
+    }
+
+    .message-box button {
+        font-size: 1rem;
+    }
+}

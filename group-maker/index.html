@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スポーツグループ分けアプリ | 小学生向けの安全な教育アプリ</title>
     <meta name="description" content="スポーツグループ分けアプリは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
-    <link rel="stylesheet" href="tailwind.css?v=2">
+    <link rel="stylesheet" href="tailwind.css?v=3">
     <style>
 
         body {
@@ -206,6 +206,17 @@
                 padding: 0 !important;
             }
         }
+
+        /* 人数カウンターの数値入力：ネイティブの上下矢印を隠す（−／＋ボタンで操作するため） */
+        .count-input::-webkit-outer-spin-button,
+        .count-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .count-input {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
     </style>
     <meta name="theme-color" content="#22C55E">
     <link rel="manifest" href="./manifest.json">
@@ -267,10 +278,15 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="1行に1人ずつ名前を入力してください&#10;例:&#10;山田太郎&#10;佐藤花子&#10;鈴木一郎"></textarea>
                         <div class="mt-2 flex flex-wrap items-center gap-2">
-                            <span class="text-xs text-gray-500">かんたん準備:</span>
-                            <button type="button" class="quick-fill text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full" data-count="30">番号だけ30人</button>
-                            <button type="button" class="quick-fill text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full" data-count="35">35人</button>
-                            <button type="button" class="quick-fill text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full" data-count="40">40人</button>
+                            <span class="text-xs text-gray-500">かんたん準備: 番号だけ</span>
+                            <div class="inline-flex items-center border border-gray-300 rounded-full overflow-hidden">
+                                <button type="button" id="count-minus" class="w-9 h-8 text-xl text-gray-600 hover:bg-gray-100 leading-none flex items-center justify-center">−</button>
+                                <input type="number" id="count-input" value="30" min="1" max="45"
+                                    class="count-input w-12 h-8 text-center text-sm font-bold text-gray-800 border-0 focus:outline-none focus:ring-0">
+                                <button type="button" id="count-plus" class="w-9 h-8 text-xl text-gray-600 hover:bg-gray-100 leading-none flex items-center justify-center">＋</button>
+                            </div>
+                            <span class="text-xs text-gray-500">人（最大45）</span>
+                            <button type="button" id="count-generate" class="text-xs bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-1 rounded-full">この人数で用意</button>
                             <button type="button" id="clear-names" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-full">クリア</button>
                         </div>
                     </div>
@@ -611,14 +627,30 @@
                 bulkDataTextarea.focus();
             });
 
-            // 「番号だけ○人」→ その人数の番号メンバーを用意してステップ2へ直行
-            document.querySelectorAll('.quick-fill').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const n = parseInt(this.getAttribute('data-count'));
-                    generateNumberedMembers(n);
-                    updateStepDisplay(2);
-                    updateMemberList();
-                });
+            // 番号だけ：人数カウンター（−／＋／直接入力、1〜45人）
+            const COUNT_MIN = 1, COUNT_MAX = 45;
+            const countInput = document.getElementById('count-input');
+            function clampCount() {
+                let n = parseInt(countInput.value);
+                if (isNaN(n)) n = COUNT_MIN;
+                n = Math.max(COUNT_MIN, Math.min(COUNT_MAX, n));
+                countInput.value = n;
+                return n;
+            }
+            document.getElementById('count-minus').addEventListener('click', () => {
+                countInput.value = clampCount() - 1; clampCount();
+            });
+            document.getElementById('count-plus').addEventListener('click', () => {
+                countInput.value = clampCount() + 1; clampCount();
+            });
+            countInput.addEventListener('change', clampCount);
+
+            // 「この人数で用意」→ 指定人数の番号メンバーを用意してステップ2へ直行
+            document.getElementById('count-generate').addEventListener('click', function () {
+                const n = clampCount();
+                generateNumberedMembers(n);
+                updateStepDisplay(2);
+                updateMemberList();
             });
 
             // メンバーリストの更新

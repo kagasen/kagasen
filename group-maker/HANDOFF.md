@@ -8,11 +8,11 @@
   npx tailwindcss@3.4.17 -i /tmp/tw.css -o group-maker/tailwind.css --content "group-maker/**/*.html" --minify
   ```
 - フォント … Google Fonts CDN をやめて**システムフォント**へ置換（任意の入力文字を表示するアプリのためサブセット同梱は不可）。
-- **重要**: このアプリはUIクラスがインライン `<script>` 内の文字列にも多数ある（`createMemberItem`/`updateGroupSummaries` 等）。Tailwind再生成は `--content "group-maker/index.html"`（=HTML＋インラインJSを走査）で行うこと。**tailwind.css を作り直したら `index.html` の `tailwind.css?v=N` と `sw.js` の ASSETS を繰り上げる**（HTTPキャッシュが古いCSSを配信し続けてボタン色などが消える事故を防ぐため。2026-07-08に `?v=2` 導入）。
+- **重要**: このアプリはUIクラスがインライン `<script>` 内の文字列にも多数ある（`createMemberItem`/`updateGroupSummaries` 等）。Tailwind再生成は `--content "group-maker/index.html"`（=HTML＋インラインJSを走査）で行うこと。**tailwind.css を作り直したら `index.html` の `tailwind.css?v=N` と `sw.js` の ASSETS を繰り上げる**（HTTPキャッシュが古いCSSを配信し続けてボタン色などが消える事故を防ぐため。2026-07-08に `?v=` 方式を導入。現行 `?v=3`）。
 
 ## 男女＆点数バランス分け・組み直し（2026-07-08）
 - **データ構造**: メンバーに `gender`（'male'/'female'/'unset'・既定unset）を追加。スキルは従来どおり 'very-good'/'good'/'neutral'/'bad'/'very-bad'。
-- **入力（ステップ1）**: 名前は1行1人のまま。人数ライブカウンター（`#name-count`）、「番号だけ○人（30/35/40）」で番号メンバーを即用意してステップ2直行（`.quick-fill`）、クリアボタンを追加。
+- **入力（ステップ1）**: 名前は1行1人のまま。人数ライブカウンター（`#name-count`）、「番号だけ」の**人数カウンター**（`#count-input` を −／＋ボタンと直接入力で 1〜45人に `clampCount`、「この人数で用意」`#count-generate` で番号メンバーを即用意してステップ2直行）、クリアボタンを追加。ネイティブの数値スピナーは `.count-input` のCSSで非表示。2026-07-08に固定プリセット(30/35/40)から自由入力カウンターへ変更。
 - **性別入力（ステップ2）**: 名前の横に `.gender-toggle` ボタン。タップで 男子→女子→未設定 と循環（その場で色・文字だけ更新＝スクロール位置を保つ）。
 - **バランス分け**（`createBalancedGroups`）: `SKILL_SCORE`＝得意5/少し得意4/普通3/少し苦手2/苦手1。①人数を均等（差最大1）②各チームの平均点を均等（合計点の低い所へ高スキルを入れる貪欲法）③男女は同性の人数で重み付け（`GENDER_W=2.5`）して均等化。毎回シャッフルで「もう一度組み直す」（`#reshuffle-groups`）が別の組み合わせを出す。`shuffleArray` は配列を返すよう変更済み。
 - **結果画面**: グループ見出しの下に `.group-summary`（人数・男Ｎ女Ｎ・平均Ｎ点。平均はスキル表示中のみ）。各メンバー行に男女バッジ。ドラッグ移動後は `updateGroupSummaries()` で再計算。`groupsResult` はドロップ時に同期される。

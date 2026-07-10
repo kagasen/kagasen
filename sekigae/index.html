@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教室の席替えツール | 小学生向けの安全な教育アプリ</title>
     <meta name="description" content="教室の席替えツールは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
-    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="tailwind.css?v=2">
     <style>
 
         body {
@@ -199,6 +199,17 @@
             #classroom { gap: 4px !important; }
             .teacher-desk { margin-bottom: 6mm !important; padding: 0.4rem 2rem !important; }
         }
+
+        /* 人数カウンターの数値入力：ネイティブの上下矢印を隠す（−／＋ボタンで操作するため） */
+        .count-input::-webkit-outer-spin-button,
+        .count-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .count-input {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
     </style>
     <meta name="theme-color" content="#2DD4BF">
     <link rel="manifest" href="./manifest.json">
@@ -303,6 +314,8 @@
                             class="pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors">個別追加</button>
                         <button id="tab-btn-bulk"
                             class="pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">エクセル一括</button>
+                        <button id="tab-btn-number"
+                            class="pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">番号だけ</button>
                     </div>
 
                     <!-- 個別追加タブ -->
@@ -350,6 +363,25 @@
                             placeholder="山田太郎&#10;佐藤花子&#10;鈴木一郎"></textarea>
                         <button id="add-bulk-student"
                             class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-lg transition-colors shadow-sm">一括追加する</button>
+                    </div>
+
+                    <!-- 番号だけタブ（人数カウンター） -->
+                    <div id="tab-number" class="hidden space-y-4">
+                        <p class="text-xs text-gray-600">名前を打たずに、出席番号だけの生徒をまとめて用意します。<br>人数を選んで「この人数で用意」を押すと、1番〜◯番が一気にできます。追加後、リストで性別・視力を編集できます。</p>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-sm text-gray-700 font-medium">人数:</span>
+                            <div class="inline-flex items-center border border-gray-300 rounded-full overflow-hidden">
+                                <button type="button" id="count-minus"
+                                    class="w-10 h-9 text-2xl text-gray-600 hover:bg-gray-100 leading-none flex items-center justify-center">−</button>
+                                <input type="number" id="count-input" value="35" min="1" max="45"
+                                    class="count-input w-14 h-9 text-center text-base font-bold text-gray-800 border-0 focus:outline-none focus:ring-0">
+                                <button type="button" id="count-plus"
+                                    class="w-10 h-9 text-2xl text-gray-600 hover:bg-gray-100 leading-none flex items-center justify-center">＋</button>
+                            </div>
+                            <span class="text-sm text-gray-500">人（最大45）</span>
+                        </div>
+                        <button type="button" id="count-generate"
+                            class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-lg transition-colors shadow-sm">この人数で用意</button>
                     </div>
                 </div>
 
@@ -440,8 +472,10 @@
             // タブ
             const tabBtnSingle = document.getElementById('tab-btn-single');
             const tabBtnBulk = document.getElementById('tab-btn-bulk');
+            const tabBtnNumber = document.getElementById('tab-btn-number');
             const tabSingle = document.getElementById('tab-single');
             const tabBulk = document.getElementById('tab-bulk');
+            const tabNumber = document.getElementById('tab-number');
 
             // カウント表示用
             const totalCountEl = document.getElementById('total-count');
@@ -697,20 +731,22 @@
 
             // --- 4. タブの切り替え ---
             function switchTab(mode) {
-                if (mode === 'single') {
-                    tabBtnSingle.className = "pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors";
-                    tabBtnBulk.className = "pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors";
-                    tabSingle.classList.remove('hidden');
-                    tabBulk.classList.add('hidden');
-                } else {
-                    tabBtnBulk.className = "pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors";
-                    tabBtnSingle.className = "pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors";
-                    tabBulk.classList.remove('hidden');
-                    tabSingle.classList.add('hidden');
+                const activeCls = "pb-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors";
+                const idleCls = "pb-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors";
+                const tabs = {
+                    single: { btn: tabBtnSingle, panel: tabSingle },
+                    bulk: { btn: tabBtnBulk, panel: tabBulk },
+                    number: { btn: tabBtnNumber, panel: tabNumber },
+                };
+                for (const key in tabs) {
+                    const isActive = key === mode;
+                    tabs[key].btn.className = isActive ? activeCls : idleCls;
+                    tabs[key].panel.classList.toggle('hidden', !isActive);
                 }
             }
             tabBtnSingle.addEventListener('click', () => switchTab('single'));
             tabBtnBulk.addEventListener('click', () => switchTab('bulk'));
+            tabBtnNumber.addEventListener('click', () => switchTab('number'));
 
             // --- 5. 生徒の追加処理 ---
 
@@ -775,6 +811,46 @@
                     bulkInput.value = '';
                     alert(`${addedCount}名の生徒を追加しました。\n生徒リストで性別・視力を確認・変更してください。`);
                 }
+            });
+
+            // 5.3 番号だけ（人数カウンター、1〜45人）
+            const COUNT_MIN = 1, COUNT_MAX = 45;
+            const countInput = document.getElementById('count-input');
+            function clampCount() {
+                let n = parseInt(countInput.value);
+                if (isNaN(n)) n = COUNT_MIN;
+                n = Math.max(COUNT_MIN, Math.min(COUNT_MAX, n));
+                countInput.value = n;
+                return n;
+            }
+            document.getElementById('count-minus').addEventListener('click', () => {
+                countInput.value = clampCount() - 1; clampCount();
+            });
+            document.getElementById('count-plus').addEventListener('click', () => {
+                countInput.value = clampCount() + 1; clampCount();
+            });
+            countInput.addEventListener('change', clampCount);
+
+            // 「この人数で用意」→ 出席番号だけの生徒を人数ぶん用意（既存リストは置きかえ）
+            document.getElementById('count-generate').addEventListener('click', () => {
+                const n = clampCount();
+                if (students.length > 0 &&
+                    !confirm(`今の生徒リスト（${students.length}名）を消して、番号だけの${n}名に置きかえます。よろしいですか？`)) {
+                    return;
+                }
+                // 席の割り当てもクリアしてから作り直す
+                seats.forEach(s => { s.studentId = null; updateSeatUI(s); });
+                students = [];
+                for (let i = 1; i <= n; i++) {
+                    students.push({
+                        id: 'student_' + Date.now() + '_' + i,
+                        name: String(i),
+                        gender: 'boy',
+                        needsFront: false,
+                        seatId: null
+                    });
+                }
+                updateStudentListUI();
             });
 
             // --- 6. 生徒リストUIの更新 ---

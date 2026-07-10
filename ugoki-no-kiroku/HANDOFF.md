@@ -60,6 +60,12 @@
 ## sw.js の activate 修正（2026-07-07）
 - **バグ修正**: activate の古キャッシュ掃除が `k !== CACHE`（自分以外全部削除）だったため、同一オリジン（GitHub Pages）で他アプリのオフラインキャッシュを消していた。自アプリのプレフィックスだけ削除する条件（`k.startsWith('(自分のキャッシュ名)-') && k !== CACHE`）に修正。CACHE名・ASSETSは不変（キャッシュ繰り上げ不要、sw.js自体の更新はバイト差分で自動配布される）。
 
+## 初回セットアップのボタンが押せない不具合（2026-07-08）
+- **症状**: iPadで初回モーダルに なまえ／あいぼうのなまえ を入力後、「ぼうけんスタート!」が押せず固まる。
+- **原因**: モーダルが画面中央固定（`.modal-overlay` は `align-items:center`）。iOSのソフトウェアキーボードが出ても `position:fixed` は縮まないため、下寄りのボタンがキーボードの裏に隠れてタップできなかった（PC/実機キーボードでは再現しない）。
+- **修正**: 初回モーダルの overlay に `form-modal` クラスを付け、`align-items:flex-start`＋`overflow-y:auto` で上寄せ＋スクロール可にしボタンをキーボードの上に出す。あわせて なまえ／あいぼう 入力欄で Enter(かんりょう)キーでもスタートできるよう `start()` を共通化してバインド。celebration系モーダル（入力なし）は従来どおり中央のまま。
+- キャッシュ: index.html 変更のため `sw.js` の CACHE を v8→v9 に繰り上げ。
+
 ## backup-kit v2（2026-07-07）— このHANDOFFが部品の source of truth
 - **v2の変更**: localStorage キーが複数あるアプリ用に `collect()`（現状を1オブジェクトに集約）/ `restore(data)`（書き戻し。`_mae` 退避も restore 側の責任）フックを追加。両方セットで指定すると storageKey は使われない。従来の単一 storageKey 方式は挙動不変（後方互換・このアプリはこちら）。
 - **同梱アプリは9個に拡大**: ugoki-no-kiroku / level-up-adventure / kanji-bouken（従来3）＋ typing（3キー・collect/restore）/ shukudai / shinmatorikusu / classroom-board（2キー・collect/restore）/ taiiku-relay / sikou-tool-app。sakkanojikan は自前のファイル保存があるため対象外（同HANDOFF参照）。

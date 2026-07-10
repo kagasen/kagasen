@@ -227,6 +227,9 @@ input[type=date],input[type=text],select{
   animation:fadein .25s;
 }
 @keyframes fadein{from{opacity:0}to{opacity:1}}
+/* 入力があるモーダル(初回セットアップ)は上寄せ＋スクロール可に。
+   iPadでソフトウェアキーボードが出てもボタンが下に隠れて押せなくならないようにするため */
+.modal-overlay.form-modal{align-items:flex-start;overflow-y:auto;padding-top:24px;padding-bottom:24px;}
 .modal-box{
   background:#fff;border-radius:26px;padding:26px 22px;max-width:340px;width:100%;text-align:center;
   animation:zoomin .45s cubic-bezier(.18,1.5,.4,1);position:relative;max-height:85vh;overflow-y:auto;
@@ -2046,7 +2049,7 @@ function resetData(){
 /* ---------------- はじめてのセットアップ ---------------- */
 function firstRunModal(){
   const root = document.getElementById('modal-root');
-  root.innerHTML = `<div class="modal-overlay"><div class="modal-box">
+  root.innerHTML = `<div class="modal-overlay form-modal"><div class="modal-box">
     ${charSvg(1,100)}
     <h2>うごきのきろくへようこそ!</h2>
     <p>うんどうをきろくすると、たまごのあいぼうがそだつよ。<br>きみのなまえをおしえて!</p>
@@ -2054,7 +2057,7 @@ function firstRunModal(){
     <input type="text" id="fr-char" maxlength="10" placeholder="あいぼうのなまえ(れい: ぴよ)" style="width:100%;margin-bottom:14px">
     <button class="btn orange wide" id="fr-go">ぼうけんスタート!</button>
   </div></div>`;
-  document.getElementById('fr-go').onclick = ()=>{
+  const start = ()=>{
     S.profile.name = document.getElementById('fr-name').value.trim();
     S.profile.charName = document.getElementById('fr-char').value.trim()||'ぴよ';
     S.profile.createdAt = todayStr();
@@ -2063,6 +2066,11 @@ function firstRunModal(){
     confettiBurst();
     render();
   };
+  document.getElementById('fr-go').onclick = start;
+  // iPadのキーボードでボタンが隠れても、Enter(かんりょう)キーでスタートできるように
+  [ 'fr-name', 'fr-char' ].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); start(); } });
+  });
 }
 
 /* ---------------- 起動 ---------------- */

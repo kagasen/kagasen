@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>いくつあるかな - ビジョントレーニング | 小学生向けの安全な教育アプリ</title>
     <meta name="description"
         content="いくつあるかな - ビジョントレーニングは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
@@ -37,7 +37,8 @@
     <style>
         body {
             font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
-            touch-action: none;
+            /* manipulation = ダブルタップ拡大だけ無効化・ピンチは残す（iPadで勝手にアップになるのを防止） */
+            touch-action: manipulation;
             overflow-x: hidden;
             margin: 0;
             background-color: #f0fdf4;

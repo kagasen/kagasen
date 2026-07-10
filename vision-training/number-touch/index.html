@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ナンバータッチ - ビジョントレーニング | 小学生向けの安全な教育アプリ</title>
     <meta name="description"
         content="ナンバータッチ - ビジョントレーニングは、小学生向けのシンプルで安全な教育・学習アプリです。学校の授業やご家庭で安心して使えるよう設計されており、アイフィルター等でも安全に利用できます。">
@@ -29,9 +29,11 @@
     <script src="../vendor/lucide.min.js"></script>
 
     <style>
-        /* スマホでのスワイプや拡大縮小などの誤動作を防止 */
+        /* スマホでのスワイプや拡大縮小などの誤動作を防止。
+           manipulation = ダブルタップ拡大だけ無効化し、ピンチ(指2本)での拡大縮小は残す
+           （iPadで2回タップして勝手にアップになるのを防ぐ。万一ズレてもピンチで戻せる） */
         body {
-            touch-action: none;
+            touch-action: manipulation;
             overscroll-behavior: none;
             font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
             background-color: #e8f5e9;

@@ -72,18 +72,19 @@
     display: flex; align-items: center; justify-content: center;
   }
   .mapbox svg { width: 100%; height: 100%; display: block; }
+  /* 注意: vector-effect: non-scaling-stroke は Safari で図形位置がズレる既知バグがあるため使わない */
   .prefecture { fill: #fffdf7; stroke: #8d6e63; stroke-width: 1; transition: fill 0.2s; }
-  .prefecture polygon, .prefecture path { vector-effect: non-scaling-stroke; }
   .boundary-line { stroke: #64b5f6; stroke-width: 2; stroke-dasharray: 5 5; fill: none; }
   .p-hide { display: none; }
   .p-dim { fill: #eceff1; stroke: #cfd8dc; pointer-events: none; }
   .p-tap { cursor: pointer; }
   .p-mark { animation: markPulse 1.1s ease-in-out infinite; }
   @keyframes markPulse { 0%,100% { fill-opacity: 1; } 50% { fill-opacity: 0.45; } }
-  .p-good { fill: #81c784 !important; }
+  .p-good { fill: #66bb6a !important; animation: goodPulse 0.9s ease-in-out infinite; }
   .p-bad  { fill: #ef9a9a !important; }
+  @keyframes goodPulse { 0%,100% { fill-opacity: 1; } 50% { fill-opacity: 0.55; } }
   .sil .prefecture { fill: #607d8b; stroke: none; }
-  text.flag, text.balloon { pointer-events: none; }
+  text.flag, text.balloon, text.pin { pointer-events: none; }
 
   /* ---------- ボタン ---------- */
   .big-btn {
@@ -232,7 +233,39 @@
   #ta-timer.pen { color: #c62828; animation: shake 0.3s; }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
   .ta-result { text-align: center; font-size: 64px; margin: 4px 0; }
+  .name-input {
+    display: block; width: 100%; max-width: 340px; margin: 6px auto 0;
+    min-height: 48px; font-size: 18px; font-weight: 700; padding: 8px 12px;
+    border: 3px solid #b3e5fc; border-radius: 12px; text-align: center;
+  }
+  .rank-row {
+    display: flex; justify-content: space-between; max-width: 340px; margin: 6px auto 0;
+    width: 100%; font-size: 16px; font-weight: 700; padding: 8px 12px;
+    background: #f0f9ff; border-radius: 10px;
+  }
   .choice-btn .mapbox { max-width: 110px; margin: 0 auto; }
+
+  /* ---------- ふたりでたいけつ（上下2分割・むかいあって同時タップ） ---------- */
+  #view-vs .vs-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 6px; }
+  .vs-half {
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+    background: #fff; border-radius: 16px; padding: 6px 10px;
+  }
+  .vs-half.p1 { border: 3px solid #64b5f6; }
+  .vs-half.p2 { border: 3px solid #e57373; transform: rotate(180deg); }
+  .vs-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: none; }
+  .vs-name { font-weight: 900; font-size: 15px; }
+  .vs-half.p1 .vs-name { color: #1565c0; }
+  .vs-half.p2 .vs-name { color: #c62828; }
+  .vs-score { font-size: 15px; letter-spacing: 2px; font-weight: 800; }
+  .vs-prompt { text-align: center; font-weight: 900; font-size: 18px; min-height: 26px; flex: none; }
+  .vs-msg { text-align: center; font-weight: 800; font-size: 14px; color: #e65100; min-height: 20px; flex: none; }
+  .vs-mid { flex: none; text-align: center; font-size: 13px; font-weight: 800; color: #546e7a; }
+  .vs-mid .btn-row { max-width: 480px; margin: 0 auto; }
+  .vs-frozen .mapbox { opacity: 0.35; pointer-events: none; }
+  .vs-big { text-align: center; font-size: 30px; font-weight: 900; color: #1565c0; margin: 4px 0; flex: none; }
+  /* れんぞくタップでSafariのダブルタップズームが起きないように */
+  button, .mapbox svg, .chip { touch-action: manipulation; }
 
   #credit {
     flex: none; text-align: center; font-size: 10px; color: #78909c;
@@ -253,6 +286,7 @@
   <section id="view-quiz" class="view"></section>
   <section id="view-result" class="view"></section>
   <section id="view-ta" class="view"></section>
+  <section id="view-vs" class="view"></section>
   <section id="view-zukan" class="view"></section>
 </main>
 <div id="card-overlay" onclick="closeCardOverlay()"></div>
@@ -268,7 +302,8 @@
 // 単一セーブだがキーは名前空間つき（将来プロフィール化するとき default→id に拡張する）
 var SAVE_KEY = 'todofuken_save_default';
 function loadSave() {
-  var def = { v: 1, cleared: {}, regionMaster: {}, balloon: 0, zenkoku: null, taBest: {} };
+  // survival=れんぞく正解の最高記録 / taRank=タイムアタックの端末内ランキング {key:[{n:名前,ms:タイム}]}
+  var def = { v: 1, cleared: {}, regionMaster: {}, balloon: 0, zenkoku: null, taBest: {}, survival: 0, taRank: {} };
   try {
     var raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return def;
@@ -436,6 +471,12 @@ function svgText(x, y, fs, cls, str) {
   return t;
 }
 function svgPref(svg, code) { return svg.querySelector('.prefecture[data-code="' + code + '"]'); }
+// 位置問題の正解発表用: 正解の県に📍ピンを立てる（Safariでも確実に場所が伝わるように）
+function addPin(svg, code) {
+  var vb = (svg.getAttribute('viewBox') || '0 0 1000 1000').split(/\s+/).map(Number);
+  var fs = Math.max(Math.min(vb[3] * 0.1, 60), 24);
+  svg.appendChild(svgText(CBOX[code].cx, CBOX[code].cy, fs, 'pin', '📍'));
+}
 function regionFill(code) { return isCleared(code) ? REGIONS[REGION_OF[code]].color : null; }
 
 /* =============== 画面切り替え =============== */
@@ -443,22 +484,23 @@ var curRegion = 0;   // いまの地方 index
 var curPref = 0;     // いまの県コード
 var freeMode = false; // れんしゅうモード（ロック無視で遊べる・きろくは のこらない）。ホームに戻ると解除
 var zukanFrom = 'home';
-var BACK_TO = { 'view-region': 'home', 'view-tanken': 'region', 'view-quiz': 'tanken', 'view-result': 'region', 'view-ta': 'region', 'view-zukan': '' };
+var BACK_TO = { 'view-region': 'home', 'view-tanken': 'region', 'view-quiz': 'tanken', 'view-result': 'region', 'view-ta': 'region', 'view-vs': '', 'view-zukan': '' };
 var curView = 'view-home';
 function show(id, title) {
-  ['view-home', 'view-region', 'view-tanken', 'view-quiz', 'view-result', 'view-ta', 'view-zukan'].forEach(function (v) {
+  ['view-home', 'view-region', 'view-tanken', 'view-quiz', 'view-result', 'view-ta', 'view-vs', 'view-zukan'].forEach(function (v) {
     $(v).classList.toggle('on', v === id);
   });
   curView = id;
   $('tb-title').innerHTML = title || '';
   $('btn-back').classList.toggle('tb-hidden', id === 'view-home');
-  $('btn-zukan').classList.toggle('tb-hidden', id === 'view-zukan' || id === 'view-quiz' || id === 'view-ta');
+  $('btn-zukan').classList.toggle('tb-hidden', id === 'view-zukan' || id === 'view-quiz' || id === 'view-ta' || id === 'view-vs');
   window.scrollTo(0, 0);
 }
 function goBack() {
   stopTATimer();
+  vs = null;  // たいけつ中にもどったら試合は破棄（保存するものはない）
   if (curView === 'view-ta' && ta && ta.ri === 'all') { renderHome(); return; }
-  if (curView === 'view-quiz' && quiz && quiz.mode === 'zenkoku') { renderHome(); return; }
+  if (curView === 'view-quiz' && quiz && (quiz.mode === 'zenkoku' || quiz.mode === 'survival')) { renderHome(); return; }
   if (curView === 'view-zukan') {
     if (zukanFrom === 'region') { openRegion(curRegion); } else { renderHome(); }
     return;
@@ -560,29 +602,41 @@ function renderHome() {
     list.appendChild(btn);
   });
 
-  // ぜんこくチャレンジ＋れんしゅうモード
-  var allMaster = REGIONS.every(function (r, i) { return masterPassed(i); });
-  var allClear = REGIONS.every(function (r, i) { return regionComplete(i); });
+  // ぜんこくチャレンジ＋れんしゅうモード（2026-07-12ユーザー決定: 最初から遊べる）
   var zh = document.createElement('div');
   zh.className = 'tk-label';
-  zh.innerHTML = '🗾 ぜんこくチャレンジ';
+  zh.innerHTML = '🗾 ぜんこくチャレンジ（いつでも あそべるよ！）';
   list.appendChild(zh);
   var zb = document.createElement('button');
-  zb.className = 'big-btn' + (allMaster ? '' : ' gray');
+  zb.className = 'big-btn';
   zb.innerHTML = '👑 全国（ぜんこく）マスターテスト（20もん）' +
     (isNihonMaster() ? '<br><span style="font-size:13px">🏆 にっぽんマスター！ ベスト ' + save.zenkoku + '/' + ZENKOKU_Q + '</span>'
       : (save.zenkoku ? '<br><span style="font-size:13px">ベスト ' + save.zenkoku + '/' + ZENKOKU_Q + '（' + ZENKOKU_PASS + 'もんで ごうかく）</span>'
-        : (allMaster ? '' : '<br><span style="font-size:13px">🔒 ぜんぶの ちほうで マスターごうかくすると かいほう</span>')));
-  if (allMaster) { zb.addEventListener('click', function () { startZenkoku(); }); } else { zb.disabled = true; }
+        : '<br><span style="font-size:13px">ごうかくで「にっぽんマスター」に！</span>'));
+  zb.addEventListener('click', function () { startZenkoku(); });
   list.appendChild(zb);
   var zt = document.createElement('button');
-  zt.className = 'big-btn blue' + (allClear ? '' : ' gray');
+  zt.className = 'big-btn blue';
   var zBest = ('all' in save.taBest) ? save.taBest.all : 0;
   zt.innerHTML = '⏱ 全国（ぜんこく）タイムアタック（47けん）' +
-    (zBest ? '<br><span style="font-size:13px">' + taMedal('all', zBest)[0] + ' ベスト ' + fmtSec(zBest) + '</span>'
-      : (allClear ? '' : '<br><span style="font-size:13px">🔒 47けん ぜんぶ クリアすると かいほう</span>'));
-  if (allClear) { zt.addEventListener('click', function () { startTA('all'); }); } else { zt.disabled = true; }
+    (zBest ? '<br><span style="font-size:13px">' + taMedal('all', zBest)[0] + ' ベスト ' + fmtSec(zBest) + '</span>' : '');
+  zt.addEventListener('click', function () { startTA('all'); });
   list.appendChild(zt);
+  var sv = document.createElement('button');
+  sv.className = 'big-btn';
+  sv.style.background = 'linear-gradient(180deg, #ff7043, #f4511e)';
+  sv.style.boxShadow = '0 4px 0 #bf360c';
+  sv.innerHTML = '🔥 サバイバル（ミスするまで れんぞく せいかい！）' +
+    (save.survival ? '<br><span style="font-size:13px">さいこう ' + save.survival + ' れんぞく</span>' : '');
+  sv.addEventListener('click', function () { startSurvival(); });
+  list.appendChild(sv);
+  var vsBtn = document.createElement('button');
+  vsBtn.className = 'big-btn';
+  vsBtn.style.background = 'linear-gradient(180deg, #ba68c8, #9c27b0)';
+  vsBtn.style.boxShadow = '0 4px 0 #6a1b9a';
+  vsBtn.innerHTML = '⚔️ ふたりで たいけつ<br><span style="font-size:13px">がめんを 2つに わけて 早（はや）おし しょうぶ！</span>';
+  vsBtn.addEventListener('click', function () { openVSSetup(); });
+  list.appendChild(vsBtn);
   var fb = document.createElement('button');
   fb.className = 'big-btn';
   fb.style.background = 'linear-gradient(180deg, #81c784, #66bb6a)';
@@ -686,26 +740,25 @@ function openRegion(i) {
     return;
   }
 
-  // クリアごのチャレンジ（全県クリアで解放）
-  var comp = regionComplete(i);
+  // チャレンジ（2026-07-12ユーザー決定: 最初から遊べる。カード獲得だけは冒険クリア必須のまま）
   var chh = document.createElement('div');
   chh.className = 'tk-label';
-  chh.innerHTML = '🏆 クリアごの チャレンジ' + (comp ? '' : '（ぜんけん クリアで かいほう）');
+  chh.innerHTML = '🏆 チャレンジ（いつでも あそべるよ！）';
   scroll.appendChild(chh);
   var mb = document.createElement('button');
-  mb.className = 'big-btn' + (comp ? '' : ' gray');
+  mb.className = 'big-btn';
   var mBest = save.regionMaster[r.id] || 0;
   mb.innerHTML = '👑 マスターテスト（むずかしい10もん）' +
     (masterPassed(i) ? '<br><span style="font-size:13px">⭐ ごうかく！ ベスト ' + mBest + '/10</span>'
       : (mBest > 0 ? '<br><span style="font-size:13px">ベスト ' + mBest + '/10（8もんで ごうかく）</span>' : ''));
-  if (comp) { mb.addEventListener('click', function () { startMaster(i); }); } else { mb.disabled = true; }
+  mb.addEventListener('click', function () { startMaster(i); });
   scroll.appendChild(mb);
   var tb = document.createElement('button');
-  tb.className = 'big-btn blue' + (comp ? '' : ' gray');
+  tb.className = 'big-btn blue';
   var taPrev = save.taBest[r.id] || 0;
   tb.innerHTML = '⏱ タイムアタック（' + r.prefs.length + 'けん れんぞくタップ）' +
     (taPrev ? '<br><span style="font-size:13px">' + taMedal(i, taPrev)[0] + ' ベスト ' + fmtSec(taPrev) + '</span>' : '');
-  if (comp) { tb.addEventListener('click', function () { startTA(i); }); } else { tb.disabled = true; }
+  tb.addEventListener('click', function () { startTA(i); });
   scroll.appendChild(tb);
   right.appendChild(scroll);
   split.appendChild(right);
@@ -886,6 +939,15 @@ function startZenkoku() {
   quiz = { mode: 'zenkoku', idx: 0, score: 0, marks: [], locked: false, qs: buildZenkokuQuestions() };
   renderQuestion();
 }
+// サバイバル: ミスするまで全国からエンドレス出題（むずかしい問題タイプ）
+function randomSurvivalQ() {
+  var code = ALL_CODES[Math.floor(Math.random() * ALL_CODES.length)];
+  return makeHardQ(code, HARD_TYPES[Math.floor(Math.random() * HARD_TYPES.length)]);
+}
+function startSurvival() {
+  quiz = { mode: 'survival', idx: 0, score: 0, marks: [], locked: false, qs: [randomSurvivalQ()] };
+  renderQuestion();
+}
 function renderQuestion() {
   var q = quiz.qs[quiz.idx];
   var code = q.code;
@@ -896,14 +958,22 @@ function renderQuestion() {
   var panel = document.createElement('div');
   panel.className = 'panel';
 
-  var dots = document.createElement('div');
-  dots.className = 'q-dots';
-  for (var i = 0; i < quiz.qs.length; i++) {
-    var d = document.createElement('span');
-    d.className = 'q-dot' + (i < quiz.idx ? (quiz.marks[i] ? ' ok' : ' ng') : (i === quiz.idx ? ' now' : ''));
-    dots.appendChild(d);
+  if (quiz.mode === 'survival') {
+    var st = document.createElement('div');
+    st.className = 'progress-line';
+    st.innerHTML = '🔥 いま <span style="font-size:22px;color:#e64a19">' + quiz.score + '</span> れんぞく せいかいちゅう！' +
+      (save.survival ? '（さいこう ' + save.survival + '）' : '');
+    panel.appendChild(st);
+  } else {
+    var dots = document.createElement('div');
+    dots.className = 'q-dots';
+    for (var i = 0; i < quiz.qs.length; i++) {
+      var d = document.createElement('span');
+      d.className = 'q-dot' + (i < quiz.idx ? (quiz.marks[i] ? ' ok' : ' ng') : (i === quiz.idx ? ' now' : ''));
+      dots.appendChild(d);
+    }
+    panel.appendChild(dots);
   }
-  panel.appendChild(dots);
 
   var prompt = document.createElement('div');
   prompt.className = 'q-prompt';
@@ -926,6 +996,7 @@ function renderQuestion() {
         var ok = tapped === code;
         if (!ok) g.classList.add('p-bad');
         svgPref(svg, code).classList.add('p-good');
+        addPin(svg, code);
         answer(ok, 'ここが ' + prefRuby(code) + ' だよ');
       }
     })));
@@ -960,6 +1031,7 @@ function renderQuestion() {
         var ok = tapped === code;
         if (!ok) g.classList.add('p-bad');
         svgPref(svg, code).classList.add('p-good');
+        addPin(svg, code);
         answer(ok, 'ここが ' + prefRuby(code) + ' だよ');
       }
     })));
@@ -985,7 +1057,8 @@ function renderQuestion() {
 
   el.appendChild(panel);
   var title;
-  if (quiz.mode === 'zenkoku') title = '👑 全国（ぜんこく）マスターテスト ' + (quiz.idx + 1) + '/' + quiz.qs.length;
+  if (quiz.mode === 'survival') title = '🔥 サバイバル';
+  else if (quiz.mode === 'zenkoku') title = '👑 全国（ぜんこく）マスターテスト ' + (quiz.idx + 1) + '/' + quiz.qs.length;
   else if (quiz.mode === 'master') title = '👑 マスターテスト ' + (quiz.idx + 1) + '/' + quiz.qs.length;
   else title = prefRuby(code) + ' クイズ ' + (quiz.idx + 1) + '/' + quiz.qs.length;
   show('view-quiz', title);
@@ -1022,15 +1095,63 @@ function answer(ok, revealHTML) {
   fb.innerHTML = ok
     ? '<span class="fb-ok">⭕ せいかい！</span>'
     : '<span class="fb-ng">❌ おしい！ ' + revealHTML + '</span>';
+  // サバイバル: 5れんぞくごとに ほめる
+  if (quiz.mode === 'survival' && ok && quiz.score > 0 && quiz.score % 5 === 0) {
+    fb.innerHTML += '<div class="fb-ok" style="font-size:16px">⭐ ' + quiz.score + ' れんぞく たっせい！ すごい！</div>';
+  }
   var next = document.createElement('button');
   next.className = 'big-btn blue';
-  next.innerHTML = (quiz.idx + 1 < quiz.qs.length) ? 'つぎへ ▶' : 'けっかを 見（み）る 🎉';
-  next.addEventListener('click', function () {
-    quiz.idx++;
-    if (quiz.idx < quiz.qs.length) renderQuestion();
-    else showResult();
-  });
+  if (quiz.mode === 'survival') {
+    if (ok) quiz.qs.push(randomSurvivalQ());  // 正解したら つぎの問題を追加（エンドレス）
+    next.innerHTML = ok ? 'つぎへ ▶' : 'けっかを 見（み）る 🔥';
+    next.addEventListener('click', function () {
+      if (ok) { quiz.idx++; renderQuestion(); }
+      else showSurvivalResult();
+    });
+  } else {
+    next.innerHTML = (quiz.idx + 1 < quiz.qs.length) ? 'つぎへ ▶' : 'けっかを 見（み）る 🎉';
+    next.addEventListener('click', function () {
+      quiz.idx++;
+      if (quiz.idx < quiz.qs.length) renderQuestion();
+      else showResult();
+    });
+  }
   fb.appendChild(next);
+}
+function showSurvivalResult() {
+  var streak = quiz.score;
+  var prev = save.survival || 0;
+  var isNew = streak > prev;
+  if (isNew) {
+    save.survival = streak;  // ベストのみ上書き
+    persist();
+  }
+  var el = $('view-result');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML =
+    '<div class="ta-result">🔥</div>' +
+    '<div class="res-msg">' + streak + ' れんぞく せいかい！</div>' +
+    (isNew
+      ? '<div class="res-msg" style="color:#f57f17">✨ しんきろく！</div>'
+      : '<div class="progress-line">さいこうきろく: ' + prev + ' れんぞく</div>');
+  if (isNew && streak > 0) confettiBurst();
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  var re = document.createElement('button');
+  re.className = 'big-btn';
+  re.innerHTML = '🔥 もういちど ちょうせん！';
+  re.addEventListener('click', function () { startSurvival(); });
+  row.appendChild(re);
+  var back = document.createElement('button');
+  back.className = 'big-btn blue';
+  back.innerHTML = '🏠 ホームへ もどる';
+  back.addEventListener('click', function () { renderHome(); });
+  row.appendChild(back);
+  panel.appendChild(row);
+  el.appendChild(panel);
+  show('view-result', '🔥 サバイバル けっか');
 }
 
 /* =============== けっか =============== */
@@ -1368,6 +1489,10 @@ function finishTA() {
     (isNew
       ? '<div class="res-msg" style="color:#f57f17">✨ しんきろく！</div>'
       : '<div class="progress-line">ベスト: ' + fmtSec(prev) + ' ' + taMedal(ta.ri, prev)[0] + ' には とどかなかった…もういちど！</div>');
+  // 端末内ランキング（名前つき。教室の1台でつかえば クラスのランキングになる）
+  var rankArea = document.createElement('div');
+  panel.appendChild(rankArea);
+  renderTARank(rankArea, key, ms);
   var row = document.createElement('div');
   row.className = 'btn-row';
   var re = document.createElement('button');
@@ -1385,6 +1510,229 @@ function finishTA() {
   panel.appendChild(row);
   el.appendChild(panel);
   if (isNew) confettiBurst();
+}
+
+/* =============== タイムアタックの端末内ランキング =============== */
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+// ms を渡すと「5位以内なら名前とうろくフォーム」も出す（とうろく後は ms=null で再描画）
+function renderTARank(area, key, ms) {
+  var rank = save.taRank[key] || [];
+  var qualifies = typeof ms === 'number' && (rank.length < 5 || ms < rank[rank.length - 1].ms);
+  area.innerHTML = '';
+  if (qualifies) {
+    var lb = document.createElement('div');
+    lb.className = 'tk-label';
+    lb.style.textAlign = 'center';
+    lb.innerHTML = '🏆 ランキングに とうじょう！ なまえを いれてね';
+    area.appendChild(lb);
+    var input = document.createElement('input');
+    input.className = 'name-input';
+    input.maxLength = 8;
+    input.placeholder = 'なまえ（8もじまで）';
+    area.appendChild(input);
+    var reg = document.createElement('button');
+    reg.className = 'big-btn blue';
+    reg.style.maxWidth = '340px';
+    reg.style.margin = '10px auto 0';
+    reg.innerHTML = '✍ とうろくする';
+    reg.addEventListener('click', function () {
+      var name = (input.value || 'ななしさん').slice(0, 8);
+      rank.push({ n: name, ms: ms });
+      rank.sort(function (a, b) { return a.ms - b.ms; });
+      save.taRank[key] = rank.slice(0, 5);
+      persist();
+      renderTARank(area, key, null);
+    });
+    area.appendChild(reg);
+  }
+  var list = save.taRank[key] || [];
+  if (list.length) {
+    var h = document.createElement('div');
+    h.className = 'tk-label';
+    h.style.textAlign = 'center';
+    h.innerHTML = '🏆 ランキング（この iPadの きろく）';
+    area.appendChild(h);
+    var medals = ['🥇', '🥈', '🥉', '4い', '5い'];
+    list.forEach(function (r, i) {
+      var row = document.createElement('div');
+      row.className = 'rank-row';
+      row.innerHTML = '<span>' + medals[i] + ' ' + escapeHTML(r.n) + '</span><span>' + fmtSec(r.ms) + '</span>';
+      area.appendChild(row);
+    });
+  }
+}
+
+/* =============== ふたりでたいけつ（上下2分割・むかいあって同時タップ早押し） =============== */
+// 1台のiPadを机に置き、ふたりが向かい合う。上half(P2)は180度回転。
+// 同じ「〇〇県をさがせ！」に先に正しくタップした方が1ポイント。おてつきは1.5秒おやすみ。
+var vs = null;
+var VS_WIN = 5;         // さきに5ポイントで かち（叩き台）
+var VS_FREEZE = 1500;   // おてつきペナルティms（叩き台）
+function openVSSetup() {
+  vs = null;
+  var el = $('view-vs');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.style.flex = '1';
+  panel.style.overflowY = 'auto';
+  panel.innerHTML =
+    '<div class="vs-big">⚔️ ふたりで たいけつ！</div>' +
+    '<div class="progress-line">iPadを あいだに おいて、むかいあって すわろう。<br>' +
+    'おなじ もんだいが 出るよ。さきに 正（ただ）しい けんを タップした ほうが 1ポイント！<br>' +
+    'おてつきは 1.5びょう おやすみ。さきに ' + VS_WIN + 'ポイントで かち！</div>' +
+    '<div class="tk-label" style="text-align:center">たたかう ばしょを えらんでね</div>';
+  var list = document.createElement('div');
+  list.className = 'side-scroll';
+  var allBtn = document.createElement('button');
+  allBtn.className = 'region-btn';
+  allBtn.innerHTML = '<span class="rb-dot" style="background:#37474f"></span>' +
+    '<span class="rb-name">🗾 ぜんこく（47けん）</span><span class="rb-state">▶ たたかう</span>';
+  allBtn.addEventListener('click', function () { startVS('all'); });
+  list.appendChild(allBtn);
+  REGIONS.forEach(function (r, i) {
+    var b = document.createElement('button');
+    b.className = 'region-btn';
+    b.innerHTML = '<span class="rb-dot" style="background:' + r.color + '"></span>' +
+      '<span class="rb-name">' + ruby(r.name, r.kana) + '</span><span class="rb-state">▶ たたかう</span>';
+    b.addEventListener('click', function () { startVS(i); });
+    list.appendChild(b);
+  });
+  panel.appendChild(list);
+  el.appendChild(panel);
+  show('view-vs', '⚔️ ふたりで たいけつ');
+}
+function vsBuildHalf(player, prefs, scope) {
+  var half = document.createElement('div');
+  half.className = 'vs-half ' + (player === 0 ? 'p1' : 'p2');
+  var head = document.createElement('div');
+  head.className = 'vs-head';
+  head.innerHTML = '<span class="vs-name">' + (player === 0 ? '🔵 あお' : '🔴 あか') + '</span>' +
+    '<span class="vs-score"></span>';
+  half.appendChild(head);
+  var prompt = document.createElement('div');
+  prompt.className = 'vs-prompt';
+  half.appendChild(prompt);
+  var msg = document.createElement('div');
+  msg.className = 'vs-msg';
+  half.appendChild(msg);
+  var map = makeMap({
+    view: scope === 'all' ? null : prefs, active: prefs, others: 'dim',
+    boundary: scope === 'all',
+    onTap: function (code, g) { vsTap(player, code, g); }
+  });
+  half.appendChild(wrapMap(map));
+  return { root: half, head: head, prompt: prompt, msg: msg, svg: map };
+}
+function startVS(scope) {
+  var prefs = scope === 'all' ? ALL_CODES.slice() : REGIONS[scope].prefs.slice();
+  vs = { scope: scope, prefs: prefs, score: [0, 0], target: 0, locked: true, frozenUntil: [0, 0], halves: [] };
+  var el = $('view-vs');
+  el.innerHTML = '';
+  var wrap = document.createElement('div');
+  wrap.className = 'vs-wrap';
+  var h2 = vsBuildHalf(1, prefs, scope);
+  var h1 = vsBuildHalf(0, prefs, scope);
+  vs.halves = [h1, h2];
+  var mid = document.createElement('div');
+  mid.className = 'vs-mid';
+  mid.id = 'vs-mid';
+  wrap.appendChild(h2.root);   // 上＝あか（回転）
+  wrap.appendChild(mid);
+  wrap.appendChild(h1.root);   // 下＝あお
+  el.appendChild(wrap);
+  show('view-vs', '⚔️ ふたりで たいけつ');
+  updateVSScores();
+  nextVSRound();
+}
+function updateVSScores() {
+  for (var p = 0; p < 2; p++) {
+    var s = '';
+    for (var i = 0; i < VS_WIN; i++) s += i < vs.score[p] ? '●' : '○';
+    vs.halves[p].head.querySelector('.vs-score').textContent = s;
+  }
+  $('vs-mid').textContent = '🔵 ' + vs.score[0] + ' ― ' + vs.score[1] + ' 🔴　さきに ' + VS_WIN + 'ポイントで かち！';
+}
+function resetVSMaps() {
+  vs.halves.forEach(function (h) {
+    var marked = h.svg.querySelectorAll('.p-good, .p-bad');
+    for (var i = 0; i < marked.length; i++) { marked[i].classList.remove('p-good'); marked[i].classList.remove('p-bad'); }
+    var pins = h.svg.querySelectorAll('text.pin');
+    for (var j = 0; j < pins.length; j++) pins[j].parentNode.removeChild(pins[j]);
+    h.root.classList.remove('vs-frozen');
+    h.msg.textContent = '';
+  });
+}
+function nextVSRound() {
+  if (!vs || curView !== 'view-vs') return;
+  resetVSMaps();
+  var next = vs.target;
+  while (next === vs.target) next = vs.prefs[Math.floor(Math.random() * vs.prefs.length)];
+  vs.target = next;
+  vs.frozenUntil = [0, 0];
+  vs.locked = false;
+  vs.halves.forEach(function (h) {
+    h.prompt.innerHTML = '⚔️ ' + prefRuby(vs.target) + ' を さがせ！';
+  });
+}
+function vsTap(player, code, g) {
+  if (!vs || vs.locked) return;
+  var now = performance.now();
+  if (vs.frozenUntil[player] > now) return;
+  var me = vs.halves[player], foe = vs.halves[1 - player];
+  if (code === vs.target) {
+    vs.locked = true;
+    vs.score[player]++;
+    g.classList.add('p-good');
+    addPin(me.svg, code);
+    var foeG = svgPref(foe.svg, code);
+    if (foeG) { foeG.classList.add('p-good'); addPin(foe.svg, code); }
+    me.msg.textContent = '⭕ はやい！ ポイント ゲット！';
+    foe.msg.textContent = 'ここだったよ！';
+    updateVSScores();
+    if (vs.score[player] >= VS_WIN) setTimeout(showVSResult, 1000);
+    else setTimeout(nextVSRound, 1500);
+  } else {
+    vs.frozenUntil[player] = now + VS_FREEZE;
+    g.classList.add('p-bad');
+    me.root.classList.add('vs-frozen');
+    me.msg.textContent = '❌ おてつき！ ちょっと おやすみ…';
+    (function (h, el2) {
+      setTimeout(function () {
+        el2.classList.remove('p-bad');
+        if (vs && !vs.locked) { h.root.classList.remove('vs-frozen'); h.msg.textContent = ''; }
+      }, VS_FREEZE);
+    })(me, g);
+  }
+}
+function showVSResult() {
+  if (!vs || curView !== 'view-vs') return;
+  var winner = vs.score[0] >= VS_WIN ? 0 : 1;
+  vs.locked = true;
+  vs.halves.forEach(function (h, p) {
+    h.prompt.innerHTML = p === winner ? '🏆 かち！ おめでとう！' : '💪 おしい！ つぎは かてる！';
+    h.msg.textContent = '';
+  });
+  confettiBurst();
+  var mid = $('vs-mid');
+  mid.innerHTML = '';
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  var re = document.createElement('button');
+  re.className = 'big-btn';
+  re.innerHTML = '⚔️ もういちど！';
+  re.addEventListener('click', function () { startVS(vs.scope); });
+  row.appendChild(re);
+  var back = document.createElement('button');
+  back.className = 'big-btn blue';
+  back.innerHTML = '🏠 ホームへ';
+  back.addEventListener('click', function () { renderHome(); });
+  row.appendChild(back);
+  mid.appendChild(row);
 }
 
 /* =============== ご当地カード =============== */
@@ -1481,6 +1829,9 @@ else if (/^#m\d+$/.test(bootHash)) startMaster(Number(bootHash.slice(2)));
 else if (bootHash === '#taall') startTA('all');
 else if (/^#ta\d+$/.test(bootHash)) startTA(Number(bootHash.slice(3)));
 else if (bootHash === '#zen') startZenkoku();
+else if (bootHash === '#sv') startSurvival();
+else if (bootHash === '#vs') openVSSetup();
+else if (/^#vsg(\d+|all)$/.test(bootHash)) startVS(bootHash.slice(4) === 'all' ? 'all' : Number(bootHash.slice(4)));
 else if (bootHash === '#free') openFreePick();
 else if (bootHash === '#zukan') openZukan();
 else renderHome();

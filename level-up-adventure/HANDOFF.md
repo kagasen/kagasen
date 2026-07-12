@@ -263,3 +263,5 @@ sw.js に tailwind.css/fonts を追加し CACHE v2→v3。習慣名に めずら
 
 ## backup-kit v2 へ更新（2026-07-07）
 - 共通部品を v2 に差し替え（複数キーアプリ用の collect/restore フック追加。このアプリは従来の storageKey 方式のまま＝挙動不変）。`backup-kit.js?v=1`→`?v=2`、sw.js の CACHE 繰り上げ済み。同梱アプリは3→9個に増えた（+typing/shukudai/shinmatorikusu/classroom-board/taiiku-relay/sikou-tool-app）。
+
+■ サムネイル刷新（2026-07-12）: images/level-up-adventure.svg をアプリ画面の再現（実画面スクショ風のSVG）に差し替え。ユーザー要望「サムネがダサい」対応。旧版は git 履歴にあり。

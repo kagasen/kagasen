@@ -57,6 +57,10 @@
   kanji-bouken と同じ流儀）/ icon.svg（気球と島）。index.html に manifest リンクとSW登録追加。
 - ポータル登録: apps.js 先頭に追加（category "social"=初の社会アプリ・subject-green）
   ＋ images/todofuken-bouken.svg サムネ（400x260）。release-check の警告2件（未登録・PWAなし）解消。
+- サムネは2026-07-12にユーザー要望で作り直し: 全国タイムアタックの画面風
+  （左=「つぎは… 青森県！（1/47）」・右=本物の地図データ map-data.js から生成した日本地図）。
+  ポータルカードは object-fit: cover で上下が切れるため、重要要素は中央帯に置く構図。
+  再生成したいときは HANDOFF のこの節の生成方針で map-data.js から作る（手描きしない）。
 - 動作確認ハッシュ追加: #taall（全国TA）/ #zen（全国マスター）/ #free（れんしゅう選択）。
 
 ■ 第2段の実装内容（2026-07-12）

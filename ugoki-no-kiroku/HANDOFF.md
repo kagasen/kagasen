@@ -71,3 +71,5 @@
 - **同梱アプリは9個に拡大**: ugoki-no-kiroku / level-up-adventure / kanji-bouken（従来3）＋ typing（3キー・collect/restore）/ shukudai / shinmatorikusu / classroom-board（2キー・collect/restore）/ taiiku-relay / sikou-tool-app。sakkanojikan は自前のファイル保存があるため対象外（同HANDOFF参照）。
 - 部品を直したら**9フォルダ全部に配り直し**、各エントリHTMLの `?v=` と各 sw.js の CACHE を繰り上げること（今回 v1→v2、ugoki-cache v7→v8）。
 - 検証済み（2026-07-07）: typing 3キーの書き出し/読み込み/退避、classroom-board 2キー（キー削除含む）、単一キー4アプリの一周、v2でも既存 ugoki の書き出しが従来どおり動くこと。
+
+■ サムネイル刷新（2026-07-12）: images/ugoki-no-kiroku.svg をアプリ画面の再現（実画面スクショ風のSVG）に差し替え。ユーザー要望「サムネがダサい」対応。旧版は git 履歴にあり。

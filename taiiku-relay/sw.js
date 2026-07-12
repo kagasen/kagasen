@@ -1,10 +1,10 @@
 // 体育リレーチーム編成メーカー — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'taiiku-relay-cache-v4';
+const CACHE = 'taiiku-relay-cache-v5';
 const ASSETS = [
   './',
-  './backup-kit.js?v=2',
+  './backup-kit.js?v=3',
   './index.html',
   './tailwind.css',
   './vendor/lucide.min.js',

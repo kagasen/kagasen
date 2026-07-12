@@ -1,10 +1,10 @@
 // 宿題提出ポスト — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'shukudai-cache-v3';
+const CACHE = 'shukudai-cache-v4';
 const ASSETS = [
   './',
-  './backup-kit.js?v=2',
+  './backup-kit.js?v=3',
   './barcode-detector.min.js',
   './index.html',
   './qrcode.min.js',

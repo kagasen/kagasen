@@ -282,7 +282,7 @@ input[type=date],input[type=text],select{
 <div id="toast"></div>
 <div id="modal-root"></div>
 <canvas id="confetti"></canvas>
-<script src="backup-kit.js?v=2"></script>
+<script src="backup-kit.js?v=3"></script>
 <script>
 'use strict';
 /* ============================================================
@@ -1339,7 +1339,7 @@ function confettiTick(){
   else { confRunning=false; confCtx.clearRect(0,0,confCanvas.width,confCanvas.height); }
 }
 
-function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 /* ---------------- ルーター ---------------- */
 const app = document.getElementById('app');
 function go(route){ location.hash = '#/'+route; }
@@ -1565,7 +1565,7 @@ function nawaSpeedHtml(){
   ${log.length?`<div class="card">
     <h3>📈 きろくののび <span class="small" style="color:#EF4444">●まえ</span> <span class="small" style="color:#2563EB">●うしろ</span></h3>
     <div class="chart-wrap">${lineChart(
-      [{color:'#EF4444',points:log.map(r=>r.mae??null)},{color:'#2563EB',points:log.map(r=>r.ushiro??null)}],
+      [{color:'#EF4444',points:log.map(r=>r.mae==null?null:r.mae)},{color:'#2563EB',points:log.map(r=>r.ushiro==null?null:r.ushiro)}],
       {labels:log.map(r=>fmtDate(r.date)), minMax:50}
     )}</div>
   </div>`:''}`;

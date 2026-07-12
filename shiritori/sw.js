@@ -1,7 +1,7 @@
 // しりとり魔神 — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'shiritori-cache-v1';
+const CACHE = 'shiritori-cache-v2';
 const ASSETS = [
   './',
   './dictionary_output.js',

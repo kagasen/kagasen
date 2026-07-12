@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4fc3f7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>都道府県の冒険</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; height: 100%; }
+  /* スクロールなし前提: アプリ全体を画面の高さに固定し、各画面は flex で中に収める */
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #90caf9 0%, #bbdefb 40%, #e1f5fe 100%);
+    color: #37474f;
+  }
+  ruby rt { font-size: 0.45em; color: #78909c; }
+
+  /* ---------- トップバー ---------- */
+  #topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px; gap: 8px;
+    flex: none; z-index: 20;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(33,150,243,0.15);
+  }
+  #tb-title { font-weight: 800; font-size: 18px; color: #1565c0; text-align: center; flex: 1; min-width: 0; }
+  .tb-btn {
+    min-height: 48px; padding: 8px 14px; border: none; border-radius: 14px;
+    background: #e3f2fd; color: #1565c0; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  .tb-btn:active { transform: scale(0.96); }
+  .tb-hidden { visibility: hidden; }
+
+  main {
+    flex: 1; min-height: 0; width: 100%; max-width: 1100px;
+    margin: 0 auto; padding: 10px 12px; display: flex;
+  }
+  .view { display: none; }
+  .view.on { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+  .panel {
+    background: #fff; border-radius: 18px; padding: 12px;
+    box-shadow: 0 4px 14px rgba(33,150,243,0.18);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  h2.vh { font-size: 20px; color: #1565c0; margin-bottom: 6px; text-align: center; flex: none; }
+
+  /* 2カラム分割（iPad横/縦=左右、せまいスマホ=上下） */
+  .split { display: flex; gap: 12px; flex: 1; min-height: 0; }
+  .split > * { min-height: 0; min-width: 0; }
+  .split .main-col { flex: 1.35; }
+  .split .side-col { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .side-scroll { overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
+  @media (max-width: 620px) {
+    .split { flex-direction: column; }
+    .split .main-col { flex: 1.1; }
+  }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; flex: none; }
+  .btn-row .big-btn { flex: 1 1 200px; }
+
+  /* ---------- 地図 ---------- */
+  .mapbox {
+    flex: 1; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mapbox svg { width: 100%; height: 100%; display: block; }
+  .prefecture { fill: #fffdf7; stroke: #8d6e63; stroke-width: 1; transition: fill 0.2s; }
+  .prefecture polygon, .prefecture path { vector-effect: non-scaling-stroke; }
+  .boundary-line { stroke: #64b5f6; stroke-width: 2; stroke-dasharray: 5 5; fill: none; }
+  .p-hide { display: none; }
+  .p-dim { fill: #eceff1; stroke: #cfd8dc; pointer-events: none; }
+  .p-tap { cursor: pointer; }
+  .p-mark { animation: markPulse 1.1s ease-in-out infinite; }
+  @keyframes markPulse { 0%,100% { fill-opacity: 1; } 50% { fill-opacity: 0.45; } }
+  .p-good { fill: #81c784 !important; }
+  .p-bad  { fill: #ef9a9a !important; }
+  .sil .prefecture { fill: #607d8b; stroke: none; }
+  text.flag, text.balloon { pointer-events: none; }
+
+  /* ---------- ボタン ---------- */
+  .big-btn {
+    display: block; width: 100%; min-height: 52px; padding: 10px;
+    border: none; border-radius: 16px; cursor: pointer;
+    background: linear-gradient(180deg, #ffb74d, #ff9800); color: #fff;
+    font-size: 18px; font-weight: 800; box-shadow: 0 4px 0 #ef6c00;
+    margin-top: 10px; flex: none;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #ef6c00; }
+  .big-btn.blue { background: linear-gradient(180deg, #4fc3f7, #29b6f6); box-shadow: 0 4px 0 #0288d1; }
+  .big-btn.blue:active { box-shadow: 0 1px 0 #0288d1; }
+  .big-btn.gray { background: #b0bec5; box-shadow: 0 4px 0 #78909c; }
+
+  .region-btn {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    min-height: 52px; padding: 8px 14px; margin-top: 8px;
+    border: none; border-radius: 16px; cursor: pointer; text-align: left;
+    background: #fff; box-shadow: 0 3px 8px rgba(33,150,243,0.15);
+    font-size: 17px; font-weight: 700; color: #37474f;
+  }
+  .region-btn:active { transform: scale(0.98); }
+  .region-btn .rb-dot { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+  .region-btn .rb-name { flex: 1; }
+  .region-btn .rb-state { font-size: 14px; color: #78909c; font-weight: 700; }
+  .region-btn[disabled] { opacity: 0.55; cursor: default; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip {
+    min-height: 48px; padding: 8px 12px; border: none; border-radius: 14px; cursor: pointer;
+    background: #e3f2fd; color: #1565c0; font-size: 16px; font-weight: 700;
+  }
+  .chip:active { transform: scale(0.96); }
+  .chip .st { margin-left: 4px; }
+
+  /* ---------- ホーム ---------- */
+  #home-head { text-align: center; padding: 2px 0 6px; flex: none; }
+  #home-head h1 { font-size: 22px; color: #0d47a1; text-shadow: 0 2px 0 rgba(255,255,255,0.7); }
+  #home-head .sub { font-size: 13px; color: #546e7a; margin-top: 2px; font-weight: 700; }
+  .balloon-fly { font-size: 28px; display: inline-block; animation: fly 3s ease-in-out infinite; vertical-align: middle; }
+  @keyframes fly { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .progress-line { text-align: center; font-size: 15px; font-weight: 800; color: #37474f; margin: 4px 0; flex: none; }
+  .progress-line .gold { color: #f57f17; }
+
+  /* ---------- たんけん ---------- */
+  .tk-name { text-align: center; font-size: 26px; font-weight: 900; color: #0d47a1; margin: 2px 0 6px; flex: none; }
+  .tk-shape { height: 90px; flex: none; display: flex; justify-content: center; }
+  .tk-shape .mapbox { flex: none; height: 100%; width: 120px; }
+  .tk-cap { font-size: 17px; font-weight: 800; text-align: center; margin: 6px 0; flex: none; }
+  .tk-label { font-size: 13px; font-weight: 800; color: #ff8f00; margin: 8px 0 4px; flex: none; }
+  .mei-row { display: flex; gap: 8px; flex-wrap: wrap; flex: none; }
+  .mei-item {
+    flex: 1; min-width: 96px; background: #fff8e1; border-radius: 14px;
+    padding: 8px 6px; text-align: center; font-weight: 700; font-size: 13px;
+  }
+  .mei-item .me { font-size: 28px; display: block; margin-bottom: 2px; }
+  .mame { background: #e8f5e9; border-radius: 14px; padding: 10px; font-size: 14px; line-height: 1.6; font-weight: 600; flex: none; }
+
+  /* ---------- クイズ ---------- */
+  .q-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #view-quiz .panel, #view-ta .panel, #view-result .panel, #view-zukan .panel { flex: 1; }
+  #view-result .panel { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .q-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; flex: none; }
+  .q-dot { width: 16px; height: 16px; border-radius: 50%; background: #cfd8dc; font-size: 0; }
+  .q-dot.now { background: #29b6f6; transform: scale(1.25); }
+  .q-dot.ok { background: #66bb6a; }
+  .q-dot.ng { background: #ef9a9a; }
+  .q-prompt { text-align: center; font-size: 18px; font-weight: 800; margin-bottom: 8px; line-height: 1.5; flex: none; }
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: none; }
+  .choice-btn {
+    min-height: 56px; border: 3px solid #b3e5fc; border-radius: 16px; cursor: pointer;
+    background: #fff; font-size: 18px; font-weight: 800; color: #37474f; padding: 6px;
+  }
+  .choice-btn:active { transform: scale(0.97); }
+  .choice-btn .ce { font-size: 26px; display: block; }
+  .choice-btn .mapbox { height: 88px; }
+  .choice-btn.good { background: #c8e6c9; border-color: #66bb6a; }
+  .choice-btn.bad { background: #ffcdd2; border-color: #e57373; }
+  .choice-btn[disabled] { cursor: default; }
+  #q-feedback { text-align: center; margin-top: 8px; min-height: 24px; font-size: 18px; font-weight: 900; flex: none; }
+  #q-feedback .big-btn { max-width: 340px; margin: 8px auto 0; }
+  #q-feedback .fb-ok { color: #2e7d32; }
+  #q-feedback .fb-ng { color: #c62828; }
+
+  /* ---------- けっか・カード ---------- */
+  .res-score { text-align: center; font-size: 26px; margin: 4px 0; letter-spacing: 3px; flex: none; }
+  .res-msg { text-align: center; font-size: 19px; font-weight: 900; color: #1565c0; margin-bottom: 6px; flex: none; }
+  .gcard {
+    width: 230px; margin: 8px auto; background: linear-gradient(160deg, #e3f2fd, #fff);
+    border: 4px solid #64b5f6; border-radius: 18px; padding: 10px; text-align: center;
+    animation: cardPop 0.5s ease-out; flex: none;
+  }
+  .gcard.gold {
+    border-color: #f9a825; background: linear-gradient(160deg, #fff8e1, #fffde7);
+    box-shadow: 0 0 18px rgba(249,168,37,0.6);
+  }
+  @keyframes cardPop { 0% { transform: scale(0.3) rotate(-8deg); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+  .gc-emoji { font-size: 36px; }
+  .gc-name { font-size: 20px; font-weight: 900; color: #0d47a1; margin: 2px 0 4px; }
+  .gc-shape { width: 110px; height: 84px; margin: 0 auto; display: flex; }
+  .gc-shape .mapbox { height: 100%; }
+  .gc-cap { font-size: 13px; font-weight: 700; margin-top: 4px; }
+  .gc-mei { font-size: 13px; font-weight: 600; color: #546e7a; margin-top: 4px; line-height: 1.5; }
+  .gc-goldtag { font-size: 13px; font-weight: 900; color: #f57f17; margin-top: 4px; }
+
+  /* ---------- ずかん ---------- */
+  #view-zukan .panel { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .zk-region-h { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; margin: 12px 0 6px; flex: none; }
+  .zk-region-h .rb-dot { width: 14px; height: 14px; border-radius: 50%; }
+  .zk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .zk-slot {
+    background: #fff; border: 3px solid #b3e5fc; border-radius: 14px; padding: 8px 4px;
+    text-align: center; cursor: pointer; min-height: 92px; font-weight: 700;
+  }
+  .zk-slot .ze { font-size: 30px; display: block; }
+  .zk-slot .zn { font-size: 13px; display: block; margin-top: 2px; }
+  .zk-slot.none { background: #eceff1; border-color: #cfd8dc; color: #90a4ae; cursor: default; }
+  .zk-slot.gold { border-color: #f9a825; background: #fffde7; }
+  .zk-slot:active { transform: scale(0.96); }
+  .zk-slot.none:active { transform: none; }
+
+  /* カードのかくだいオーバーレイ */
+  #card-overlay {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(38,50,56,0.6); padding: 20px;
+    align-items: center; justify-content: center; flex-direction: column;
+  }
+  #card-overlay.on { display: flex; }
+  #card-overlay .big-btn { max-width: 280px; }
+
+  /* ---------- コンフェッティ ---------- */
+  .confetti {
+    position: fixed; top: -14px; width: 10px; height: 14px; z-index: 90;
+    pointer-events: none; animation: confFall 2.2s linear forwards; border-radius: 2px;
+  }
+  @keyframes confFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(540deg); opacity: 0.6; }
+  }
+
+  /* ---------- タイムアタック ---------- */
+  #ta-timer {
+    text-align: center; font-size: 46px; font-weight: 900; color: #1565c0;
+    font-variant-numeric: tabular-nums; margin-bottom: 4px;
+  }
+  #ta-timer.pen { color: #c62828; animation: shake 0.3s; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
+  .ta-result { text-align: center; font-size: 64px; margin: 4px 0; }
+  .choice-btn .mapbox { max-width: 110px; margin: 0 auto; }
+
+  #credit {
+    flex: none; text-align: center; font-size: 10px; color: #78909c;
+    padding: 2px 10px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+</style>
+</head>
+<body>
+<header id="topbar">
+  <button id="btn-back" class="tb-btn" onclick="goBack()">← もどる</button>
+  <div id="tb-title"></div>
+  <button id="btn-zukan" class="tb-btn" onclick="openZukan()">📖 ずかん</button>
+</header>
+<main>
+  <section id="view-home" class="view"></section>
+  <section id="view-region" class="view"></section>
+  <section id="view-tanken" class="view"></section>
+  <section id="view-quiz" class="view"></section>
+  <section id="view-result" class="view"></section>
+  <section id="view-ta" class="view"></section>
+  <section id="view-zukan" class="view"></section>
+</main>
+<div id="card-overlay" onclick="closeCardOverlay()"></div>
+<footer id="credit">
+  ちずデータ: 「日本地図.svg」© Lincun（CC BY-SA 3.0）をもとにした
+  geolonia/japanese-prefectures の改変版を使用しています。
+</footer>
+
+<script src="map-data.js?v=2"></script>
+<script src="pref-data.js?v=3"></script>
+<script>
+/* =============== セーブ =============== */
+// 単一セーブだがキーは名前空間つき（将来プロフィール化するとき default→id に拡張する）
+var SAVE_KEY = 'todofuken_save_default';
+function loadSave() {
+  var def = { v: 1, cleared: {}, regionMaster: {}, balloon: 0, zenkoku: null, taBest: {} };
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return def;
+    var s = JSON.parse(raw);
+    if (typeof s !== 'object' || !s) return def;
+    // スキーマ変更時はここで旧データを補完移行する（黙って捨てない）
+    for (var k in def) { if (!(k in s)) s[k] = def[k]; }
+    return s;
+  } catch (e) { return def; }
+}
+function persist() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
+}
+var save = loadSave();
+
+/* =============== 共通ヘルパー =============== */
+function $(id) { return document.getElementById(id); }
+function ruby(a, b) { return '<ruby>' + a + '<rt>' + b + '</rt></ruby>'; }
+function prefRuby(code) { return ruby(PREFS[code].n, PREFS[code].k); }
+function shuffle(a) {
+  var arr = a.slice();
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+var ALL_CODES = Object.keys(PREFS).map(Number);
+var REGION_OF = {};   // code -> REGIONS の index
+REGIONS.forEach(function (r, i) { r.prefs.forEach(function (c) { REGION_OF[c] = i; }); });
+
+function isCleared(c) { return (save.cleared[c] || 0) >= 4; }
+function isGold(c) { return (save.cleared[c] || 0) >= 5; }
+function regionComplete(i) { return REGIONS[i].prefs.every(isCleared); }
+function regionHasData(i) { return REGIONS[i].prefs.every(function (c) { return !!CARDS[c]; }); }
+function masterPassed(i) { return (save.regionMaster[REGIONS[i].id] || 0) >= 8; }
+// 次の地方は「前の地方のマスターテスト合格」で解放（設計合意5）
+function regionUnlocked(i) { return i === 0 || masterPassed(i - 1); }
+function completeRegionCount() {
+  var n = 0;
+  for (var i = 0; i < REGIONS.length; i++) { if (regionComplete(i)) n++; }
+  return n;
+}
+function clearedCount() {
+  var n = 0;
+  ALL_CODES.forEach(function (c) { if (isCleared(c)) n++; });
+  return n;
+}
+function goldCount() {
+  var n = 0;
+  ALL_CODES.forEach(function (c) { if (isGold(c)) n++; });
+  return n;
+}
+
+/* =============== 地図ユーティリティ =============== */
+var PBOX = {};  // code -> {x,y,w,h,cx,cy}（離島も含む全体のbbox。viewBox座標・起動時に実測）
+var CBOX = {};  // code -> 本体（いちばん大きい島）だけのbbox。東京の小笠原・鹿児島の離島などで
+                // ズームやシルエットが間延びしないように、表示範囲・旗の位置はこちらを使う
+function buildSvg(vbStr) {
+  var d = document.createElement('div');
+  d.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vbStr + '">' + MAP_INNER + '</svg>';
+  return d.firstElementChild;
+}
+function measureBoxes() {
+  // viewBox 0 0 1000 1000 のSVGを1000pxで不可視レンダリングすると px==viewBox座標 になる
+  var host = document.createElement('div');
+  host.style.cssText = 'position:fixed;left:-2200px;top:0;width:1000px;height:1000px;visibility:hidden;';
+  var svg = buildSvg(MAP_VIEWBOX);
+  svg.setAttribute('width', '1000');
+  svg.setAttribute('height', '1000');
+  host.appendChild(svg);
+  document.body.appendChild(host);
+  var base = svg.getBoundingClientRect();
+  var gs = svg.querySelectorAll('.prefecture[data-code]');
+  for (var i = 0; i < gs.length; i++) {
+    var r = gs[i].getBoundingClientRect();
+    var code = Number(gs[i].getAttribute('data-code'));
+    var x = r.left - base.left, y = r.top - base.top;
+    PBOX[code] = { x: x, y: y, w: r.width, h: r.height, cx: x + r.width / 2, cy: y + r.height / 2 };
+    // 本体（面積最大の島）のbbox
+    var shapes = gs[i].querySelectorAll('polygon, path');
+    var best = null;
+    for (var j = 0; j < shapes.length; j++) {
+      var sr = shapes[j].getBoundingClientRect();
+      if (!best || sr.width * sr.height > best.width * best.height) best = sr;
+    }
+    if (best) {
+      var bx = best.left - base.left, by = best.top - base.top;
+      CBOX[code] = { x: bx, y: by, w: best.width, h: best.height, cx: bx + best.width / 2, cy: by + best.height / 2 };
+    } else {
+      CBOX[code] = PBOX[code];
+    }
+  }
+  document.body.removeChild(host);
+}
+function unionBox(codes, padRatio) {
+  var x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+  codes.forEach(function (c) {
+    var b = CBOX[c];
+    if (b.x < x1) x1 = b.x;
+    if (b.y < y1) y1 = b.y;
+    if (b.x + b.w > x2) x2 = b.x + b.w;
+    if (b.y + b.h > y2) y2 = b.y + b.h;
+  });
+  var pad = Math.max(x2 - x1, y2 - y1) * (padRatio || 0.08) + 6;
+  return { x: x1 - pad, y: y1 - pad, w: (x2 - x1) + pad * 2, h: (y2 - y1) + pad * 2 };
+}
+// makeMap(o): 地図SVG生成の共通関数
+//   o.view=[codes] ズーム範囲 / o.active=[codes] ふつう表示（省略=全県）
+//   o.others='dim'|'hide' activeでない県の扱い / o.fill(code)=色 / o.mark(code)=強調
+//   o.onTap(code,g,svg)=タップ / o.flag(code)=🚩 / o.boundary=区切り線 / o.silhouette=シルエット
+function makeMap(o) {
+  var svg = buildSvg(MAP_VIEWBOX);
+  var vb = { x: 0, y: 0, w: 1000, h: 1000 };
+  if (o.view) {
+    vb = unionBox(o.view, o.pad);
+    svg.setAttribute('viewBox', vb.x + ' ' + vb.y + ' ' + vb.w + ' ' + vb.h);
+  }
+  if (!o.boundary) {
+    var bl = svg.querySelector('.boundary-line');
+    if (bl) bl.classList.add('p-hide');
+  }
+  if (o.silhouette) svg.classList.add('sil');
+  var act = {};
+  (o.active || ALL_CODES).forEach(function (c) { act[c] = 1; });
+  var gs = svg.querySelectorAll('.prefecture[data-code]');
+  for (var i = 0; i < gs.length; i++) {
+    (function (g) {
+      var code = Number(g.getAttribute('data-code'));
+      if (!act[code]) {
+        g.classList.add(o.others === 'hide' ? 'p-hide' : 'p-dim');
+        return;
+      }
+      if (o.fill) {
+        var col = o.fill(code);
+        if (col) g.style.fill = col;
+      }
+      if (o.mark && o.mark(code)) g.classList.add('p-mark');
+      if (o.onTap) {
+        g.classList.add('p-tap');
+        g.addEventListener('click', function () { o.onTap(code, g, svg); });
+      }
+    })(gs[i]);
+  }
+  if (o.flag) {
+    var fs = Math.max(Math.min(vb.h * 0.075, 46), 18);
+    (o.active || ALL_CODES).forEach(function (c) {
+      if (!o.flag(c)) return;
+      svg.appendChild(svgText(CBOX[c].cx, CBOX[c].cy, fs, 'flag', '🚩'));
+    });
+  }
+  if (o.balloonAt) {
+    var bs = Math.max(Math.min(vb.h * 0.1, 60), 24);
+    svg.appendChild(svgText(o.balloonAt.x, o.balloonAt.y, bs, 'balloon', '🎈'));
+  }
+  return svg;
+}
+function svgText(x, y, fs, cls, str) {
+  var t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  t.setAttribute('x', x); t.setAttribute('y', y);
+  t.setAttribute('font-size', fs);
+  t.setAttribute('text-anchor', 'middle');
+  t.setAttribute('class', cls);
+  t.textContent = str;
+  return t;
+}
+function svgPref(svg, code) { return svg.querySelector('.prefecture[data-code="' + code + '"]'); }
+function regionFill(code) { return isCleared(code) ? REGIONS[REGION_OF[code]].color : null; }
+
+/* =============== 画面切り替え =============== */
+var curRegion = 0;   // いまの地方 index
+var curPref = 0;     // いまの県コード
+var freeMode = false; // れんしゅうモード（ロック無視で遊べる・きろくは のこらない）。ホームに戻ると解除
+var zukanFrom = 'home';
+var BACK_TO = { 'view-region': 'home', 'view-tanken': 'region', 'view-quiz': 'tanken', 'view-result': 'region', 'view-ta': 'region', 'view-zukan': '' };
+var curView = 'view-home';
+function show(id, title) {
+  ['view-home', 'view-region', 'view-tanken', 'view-quiz', 'view-result', 'view-ta', 'view-zukan'].forEach(function (v) {
+    $(v).classList.toggle('on', v === id);
+  });
+  curView = id;
+  $('tb-title').innerHTML = title || '';
+  $('btn-back').classList.toggle('tb-hidden', id === 'view-home');
+  $('btn-zukan').classList.toggle('tb-hidden', id === 'view-zukan' || id === 'view-quiz' || id === 'view-ta');
+  window.scrollTo(0, 0);
+}
+function goBack() {
+  stopTATimer();
+  if (curView === 'view-ta' && ta && ta.ri === 'all') { renderHome(); return; }
+  if (curView === 'view-quiz' && quiz && quiz.mode === 'zenkoku') { renderHome(); return; }
+  if (curView === 'view-zukan') {
+    if (zukanFrom === 'region') { openRegion(curRegion); } else { renderHome(); }
+    return;
+  }
+  // マスターテスト中の「もどる」は地方マップへ（たんけん画面は経由しない）
+  if (curView === 'view-quiz' && quiz && quiz.mode === 'master') { openRegion(quiz.regionIdx); return; }
+  var to = BACK_TO[curView];
+  if (to === 'region') openRegion(curRegion);
+  else if (to === 'tanken') openTanken(curPref);
+  else renderHome();
+}
+
+/* =============== 気球（レベル＝クリアした地方の数。単調増加） =============== */
+var BALLOON_COLORS = ['#ef5350', '#ff9800', '#fdd835', '#66bb6a', '#29b6f6', '#5c6bc0', '#ab47bc', '#f06292'];
+function balloonLevel() { return Math.min(save.balloon, REGIONS.length); }
+function isNihonMaster() { return (save.zenkoku || 0) >= ZENKOKU_PASS; }
+function balloonSVG(px) {
+  var lv = balloonLevel();
+  var col = BALLOON_COLORS[Math.min(lv, BALLOON_COLORS.length - 1)];
+  var starPos = [[30, 14], [17, 23], [43, 23], [11, 36], [49, 36], [22, 48], [38, 48]];
+  var stars = '';
+  for (var i = 0; i < lv && i < starPos.length; i++) {
+    stars += '<text x="' + starPos[i][0] + '" y="' + starPos[i][1] + '" font-size="9" text-anchor="middle">⭐</text>';
+  }
+  // にっぽんマスター（全国マスターテスト合格）で気球のてっぺんに王冠
+  if (isNihonMaster()) stars += '<text x="30" y="4" font-size="13" text-anchor="middle">👑</text>';
+  return '<svg viewBox="0 -12 60 94" width="' + px + '" height="' + Math.round(px * 94 / 60) + '" style="vertical-align:middle">' +
+    '<path d="M30 3 C13 3 5 18 5 30 C5 44 19 53 25 60 L35 60 C41 53 55 44 55 30 C55 18 47 3 30 3 Z" fill="' + col + '" stroke="rgba(0,0,0,0.15)"/>' +
+    '<path d="M30 3 C24 14 24 46 27 60 L33 60 C36 46 36 14 30 3 Z" fill="rgba(255,255,255,0.45)"/>' +
+    '<line x1="25" y1="60" x2="23" y2="70" stroke="#8d6e63" stroke-width="2"/>' +
+    '<line x1="35" y1="60" x2="37" y2="70" stroke="#8d6e63" stroke-width="2"/>' +
+    '<rect x="21" y="70" width="18" height="10" rx="3" fill="#a1887f" stroke="#6d4c41"/>' +
+    stars + '</svg>';
+}
+
+/* =============== ホーム =============== */
+function renderHome() {
+  freeMode = false;
+  var el = $('view-home');
+  el.innerHTML = '';
+  var split = document.createElement('div');
+  split.className = 'split';
+
+  // 左: 制覇マップ
+  var mapPanel = document.createElement('div');
+  mapPanel.className = 'panel main-col';
+  var pg = document.createElement('div');
+  pg.className = 'progress-line';
+  pg.innerHTML = 'あつめた ご当地（とうち）カード: ' + clearedCount() + ' / 47' +
+    (goldCount() > 0 ? '（<span class="gold">✨金カード ' + goldCount() + 'まい</span>）' : '');
+  mapPanel.appendChild(pg);
+  // 気球は「いま ちょうせんちゅうの 地方」の上に浮かぶ
+  var target = null;
+  for (var i = 0; i < REGIONS.length; i++) {
+    if (regionUnlocked(i) && !regionComplete(i)) { target = REGIONS[i]; break; }
+  }
+  var balloonAt = null;
+  if (target) {
+    var tb = unionBox(target.prefs, 0);
+    balloonAt = { x: tb.x + tb.w / 2, y: tb.y + tb.h * 0.3 };
+  }
+  mapPanel.appendChild(wrapMap(makeMap({
+    fill: regionFill, flag: isCleared, boundary: true, balloonAt: balloonAt
+  })));
+  split.appendChild(mapPanel);
+
+  // 右: タイトル＋地方リスト
+  var right = document.createElement('div');
+  right.className = 'side-col';
+  var head = document.createElement('div');
+  head.id = 'home-head';
+  head.innerHTML =
+    '<h1><span class="balloon-fly">' + balloonSVG(36) + '</span> ' + ruby('都道府県', 'とどうふけん') + 'の' + ruby('冒険', 'ぼうけん') + '</h1>' +
+    '<div class="sub">' + (isNihonMaster()
+      ? '👑 にっぽんマスター！ ききゅう Lv.' + (balloonLevel() + 1)
+      : 'ききゅう Lv.' + (balloonLevel() + 1) + ' ― ちほうを クリアすると ききゅうが パワーアップ⭐') + '</div>';
+  right.appendChild(head);
+  var list = document.createElement('div');
+  list.className = 'side-scroll';
+  REGIONS.forEach(function (r, i) {
+    var btn = document.createElement('button');
+    btn.className = 'region-btn';
+    var done = r.prefs.filter(isCleared).length;
+    var state, enabled = true;
+    if (!regionUnlocked(i)) { state = '🔒 まえの ちほうの マスターテストに ごうかくしよう'; enabled = false; }
+    else if (!regionHasData(i)) { state = '🚧 じゅんびちゅう'; enabled = false; }
+    else if (regionComplete(i) && masterPassed(i)) { state = '⭐👑 マスターごうかく！'; }
+    else if (regionComplete(i)) { state = '👑 マスターテストに ちょうせん！'; }
+    else { state = '🎈 ちょうせんちゅう ' + done + '/' + r.prefs.length; }
+    btn.innerHTML =
+      '<span class="rb-dot" style="background:' + r.color + '"></span>' +
+      '<span class="rb-name">' + ruby(r.name, r.kana) + '</span>' +
+      '<span class="rb-state">' + state + '</span>';
+    if (enabled) {
+      btn.addEventListener('click', function () { openRegion(i); });
+    } else {
+      btn.disabled = true;
+    }
+    list.appendChild(btn);
+  });
+
+  // ぜんこくチャレンジ＋れんしゅうモード
+  var allMaster = REGIONS.every(function (r, i) { return masterPassed(i); });
+  var allClear = REGIONS.every(function (r, i) { return regionComplete(i); });
+  var zh = document.createElement('div');
+  zh.className = 'tk-label';
+  zh.innerHTML = '🗾 ぜんこくチャレンジ';
+  list.appendChild(zh);
+  var zb = document.createElement('button');
+  zb.className = 'big-btn' + (allMaster ? '' : ' gray');
+  zb.innerHTML = '👑 全国（ぜんこく）マスターテスト（20もん）' +
+    (isNihonMaster() ? '<br><span style="font-size:13px">🏆 にっぽんマスター！ ベスト ' + save.zenkoku + '/' + ZENKOKU_Q + '</span>'
+      : (save.zenkoku ? '<br><span style="font-size:13px">ベスト ' + save.zenkoku + '/' + ZENKOKU_Q + '（' + ZENKOKU_PASS + 'もんで ごうかく）</span>'
+        : (allMaster ? '' : '<br><span style="font-size:13px">🔒 ぜんぶの ちほうで マスターごうかくすると かいほう</span>')));
+  if (allMaster) { zb.addEventListener('click', function () { startZenkoku(); }); } else { zb.disabled = true; }
+  list.appendChild(zb);
+  var zt = document.createElement('button');
+  zt.className = 'big-btn blue' + (allClear ? '' : ' gray');
+  var zBest = ('all' in save.taBest) ? save.taBest.all : 0;
+  zt.innerHTML = '⏱ 全国（ぜんこく）タイムアタック（47けん）' +
+    (zBest ? '<br><span style="font-size:13px">' + taMedal('all', zBest)[0] + ' ベスト ' + fmtSec(zBest) + '</span>'
+      : (allClear ? '' : '<br><span style="font-size:13px">🔒 47けん ぜんぶ クリアすると かいほう</span>'));
+  if (allClear) { zt.addEventListener('click', function () { startTA('all'); }); } else { zt.disabled = true; }
+  list.appendChild(zt);
+  var fb = document.createElement('button');
+  fb.className = 'big-btn';
+  fb.style.background = 'linear-gradient(180deg, #81c784, #66bb6a)';
+  fb.style.boxShadow = '0 4px 0 #388e3c';
+  fb.innerHTML = '🗺 じゆうに れんしゅう<br><span style="font-size:13px">どの ちほうでも あそべる（きろくは のこらない）</span>';
+  fb.addEventListener('click', function () { openFreePick(); });
+  list.appendChild(fb);
+
+  right.appendChild(list);
+  split.appendChild(right);
+  el.appendChild(split);
+
+  show('view-home');
+}
+// れんしゅうモードの地方えらび（ロックを無視して全地方OK）
+function openFreePick() {
+  freeMode = true;
+  var el = $('view-region');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+  var note = document.createElement('div');
+  note.className = 'progress-line';
+  note.innerHTML = '🗺 れんしゅうモード ― すきな ちほうを えらんでね（きろくは のこらないよ）';
+  panel.appendChild(note);
+  var list = document.createElement('div');
+  list.className = 'side-scroll';
+  REGIONS.forEach(function (r, i) {
+    var btn = document.createElement('button');
+    btn.className = 'region-btn';
+    btn.innerHTML =
+      '<span class="rb-dot" style="background:' + r.color + '"></span>' +
+      '<span class="rb-name">' + ruby(r.name, r.kana) + '</span>' +
+      '<span class="rb-state">▶ れんしゅうする</span>';
+    btn.addEventListener('click', function () { openRegion(i); });
+    list.appendChild(btn);
+  });
+  panel.appendChild(list);
+  el.appendChild(panel);
+  show('view-region', '🗺 じゆうに れんしゅう');
+}
+function wrapMap(svg) {
+  var d = document.createElement('div');
+  d.className = 'mapbox';
+  d.appendChild(svg);
+  return d;
+}
+
+/* =============== 地方マップ =============== */
+function openRegion(i) {
+  curRegion = i;
+  var r = REGIONS[i];
+  var el = $('view-region');
+  el.innerHTML = '';
+  var split = document.createElement('div');
+  split.className = 'split';
+
+  // 左: 地方ズーム地図
+  var panel = document.createElement('div');
+  panel.className = 'panel main-col';
+  panel.appendChild(wrapMap(makeMap({
+    view: r.prefs, active: r.prefs, others: 'dim',
+    fill: regionFill, flag: isCleared,
+    boundary: r.prefs.indexOf(47) !== -1,  // 沖縄インセットの区切り線
+    onTap: function (code) { openTanken(code); }
+  })));
+  var hint = document.createElement('div');
+  hint.className = 'progress-line';
+  hint.innerHTML = 'けんを タップして たんけんに いこう！';
+  panel.appendChild(hint);
+  split.appendChild(panel);
+
+  // 右: 県チップ＋クリアごのチャレンジ
+  var right = document.createElement('div');
+  right.className = 'panel side-col';
+  var scroll = document.createElement('div');
+  scroll.className = 'side-scroll';
+  var chips = document.createElement('div');
+  chips.className = 'chips';
+  r.prefs.forEach(function (c) {
+    var b = document.createElement('button');
+    b.className = 'chip';
+    var st = isGold(c) ? '✨' : (isCleared(c) ? '🚩' : '');
+    b.innerHTML = prefRuby(c) + '<span class="st">' + st + '</span>';
+    b.addEventListener('click', function () { openTanken(c); });
+    chips.appendChild(b);
+  });
+  scroll.appendChild(chips);
+
+  if (freeMode) {
+    // れんしゅうモード: チャレンジは出さず、バナーだけ
+    var fnote = document.createElement('div');
+    fnote.className = 'progress-line';
+    fnote.style.marginTop = '10px';
+    fnote.innerHTML = '🗺 れんしゅうモード（きろくは のこらないよ）';
+    scroll.appendChild(fnote);
+    right.appendChild(scroll);
+    split.appendChild(right);
+    el.appendChild(split);
+    show('view-region', '🗺 ' + ruby(r.name, r.kana) + ' ちほう（れんしゅう）');
+    return;
+  }
+
+  // クリアごのチャレンジ（全県クリアで解放）
+  var comp = regionComplete(i);
+  var chh = document.createElement('div');
+  chh.className = 'tk-label';
+  chh.innerHTML = '🏆 クリアごの チャレンジ' + (comp ? '' : '（ぜんけん クリアで かいほう）');
+  scroll.appendChild(chh);
+  var mb = document.createElement('button');
+  mb.className = 'big-btn' + (comp ? '' : ' gray');
+  var mBest = save.regionMaster[r.id] || 0;
+  mb.innerHTML = '👑 マスターテスト（むずかしい10もん）' +
+    (masterPassed(i) ? '<br><span style="font-size:13px">⭐ ごうかく！ ベスト ' + mBest + '/10</span>'
+      : (mBest > 0 ? '<br><span style="font-size:13px">ベスト ' + mBest + '/10（8もんで ごうかく）</span>' : ''));
+  if (comp) { mb.addEventListener('click', function () { startMaster(i); }); } else { mb.disabled = true; }
+  scroll.appendChild(mb);
+  var tb = document.createElement('button');
+  tb.className = 'big-btn blue' + (comp ? '' : ' gray');
+  var taPrev = save.taBest[r.id] || 0;
+  tb.innerHTML = '⏱ タイムアタック（' + r.prefs.length + 'けん れんぞくタップ）' +
+    (taPrev ? '<br><span style="font-size:13px">' + taMedal(i, taPrev)[0] + ' ベスト ' + fmtSec(taPrev) + '</span>' : '');
+  if (comp) { tb.addEventListener('click', function () { startTA(i); }); } else { tb.disabled = true; }
+  scroll.appendChild(tb);
+  right.appendChild(scroll);
+  split.appendChild(right);
+  el.appendChild(split);
+
+  show('view-region', ruby(r.name, r.kana) + ' ちほう');
+}
+
+/* =============== たんけん =============== */
+function openTanken(code) {
+  curPref = code;
+  var card = CARDS[code];
+  var r = REGIONS[REGION_OF[code]];
+  var el = $('view-tanken');
+  el.innerHTML = '';
+
+  var split = document.createElement('div');
+  split.className = 'split';
+
+  // 左: 場所マップ
+  var mapPanel = document.createElement('div');
+  mapPanel.className = 'panel main-col';
+  var lb1 = document.createElement('div');
+  lb1.className = 'tk-label';
+  lb1.textContent = '📍 ばしょ（ひかっている ところ）';
+  mapPanel.appendChild(lb1);
+  mapPanel.appendChild(wrapMap(makeMap({
+    view: r.prefs, active: r.prefs, others: 'dim',
+    mark: function (c) { return c === code; },
+    fill: function (c) { return c === code ? '#fff176' : null; }
+  })));
+  split.appendChild(mapPanel);
+
+  // 右: 県の情報＋クイズボタン
+  var panel = document.createElement('div');
+  panel.className = 'panel side-col';
+  var name = document.createElement('div');
+  name.className = 'tk-name';
+  name.innerHTML = prefRuby(code) + (isGold(code) ? ' ✨' : (isCleared(code) ? ' 🚩' : ''));
+  panel.appendChild(name);
+
+  var scroll = document.createElement('div');
+  scroll.className = 'side-scroll';
+  var shape = document.createElement('div');
+  shape.className = 'tk-shape';
+  shape.appendChild(wrapMap(makeMap({
+    view: [code], active: [code], others: 'hide', silhouette: true, pad: 0.12
+  })));
+  scroll.appendChild(shape);
+
+  var cap = document.createElement('div');
+  cap.className = 'tk-cap';
+  cap.innerHTML = '🏢 ' + ruby('県庁所在地', 'けんちょうしょざいち') + ': ' +
+    ruby(PREFS[code].cap, PREFS[code].capK);
+  scroll.appendChild(cap);
+
+  var meiRow = document.createElement('div');
+  meiRow.className = 'mei-row';
+  card.mei.forEach(function (m) {
+    var d = document.createElement('div');
+    d.className = 'mei-item';
+    d.innerHTML = '<span class="me">' + m[1] + '</span>' + m[0];
+    meiRow.appendChild(d);
+  });
+  scroll.appendChild(meiRow);
+
+  var mame = document.createElement('div');
+  mame.className = 'mame';
+  mame.textContent = '💡 ' + card.mame;
+  mame.style.marginTop = '8px';
+  scroll.appendChild(mame);
+  panel.appendChild(scroll);
+
+  var go = document.createElement('button');
+  go.className = 'big-btn';
+  go.innerHTML = '🎯 クイズに ちょうせん！（5もん）';
+  go.addEventListener('click', function () { startQuiz(code); });
+  panel.appendChild(go);
+  split.appendChild(panel);
+  el.appendChild(split);
+
+  show('view-tanken', prefRuby(code));
+}
+
+/* =============== クイズ =============== */
+var quiz = null;
+function pickDistract(primary, fallback, n, excludeSet) {
+  var out = [];
+  var used = {};
+  function take(pool) {
+    var sh = shuffle(pool);
+    for (var i = 0; i < sh.length && out.length < n; i++) {
+      var key = String(sh[i]);
+      if (excludeSet[key] || used[key]) continue;
+      used[key] = 1;
+      out.push(sh[i]);
+    }
+  }
+  take(primary);
+  if (out.length < n) take(fallback);
+  return out;
+}
+function buildQuestions(code) {
+  var r = REGIONS[REGION_OF[code]];
+  var sameRegion = r.prefs.filter(function (c) { return c !== code; });
+  var others = ALL_CODES.filter(function (c) { return c !== code; });
+  var ex = {}; ex[code] = 1;
+
+  // 位置タップは地方の県が3つ以下なら となりの地方も出す（まぎれを確保）
+  var posCodes = r.prefs.slice();
+  if (posCodes.length < 4) {
+    var ri = REGION_OF[code];
+    var next = REGIONS[ri + 1] || REGIONS[ri - 1];
+    if (next) posCodes = posCodes.concat(next.prefs);
+  }
+
+  var silChoices = shuffle([code].concat(pickDistract(sameRegion, others, 3, ex)));
+  var yomiChoices = shuffle([code].concat(pickDistract(sameRegion, others, 3, ex)));
+  var capChoices = shuffle([code].concat(pickDistract(sameRegion, others, 3, ex)));
+
+  // 名物: ほかの県のカードから3つ（名前かぶりは除外）
+  var meiAnswer = CARDS[code].mei[Math.floor(Math.random() * CARDS[code].mei.length)];
+  var meiPool = [];
+  for (var c in CARDS) {
+    if (Number(c) === code) continue;
+    CARDS[c].mei.forEach(function (m) { meiPool.push(m); });
+  }
+  var exMei = {}; exMei[String(meiAnswer)] = 1;
+  var meiChoices = shuffle([meiAnswer].concat(pickDistract(meiPool, [], 3, exMei)));
+
+  var qs = [
+    { t: 'pos', posCodes: posCodes },
+    { t: 'sil', choices: silChoices },
+    { t: 'yomi', choices: yomiChoices },
+    { t: 'cap', choices: capChoices },
+    { t: 'mei', answer: meiAnswer, choices: meiChoices }
+  ];
+  qs.forEach(function (q) { q.code = code; });
+  return qs;
+}
+// マスターテスト用のむずかしい問題（逆方向の問題＋全国地図の位置あて）
+var HARD_TYPES = ['hpos', 'hsil', 'hyomi', 'hcap', 'hmei'];
+function makeHardQ(code, t) {
+  var r = REGIONS[REGION_OF[code]];
+  var sameRegion = r.prefs.filter(function (c) { return c !== code; });
+  var others = ALL_CODES.filter(function (c) { return c !== code; });
+  var ex = {}; ex[code] = 1;
+  var q = { t: t, code: code };
+  if (t !== 'hpos') q.choices = shuffle([code].concat(pickDistract(sameRegion, others, 3, ex)));
+  if (t === 'hmei') q.item = CARDS[code].mei[Math.floor(Math.random() * CARDS[code].mei.length)];
+  return q;
+}
+function buildHardQuestions(ri) {
+  var types = shuffle(HARD_TYPES).concat(shuffle(HARD_TYPES));
+  var codes = shuffle(REGIONS[ri].prefs).concat(shuffle(REGIONS[ri].prefs));
+  var qs = [];
+  for (var i = 0; i < 10; i++) qs.push(makeHardQ(codes[i % codes.length], types[i]));
+  return qs;
+}
+// 全国マスターテスト: 47県から20問（県のかぶりなし）
+var ZENKOKU_Q = 20, ZENKOKU_PASS = 16;  // 叩き台
+function buildZenkokuQuestions() {
+  var types = shuffle(HARD_TYPES).concat(shuffle(HARD_TYPES)).concat(shuffle(HARD_TYPES)).concat(shuffle(HARD_TYPES));
+  var codes = shuffle(ALL_CODES).slice(0, ZENKOKU_Q);
+  var qs = [];
+  for (var i = 0; i < ZENKOKU_Q; i++) qs.push(makeHardQ(codes[i], types[i]));
+  return qs;
+}
+function startQuiz(code) {
+  quiz = { mode: 'pref', code: code, idx: 0, score: 0, marks: [], locked: false, qs: buildQuestions(code) };
+  renderQuestion();
+}
+function startMaster(ri) {
+  quiz = { mode: 'master', regionIdx: ri, idx: 0, score: 0, marks: [], locked: false, qs: buildHardQuestions(ri) };
+  renderQuestion();
+}
+function startZenkoku() {
+  quiz = { mode: 'zenkoku', idx: 0, score: 0, marks: [], locked: false, qs: buildZenkokuQuestions() };
+  renderQuestion();
+}
+function renderQuestion() {
+  var q = quiz.qs[quiz.idx];
+  var code = q.code;
+  var el = $('view-quiz');
+  el.innerHTML = '';
+  quiz.locked = false;
+
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+
+  var dots = document.createElement('div');
+  dots.className = 'q-dots';
+  for (var i = 0; i < quiz.qs.length; i++) {
+    var d = document.createElement('span');
+    d.className = 'q-dot' + (i < quiz.idx ? (quiz.marks[i] ? ' ok' : ' ng') : (i === quiz.idx ? ' now' : ''));
+    dots.appendChild(d);
+  }
+  panel.appendChild(dots);
+
+  var prompt = document.createElement('div');
+  prompt.className = 'q-prompt';
+  panel.appendChild(prompt);
+
+  var body = document.createElement('div');
+  body.className = 'q-body';
+  panel.appendChild(body);
+
+  var fb = document.createElement('div');
+  fb.id = 'q-feedback';
+  panel.appendChild(fb);
+
+  if (q.t === 'pos') {
+    prompt.innerHTML = prefRuby(code) + ' は どこかな？ ちずを タップ！';
+    body.appendChild(wrapMap(makeMap({
+      view: q.posCodes, active: q.posCodes, others: 'dim',
+      onTap: function (tapped, g, svg) {
+        if (quiz.locked) return;
+        var ok = tapped === code;
+        if (!ok) g.classList.add('p-bad');
+        svgPref(svg, code).classList.add('p-good');
+        answer(ok, 'ここが ' + prefRuby(code) + ' だよ');
+      }
+    })));
+  } else if (q.t === 'sil') {
+    prompt.innerHTML = 'この かたちの ' + ruby('都道府県', 'とどうふけん') + 'は どれ？';
+    body.appendChild(wrapMap(makeMap({
+      view: [code], active: [code], others: 'hide', silhouette: true, pad: 0.15
+    })));
+    body.lastChild.style.maxWidth = '240px';
+    body.lastChild.style.alignSelf = 'center';
+    body.lastChild.style.marginBottom = '10px';
+    body.appendChild(choiceGrid(q.choices, function (c) { return prefRuby(c); },
+      function (c) { return c === code; }, 'せいかいは ' + prefRuby(code)));
+  } else if (q.t === 'yomi') {
+    prompt.innerHTML = '「' + PREFS[code].n + '」は なんて よむ？';
+    body.appendChild(choiceGrid(q.choices, function (c) { return PREFS[c].k; },
+      function (c) { return c === code; }, 'せいかいは 「' + PREFS[code].k + '」'));
+  } else if (q.t === 'cap') {
+    prompt.innerHTML = prefRuby(code) + 'の ' + ruby('県庁所在地', 'けんちょうしょざいち') + 'は どこ？';
+    body.appendChild(choiceGrid(q.choices, function (c) { return ruby(PREFS[c].cap, PREFS[c].capK); },
+      function (c) { return c === code; }, 'せいかいは ' + ruby(PREFS[code].cap, PREFS[code].capK)));
+  } else if (q.t === 'mei') {
+    prompt.innerHTML = prefRuby(code) + 'の めいぶつは どれ？';
+    body.appendChild(choiceGrid(q.choices, function (m) { return '<span class="ce">' + m[1] + '</span>' + m[0]; },
+      function (m) { return m === q.answer; }, 'せいかいは ' + q.answer[1] + ' ' + q.answer[0]));
+  } else if (q.t === 'hpos') {
+    prompt.innerHTML = prefRuby(code) + ' は どこかな？ 日本ぜんこくの ちずから さがして タップ！';
+    body.appendChild(wrapMap(makeMap({
+      boundary: true,
+      onTap: function (tapped, g, svg) {
+        if (quiz.locked) return;
+        var ok = tapped === code;
+        if (!ok) g.classList.add('p-bad');
+        svgPref(svg, code).classList.add('p-good');
+        answer(ok, 'ここが ' + prefRuby(code) + ' だよ');
+      }
+    })));
+  } else if (q.t === 'hsil') {
+    prompt.innerHTML = prefRuby(code) + 'の かたちは どれ？';
+    body.appendChild(choiceGrid(q.choices, function (c) {
+      return wrapMap(makeMap({ view: [c], active: [c], others: 'hide', silhouette: true, pad: 0.15 }));
+    }, function (c) { return c === code; }, 'この かたちが ' + prefRuby(code) + ' だよ'));
+  } else if (q.t === 'hyomi') {
+    prompt.innerHTML = '「' + PREFS[code].k + '」は どの けん？';
+    body.appendChild(choiceGrid(q.choices, function (c) { return PREFS[c].n; },
+      function (c) { return c === code; }, 'せいかいは ' + PREFS[code].n));
+  } else if (q.t === 'hcap') {
+    prompt.innerHTML = ruby('県庁所在地', 'けんちょうしょざいち') + 'が ' +
+      ruby(PREFS[code].cap, PREFS[code].capK) + ' なのは どの けん？';
+    body.appendChild(choiceGrid(q.choices, function (c) { return prefRuby(c); },
+      function (c) { return c === code; }, 'せいかいは ' + prefRuby(code)));
+  } else if (q.t === 'hmei') {
+    prompt.innerHTML = q.item[1] + '「' + q.item[0] + '」が めいぶつなのは どの けん？';
+    body.appendChild(choiceGrid(q.choices, function (c) { return prefRuby(c); },
+      function (c) { return c === code; }, 'せいかいは ' + prefRuby(code)));
+  }
+
+  el.appendChild(panel);
+  var title;
+  if (quiz.mode === 'zenkoku') title = '👑 全国（ぜんこく）マスターテスト ' + (quiz.idx + 1) + '/' + quiz.qs.length;
+  else if (quiz.mode === 'master') title = '👑 マスターテスト ' + (quiz.idx + 1) + '/' + quiz.qs.length;
+  else title = prefRuby(code) + ' クイズ ' + (quiz.idx + 1) + '/' + quiz.qs.length;
+  show('view-quiz', title);
+}
+function choiceGrid(items, labelFn, okFn, revealHTML) {
+  var grid = document.createElement('div');
+  grid.className = 'choice-grid';
+  items.forEach(function (item) {
+    var b = document.createElement('button');
+    b.className = 'choice-btn';
+    var label = labelFn(item);
+    if (typeof label === 'string') { b.innerHTML = label; } else { b.appendChild(label); }
+    b.addEventListener('click', function () {
+      if (quiz.locked) return;
+      var ok = okFn(item);
+      b.classList.add(ok ? 'good' : 'bad');
+      // せいかいをかならず見せる
+      var btns = grid.querySelectorAll('.choice-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].disabled = true;
+        if (!ok && okFn(items[i])) btns[i].classList.add('good');
+      }
+      answer(ok, revealHTML);
+    });
+    grid.appendChild(b);
+  });
+  return grid;
+}
+function answer(ok, revealHTML) {
+  quiz.locked = true;
+  quiz.marks.push(ok);
+  if (ok) quiz.score++;
+  var fb = $('q-feedback');
+  fb.innerHTML = ok
+    ? '<span class="fb-ok">⭕ せいかい！</span>'
+    : '<span class="fb-ng">❌ おしい！ ' + revealHTML + '</span>';
+  var next = document.createElement('button');
+  next.className = 'big-btn blue';
+  next.innerHTML = (quiz.idx + 1 < quiz.qs.length) ? 'つぎへ ▶' : 'けっかを 見（み）る 🎉';
+  next.addEventListener('click', function () {
+    quiz.idx++;
+    if (quiz.idx < quiz.qs.length) renderQuestion();
+    else showResult();
+  });
+  fb.appendChild(next);
+}
+
+/* =============== けっか =============== */
+function showResult() {
+  if (quiz.mode === 'zenkoku') { showZenkokuResult(); return; }
+  if (quiz.mode === 'master') { showMasterResult(); return; }
+  if (freeMode) { showFreeResult(); return; }
+  var code = quiz.code;
+  var score = quiz.score;
+  var pass = score >= 4;
+  var prev = save.cleared[code] || 0;
+  var isNew = pass && prev < 4;
+  var newGold = pass && score >= 5 && prev < 5;
+  if (pass && score > prev) {
+    // ベストのみ上書き（わるい記録で下げない）
+    save.cleared[code] = score;
+    save.balloon = Math.max(save.balloon, completeRegionCount());
+    persist();
+  }
+
+  var el = $('view-result');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+
+  var sc = document.createElement('div');
+  sc.className = 'res-score';
+  var marks = '';
+  for (var i = 0; i < quiz.marks.length; i++) marks += quiz.marks[i] ? '⭕' : '❌';
+  sc.textContent = marks;
+  panel.appendChild(sc);
+
+  var msg = document.createElement('div');
+  msg.className = 'res-msg';
+  if (newGold) msg.innerHTML = '🌟 まんてん！ 金カードに しんか！';
+  else if (isNew) msg.innerHTML = '🎉 クリア！ ご当地（とうち）カードを ゲット！';
+  else if (pass && score > prev) msg.innerHTML = '🎉 クリア！ ベストこうしん！';
+  else if (pass) msg.innerHTML = '🎉 クリア！ カードは もう もっているよ';
+  else msg.innerHTML = 'あと すこし！ もういちど やってみよう！';
+  panel.appendChild(msg);
+
+  if (pass) {
+    panel.appendChild(makeCard(code));
+    confettiBurst();
+    // 地方コンプリートのおいわい
+    if (regionComplete(REGION_OF[code])) {
+      var comp = document.createElement('div');
+      comp.className = 'res-msg';
+      comp.innerHTML = '🎈 ' + ruby(REGIONS[REGION_OF[code]].name, REGIONS[REGION_OF[code]].kana) +
+        ' ちほう ぜんぶ クリア！ ききゅうが パワーアップ！';
+      panel.appendChild(comp);
+    }
+  }
+
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  if (!pass) {
+    var retry = document.createElement('button');
+    retry.className = 'big-btn';
+    retry.innerHTML = '🔥 もういちど ちょうせん！';
+    retry.addEventListener('click', function () { startQuiz(code); });
+    row.appendChild(retry);
+    var back1 = document.createElement('button');
+    back1.className = 'big-btn blue';
+    back1.innerHTML = '📖 たんけんで ふくしゅうする';
+    back1.addEventListener('click', function () { openTanken(code); });
+    row.appendChild(back1);
+  }
+  if (pass && !isGold(code)) {
+    var retry2 = document.createElement('button');
+    retry2.className = 'big-btn';
+    retry2.innerHTML = '🌟 まんてんで 金カードを ねらう！';
+    retry2.addEventListener('click', function () { startQuiz(code); });
+    row.appendChild(retry2);
+  }
+  var back2 = document.createElement('button');
+  back2.className = 'big-btn blue';
+  back2.innerHTML = '🗾 ちほうマップへ もどる';
+  back2.addEventListener('click', function () { openRegion(REGION_OF[code]); });
+  row.appendChild(back2);
+  panel.appendChild(row);
+
+  el.appendChild(panel);
+  show('view-result', 'けっか');
+}
+function showMasterResult() {
+  var ri = quiz.regionIdx;
+  var r = REGIONS[ri];
+  var score = quiz.score;
+  var pass = score >= 8;
+  var prev = save.regionMaster[r.id] || 0;
+  var firstPass = pass && prev < 8;
+  if (score > prev) {
+    save.regionMaster[r.id] = score;  // ベストのみ上書き
+    persist();
+  }
+
+  var el = $('view-result');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+
+  var sc = document.createElement('div');
+  sc.className = 'res-score';
+  sc.style.fontSize = '24px';
+  var marks = '';
+  for (var i = 0; i < quiz.marks.length; i++) marks += quiz.marks[i] ? '⭕' : '❌';
+  sc.textContent = marks;
+  panel.appendChild(sc);
+
+  var msg = document.createElement('div');
+  msg.className = 'res-msg';
+  if (firstPass) {
+    msg.innerHTML = '👑 ごうかく！ ' + ruby(r.name, r.kana) + ' ちほう マスター！';
+  } else if (pass) {
+    msg.innerHTML = '👑 ごうかく！ ' + score + '/10もん せいかい！';
+  } else {
+    msg.innerHTML = score + '/10もん せいかい。8もんで ごうかく！ もういちど やってみよう！';
+  }
+  panel.appendChild(msg);
+
+  if (firstPass && REGIONS[ri + 1]) {
+    var nx = document.createElement('div');
+    nx.className = 'res-msg';
+    nx.innerHTML = '🎈 つぎの ちほう「' + ruby(REGIONS[ri + 1].name, REGIONS[ri + 1].kana) + '」が かいほう！';
+    panel.appendChild(nx);
+  }
+  if (pass) confettiBurst();
+
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  if (!pass) {
+    var retry = document.createElement('button');
+    retry.className = 'big-btn';
+    retry.innerHTML = '🔥 もういちど ちょうせん！';
+    retry.addEventListener('click', function () { startMaster(ri); });
+    row.appendChild(retry);
+  }
+  var back = document.createElement('button');
+  back.className = 'big-btn blue';
+  back.innerHTML = '🗾 ちほうマップへ もどる';
+  back.addEventListener('click', function () { openRegion(ri); });
+  row.appendChild(back);
+  panel.appendChild(row);
+
+  el.appendChild(panel);
+  show('view-result', '👑 マスターテスト けっか');
+}
+function showZenkokuResult() {
+  var score = quiz.score;
+  var pass = score >= ZENKOKU_PASS;
+  var prev = save.zenkoku || 0;
+  var firstPass = pass && prev < ZENKOKU_PASS;
+  if (score > prev) {
+    save.zenkoku = score;  // ベストのみ上書き
+    persist();
+  }
+
+  var el = $('view-result');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+
+  var sc = document.createElement('div');
+  sc.className = 'res-score';
+  sc.style.fontSize = '18px';
+  var marks = '';
+  for (var i = 0; i < quiz.marks.length; i++) marks += quiz.marks[i] ? '⭕' : '❌';
+  sc.textContent = marks;
+  panel.appendChild(sc);
+
+  var msg = document.createElement('div');
+  msg.className = 'res-msg';
+  if (firstPass) {
+    msg.innerHTML = '🏆 ' + score + '/' + ZENKOKU_Q + 'もん せいかい！<br>👑 にっぽんマスター たんじょう！！<br>ききゅうに おうかんが ついたよ！';
+  } else if (pass) {
+    msg.innerHTML = '👑 ごうかく！ ' + score + '/' + ZENKOKU_Q + 'もん せいかい！';
+  } else {
+    msg.innerHTML = score + '/' + ZENKOKU_Q + 'もん せいかい。' + ZENKOKU_PASS + 'もんで ごうかく！ もういちど やってみよう！';
+  }
+  panel.appendChild(msg);
+  if (pass) confettiBurst();
+  if (firstPass) setTimeout(confettiBurst, 900);
+
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  if (!pass) {
+    var retry = document.createElement('button');
+    retry.className = 'big-btn';
+    retry.innerHTML = '🔥 もういちど ちょうせん！';
+    retry.addEventListener('click', function () { startZenkoku(); });
+    row.appendChild(retry);
+  }
+  var back = document.createElement('button');
+  back.className = 'big-btn blue';
+  back.innerHTML = '🏠 ホームへ もどる';
+  back.addEventListener('click', function () { renderHome(); });
+  row.appendChild(back);
+  panel.appendChild(row);
+
+  el.appendChild(panel);
+  show('view-result', '👑 全国（ぜんこく）マスターテスト けっか');
+}
+// れんしゅうモード（じゆうにチャレンジ）: きろくは のこさない
+function showFreeResult() {
+  var code = quiz.code;
+  var score = quiz.score;
+  var pass = score >= 4;
+
+  var el = $('view-result');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+
+  var sc = document.createElement('div');
+  sc.className = 'res-score';
+  var marks = '';
+  for (var i = 0; i < quiz.marks.length; i++) marks += quiz.marks[i] ? '⭕' : '❌';
+  sc.textContent = marks;
+  panel.appendChild(sc);
+
+  var msg = document.createElement('div');
+  msg.className = 'res-msg';
+  msg.innerHTML = pass ? '🎉 クリア！ よく おぼえているね！' : 'あと すこし！ もういちど やってみよう！';
+  panel.appendChild(msg);
+  var note = document.createElement('div');
+  note.className = 'progress-line';
+  note.innerHTML = '🗺 れんしゅうモード: きろくと カードは ぼうけんで ゲットしよう！';
+  panel.appendChild(note);
+  if (pass) confettiBurst();
+
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  var retry = document.createElement('button');
+  retry.className = 'big-btn';
+  retry.innerHTML = '🔥 もういちど';
+  retry.addEventListener('click', function () { startQuiz(code); });
+  row.appendChild(retry);
+  var back = document.createElement('button');
+  back.className = 'big-btn blue';
+  back.innerHTML = '🗾 ちほうマップへ もどる';
+  back.addEventListener('click', function () { openRegion(REGION_OF[code]); });
+  row.appendChild(back);
+  panel.appendChild(row);
+
+  el.appendChild(panel);
+  show('view-result', 'れんしゅう けっか');
+}
+
+/* =============== タイムアタック =============== */
+// 数値はぜんぶ叩き台（実機調整前提）: おてつき+3秒 / 金=1県3秒 / 銀=1県5秒 / 完走で銅
+var ta = null;
+var taTimerId = null;
+var TA_PENALTY = 3000;
+var TA_GOLD_PER = 3000, TA_SILVER_PER = 5000;
+// ri は地方index または 'all'（全国47県タイムアタック）
+function taPrefs(ri) { return ri === 'all' ? ALL_CODES.slice() : REGIONS[ri].prefs; }
+function taKey(ri) { return ri === 'all' ? 'all' : REGIONS[ri].id; }
+function fmtSec(ms) { return (ms / 1000).toFixed(1) + ' びょう'; }
+function taMedal(ri, ms) {
+  var n = taPrefs(ri).length;
+  if (ms <= n * TA_GOLD_PER) return ['🥇', '金メダル'];
+  if (ms <= n * TA_SILVER_PER) return ['🥈', '銀メダル'];
+  return ['🥉', '銅メダル'];
+}
+function stopTATimer() {
+  if (taTimerId) { clearInterval(taTimerId); taTimerId = null; }
+}
+function startTA(ri) {
+  var prefs = taPrefs(ri);
+  ta = { ri: ri, order: shuffle(prefs), idx: 0, penalty: 0, start: 0, done: false };
+  var el = $('view-ta');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = '<div id="ta-timer">0.0</div><div id="ta-prompt" class="q-prompt"></div>';
+  panel.appendChild(wrapMap(ri === 'all'
+    ? makeMap({ boundary: true, onTap: tapTA })
+    : makeMap({ view: prefs, active: prefs, others: 'dim', onTap: tapTA })));
+  var note = document.createElement('div');
+  note.className = 'progress-line';
+  note.innerHTML = 'おてつきは ＋3びょう。さいごまで がんばろう！';
+  panel.appendChild(note);
+  el.appendChild(panel);
+  show('view-ta', ri === 'all' ? '⏱ 全国（ぜんこく）タイムアタック' : '⏱ タイムアタック');
+  updateTAPrompt();
+  ta.start = performance.now();
+  stopTATimer();
+  taTimerId = setInterval(function () {
+    if (!ta || ta.done) return;
+    $('ta-timer').textContent = ((performance.now() - ta.start + ta.penalty) / 1000).toFixed(1);
+  }, 100);
+}
+function updateTAPrompt() {
+  $('ta-prompt').innerHTML = 'つぎは… ' + prefRuby(ta.order[ta.idx]) + '！（' + (ta.idx + 1) + '/' + ta.order.length + '）';
+}
+function tapTA(code, g) {
+  if (!ta || ta.done) return;
+  if (code === ta.order[ta.idx]) {
+    g.classList.add('p-good');
+    setTimeout(function () { g.classList.remove('p-good'); }, 350);
+    ta.idx++;
+    if (ta.idx >= ta.order.length) finishTA();
+    else updateTAPrompt();
+  } else {
+    ta.penalty += TA_PENALTY;
+    g.classList.add('p-bad');
+    setTimeout(function () { g.classList.remove('p-bad'); }, 350);
+    var t = $('ta-timer');
+    t.classList.add('pen');
+    setTimeout(function () { t.classList.remove('pen'); }, 350);
+  }
+}
+function finishTA() {
+  ta.done = true;
+  stopTATimer();
+  var ms = Math.round(performance.now() - ta.start + ta.penalty);
+  var key = taKey(ta.ri);
+  // 0ミリ秒も正当な記録として扱う（|| 0 だと「記録なし」と区別できない）
+  var prev = (key in save.taBest) ? save.taBest[key] : null;
+  var isNew = prev === null || ms < prev;
+  if (isNew) {
+    save.taBest[key] = ms;  // はやい記録だけ上書き
+    persist();
+  }
+  var medal = taMedal(ta.ri, ms);
+  var el = $('view-ta');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML =
+    '<div class="res-msg">🏁 ゴール！</div>' +
+    '<div class="ta-result">' + medal[0] + '</div>' +
+    '<div class="res-msg">' + fmtSec(ms) + '　' + medal[1] + '！</div>' +
+    (isNew
+      ? '<div class="res-msg" style="color:#f57f17">✨ しんきろく！</div>'
+      : '<div class="progress-line">ベスト: ' + fmtSec(prev) + ' ' + taMedal(ta.ri, prev)[0] + ' には とどかなかった…もういちど！</div>');
+  var row = document.createElement('div');
+  row.className = 'btn-row';
+  var re = document.createElement('button');
+  re.className = 'big-btn';
+  re.innerHTML = '⏱ もういちど はしる！';
+  re.addEventListener('click', function () { startTA(ta.ri); });
+  row.appendChild(re);
+  var back = document.createElement('button');
+  back.className = 'big-btn blue';
+  back.innerHTML = ta.ri === 'all' ? '🏠 ホームへ もどる' : '🗾 ちほうマップへ もどる';
+  back.addEventListener('click', function () {
+    if (ta.ri === 'all') renderHome(); else openRegion(ta.ri);
+  });
+  row.appendChild(back);
+  panel.appendChild(row);
+  el.appendChild(panel);
+  if (isNew) confettiBurst();
+}
+
+/* =============== ご当地カード =============== */
+function makeCard(code) {
+  var card = CARDS[code];
+  var gold = isGold(code);
+  var d = document.createElement('div');
+  d.className = 'gcard' + (gold ? ' gold' : '');
+  d.innerHTML =
+    '<div class="gc-emoji">' + card.e + '</div>' +
+    '<div class="gc-name">' + prefRuby(code) + '</div>' +
+    '<div class="gc-shape"></div>' +
+    '<div class="gc-cap">🏢 ' + ruby(PREFS[code].cap, PREFS[code].capK) + '</div>' +
+    '<div class="gc-mei">' + card.mei.map(function (m) { return m[1] + m[0]; }).join('　') + '</div>' +
+    (gold ? '<div class="gc-goldtag">✨ 金カード ✨</div>' : '');
+  d.querySelector('.gc-shape').appendChild(wrapMap(makeMap({
+    view: [code], active: [code], others: 'hide', silhouette: true, pad: 0.12
+  })));
+  return d;
+}
+function openCardOverlay(code) {
+  var ov = $('card-overlay');
+  ov.innerHTML = '';
+  ov.appendChild(makeCard(code));
+  var b = document.createElement('button');
+  b.className = 'big-btn blue';
+  b.innerHTML = 'とじる';
+  ov.appendChild(b);
+  ov.classList.add('on');
+}
+function closeCardOverlay() { $('card-overlay').classList.remove('on'); }
+
+/* =============== ずかん =============== */
+function openZukan() {
+  zukanFrom = (curView === 'view-region' || curView === 'view-tanken') ? 'region' : 'home';
+  var el = $('view-zukan');
+  el.innerHTML = '';
+  var panel = document.createElement('div');
+  panel.className = 'panel';
+  var pg = document.createElement('div');
+  pg.className = 'progress-line';
+  pg.innerHTML = 'あつめた カード: ' + clearedCount() + ' / 47' +
+    (goldCount() > 0 ? '（<span class="gold">✨金 ' + goldCount() + 'まい</span>）' : '');
+  panel.appendChild(pg);
+
+  REGIONS.forEach(function (r) {
+    var h = document.createElement('div');
+    h.className = 'zk-region-h';
+    h.innerHTML = '<span class="rb-dot" style="background:' + r.color + '"></span>' +
+      ruby(r.name, r.kana) + (regionHasData(REGIONS.indexOf(r)) ? '' : '<span style="font-size:12px;color:#90a4ae">🚧 じゅんびちゅう</span>');
+    panel.appendChild(h);
+    var grid = document.createElement('div');
+    grid.className = 'zk-grid';
+    r.prefs.forEach(function (c) {
+      var s = document.createElement('div');
+      if (isCleared(c)) {
+        s.className = 'zk-slot' + (isGold(c) ? ' gold' : '');
+        s.innerHTML = '<span class="ze">' + CARDS[c].e + '</span><span class="zn">' + prefRuby(c) + (isGold(c) ? ' ✨' : '') + '</span>';
+        s.addEventListener('click', function () { openCardOverlay(c); });
+      } else {
+        s.className = 'zk-slot none';
+        s.innerHTML = '<span class="ze">❓</span><span class="zn">みかくにん</span>';
+      }
+      grid.appendChild(s);
+    });
+    panel.appendChild(grid);
+  });
+  el.appendChild(panel);
+  show('view-zukan', '📖 ご当地（とうち）カードずかん');
+}
+
+/* =============== コンフェッティ（自前・軽量） =============== */
+function confettiBurst() {
+  var colors = ['#f44336', '#ff9800', '#ffee58', '#66bb6a', '#42a5f5', '#ab47bc'];
+  for (var i = 0; i < 60; i++) {
+    var d = document.createElement('div');
+    d.className = 'confetti';
+    d.style.left = (Math.random() * 100) + 'vw';
+    d.style.background = colors[i % colors.length];
+    d.style.animationDelay = (Math.random() * 0.7) + 's';
+    document.body.appendChild(d);
+    setTimeout((function (el2) { return function () { if (el2.parentNode) el2.parentNode.removeChild(el2); }; })(d), 3200);
+  }
+}
+
+/* =============== 起動 =============== */
+// URLハッシュで画面を直接開ける（動作確認用。例: #r0=地方 / #t2=たんけん / #q2=クイズ / #m0=マスター / #ta0=タイムアタック / #zukan）
+measureBoxes();
+var bootHash = location.hash;
+if (/^#r\d+$/.test(bootHash)) openRegion(Number(bootHash.slice(2)));
+else if (/^#t\d+$/.test(bootHash)) openTanken(Number(bootHash.slice(2)));
+else if (/^#q\d+$/.test(bootHash)) startQuiz(Number(bootHash.slice(2)));
+else if (/^#m\d+$/.test(bootHash)) startMaster(Number(bootHash.slice(2)));
+else if (bootHash === '#taall') startTA('all');
+else if (/^#ta\d+$/.test(bootHash)) startTA(Number(bootHash.slice(3)));
+else if (bootHash === '#zen') startZenkoku();
+else if (bootHash === '#free') openFreePick();
+else if (bootHash === '#zukan') openZukan();
+else renderHome();
+
+// PWA: Service Worker 登録（オフライン起動用）
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+}
+</script>
+</body>
+</html>

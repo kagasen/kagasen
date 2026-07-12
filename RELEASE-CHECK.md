@@ -37,6 +37,7 @@ node release-check.mjs
    classroom-board / kannjibusyu-ta がクォート崩れで全滅→翌日発覚）。
 8. **外部JSの構文チェック** — HTMLから `<script src>` で読み込まれるローカル.jsも構文検査（同上の全滅対策）。
 9. **CSS順序の hidden×display 衝突** — `tailwind.css` の `<link>` をインライン`<style>`より先に置くと、後のカスタムCSSの `display` が Tailwind の `.hidden` に勝ち、モーダル/オーバーレイが起動時から画面を覆って操作不能になる（taiiku-tournament/shukudai の前例）。該当したら❌。直しは`<link>`を`</style>`の後へ。
+10. **古いiPadで死ぬ新しめJS構文（ES2020+）** — `?.`（オプショナルチェーン）・`??`（Null合体）・`??=`等の論理代入・正規表現の後読み・クラスstaticブロックを、インラインJS（text/babel のJSX含む）とローカル外部.jsから検出。該当したら❌。**iPadOS 13.3以前のSafariは `?.`/`??` をパースできず、1箇所でもあるとスクリプト全体が構文エラーで死んでアプリが開けなくなる**（前例: 2026-07-10 うごきのきろく・レベルアップ・思考ツール等がiPadで開けない報告）。Node の構文チェック（項目7・8）は最新構文を通してしまうため、この項目で別途検出する。文字列・コメント内は無視し、テンプレートリテラルの `${式}` 内は検査する。vendor/ は対象外。ビルドが必要なアプリは古いターゲットでビルドする（sikou-tool-app は esbuild `--target=es2017`、typing も同様）。
 
 4・5 の「変更」は **origin/main との差分**（＝まだ公開されていない変更。未コミット分も含む）。
 origin/main が無い環境では HEAD と比較する。

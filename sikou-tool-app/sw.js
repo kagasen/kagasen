@@ -1,11 +1,11 @@
 // 思考ツール — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'sikou-tool-app-cache-v3';
+const CACHE = 'sikou-tool-app-cache-v4';
 const ASSETS = [
   './',
-  './backup-kit.js?v=2',
-  './app.bundle.js',
+  './backup-kit.js?v=3',
+  './app.bundle.js?v=2',
   './images/bennzu.png',
   './images/fissyubo-nnzu.png',
   './images/ime-jimappu.png',

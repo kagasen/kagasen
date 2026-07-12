@@ -13,6 +13,9 @@
      5. アプリ内ファイルが変更されたのに sw.js の CACHE が据え置きのケース
      6. 出典・ライセンスクレジットの存在（KanjiVG／栃木県チャレンジカード集）
      7. 全HTMLのインラインJSの構文チェック（構文エラー=アプリ全滅の検出）
+     8. 外部JS（HTMLから読み込まれる .js）の構文チェック
+     9. CSS順序の hidden×display 衝突
+    10. 古いiPadで死ぬ新しめJS構文（?. ?? 等 ES2020+）の検出
 
    エラー（❌ 公開を止めるべき）と 警告（⚠️ 既知の負債・要らない心配かも）を区別する。
    Node標準機能のみ・外部パッケージなし（このリポジトリのオフライン主義に合わせる）。
@@ -288,6 +291,87 @@ for (const file of walkHtml(ROOT)) {
   }
   if (conflicts.size)
     err(app, `${rel}: tailwind.css を<style>より先に読み込むため .hidden が効かない（.${[...conflicts].join(' .')} の display が勝つ→モーダル/オーバーレイが出っぱなし）。tailwindの<link>を</style>の後へ移すこと`);
+}
+
+/* ---------- 10. 古いiPadで死ぬ新しめJS構文（ES2020+）の検出 ---------- */
+/* 前例: 2026-07-10「iPadでいくつかのアプリが開けない」報告。原因は ?.（オプショナル
+   チェーン）や ??（Null合体）＝ES2020構文。iPadOS 13.3以前のSafariはこれを
+   パースできず、**1箇所でもあるとそのスクリプト全体が構文エラーで死ぬ**。
+   Node(項目7・8)は最新構文を通してしまうので、ここで別途検出する。
+   text/babel(JSX) も対象（ブラウザ内Babelは JSXだけ変換し ?. 等は素通しするため）。
+   注意: 文字列・コメントは除外するが、テンプレートリテラル内の ${式} は検査対象に
+   残す（実際に level-up-adventure のバグは `${state.profile?.name}` だった）。 */
+function stripStringsAndComments(code) {
+  let out = '';
+  let i = 0;
+  const n = code.length;
+  // tplDepth: `${` で code に戻った回数をスタックで管理（` の中の ${…} は検査対象）
+  const stack = [];  // 'tpl' が積まれている間はテンプレートリテラル内
+  let mode = 'code';
+  while (i < n) {
+    const c = code[i], c2 = code.slice(i, i + 2);
+    if (mode === 'code') {
+      if (c2 === '//') { mode = 'line'; out += '  '; i += 2; continue; }
+      if (c2 === '/*') { mode = 'block'; out += '  '; i += 2; continue; }
+      if (c === "'") { mode = 'sq'; out += ' '; i++; continue; }
+      if (c === '"') { mode = 'dq'; out += ' '; i++; continue; }
+      if (c === '`') { mode = 'tpl'; out += ' '; i++; continue; }
+      if (c === '}' && stack[stack.length - 1] === 'tpl') { stack.pop(); mode = 'tpl'; out += ' '; i++; continue; }
+      if (c === '{') { stack.push('brace'); out += c; i++; continue; }
+      out += c; i++; continue;
+    }
+    if (mode === 'line') { if (c === '\n') { mode = 'code'; out += '\n'; } else out += ' '; i++; continue; }
+    if (mode === 'block') { if (c2 === '*/') { mode = 'code'; out += '  '; i += 2; } else { out += (c === '\n' ? '\n' : ' '); i++; } continue; }
+    if (mode === 'sq' || mode === 'dq') {
+      if (c === '\\') { out += '  '; i += 2; continue; }
+      if ((mode === 'sq' && c === "'") || (mode === 'dq' && c === '"')) { mode = 'code'; out += ' '; i++; continue; }
+      out += (c === '\n' ? '\n' : ' '); i++; continue;
+    }
+    if (mode === 'tpl') {
+      if (c === '\\') { out += '  '; i += 2; continue; }
+      if (c2 === '${') { stack.push('tpl'); mode = 'code'; out += '  '; i += 2; continue; }
+      if (c === '`') { mode = 'code'; out += ' '; i++; continue; }
+      out += (c === '\n' ? '\n' : ' '); i++; continue;
+    }
+  }
+  return out;
+}
+const ES_KILLERS = [
+  { re: /\(\?<[=!]/, label: '正規表現の後読み (?<=…)', min: 'iPadOS 16.4' },
+  { re: /\bstatic\s*\{/, label: 'クラスの static ブロック', min: 'iPadOS 16.4' },
+  { re: /\?\?=|\|\|=|&&=/, label: '論理代入演算子 (??= ||= &&=)', min: 'iPadOS 14' },
+  { re: /\?\?/, label: 'Null合体演算子 (??)', min: 'iPadOS 13.4' },
+  { re: /(^|[^?.])\?\.(?![0-9])/, label: 'オプショナルチェーン (?.)', min: 'iPadOS 13.4' },
+];
+function checkEsKillers(app, label, code) {
+  const stripped = stripStringsAndComments(code);
+  const reported = new Set();
+  for (const k of ES_KILLERS) {
+    if (reported.has('??') && k.label.includes('Null合体')) continue;  // ??= を報告済みなら ?? は重複
+    const m = stripped.match(k.re);
+    if (!m) continue;
+    if (k.re.source.includes('\\?\\?=')) reported.add('??');
+    const line = stripped.slice(0, m.index).split('\n').length;
+    err(app, `${label} の${line}行目付近に ${k.label} がある（${k.min}未満のSafariで構文エラー→スクリプト全体が死んでアプリが開けない）。古い書き方に直すこと`);
+  }
+}
+for (const file of walkHtml(ROOT)) {
+  const rel = path.relative(ROOT, file);
+  const app = rel.includes(path.sep) ? rel.split(path.sep)[0] : '.';
+  const src = fs.readFileSync(file, 'utf8');
+  for (const m of src.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const attrs = m[1];
+    if (/\bsrc\s*=/i.test(attrs)) continue;
+    const type = (attrs.match(/type\s*=\s*["']([^"']+)/i) || [])[1] || '';
+    if (type && !/module|javascript|babel/i.test(type)) continue;  // JSON等はスキップ・babelは対象
+    if (!m[2].trim()) continue;
+    checkEsKillers(app, `${rel} のインラインJS${/babel/i.test(type) ? '(JSX)' : ''}`, m[2]);
+  }
+}
+for (const [abs, referrer] of localScripts) {
+  const rel = path.relative(ROOT, abs);
+  const app = rel.includes(path.sep) ? rel.split(path.sep)[0] : '.';
+  checkEsKillers(app, `${rel}（${referrer} から読込）`, fs.readFileSync(abs, 'utf8'));
 }
 
 /* ---------- 結果表示 ---------- */

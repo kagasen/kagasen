@@ -2,7 +2,7 @@
   "name": "sikou-tool-app",
   "private": true,
   "scripts": {
-    "build": "esbuild app.jsx --bundle --minify --outfile=app.bundle.js --loader:.jsx=jsx --jsx=automatic"
+    "build": "esbuild app.jsx --bundle --minify --target=es2017 --outfile=app.bundle.js --loader:.jsx=jsx --jsx=automatic"
   },
   "dependencies": {
     "react": "^18.3.1",

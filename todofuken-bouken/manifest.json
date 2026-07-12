@@ -1,0 +1,15 @@
+{
+  "name": "都道府県の冒険",
+  "short_name": "とどうふけん",
+  "description": "気球で日本一周！都道府県の位置・形・県庁所在地・名物をクイズとタイムアタックで覚える社会科アプリ。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e1f5fe",
+  "theme_color": "#4fc3f7",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

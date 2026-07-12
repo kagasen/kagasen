@@ -1,11 +1,11 @@
 // 作家の時間 — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'sakkanojikan-cache-v1';
+const CACHE = 'sakkanojikan-cache-v2';
 const ASSETS = [
   './',
   './index.html',
-  './tailwind.min.js',
+  './tailwind.css',
   './manifest.json',
   './icon.svg',
 ];

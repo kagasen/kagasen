@@ -18,18 +18,6 @@
 
   <link rel="stylesheet" href="tailwind.css">
     <link rel="stylesheet" href="fonts.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            pop: ['"Mochiy Pop One"', 'sans-serif'],
-            maru: ['"Zen Maru Gothic"', 'sans-serif'],
-          },
-        },
-      },
-    };
-  </script>
   <style>
     :root {
       --c-red: #FF8FA3;
@@ -345,7 +333,7 @@
   <!-- トースト -->
   <div id="toast-wrap" class="fixed inset-x-0 bottom-28 lg:bottom-10 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
-  <script src="backup-kit.js?v=2"></script>
+  <script src="backup-kit.js?v=3"></script>
   <script>
   // =====================================================================
   //  自分レベルアップアドベンチャー — Stage1（動く骨格）
@@ -1567,7 +1555,7 @@
       // ホームのスマホ用：横並びコンパクト
       return `<div class="shrink-0">${playerSVG(st.key, 76)}</div>
         <div class="flex-1 min-w-0">
-          <div class="text-xs font-bold mb-1" style="color:${st.color}">${state.profile?.name || 'キミ'}・${st.label}</div>
+          <div class="text-xs font-bold mb-1" style="color:${st.color}">${(state.profile && state.profile.name) || 'キミ'}・${st.label}</div>
           ${bubble || '<div class="text-sm opacity-70">きょうもがんばろう！</div>'}
         </div>`;
     }
@@ -1578,7 +1566,7 @@
       <div class="card p-4">
         <div class="flex items-end justify-center gap-1">${sv}${petEl}</div>
         ${curTitle() ? `<div class="text-center text-xs font-bold mt-1" style="color:var(--c-purple)">『${esc(curTitle())}』</div>` : ''}
-        <div class="text-center font-pop text-base">${esc(state.profile?.name || 'キミ')}</div>
+        <div class="text-center font-pop text-base">${esc((state.profile && state.profile.name) || 'キミ')}</div>
         <div class="text-center text-sm mb-3" style="color:${st.color}">きぶん：${st.label}</div>
         ${bubble ? `<div class="mb-3">${bubble}</div>` : ''}
         <!-- コンディションバー -->
@@ -2423,7 +2411,7 @@
     // 設定
     $('#btn-settings').addEventListener('click', () => {
       const li = levelInfo(state.exp);
-      $('#settings-info').innerHTML = `なまえ：${esc(state.profile?.name || '')}<br>レベル：${li.lvl}（EXP ${state.exp}）<br>コイン：${state.coins}<br>習慣・Todo：${state.items.length}こ`;
+      $('#settings-info').innerHTML = `なまえ：${esc((state.profile && state.profile.name) || '')}<br>レベル：${li.lvl}（EXP ${state.exp}）<br>コイン：${state.coins}<br>習慣・Todo：${state.items.length}こ`;
       showModal('#modal-settings');
     });
     $('#settings-close').addEventListener('click', () => hideModal('#modal-settings'));

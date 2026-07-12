@@ -5,9 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>作家の時間</title>
-    <!-- Tailwindは同梱のローカルファイルから読み込む（オフラインのiPadでも動くように）。
-         CDNフォールバックは完全オフライン化(2026-07-06)で撤去した（tailwind.min.js 同梱済みのため不要） -->
-    <script src="tailwind.min.js"></script>
+    <!-- Tailwindは静的ビルドの tailwind.css を読み込む（2026-07-10）。
+         以前の tailwind.min.js（Play CDNのJS版ランタイム）は ES2020構文を含み、
+         古いiPad(iPadOS 13.3以前)のSafariで構文エラー→スタイル全滅になるため静的CSSへ移行した。
+         再生成: npx tailwindcss@3.4.17 --content sakkanojikan/index.html -o sakkanojikan/tailwind.css --minify
+         ※ <link> はカスタム<style>より後に置く（.hidden が custom display に勝つ順序を保つ） -->
     <style>
         /* Tailwindが読み込めなかったときの保険（画面の表示・非表示だけは必ず動くように） */
         .hidden {
@@ -91,7 +93,7 @@
 
         .sakka-page-inner {
             position: absolute;
-            inset: 0;
+            top: 0; right: 0; bottom: 0; left: 0; /* inset:0 は iPadOS 14.1未満が未対応のため展開 */
             /* 以前より下部の余白を減らし、文字が入るスペースを広げました */
             padding: 8cqw 9cqw 5cqw 9cqw;
             display: flex;
@@ -302,6 +304,7 @@
             /* ページの外側に15mmの余白を設け、ヘッダやフッタの場所を確保する */
         }
     </style>
+    <link rel="stylesheet" href="tailwind.css">
     <meta name="theme-color" content="#D97706">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.svg">

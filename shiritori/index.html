@@ -5806,7 +5806,7 @@
 
       /* ----- チャット末尾へスクロール ----- */
       useEffect(() => {
-        if (gameState === 'playing') chatEndRef.current?.scrollIntoView({ behavior:'smooth' });
+        if (gameState === 'playing' && chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior:'smooth' });
       }, [chatHistory, gameState]);
 
       /* ----- タイマー ----- */
@@ -5864,7 +5864,7 @@
         const target = currentWord ? getLastChar(currentWord.r) : '';
         const used   = new Set(chatHistory.map(h => h.reading));
         // ヒントの答えを除いた候補から追加例を取得
-        const hintR  = currentHintWord?.r;
+        const hintR  = currentHintWord ? currentHintWord.r : undefined;
         const cands  = DICTIONARY.filter(item =>
           getFirstChar(item.r) === target && !used.has(item.r) && item.r !== hintR
         ).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -6124,7 +6124,7 @@
               )}
 
               {/* ヒント */}
-              {gameState === 'playing' && turn === 'user' && timeLeft <= 15 && currentHintWord?.m && (
+              {gameState === 'playing' && turn === 'user' && timeLeft <= 15 && currentHintWord && currentHintWord.m && (
                 <div className="sticky bottom-2 left-0 right-0 mx-auto max-w-sm z-20 animate-fade-in-up">
                   <div className="bg-yellow-50 border-2 border-yellow-400 rounded-2xl px-4 py-3 shadow-lg text-center">
                     <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-3 py-0.5
@@ -6160,7 +6160,7 @@
                     type="text"
                     value={inputVal}
                     onChange={e => setInputVal(e.target.value)}
-                    placeholder={turn === 'user' ? `「${getLastChar(currentWord?.r)}」から (ひらがな)` : "待機中..."}
+                    placeholder={turn === 'user' ? `「${getLastChar(currentWord ? currentWord.r : undefined)}」から (ひらがな)` : "待機中..."}
                     disabled={turn !== 'user'}
                     className="flex-1 h-11 pl-5 pr-4 text-lg font-bold rounded-full border-2 border-slate-200
                       focus:border-green-400 focus:ring-4 focus:ring-green-100 outline-none transition

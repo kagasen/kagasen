@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 都道府県の冒険 アプリアイコン: 空を飛ぶ気球と日本の島々 -->
+  <rect width="512" height="512" rx="96" fill="#4fc3f7"/>
+  <circle cx="90" cy="110" r="34" fill="#ffffff" opacity="0.6"/>
+  <circle cx="128" cy="118" r="26" fill="#ffffff" opacity="0.6"/>
+  <circle cx="420" cy="170" r="28" fill="#ffffff" opacity="0.5"/>
+  <circle cx="452" cy="178" r="20" fill="#ffffff" opacity="0.5"/>
+  <!-- 日本列島ふうの島々 -->
+  <path d="M120 400 q46 -34 104 -22 q68 14 102 46 q30 30 -14 48 q-66 24 -136 6 q-80 -20 -56 -78z" fill="#81c784" stroke="#4caf50" stroke-width="6"/>
+  <ellipse cx="392" cy="386" rx="52" ry="30" fill="#81c784" stroke="#4caf50" stroke-width="6"/>
+  <!-- 気球 -->
+  <path d="M256 48 C186 48 152 108 152 156 C152 214 210 250 234 280 L278 280 C302 250 360 214 360 156 C360 108 326 48 256 48Z" fill="#ef5350" stroke="#c62828" stroke-width="8"/>
+  <path d="M256 48 C230 92 230 238 244 280 L268 280 C282 238 282 92 256 48Z" fill="#ffffff" opacity="0.5"/>
+  <line x1="234" y1="280" x2="226" y2="322" stroke="#6d4c41" stroke-width="10"/>
+  <line x1="278" y1="280" x2="286" y2="322" stroke="#6d4c41" stroke-width="10"/>
+  <rect x="216" y="322" width="80" height="50" rx="12" fill="#a1887f" stroke="#6d4c41" stroke-width="8"/>
+</svg>

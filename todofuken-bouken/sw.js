@@ -1,18 +1,13 @@
-// 自分レベルアップアドベンチャー — Service Worker
+// 都道府県の冒険 — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
-// 仕様変更でアセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'lua-cache-v5';
+// アセット（データ.js・index.html等）を更新したら CACHE のバージョン番号を上げる(v1->v2...)。
+// 注意: データ.jsの ?v= は index.html の読み込みと一致させること。
+const CACHE = 'todofuken-cache-v1';
 const ASSETS = [
   './',
   './index.html',
-  './backup-kit.js?v=3',
-  './tailwind.css',
-  './fonts.css',
-  './fonts/MochiyPopOne-Regular.woff2',
-  './fonts/ZenMaruGothic-Regular.woff2',
-  './fonts/ZenMaruGothic-Medium.woff2',
-  './fonts/ZenMaruGothic-Bold.woff2',
-  './fonts/ZenMaruGothic-Black.woff2',
+  './map-data.js?v=2',
+  './pref-data.js?v=3',
   './manifest.json',
   './icon.svg',
 ];
@@ -25,12 +20,12 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
       // Cache Storageは全アプリ共有(同一オリジン)。自分の旧キャッシュだけ消す。
-      Promise.all(keys.filter((k) => k.startsWith('lua-cache-') && k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k.startsWith('todofuken-cache-') && k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// ネットワーク優先 + 失敗時キャッシュ(オフライン)。CDN等もベストエフォートでキャッシュ。
+// ネットワーク優先 + 失敗時キャッシュ(オフライン)。
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(

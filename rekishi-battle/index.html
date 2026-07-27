@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#b71c1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>レキシバトル</title>
+<style>
+  /* 古いiPad対応のため ?. や ?? は使わない（release-check 項目10）。JSはES2017+αまで */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; height: 100%; }
+  body {
+    height: 100vh; height: 100dvh; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, #fff8e1 0%, #ffecb3 55%, #ffe0b2 100%);
+    color: #4e342e;
+  }
+  ruby rt { font-size: 0.45em; color: #8d6e63; font-weight: 400; }
+  button { font-family: inherit; touch-action: manipulation; }
+
+  /* ---------- トップバー ---------- */
+  #topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px; gap: 8px; flex: none; z-index: 20;
+    background: rgba(255,255,255,0.9); box-shadow: 0 2px 8px rgba(191,54,12,0.15);
+  }
+  #tb-title { font-weight: 800; font-size: 18px; color: #b71c1c; text-align: center; flex: 1; min-width: 0; }
+  .tb-btn {
+    min-height: 48px; min-width: 96px; padding: 8px 14px; border: none; border-radius: 14px;
+    background: #ffebee; color: #b71c1c; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  .tb-btn:active { transform: scale(0.96); }
+  .tb-hidden { visibility: hidden; }
+
+  main { flex: 1; min-height: 0; width: 100%; max-width: 1100px; margin: 0 auto; padding: 10px 12px; display: flex; }
+  .view { display: none; }
+  .view.on { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .panel {
+    background: #fffdf7; border-radius: 18px; padding: 14px;
+    box-shadow: 0 4px 14px rgba(191,54,12,0.16);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .scroll { overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
+
+  /* ---------- ホーム ---------- */
+  #home-logo { text-align: center; flex: none; padding: 4px 0 10px; }
+  #home-logo h1 { font-size: 34px; color: #b71c1c; letter-spacing: 2px; text-shadow: 2px 2px 0 #ffd54f; }
+  #home-logo p { font-size: 15px; color: #6d4c41; margin-top: 2px; }
+  #home-stats { text-align: center; font-size: 15px; font-weight: 700; color: #5d4037; margin-bottom: 8px; flex: none; }
+  .stage-btn {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    min-height: 64px; padding: 10px 14px; margin-top: 10px;
+    border: none; border-radius: 16px; cursor: pointer; text-align: left;
+    background: #fff; box-shadow: 0 3px 8px rgba(191,54,12,0.15);
+    font-size: 18px; font-weight: 700; color: #4e342e;
+  }
+  .stage-btn:active { transform: scale(0.98); }
+  .stage-btn .sb-era { font-size: 13px; color: #8d6e63; display: block; }
+  .stage-btn .sb-name { flex: 1; min-width: 0; }
+  .stage-btn .sb-state { font-size: 22px; flex: none; }
+  .stage-btn[disabled] { opacity: 0.5; cursor: default; }
+  .big-btn {
+    display: block; width: 100%; min-height: 56px; padding: 10px;
+    border: none; border-radius: 16px; cursor: pointer;
+    background: linear-gradient(180deg, #ef5350, #d32f2f); color: #fff;
+    font-size: 19px; font-weight: 800; box-shadow: 0 4px 0 #b71c1c;
+    margin-top: 12px; flex: none;
+  }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b71c1c; }
+  .big-btn.brown { background: linear-gradient(180deg, #a1887f, #8d6e63); box-shadow: 0 4px 0 #5d4037; }
+  .big-btn.brown:active { box-shadow: 0 1px 0 #5d4037; }
+  .big-btn[disabled] { filter: grayscale(0.8); opacity: 0.6; }
+
+  /* ---------- 顔（画像があれば表示・なければ名前1文字のプレースホルダー） ---------- */
+  .face {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; overflow: hidden; flex: none;
+    background: #efebe9; border: 3px solid #bcaaa4;
+  }
+  .face img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
+  .face .fb { font-weight: 800; color: #fff; z-index: 1; }
+  .face.t-bushi { background: #ef5350; }
+  .face.t-chie  { background: #42a5f5; }
+  .face.t-inori { background: #66bb6a; }
+  /* レア度でわくの色と光り方が変わる（N=茶 / R=銀 / SR=金） */
+  .face.r-n { border-color: #a1887f; }
+  .face.r-r { border-color: #78909c; box-shadow: 0 0 8px 2px #b0bec5; }
+  .face.r-sr { border-color: #ffb300; box-shadow: 0 0 12px 3px #ffd54f; }
+  .rchip { display: inline-block; padding: 1px 8px; border-radius: 9px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .rchip.rn { background: #efebe9; color: #6d4c41; border: 2px solid #a1887f; }
+  .rchip.rr { background: #eceff1; color: #37474f; border: 2px solid #90a4ae; box-shadow: 0 0 6px #cfd8dc; }
+  .rchip.rsr { background: #fff8e1; color: #e65100; border: 2px solid #ffb300; box-shadow: 0 0 8px #ffd54f; }
+  .pick-btn .p-era { font-size: 10px; color: #8d6e63; font-weight: 700; }
+
+  .type-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; }
+  .type-chip.t-bushi { background: #ef5350; }
+  .type-chip.t-chie  { background: #42a5f5; }
+  .type-chip.t-inori { background: #66bb6a; }
+
+  /* ---------- へんせい ---------- */
+  #hs-head { flex: none; text-align: center; margin-bottom: 8px; }
+  #hs-head .hs-era { font-size: 14px; color: #8d6e63; }
+  #hs-head .hs-name { font-size: 22px; font-weight: 800; color: #b71c1c; }
+  #hs-head .hs-desc { font-size: 14px; color: #5d4037; margin-top: 2px; }
+  #deck-slots { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; flex: none; margin-bottom: 8px; }
+  .dslot {
+    width: 92px; min-height: 96px; border-radius: 14px; border: 3px dashed #bcaaa4;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-size: 13px; color: #a1887f; background: #fff; padding: 6px 2px;
+  }
+  .dslot.filled { border-style: solid; border-color: #ffb300; }
+  .dslot .dname { font-size: 12px; font-weight: 700; color: #4e342e; text-align: center; line-height: 1.2; }
+  #hensei-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .pick-btn {
+    min-height: 96px; border: 3px solid transparent; border-radius: 14px; cursor: pointer;
+    background: #fff; box-shadow: 0 2px 6px rgba(191,54,12,0.12); padding: 6px 2px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 700; color: #4e342e;
+  }
+  .pick-btn.sel { border-color: #ffb300; background: #fff8e1; }
+  .pick-btn:active { transform: scale(0.96); }
+  .pick-btn .rar-tag { font-size: 11px; font-weight: 800; }
+
+  /* ---------- カードいちらん ---------- */
+  #cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+  .card-mini {
+    min-height: 120px; border-radius: 14px; cursor: pointer; border: none;
+    background: #fff; box-shadow: 0 2px 6px rgba(191,54,12,0.12); padding: 8px 2px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 700; color: #4e342e;
+  }
+  .card-mini:active { transform: scale(0.96); }
+  .card-mini.unknown { background: #d7ccc8; color: #8d6e63; cursor: default; }
+  .card-mini .cnt { font-size: 11px; color: #8d6e63; }
+
+  /* ---------- レア度のわく ---------- */
+  .rar-tag.rn { color: #8d6e63; }
+  .rar-tag.rr { color: #546e7a; }
+  .rar-tag.rsr { color: #ff8f00; }
+
+  /* ---------- バトル ---------- */
+  #v-battle { position: relative; }
+  #ticker {
+    flex: none; height: 40px; border-radius: 12px; overflow: hidden; position: relative;
+    background: #4e342e; color: #ffecb3; margin-bottom: 8px;
+  }
+  #tk-line {
+    position: absolute; top: 0; left: 0; height: 100%; display: flex; align-items: center;
+    white-space: nowrap; font-size: 17px; font-weight: 700; padding-top: 4px;
+    transform: translateX(100%);
+  }
+  #tk-line ruby rt { color: #ffcc80; }
+  #tk-line.run { animation: tkmove 11s linear forwards; }
+  @keyframes tkmove { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+
+  #bfield {
+    flex: 1; min-height: 0; position: relative; border-radius: 16px; overflow: hidden;
+    background: linear-gradient(180deg, #bbdefb 0%, #e1f5fe 58%, #aed581 58%, #8bc34a 100%);
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,0.5);
+  }
+  /* 時代ごとの背景（stage.bg で切りかえ。かざりSVGは #bdecor に入れる） */
+  #bfield.bg-yayoi { background: linear-gradient(180deg, #b3e5fc 0%, #fff9c4 55%, #8bc34a 58%, #7cb342 100%); }
+  #bfield.bg-asuka { background: linear-gradient(180deg, #ffe0b2 0%, #fff3e0 55%, #e0c9a6 58%, #d7ba8f 100%); }
+  #bfield.bg-umi   { background: linear-gradient(180deg, #b3e5fc 0%, #e1f5fe 55%, #4fc3f7 58%, #0288d1 100%); }
+  #bdecor { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; }
+  #bdecor svg { position: absolute; left: 0; width: 100%; display: block; }
+  #bdecor .bd-horizon { bottom: 42%; height: 30%; }
+  #bdecor .bd-ground { bottom: 0; height: 42%; }
+  #bfield.shake { animation: fshake 0.35s; }
+  @keyframes fshake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  /* 注意: 位置はJSの left = x-32 だけで決める。margin-left を足すと二重にずれて城が見切れる（2026-07-20修正） */
+  .unit { position: absolute; bottom: 16%; width: 64px; text-align: center; transition: opacity 0.4s; }
+  .unit .uname { font-size: 10px; font-weight: 700; color: #4e342e; white-space: nowrap; }
+  .unit .hpbar { height: 6px; background: rgba(0,0,0,0.25); border-radius: 3px; margin: 2px 6px; overflow: hidden; }
+  .unit .hpfill { height: 100%; background: #43a047; border-radius: 3px; width: 100%; }
+  .unit.enemy .hpfill { background: #e53935; }
+  .unit .emoji { font-size: 40px; line-height: 1; display: block; }
+  .unit .emoji.big { font-size: 56px; }
+  .unit.dead { opacity: 0; }
+  .unit.hitfx { animation: hitblink 0.2s; }
+  @keyframes hitblink { 50% { filter: brightness(2); } }
+  .dmg {
+    position: absolute; font-size: 16px; font-weight: 800; color: #d32f2f; pointer-events: none;
+    animation: dmgup 0.7s forwards; text-shadow: 1px 1px 0 #fff; z-index: 5;
+  }
+  .dmg.heal { color: #2e7d32; }
+  @keyframes dmgup { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-34px); } }
+  #cutin {
+    position: absolute; left: 0; right: 0; top: 26%; display: none; z-index: 8;
+    background: rgba(183,28,28,0.88); color: #fff; text-align: center;
+    font-size: 22px; font-weight: 800; padding: 10px 6px;
+  }
+  #cutin.show { display: block; animation: cutin 1.1s; }
+  #cutin ruby rt { color: #ffcdd2; }
+  @keyframes cutin { from { transform: translateX(60px); opacity: 0; } 20% { transform: none; opacity: 1; } 85% { opacity: 1; } to { opacity: 0; } }
+  #b-overlay {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+    background: rgba(78,52,46,0.55); color: #fff; text-align: center; padding: 16px;
+  }
+  #b-overlay.show { display: flex; }
+  #b-overlay .ov-big { font-size: 34px; font-weight: 800; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+  #b-overlay .big-btn { max-width: 320px; }
+  /* 出撃まわり（にゃんこ式: おかねをためて、はらって出す） */
+  #deployrow { flex: none; display: flex; gap: 10px; margin-top: 8px; align-items: stretch; }
+  /* 幅は固定（数字のケタが変わるたびに出撃ボタンの列が揺れないように） */
+  #moneybox {
+    flex: none; width: 172px; background: #4e342e; color: #ffd54f; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    font-size: 24px; font-weight: 800; padding: 0 8px;
+  }
+  #money-num { display: inline-block; min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+  #moneybox .m-rate { white-space: nowrap; }
+  #moneybox .m-rate { font-size: 11px; color: #d7ccc8; font-weight: 700; }
+  #deploy-btns { flex: 1; display: flex; gap: 8px; }
+  .dep-btn {
+    flex: 1; max-width: 120px; min-height: 76px; border: none; border-radius: 14px; cursor: pointer;
+    position: relative; overflow: hidden; background: #d7ccc8; padding: 4px; opacity: 0.8;
+  }
+  .dep-btn .cd-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+    background: rgba(78,52,46,0.4); z-index: 3; pointer-events: none;
+  }
+  .dep-btn .dep-in { position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .dep-btn .dep-cost { font-size: 15px; font-weight: 800; color: #4e342e; }
+  .dep-btn .dep-name { font-size: 11px; font-weight: 700; color: #4e342e; display: block; margin-top: 2px; }
+  .dep-btn.ok { background: #fff8e1; box-shadow: 0 0 10px #ffb300; opacity: 1; }
+  .dep-btn:active { transform: scale(0.95); }
+  .era-star { font-size: 15px; }
+  .unit.eboost .face { box-shadow: 0 0 12px 3px #ffd54f; }
+  .dmg.coin { color: #ff8f00; }
+  #rotate-hint { display: none; flex: none; text-align: center; font-size: 13px; font-weight: 700; color: #b71c1c; margin-top: 4px; }
+  @media (orientation: portrait) { #rotate-hint { display: block; } }
+
+  /* ---------- クイズ ---------- */
+  #quiz-num { flex: none; text-align: center; font-size: 16px; font-weight: 800; color: #8d6e63; margin-bottom: 6px; }
+  #quiz-line {
+    flex: none; background: #fff; border-radius: 16px; padding: 16px;
+    font-size: 21px; font-weight: 700; line-height: 1.7; box-shadow: 0 3px 8px rgba(191,54,12,0.15);
+  }
+  #quiz-ask { flex: none; text-align: center; font-size: 18px; font-weight: 800; color: #b71c1c; margin: 10px 0 6px; }
+  .quiz-choice {
+    display: block; width: 100%; min-height: 60px; padding: 10px; margin-top: 10px;
+    border: 3px solid transparent; border-radius: 16px; cursor: pointer;
+    background: #fff; box-shadow: 0 3px 8px rgba(191,54,12,0.15);
+    font-size: 20px; font-weight: 700; color: #4e342e;
+  }
+  .quiz-choice:active { transform: scale(0.98); }
+  .quiz-choice.good { border-color: #43a047; background: #e8f5e9; }
+  .quiz-choice.bad { border-color: #e53935; background: #ffebee; }
+  #quiz-fb { flex: none; text-align: center; font-size: 19px; font-weight: 800; margin-top: 10px; min-height: 28px; }
+
+  /* ---------- カードゲット ---------- */
+  #v-reward .panel { align-items: center; }
+  #rw-result { font-size: 17px; font-weight: 800; color: #5d4037; flex: none; }
+  #rw-card {
+    margin-top: 10px; width: 220px; border-radius: 18px; padding: 14px 10px; text-align: center;
+    border: 5px solid #a1887f; background: #fff; flex: none;
+    animation: cardpop 0.5s;
+  }
+  @keyframes cardpop { from { transform: scale(0.3) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  #rw-card.rar-r { border-color: #90a4ae; box-shadow: 0 0 18px #b0bec5; background: linear-gradient(180deg, #fff, #eceff1); }
+  #rw-card.rar-sr { border-color: #ffb300; box-shadow: 0 0 24px #ffd54f; background: linear-gradient(180deg, #fff, #fff8e1); }
+  #rw-card .rw-rar { font-size: 15px; font-weight: 800; }
+  #rw-card .rw-name { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  #rw-card .rw-era { font-size: 13px; color: #8d6e63; margin-top: 2px; }
+  #rw-card .rw-skill { font-size: 14px; margin-top: 6px; color: #4e342e; }
+  #rw-new { font-size: 20px; font-weight: 800; color: #e65100; margin-top: 8px; min-height: 26px; flex: none; }
+  #rw-count { font-size: 15px; color: #5d4037; flex: none; }
+  #v-reward .big-btn { max-width: 360px; }
+
+  /* ---------- モーダル（人物ずかん） ---------- */
+  #modal {
+    position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; background: rgba(62,39,35,0.55); padding: 16px;
+  }
+  #modal.show { display: flex; }
+  #modal-box {
+    background: #fffdf7; border-radius: 18px; padding: 18px; max-width: 560px; width: 100%;
+    max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  #modal-box h3 { font-size: 24px; color: #b71c1c; }
+  #modal-box .m-era { font-size: 14px; color: #8d6e63; margin: 2px 0 8px; }
+  #modal-box .m-skill { font-size: 16px; font-weight: 700; margin: 8px 0; }
+  #modal-box .m-star { color: #ffb300; letter-spacing: 1px; }
+  #modal-box li { font-size: 16px; line-height: 1.8; margin-left: 1.3em; }
+  #modal-box .m-cnt { margin-top: 10px; font-size: 15px; font-weight: 700; color: #5d4037; }
+
+  /* ---------- コンフェッティ ---------- */
+  .confetti { position: fixed; top: -14px; width: 10px; height: 14px; z-index: 60; pointer-events: none; animation: cfall linear forwards; }
+  @keyframes cfall { to { transform: translateY(105vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="tb-back" class="tb-btn">← もどる</button>
+  <div id="tb-title">レキシバトル</div>
+  <button class="tb-btn tb-hidden">← もどる</button>
+</div>
+
+<main>
+  <!-- ホーム -->
+  <section id="v-home" class="view">
+    <div id="home-logo">
+      <h1>レキシバトル</h1>
+      <p>れきし人物カードを あつめて たたかおう！</p>
+    </div>
+    <div id="home-stats"></div>
+    <div class="panel" style="flex:1;">
+      <div class="scroll" style="flex:1;">
+        <div id="stage-list"></div>
+        <p style="text-align:center; font-size:13px; color:#8d6e63; margin-top:10px;">ステージは これから もっと ふえるよ！</p>
+      </div>
+      <button id="btn-cards" class="big-btn brown">🃏 カードいちらん</button>
+    </div>
+  </section>
+
+  <!-- へんせい（3人えらぶ） -->
+  <section id="v-hensei" class="view">
+    <div class="panel" style="flex:1;">
+      <div id="hs-head"></div>
+      <div id="deck-slots"></div>
+      <div class="scroll" style="flex:1;"><div id="hensei-grid"></div></div>
+      <button id="btn-fight" class="big-btn">⚔️ たたかう！</button>
+    </div>
+  </section>
+
+  <!-- カードいちらん -->
+  <section id="v-cards" class="view">
+    <div class="panel" style="flex:1;">
+      <div class="scroll" style="flex:1;"><div id="cards-grid"></div></div>
+    </div>
+  </section>
+
+  <!-- バトル -->
+  <section id="v-battle" class="view">
+    <div id="ticker"><div id="tk-line"></div></div>
+    <div id="bfield">
+      <div id="bdecor"></div>
+      <div id="cutin"></div>
+      <div id="b-overlay"></div>
+    </div>
+    <div id="deployrow">
+      <div id="moneybox">🪙 <span id="money-num">0</span><span class="m-rate" id="money-rate"></span></div>
+      <div id="deploy-btns"></div>
+    </div>
+    <div id="rotate-hint">📱 iPadを よこむきに すると 見やすいよ！</div>
+  </section>
+
+  <!-- クイズ -->
+  <section id="v-quiz" class="view">
+    <div class="panel" style="flex:1;">
+      <div id="quiz-num"></div>
+      <div class="scroll" style="flex:1;">
+        <div id="quiz-line"></div>
+        <div id="quiz-ask">これは だれの こと？</div>
+        <div id="quiz-choices"></div>
+        <div id="quiz-fb"></div>
+      </div>
+      <button id="btn-qnext" class="big-btn" style="display:none;">つぎへ ▶</button>
+    </div>
+  </section>
+
+  <!-- カードゲット -->
+  <section id="v-reward" class="view">
+    <div class="panel scroll" style="flex:1;">
+      <div id="rw-result"></div>
+      <div id="rw-card"></div>
+      <div id="rw-new"></div>
+      <div id="rw-count"></div>
+      <button id="btn-retry" class="big-btn">⚔️ もういちど このステージ</button>
+      <button id="btn-rhome" class="big-btn brown">🏠 ホームへ</button>
+    </div>
+  </section>
+</main>
+
+<div id="modal"><div id="modal-box"></div></div>
+
+<script src="chars-data.js?v=3"></script>
+<script>
+/* =====================================================================
+   レキシバトル 第1段（動く骨格）
+   - 3人出撃リアルタイム戦 → 勝利 → 3問クイズ → カード1枚 の一周ループ
+   - 数値バランスは全部叩き台（HANDOFF.md 参照）
+   - 動作確認ハッシュ: #st1 / #st2 / #st3（直接バトル開始）・末尾 f で6倍速（例 #st1f）
+   ===================================================================== */
+
+/* ---------- ちいさな道具 ---------- */
+function $(id) { return document.getElementById(id); }
+function rubi(s) { return String(s).replace(/([一-龠々〆ヵヶノ]+)《([^》]+)》/g, '<ruby>$1<rt>$2</rt></ruby>'); }
+function plain(s) { return String(s).replace(/《[^》]*》/g, ''); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+var CHARS = REKISHI_CHARS, STAGES = REKISHI_STAGES, TYPES = REKISHI_TYPES;
+var CHAR_BY_ID = {};
+CHARS.forEach(function (c) { CHAR_BY_ID[c.id] = c; });
+var RAR_LABEL = { n: "ノーマル", r: "レア ✦", sr: "スーパーレア ✦✦" };
+/* レベル制（2026-07-20ユーザー決定）: 同じ人物のカードは自動で重なってレベルになる。
+   N=+1 / R=+5 / SR=+30 レベルぶん。Lv5でレアに、Lv30でスーパーレアに進化。
+   強さもレベルで上がる（lvMult・Lv41で上限3倍＝叩き台） */
+var LV_RARE = 5, LV_SRARE = 30;
+var SKILL_EVERY = 12;   /* 出撃したキャラが業績の技を出す間隔・秒（叩き台） */
+var DEPLOY_CD = 3;      /* 同じ人物をつづけて出すまでの待ち・秒（叩き台） */
+var KILL_MONEY = 30;    /* ざこをたおすと もらえるおかね（叩き台） */
+var ERA_MULT = 1.5;     /* ⭐じだいボーナスの強さ倍率（叩き台） */
+var DECK_MAX = 5;       /* いっしょに連れていける人数 */
+
+/* 個性ステータス（chars-data.js の REKISHI_STATS）。a=こうげき d=まもり s=はやさ(1〜5) */
+function charStat(id) { return REKISHI_STATS[id] || { a: 3, d: 3, s: 3, cost: 80 }; }
+function statMul(v) { return 0.55 + v * 0.15; }   /* ★3=1.0倍・★5=1.3倍・★1=0.7倍 */
+function starBar(n) { var s = ""; for (var i = 1; i <= 5; i++) s += (i <= n ? "★" : "☆"); return s; }
+function statComment(sd, type) {
+  var arr = [[type === "inori" ? "かいふく" : "こうげき", sd.a], ["まもり", sd.d], ["はやさ", sd.s]];
+  var hi = arr[0], lo = arr[0];
+  arr.forEach(function (p) { if (p[1] > hi[1]) hi = p; if (p[1] < lo[1]) lo = p; });
+  if (hi[1] === lo[1]) return "バランスがた！";
+  if (hi[1] >= 5 && lo[1] <= 2) return hi[0] + "は ピカイチ！でも " + lo[0] + "は にがて…";
+  if (hi[1] >= 4) return hi[0] + "に じしん あり！";
+  return "バランスがた！";
+}
+
+/* 人物名（漢字＋ルビ）。カタカナだけの名前（ザビエル・ペリー）はルビなし */
+function nameRuby(ch) {
+  if (/^[ァ-ヶー]+$/.test(ch.name)) return ch.name;
+  return '<ruby>' + ch.name + '<rt>' + ch.yomi + '</rt></ruby>';
+}
+/* 顔: images/chars/{id}_{レア度}.webp があれば表示、なければ名前1文字（差し替え式） */
+function faceHTML(ch, rar, size) {
+  return '<span class="face t-' + ch.type + ' r-' + (rar || "n") + '" style="width:' + size + 'px;height:' + size + 'px;">'
+    + '<img src="images/chars/' + ch.id + '_' + rar + '.webp" alt="" onerror="this.style.display=\'none\'">'
+    + '<span class="fb" style="font-size:' + Math.round(size * 0.5) + 'px;">' + ch.name.charAt(0) + '</span></span>';
+}
+
+/* ---------- セーブ（localStorage のみ・CLAUDE.md §3） ---------- */
+var SAVE_KEY = "rekishiBattle.save.v1";
+function loadSave() {
+  var def = { ver: 1, cards: {}, deck: ["himiko", "shotoku", "nobunaga"], cleared: {} };
+  var s = null;
+  try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (e) { s = null; }
+  if (!s || typeof s !== "object") s = def;
+  /* 将来スキーマを変えるときは、ここで旧データを自動移行する（黙って捨てない） */
+  if (!s.cards) s.cards = {};
+  if (!s.deck) s.deck = def.deck.slice();
+  if (!s.cleared) s.cleared = {};
+  return s;
+}
+var save = loadSave();
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+
+function cardCnt(id) { return save.cards[id] || { n: 0, r: 0, sr: 0 }; }
+function ownedTotal(id) { var c = cardCnt(id); return c.n + c.r + c.sr; }
+function charLevel(id) { var c = cardCnt(id); return c.n + c.r * LV_RARE + c.sr * LV_SRARE; }
+function bestRarity(id) { var lv = charLevel(id); if (lv >= LV_SRARE) return "sr"; if (lv >= LV_RARE) return "r"; if (lv >= 1) return "n"; return null; }
+function lvMult(lv) { return 1 + Math.min(lv - 1, 40) * 0.05; }
+function nextGoal(id) {
+  var r = bestRarity(id), lv = charLevel(id);
+  if (r === "n") return "あと" + (LV_RARE - lv) + "で レア！";
+  if (r === "r") return "あと" + (LV_SRARE - lv) + "で スーパーレア！";
+  return "さいきょう！";
+}
+function addCard(id, rar) {
+  var isNew = ownedTotal(id) === 0;
+  if (!save.cards[id]) save.cards[id] = { n: 0, r: 0, sr: 0 };
+  save.cards[id][rar]++;
+  return isNew;
+}
+function ownedIds() { return CHARS.filter(function (c) { return ownedTotal(c.id) > 0; }).map(function (c) { return c.id; }); }
+
+/* はじめてのプレイ: スターター3枚（かいふく＋えんきょり＋せっきん の3タイプ） */
+if (ownedIds().length === 0) {
+  ["himiko", "shotoku", "nobunaga"].forEach(function (id) { addCard(id, "n"); });
+  persist();
+}
+
+/* ---------- 画面の切りかえ ---------- */
+var cur = "";
+var state = { stage: null, quiz: null };
+function showView(id, title, backable) {
+  cur = id;
+  document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("on"); });
+  $(id).classList.add("on");
+  $("tb-title").innerHTML = rubi(title || "レキシバトル");
+  $("tb-back").classList.toggle("tb-hidden", !backable);
+}
+$("tb-back").onclick = function () {
+  if (cur === "v-battle") { B = null; goHome(); return; }   /* バトル中断＝報酬なしでホームへ */
+  goHome();
+};
+
+/* ---------- ホーム ---------- */
+function stageUnlocked(i) { return i === 0 || !!save.cleared[STAGES[i - 1].id]; }
+function goHome() {
+  B = null;
+  var got = ownedIds().length, total = 0;
+  CHARS.forEach(function (c) { var cc = cardCnt(c.id); total += cc.n + cc.r + cc.sr; });
+  $("home-stats").innerHTML = rubi("🃏 カード " + total + "まい ／ 人物《じんぶつ》 " + got + "／" + CHARS.length + "人");
+  var el = $("stage-list");
+  el.innerHTML = "";
+  STAGES.forEach(function (st, i) {
+    var b = document.createElement("button");
+    b.className = "stage-btn";
+    var open = stageUnlocked(i);
+    b.disabled = !open;
+    b.innerHTML = '<span class="sb-name"><span class="sb-era">' + rubi(st.era) + '</span>' + rubi(st.name) + '</span>'
+      + '<span class="sb-state">' + (save.cleared[st.id] ? "⭐" : (open ? "▶" : "🔒")) + '</span>';
+    if (open) b.onclick = function () { openStage(st); };
+    el.appendChild(b);
+  });
+  showView("v-home", "レキシバトル", false);
+}
+$("btn-cards").onclick = function () { renderCards(); };
+
+/* ---------- へんせい（3人えらぶ） ---------- */
+function openStage(st) {
+  state.stage = st;
+  /* デッキを手持ちだけに掃除し、からっぽなら手持ち順で3人うめる */
+  save.deck = save.deck.filter(function (id) { return ownedTotal(id) > 0; });
+  ownedIds().forEach(function (id) { if (save.deck.length < 3 && save.deck.indexOf(id) < 0) save.deck.push(id); });
+  renderHensei();
+}
+function renderHensei() {
+  var st = state.stage;
+  $("hs-head").innerHTML = '<div class="hs-era">' + rubi(st.era) + '</div><div class="hs-name">' + rubi(st.name) + '</div><div class="hs-desc">' + rubi(st.desc) + '</div>'
+    + '<div class="hs-desc">' + rubi("⭐マークは この時代の人物《じんぶつ》。えらぶと 1.5倍《ばい》 つよくなるよ！") + '</div>';
+  var slots = $("deck-slots");
+  slots.innerHTML = "";
+  for (var i = 0; i < DECK_MAX; i++) {
+    var d = document.createElement("div");
+    var id = save.deck[i];
+    if (id) {
+      var ch = CHAR_BY_ID[id], rar = bestRarity(id);
+      d.className = "dslot filled";
+      d.innerHTML = faceHTML(ch, rar, 44) + '<span class="dname">' + (eraBonus(ch) ? "⭐" : "") + ch.name + '</span><span class="rchip r' + rar + '">' + RAR_LABEL[rar] + '</span>';
+    } else {
+      d.className = "dslot";
+      d.textContent = (i + 1) + "人目";
+    }
+    slots.appendChild(d);
+  }
+  var grid = $("hensei-grid");
+  grid.innerHTML = "";
+  ownedIds().forEach(function (id) {
+    var ch = CHAR_BY_ID[id], rar = bestRarity(id);
+    var b = document.createElement("button");
+    b.className = "pick-btn" + (save.deck.indexOf(id) >= 0 ? " sel" : "");
+    b.innerHTML = faceHTML(ch, rar, 44) + '<span>' + (eraBonus(ch) ? "⭐" : "") + ch.name + '</span>'
+      + '<span class="p-era">' + plain(ch.era) + '</span>'
+      + '<span class="rchip r' + rar + '">' + RAR_LABEL[rar] + ' Lv.' + charLevel(id) + '</span>'
+      + '<span class="type-chip t-' + ch.type + '">' + TYPES[ch.type].icon + TYPES[ch.type].label + '</span>'
+      + '<span class="rar-tag">🪙' + charStat(id).cost + '</span>';
+    b.onclick = function () {
+      var at = save.deck.indexOf(id);
+      if (at >= 0) save.deck.splice(at, 1);
+      else if (save.deck.length < DECK_MAX) save.deck.push(id);
+      persist();
+      renderHensei();
+    };
+    grid.appendChild(b);
+  });
+  $("btn-fight").disabled = save.deck.length < 1;
+  showView("v-hensei", "なかまを えらんでね（" + save.deck.length + "／" + DECK_MAX + "）", true);
+}
+$("btn-fight").onclick = function () { if (save.deck.length >= 1) startBattle(); };
+
+/* ---------- カードいちらん・人物ずかん ---------- */
+function renderCards() {
+  var grid = $("cards-grid");
+  grid.innerHTML = "";
+  CHARS.forEach(function (ch) {
+    var b = document.createElement("button");
+    var rar = bestRarity(ch.id);
+    if (rar) {
+      b.className = "card-mini";
+      b.innerHTML = faceHTML(ch, rar, 48) + '<span>' + ch.name + '</span>'
+        + '<span class="rchip r' + rar + '">' + RAR_LABEL[rar] + '</span>'
+        + '<span class="cnt">Lv.' + charLevel(ch.id) + '</span>';
+      b.onclick = function () { openCharModal(ch); };
+    } else {
+      b.className = "card-mini unknown";
+      b.innerHTML = '<span style="font-size:34px;">？</span><span>？？？</span>';
+      b.disabled = true;
+    }
+    grid.appendChild(b);
+  });
+  showView("v-cards", "カードいちらん", true);
+}
+function openCharModal(ch) {
+  var c = cardCnt(ch.id), rar = bestRarity(ch.id);
+  var html = '<div style="text-align:center;">' + faceHTML(ch, rar, 84) + '</div>'
+    + '<h3 style="text-align:center;">' + nameRuby(ch) + '</h3>'
+    + '<div class="m-era" style="text-align:center;">' + rubi(ch.era) + '　<span class="type-chip t-' + ch.type + '">' + TYPES[ch.type].icon + TYPES[ch.type].label + '</span></div>'
+    + '<div class="m-skill">⚡ わざ: ' + rubi(ch.skill) + '</div>'
+    + (function () {
+        var sd = charStat(ch.id);
+        var an = ch.type === "inori" ? "かいふく" : "こうげき";
+        return '<div class="m-skill">' + an + ' <span class="m-star">' + starBar(sd.a) + '</span>　まもり <span class="m-star">' + starBar(sd.d) + '</span>　はやさ <span class="m-star">' + starBar(sd.s) + '</span>　🪙' + sd.cost + '</div>'
+          + '<div class="m-era">' + statComment(sd, ch.type) + '</div>';
+      })()
+    + '<ul>' + ch.info.map(function (l) { return '<li>' + rubi(l) + '</li>'; }).join("") + '</ul>'
+    + '<div class="m-cnt"><span class="rchip r' + rar + '">' + RAR_LABEL[rar] + '</span>　Lv.' + charLevel(ch.id) + '（' + nextGoal(ch.id) + '）<br>'
+    + 'これまでに あつめたカード: N×' + c.n + '　R×' + c.r + '　SR×' + c.sr + '</div>'
+    + '<button class="big-btn brown" onclick="closeModal()">とじる</button>';
+  $("modal-box").innerHTML = html;
+  $("modal").classList.add("show");
+}
+function closeModal() { $("modal").classList.remove("show"); }
+$("modal").onclick = function (e) { if (e.target === this) closeModal(); };
+
+/* ---------- バトル（お金をためて出撃させる・にゃんこ式。2026-07-20刷新） ---------- */
+var B = null;     /* 進行中バトルの状態。null=バトル外 */
+var SPEED = 1;    /* 動作確認用の倍速（ハッシュ末尾 f で6倍） */
+
+/* ⭐じだいボーナス: ステージの時代に合う人物は強くなる（同じ時代の人物を覚える仕掛け） */
+function eraBonus(ch) {
+  var st = state.stage;
+  if (!st || !st.bonusEra) return false;
+  var e = plain(ch.era);
+  return st.bonusEra.some(function (k) { return e.indexOf(k) >= 0; });
+}
+
+function mkUnitEl(html, label) {
+  var el = document.createElement("div");
+  el.className = "unit";
+  el.innerHTML = '<div class="uname">' + label + '</div><div class="hpbar"><div class="hpfill"></div></div>' + html;
+  return el;
+}
+function spawnAlly(ch) {
+  var rar = bestRarity(ch.id) || "n";
+  var t = TYPES[ch.type];
+  var sd = charStat(ch.id);
+  var boost = eraBonus(ch);
+  var m = lvMult(charLevel(ch.id)) * (boost ? ERA_MULT : 1);
+  /* タイプの基本値 × 個性ステータス倍率 × レベル・じだいボーナス */
+  var hp = Math.round(t.hp * statMul(sd.d) * m);
+  var u = {
+    side: "a", kind: "ally", ch: ch, type: ch.type, rar: rar, alive: true,
+    hp: hp, maxHp: hp, atk: Math.round(t.atk * statMul(sd.a) * m),
+    range: t.range, speed: t.speed * statMul(sd.s), cd: t.cd, cdT: 0.4, healT: 4, skillT: SKILL_EVERY,
+    x: 70
+  };
+  u.el = mkUnitEl(faceHTML(ch, rar, 48), ch.name);
+  u.el.style.left = (u.x - 32) + "px";
+  if (boost) {
+    u.el.classList.add("eboost");
+    popup(u.x, "⭐じだいボーナス！", "heal");
+  }
+  $("bfield").appendChild(u.el);
+  B.units.push(u);
+  return u;
+}
+/* みかたの城（こわされたら負け） */
+function spawnBase() {
+  var u = {
+    side: "a", kind: "base", alive: true,
+    hp: state.stage.baseHp, maxHp: state.stage.baseHp,
+    atk: 0, range: 0, speed: 0, cd: 1, cdT: 1, x: 44
+  };
+  u.el = mkUnitEl('<span class="emoji big">🏯</span>', "みかたのしろ");
+  u.el.style.left = (u.x - 32) + "px";
+  $("bfield").appendChild(u.el);
+  B.units.push(u);
+  return u;
+}
+/* 敵の城・町（これをこわすと勝ち） */
+function spawnEbase() {
+  var d = state.stage.ebase;
+  var u = {
+    side: "e", kind: "ebase", alive: true,
+    hp: d.hp, maxHp: d.hp,
+    atk: 0, range: 0, speed: 0, cd: 1, cdT: 1, x: B.W - 46
+  };
+  u.el = mkUnitEl('<span class="emoji big">' + d.icon + '</span>', plain(d.name));
+  u.el.style.left = (u.x - 32) + "px";
+  u.el.classList.add("enemy");
+  $("bfield").appendChild(u.el);
+  B.units.push(u);
+  return u;
+}
+function spawnEnemy(def, kind) {
+  var u = {
+    side: "e", kind: kind, alive: true,
+    hp: def.hp, maxHp: def.hp, atk: def.atk, range: def.range, speed: def.speed, cd: def.cd, cdT: 0.6,
+    x: kind === "boss" ? B.W - 80 : B.W - 36
+  };
+  u.el = mkUnitEl('<span class="emoji' + (kind === "boss" ? " big" : "") + '">' + def.icon + '</span>', plain(def.name));
+  u.el.style.left = (u.x - 32) + "px";
+  u.el.classList.add("enemy");
+  $("bfield").appendChild(u.el);
+  B.units.push(u);
+  return u;
+}
+
+/* 時代ごとの背景かざり（自前SVG・外部読み込みなし）。preserveAspectRatio=none で横に伸ばす */
+var BG_DECOR = {
+  yayoi: {
+    horizon: '<svg class="bd-horizon" viewBox="0 0 1200 200" preserveAspectRatio="none">'
+      + '<circle cx="1090" cy="40" r="34" fill="#ffcc80"/>'
+      + '<path d="M0,200 L140,70 L300,200 Z" fill="#a5c8a1"/><path d="M220,200 L400,40 L600,200 Z" fill="#8fbc8f"/><path d="M540,200 L680,90 L820,200 Z" fill="#a5c8a1"/>'
+      + '<g><rect x="880" y="150" width="10" height="50" fill="#8d6e63"/><rect x="960" y="150" width="10" height="50" fill="#8d6e63"/>'
+      + '<rect x="866" y="110" width="118" height="46" rx="6" fill="#bcaaa4"/>'
+      + '<path d="M850,112 L925,62 L1000,112 Z" fill="#795548"/></g></svg>',
+    ground: '<svg class="bd-ground" viewBox="0 0 1200 300" preserveAspectRatio="none">'
+      + '<rect x="0" y="60" width="1200" height="8" fill="#aed581" opacity="0.7"/><rect x="0" y="140" width="1200" height="8" fill="#aed581" opacity="0.7"/><rect x="0" y="220" width="1200" height="8" fill="#aed581" opacity="0.7"/>'
+      + '<g stroke="#33691e" stroke-width="4" opacity="0.5">'
+      + '<path d="M100,60 l-8,-22 M100,60 l0,-26 M100,60 l8,-22"/><path d="M420,140 l-8,-22 M420,140 l0,-26 M420,140 l8,-22"/>'
+      + '<path d="M760,60 l-8,-22 M760,60 l0,-26 M760,60 l8,-22"/><path d="M1020,220 l-8,-22 M1020,220 l0,-26 M1020,220 l8,-22"/></g></svg>'
+  },
+  asuka: {
+    horizon: '<svg class="bd-horizon" viewBox="0 0 1200 200" preserveAspectRatio="none">'
+      + '<circle cx="80" cy="40" r="26" fill="#ffcc80"/>'
+      + '<ellipse cx="430" cy="30" rx="60" ry="14" fill="#fff" opacity="0.75"/><ellipse cx="1080" cy="24" rx="50" ry="12" fill="#fff" opacity="0.7"/>'
+      + '<path d="M0,200 Q220,148 460,200 Z" fill="#c9d9a8"/><path d="M340,200 Q640,138 940,200 Z" fill="#bccf97"/>'
+      /* 五重塔 */
+      + '<g><rect x="196" y="188" width="88" height="12" fill="#90a4ae"/>'
+      + '<rect x="216" y="170" width="48" height="18" fill="#c62828"/><path d="M194,170 L240,155 L286,170 Z" fill="#37474f"/>'
+      + '<rect x="220" y="141" width="40" height="16" fill="#c62828"/><path d="M201,141 L240,127 L279,141 Z" fill="#37474f"/>'
+      + '<rect x="224" y="113" width="32" height="15" fill="#c62828"/><path d="M208,113 L240,100 L272,113 Z" fill="#37474f"/>'
+      + '<rect x="227" y="87" width="26" height="14" fill="#c62828"/><path d="M214,87 L240,76 L266,87 Z" fill="#37474f"/>'
+      + '<rect x="230" y="63" width="20" height="13" fill="#c62828"/><path d="M219,63 L240,53 L261,63 Z" fill="#37474f"/>'
+      + '<rect x="238" y="32" width="4" height="21" fill="#ffb300"/><circle cx="240" cy="29" r="5" fill="#ffb300"/></g>'
+      /* 木々 */
+      + '<g fill="#7cb342"><circle cx="360" cy="184" r="20"/><circle cx="396" cy="190" r="15"/><circle cx="560" cy="186" r="17"/><circle cx="596" cy="192" r="13"/></g>'
+      /* 大極殿（朱の柱・白壁・二重屋根と金の鴟尾） */
+      + '<g><rect x="680" y="186" width="480" height="14" fill="#b0bec5"/>'
+      + '<rect x="884" y="178" width="72" height="8" fill="#cfd8dc"/>'
+      + '<rect x="700" y="132" width="440" height="54" fill="#f5f5f5"/>'
+      + '<g fill="#c62828"><rect x="710" y="132" width="13" height="54"/><rect x="780" y="132" width="13" height="54"/><rect x="850" y="132" width="13" height="54"/><rect x="920" y="132" width="13" height="54"/><rect x="990" y="132" width="13" height="54"/><rect x="1060" y="132" width="13" height="54"/><rect x="1117" y="132" width="13" height="54"/></g>'
+      + '<rect x="688" y="121" width="464" height="12" fill="#b71c1c"/>'
+      + '<path d="M664,122 L920,64 L1176,122 Z" fill="#37474f"/>'
+      + '<rect x="822" y="90" width="196" height="30" fill="#f5f5f5"/>'
+      + '<g fill="#c62828"><rect x="832" y="90" width="10" height="30"/><rect x="882" y="90" width="10" height="30"/><rect x="948" y="90" width="10" height="30"/><rect x="998" y="90" width="10" height="30"/></g>'
+      + '<path d="M798,92 L920,48 L1042,92 Z" fill="#455a64"/>'
+      + '<circle cx="806" cy="88" r="7" fill="#ffb300"/><circle cx="1034" cy="88" r="7" fill="#ffb300"/></g></svg>',
+    ground: '<svg class="bd-ground" viewBox="0 0 1200 300" preserveAspectRatio="none">'
+      + '<g fill="#bcaaa4" opacity="0.6"><rect x="80" y="70" width="150" height="12" rx="6"/><rect x="420" y="170" width="170" height="12" rx="6"/><rect x="850" y="90" width="150" height="12" rx="6"/><rect x="240" y="245" width="150" height="12" rx="6"/><rect x="700" y="250" width="150" height="12" rx="6"/></g>'
+      /* 石灯篭 */
+      + '<g><rect x="640" y="30" width="10" height="46" fill="#90a4ae"/><rect x="628" y="22" width="34" height="12" rx="4" fill="#78909c"/><rect x="632" y="70" width="26" height="8" fill="#78909c"/></g>'
+      + '<g><rect x="160" y="140" width="10" height="46" fill="#90a4ae"/><rect x="148" y="132" width="34" height="12" rx="4" fill="#78909c"/><rect x="152" y="180" width="26" height="8" fill="#78909c"/></g>'
+      + '<g stroke="#8d6e63" stroke-width="4" opacity="0.5"><path d="M980,200 l-8,-18 M980,200 l6,-20"/><path d="M330,90 l-8,-18 M330,90 l6,-20"/></g></svg>'
+  },
+  umi: {
+    horizon: '<svg class="bd-horizon" viewBox="0 0 1200 200" preserveAspectRatio="none">'
+      + '<ellipse cx="240" cy="40" rx="64" ry="16" fill="#fff" opacity="0.8"/><ellipse cx="900" cy="26" rx="54" ry="13" fill="#fff" opacity="0.7"/>'
+      + '<g stroke="#607d8b" stroke-width="5" fill="none" opacity="0.8"><path d="M420,60 q14,-14 28,0 M448,60 q14,-14 28,0"/><path d="M700,40 q12,-12 24,0 M724,40 q12,-12 24,0"/></g>'
+      + '<path d="M0,200 L90,140 L200,200 Z" fill="#78909c"/><path d="M1040,200 L1130,130 L1200,200 Z" fill="#78909c"/>'
+      + '<g><path d="M300,200 q60,26 120,0 l-10,-14 -100,0 Z" fill="#6d4c41"/><rect x="356" y="120" width="8" height="66" fill="#4e342e"/><path d="M364,124 q46,26 0,56 Z" fill="#fafafa"/></g>'
+      + '<g><path d="M810,200 q60,26 120,0 l-10,-14 -100,0 Z" fill="#5d4037"/><rect x="866" y="120" width="8" height="66" fill="#3e2723"/><path d="M866,124 q-46,26 0,56 Z" fill="#ef5350"/></g></svg>',
+    ground: '<svg class="bd-ground" viewBox="0 0 1200 300" preserveAspectRatio="none">'
+      + '<g stroke="#e1f5fe" stroke-width="6" fill="none" opacity="0.8">'
+      + '<path d="M60,70 q24,-20 48,0 q24,-20 48,0"/><path d="M420,150 q24,-20 48,0 q24,-20 48,0"/>'
+      + '<path d="M840,80 q24,-20 48,0 q24,-20 48,0"/><path d="M240,240 q24,-20 48,0 q24,-20 48,0"/>'
+      + '<path d="M700,250 q24,-20 48,0 q24,-20 48,0"/><path d="M1020,180 q24,-20 48,0 q24,-20 48,0"/></g></svg>'
+  }
+};
+
+function startBattle() {
+  var st = state.stage;
+  showView("v-battle", st.name, true);
+  var f = $("bfield");
+  f.className = st.bg ? "bg-" + st.bg : "";
+  var deco = BG_DECOR[st.bg];
+  $("bdecor").innerHTML = deco ? deco.horizon + deco.ground : "";
+  f.querySelectorAll(".unit,.dmg").forEach(function (e) { e.remove(); });
+  $("b-overlay").className = "";
+  $("b-overlay").innerHTML = "";
+  B = { units: [], btns: [], cds: {}, money: st.startMoney, t: 0, spawnT: 2, over: false, W: 0, last: 0, lastCut: -9 };
+  $("money-rate").textContent = "＋" + st.income + "／びょう";
+  /* レイアウト確定後に幅を測ってユニットを置く */
+  requestAnimationFrame(function () {
+    if (!B || cur !== "v-battle") return;
+    B.W = f.clientWidth;
+    spawnBase();
+    spawnEbase();
+    spawnEnemy(st.boss, "boss");
+    buildDeployRow();
+    tickerStart();
+    B.last = performance.now();
+    requestAnimationFrame(tick);
+  });
+}
+
+/* 出撃ボタン（デッキの人物ぶん）。おかねが足りてクールタイム明けなら光る */
+function buildDeployRow() {
+  var row = $("deploy-btns");
+  row.innerHTML = "";
+  B.btns = [];
+  save.deck.forEach(function (id) {
+    var ch = CHAR_BY_ID[id], cost = charStat(id).cost;
+    var b = document.createElement("button");
+    b.className = "dep-btn";
+    b.innerHTML = '<div class="cd-fill"></div><div class="dep-in">' + faceHTML(ch, bestRarity(id) || "n", 40)
+      + '<span class="dep-cost">🪙' + cost + '</span>'
+      + (eraBonus(ch) ? '<span class="era-star">⭐</span>' : '')
+      + '</div><span class="dep-name">' + ch.name + '</span>';
+    b.onclick = function () { deploy(id); };
+    B.btns.push({ id: id, cost: cost, el: b, fill: b.querySelector(".cd-fill") });
+    row.appendChild(b);
+  });
+}
+function deploy(id) {
+  if (!B || B.over) return;
+  var ch = CHAR_BY_ID[id], cost = charStat(id).cost;
+  if (B.money < cost || (B.cds[id] || 0) > 0) return;
+  B.money -= cost;
+  B.cds[id] = DEPLOY_CD;
+  spawnAlly(ch);
+}
+
+function popup(x, txt, cls) {
+  var d = document.createElement("div");
+  d.className = "dmg" + (cls ? " " + cls : "");
+  d.textContent = txt;
+  d.style.left = (x - 10 + Math.random() * 20) + "px";
+  d.style.bottom = "42%";
+  $("bfield").appendChild(d);
+  setTimeout(function () { d.remove(); }, 700);
+}
+function hit(u, dmg) {
+  if (!u.alive) return;
+  u.hp -= dmg;
+  popup(u.x, dmg);
+  u.el.classList.remove("hitfx");
+  void u.el.offsetWidth;
+  u.el.classList.add("hitfx");
+  if (u.hp <= 0) {
+    u.hp = 0;
+    u.alive = false;
+    u.el.classList.add("dead");
+    if (u.kind === "minion" && B && !B.over) {           /* ざこをたおすとおかね */
+      B.money = Math.min(999, B.money + KILL_MONEY);
+      popup(u.x, "🪙+" + KILL_MONEY, "coin");
+    }
+    if (u.kind === "boss" && B && !B.over) {             /* ボスは守り役。たおすと大ボーナス */
+      B.money = Math.min(999, B.money + 100);
+      popup(u.x, "🪙+100", "coin");
+    }
+    if (u.kind === "ebase") winBattle();                 /* 敵の城・町をこわしたら勝ち */
+    if (u.kind === "base") loseBattle();                 /* みかたの城がこわれたら負け */
+  }
+}
+function nearestFoe(u) {
+  var best = null, bd = 1e9;
+  B.units.forEach(function (o) {
+    if (!o.alive || o.side === u.side) return;
+    var d = Math.abs(o.x - u.x);
+    if (d < bd) { bd = d; best = o; }
+  });
+  return best ? { t: best, d: bd } : null;
+}
+
+function tick(now) {
+  if (!B || B.over || cur !== "v-battle") return;
+  var dt = Math.min(0.05, (now - B.last) / 1000) * SPEED;
+  B.last = now;
+  B.t += dt;
+  var st = state.stage;
+
+  /* おかねがたまる */
+  B.money = Math.min(999, B.money + st.income * dt);
+
+  /* ざこ敵の出現 */
+  B.spawnT -= dt;
+  var aliveMinions = B.units.filter(function (u) { return u.alive && u.kind === "minion"; }).length;
+  if (B.spawnT <= 0 && aliveMinions < st.minion.max) {
+    spawnEnemy(st.minion, "minion");
+    B.spawnT = st.minion.every;
+  }
+
+  B.units.forEach(function (u) {
+    if (!u.alive) return;
+    if (u.kind !== "base" && u.kind !== "ebase") {
+      var foe = nearestFoe(u);
+      if (foe && foe.d <= u.range) {
+        u.cdT -= dt;
+        if (u.cdT <= 0) { u.cdT = u.cd; hit(foe.t, u.atk); }
+      } else {
+        u.x += (u.side === "a" ? 1 : -1) * u.speed * dt;
+        if (u.side === "a") u.x = Math.min(u.x, B.W - 40);
+        else u.x = Math.max(u.x, 18);
+      }
+    }
+    if (u.kind === "ally") {
+      /* 業績の技は自動発動（SKILL_EVERY 秒ごと。出しても意味がないときは1秒後に再チャレンジ） */
+      u.skillT -= dt;
+      if (u.skillT <= 0) u.skillT = fireSkill(u) ? SKILL_EVERY : 1;
+      /* かいふくタイプは 4秒ごとに みかた（城もふくむ）を回復。回復量はこうげき★に比例（叩き台） */
+      if (u.type === "inori") {
+        u.healT -= dt;
+        if (u.healT <= 0) {
+          u.healT = 4;
+          var amt = Math.round(u.atk * 1.2);
+          B.units.forEach(function (a) {
+            if (!a.alive || a.side !== "a" || a.hp >= a.maxHp) return;
+            a.hp = Math.min(a.maxHp, a.hp + amt);
+            popup(a.x, "+" + amt, "heal");
+          });
+        }
+      }
+    }
+    /* 見た目の更新 */
+    u.el.style.left = (u.x - 32) + "px";
+    u.el.querySelector(".hpfill").style.width = (u.hp / u.maxHp * 100) + "%";
+  });
+
+  /* おかね表示と出撃ボタン */
+  $("money-num").textContent = Math.floor(B.money);
+  B.btns.forEach(function (bb) {
+    B.cds[bb.id] = Math.max(0, (B.cds[bb.id] || 0) - dt);
+    bb.fill.style.width = (B.cds[bb.id] / DEPLOY_CD * 100) + "%";
+    bb.el.classList.toggle("ok", B.money >= bb.cost && B.cds[bb.id] <= 0);
+  });
+
+  requestAnimationFrame(tick);
+}
+
+function cutIn(html) {
+  var c = $("cutin");
+  c.innerHTML = html;
+  c.classList.remove("show");
+  void c.offsetWidth;
+  c.classList.add("show");
+}
+/* 業績の技（自動発動）。発動できたら true、意味がなくて見送ったら false */
+function fireSkill(u) {
+  if (!B || B.over) return false;
+  var foes = B.units.filter(function (o) { return o.alive && o.side === "e"; });
+  var did = false;
+  if (u.type === "bushi") {
+    /* せっきん: 近くの敵に大ダメージ（攻撃×5・叩き台） */
+    var near = foes.filter(function (f) { return Math.abs(f.x - u.x) <= u.range * 2.5; });
+    if (near.length === 0) return false;
+    near.forEach(function (f) { hit(f, u.atk * 5); });
+    $("bfield").classList.remove("shake");
+    void $("bfield").offsetWidth;
+    $("bfield").classList.add("shake");
+    did = true;
+  } else if (u.type === "chie") {
+    /* えんきょり: 見えるはんい（射程×1.5）の敵にダメージ（攻撃×3・叩き台。
+       もとは敵全体だったが強すぎ＋かんたんすぎのフィードバックで制限） */
+    var inR = foes.filter(function (f) { return Math.abs(f.x - u.x) <= u.range * 1.5; });
+    if (inR.length === 0) return false;
+    inR.forEach(function (f) { hit(f, u.atk * 3); });
+    did = true;
+  } else {
+    /* かいふく: みかたぜんいん（城もふくむ）を大回復（こうげき★に比例・叩き台） */
+    var hurt = B.units.filter(function (a) { return a.alive && a.side === "a" && a.hp < a.maxHp; });
+    if (hurt.length === 0) return false;
+    var big = u.atk * 10;
+    hurt.forEach(function (a) {
+      a.hp = Math.min(a.maxHp, a.hp + big);
+      popup(a.x, "+" + big, "heal");
+    });
+    did = true;
+  }
+  /* カットインは連発しない（2秒あける）。出せないときは頭上に技名だけ */
+  if (B.t - B.lastCut > 2) {
+    B.lastCut = B.t;
+    cutIn("⚡ " + nameRuby(u.ch) + " の「" + rubi(u.ch.skill) + "」！");
+  } else {
+    popup(u.x, "⚡" + plain(u.ch.skill), "");
+  }
+  return did;
+}
+
+/* バトル中に人物情報が流れるティッカー（読めているとクイズがかんたんになる） */
+var tkQueue = [];
+function tickerStart() {
+  tkQueue = [];
+  state.stage.ticker.forEach(function (id) {
+    var ch = CHAR_BY_ID[id];
+    ch.info.forEach(function (line) { tkQueue.push("【" + nameRuby(ch) + "】" + rubi(line)); });
+  });
+  tkQueue = shuffle(tkQueue);
+  tkNext(0);
+}
+function tkNext(i) {
+  if (cur !== "v-battle") return;
+  var el = $("tk-line");
+  el.innerHTML = tkQueue[i % tkQueue.length];
+  el.classList.remove("run");
+  void el.offsetWidth;
+  /* 流れる速さは一定 70px/秒（叩き台）。長い文でも速くならないよう毎回計算する */
+  var w = $("ticker").clientWidth || 900;
+  el.style.animationDuration = ((w + el.offsetWidth) / 70) + "s";
+  el.classList.add("run");
+  el.onanimationend = function () { tkNext(i + 1); };
+}
+
+function winBattle() {
+  if (!B || B.over) return;
+  B.over = true;
+  save.cleared[state.stage.id] = true;
+  persist();
+  confettiBurst(40);
+  var ov = $("b-overlay");
+  ov.innerHTML = '<div class="ov-big">🎉 しょうり！</div><div style="font-size:17px; font-weight:700;">つぎは クイズ！ ながれてきた じょうほうを 思い出そう</div>';
+  ov.classList.add("show");
+  setTimeout(function () { if (cur === "v-battle") startQuiz(); }, 1800);
+}
+function loseBattle() {
+  if (!B || B.over) return;
+  B.over = true;
+  var ov = $("b-overlay");
+  ov.innerHTML = '<div class="ov-big">まけちゃった…</div><div style="font-size:18px; font-weight:700;">もういちど やってみよう！</div>'
+    + '<button class="big-btn" onclick="startBattle()">⚔️ もういちど</button>'
+    + '<button class="big-btn brown" onclick="goHome()">🏠 ホームへ</button>';
+  ov.classList.add("show");
+}
+
+/* ---------- クイズ（3問・3たく。人物あて＋時代の問題をまぜて出す） ---------- */
+/* 人物あて: ティッカーに流れた業績から「これはだれのこと？」 */
+function whoQ(id, line) {
+  return {
+    ask: "これは だれの こと？", q: rubi(line),
+    make: function () {
+      var others = shuffle(CHARS.filter(function (c) { return c.id !== id; })).slice(0, 2);
+      return shuffle([{ html: nameRuby(CHAR_BY_ID[id]), ok: true }].concat(
+        others.map(function (c) { return { html: nameRuby(c), ok: false }; })));
+    }
+  };
+}
+/* 時代の問題（chars-data.js の REKISHI_QUIZ。c[0]が正解で表示時にシャッフル） */
+function eraQ(e) {
+  return {
+    ask: "ただしい こたえは どれ？", q: rubi(e.q),
+    make: function () {
+      return shuffle(e.c.map(function (t, i) { return { html: rubi(t), ok: i === 0 }; }));
+    }
+  };
+}
+function startQuiz() {
+  B = null;
+  var st = state.stage;
+  var who = [];
+  st.ticker.forEach(function (id) {
+    CHAR_BY_ID[id].info.forEach(function (line) { who.push(whoQ(id, line)); });
+  });
+  var era = (REKISHI_QUIZ[st.id] || []).map(eraQ);
+  /* 人物あて2問ぶん＋時代問題2問ぶんをまぜて3問（どちらの型もかならず入る） */
+  var qs = shuffle(shuffle(who).slice(0, 2).concat(shuffle(era).slice(0, 2))).slice(0, 3);
+  state.quiz = { qs: qs, i: 0, correct: 0 };
+  renderQuiz();
+}
+function renderQuiz() {
+  var q = state.quiz.qs[state.quiz.i];
+  $("quiz-num").textContent = "だい" + (state.quiz.i + 1) + "もん（ぜんぶで3もん）";
+  $("quiz-line").innerHTML = q.q;
+  $("quiz-ask").textContent = q.ask;
+  $("quiz-fb").textContent = "";
+  $("btn-qnext").style.display = "none";
+  var box = $("quiz-choices");
+  box.innerHTML = "";
+  q.make().forEach(function (c) {
+    var b = document.createElement("button");
+    b.className = "quiz-choice";
+    if (c.ok) b.setAttribute("data-ok", "1");
+    b.innerHTML = c.html;
+    b.onclick = function () { answerQuiz(c.ok, b); };
+    box.appendChild(b);
+  });
+  showView("v-quiz", "れきしクイズ", false);
+}
+function answerQuiz(ok, btn) {
+  var goodBtn = null;
+  document.querySelectorAll(".quiz-choice").forEach(function (b) {
+    b.onclick = null;
+    if (b.getAttribute("data-ok")) goodBtn = b;
+  });
+  if (ok) {
+    state.quiz.correct++;
+    btn.classList.add("good");
+    $("quiz-fb").innerHTML = "⭕ せいかい！すごい！";
+    $("quiz-fb").style.color = "#2e7d32";
+  } else {
+    btn.classList.add("bad");
+    goodBtn.classList.add("good");
+    $("quiz-fb").innerHTML = "こたえは「" + goodBtn.innerHTML + "」！おぼえておこう";
+    $("quiz-fb").style.color = "#b71c1c";
+  }
+  var last = state.quiz.i === 2;
+  $("btn-qnext").textContent = last ? "カードを もらう ▶" : "つぎへ ▶";
+  $("btn-qnext").style.display = "block";
+}
+$("btn-qnext").onclick = function () {
+  if (state.quiz.i < 2) { state.quiz.i++; renderQuiz(); }
+  else showReward();
+};
+
+/* ---------- カードゲット（せいかい数が多いほどレアが出やすい・叩き台の確率） ---------- */
+function showReward() {
+  var c = state.quiz.correct;
+  var rChance = c <= 1 ? 0 : (c === 2 ? 0.3 : 0.6);
+  var rar = Math.random() < rChance ? "r" : "n";
+  var ch = pick(CHARS);                       /* 全42人からランダム（設計合意どおり） */
+  var before = bestRarity(ch.id);             /* 進化判定用（レベルはカードが自動で重なって上がる） */
+  var isNew = addCard(ch.id, rar);
+  persist();
+  var after = bestRarity(ch.id), lv = charLevel(ch.id);
+  var evolved = !isNew && before !== after;
+  $("rw-result").textContent = "クイズ せいかい " + c + "／3！ カードを 1まい ゲット！";
+  var card = $("rw-card");
+  card.className = after === "sr" ? "rar-sr" : (rar === "r" || after === "r" ? "rar-r" : "");
+  card.innerHTML = '<div class="rw-rar rar-tag r' + rar + '">' + RAR_LABEL[rar] + '</div>'
+    + '<div style="margin-top:6px;">' + faceHTML(ch, after, 110) + '</div>'
+    + '<div class="rw-name">' + nameRuby(ch) + '</div>'
+    + '<div class="rw-era">' + rubi(ch.era) + '</div>'
+    + '<div class="rw-skill">⚡ ' + rubi(ch.skill) + '</div>';
+  $("rw-new").textContent = evolved
+    ? (after === "sr" ? "🌟 スーパーレアに しんか！！" : "🎉 レアに しんか！！")
+    : (isNew ? "✨ あたらしい 人物！" : "");
+  $("rw-count").innerHTML = ch.name + " は <b>Lv." + lv + "</b> になった！（" + nextGoal(ch.id) + "）";
+  if (evolved) confettiBurst(90);
+  else if (rar === "r" || isNew) confettiBurst(50);
+  showView("v-reward", "カードゲット！", false);
+}
+$("btn-retry").onclick = function () { renderHensei(); };
+$("btn-rhome").onclick = function () { goHome(); };
+
+/* ---------- コンフェッティ（自前・外部ライブラリなし） ---------- */
+function confettiBurst(n) {
+  var colors = ["#ef5350", "#ffb300", "#66bb6a", "#42a5f5", "#ab47bc"];
+  for (var i = 0; i < n; i++) {
+    var d = document.createElement("div");
+    d.className = "confetti";
+    d.style.left = Math.random() * 100 + "vw";
+    d.style.background = pick(colors);
+    d.style.animationDuration = (1.6 + Math.random() * 1.6) + "s";
+    d.style.animationDelay = Math.random() * 0.5 + "s";
+    document.body.appendChild(d);
+    (function (el) { setTimeout(function () { el.remove(); }, 4000); })(d);
+  }
+}
+
+/* ---------- 起動（動作確認ハッシュ: #st1 / #st2f など） ---------- */
+(function boot() {
+  var m = location.hash.match(/^#(st[123])(f?)$/);
+  if (m) {
+    var st = null;
+    STAGES.forEach(function (s) { if (s.id === m[1]) st = s; });
+    if (st) {
+      SPEED = m[2] ? 6 : 1;
+      openStage(st);
+      if (save.deck.length === 3) startBattle();
+      return;
+    }
+  }
+  goHome();
+})();
+</script>
+</body>
+</html>

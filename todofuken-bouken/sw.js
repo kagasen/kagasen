@@ -2,12 +2,13 @@
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセット（データ.js・index.html等）を更新したら CACHE のバージョン番号を上げる(v1->v2...)。
 // 注意: データ.jsの ?v= は index.html の読み込みと一致させること。
-const CACHE = 'todofuken-cache-v3';
+const CACHE = 'todofuken-cache-v8';
 const ASSETS = [
   './',
   './index.html',
   './map-data.js?v=2',
   './pref-data.js?v=3',
+  './zukan-data.js?v=1',
   './manifest.json',
   './icon.svg',
 ];

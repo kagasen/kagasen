@@ -15,7 +15,13 @@
 /* --- タイプごとの基本性能（レア度倍率: N=1.0 / R=1.3 / SR=1.6 は index.html 側）
        cost=出撃に払うおかね（にゃんこ式・2026-07-20のバトル刷新で追加） --- */
 var REKISHI_TYPES = {
-  bushi: { label: "せっきん",   icon: "⚔️", cost: 80,  hp: 340, atk: 30, range: 70,  speed: 42, cd: 1.1 },
+  /* ★★atk 30 → 36（+20%。2026-08-11・ユーザー要望「接近のキャラを もう少し 攻撃力を
+       上げてください」→ まず 36。同じ日に「**まだ足りない。後少し**」で **42**）。
+     ＝もとの 30 から **+40%**。★★**ここは ひっさつにも きく**（一げき＝atk×16×…）ので、
+       せっきんの ひっさつも そのまま +20% になる。一げき と なぎはらい は どちらも atk に
+       比例するので、**2つの つりあいは くずれない**（HANDOFF の ものさしは そのまま）。
+     ★下げないこと（CLAUDE.md §3「今より下がる値を作らない」）。 */
+  bushi: { label: "せっきん",   icon: "⚔️", cost: 80,  hp: 340, atk: 42, range: 70,  speed: 42, cd: 1.1 },
   chie:  { label: "えんきょり", icon: "🏹", cost: 60,  hp: 200, atk: 22, range: 240, speed: 36, cd: 1.5 },
   inori: { label: "かいふく",   icon: "✨", cost: 100, hp: 240, atk: 12, range: 200, speed: 34, cd: 1.5 }
 };
@@ -99,7 +105,7 @@ var REKISHI_CHARS = [
       "武士《ぶし》で初めて太政大臣《だいじょうだいじん》になった",
       "今の兵庫県《ひょうごけん》の港を整備《せいび》し、中国（宋《そう》）との貿易《ぼうえき》を行った"
     ] },
-  { id: "yoshitsune", name: "源義経", yomi: "みなもとのよしつね", era: "平安《へいあん》時代の末", type: "bushi",
+  { id: "yoshitsune", name: "源義経", yomi: "みなもとのよしつね", era: "平安《へいあん》時代", type: "bushi",
     skill: "壇ノ浦《だんのうら》の戦《たたか》い", skill2: "八艘《はっそう》とび", skill3: "平氏《へいし》をほろぼす一撃《いちげき》",
     info: [
       "源頼朝《みなもとのよりとも》の弟",
@@ -140,13 +146,13 @@ var REKISHI_CHARS = [
       "中国にわたって絵のわざを学んだ",
       "日本の様式《ようしき》の水墨画《すいぼくが》を完成させた"
     ] },
-  { id: "xavier", name: "ザビエル", yomi: "ざびえる", era: "戦国《せんごく》時代", type: "inori",
+  { id: "xavier", name: "ザビエル", yomi: "ざびえる", era: "安土桃山《あづちももやま》時代", type: "inori",
     skill: "キリスト教《きょう》伝来《でんらい》", skill2: "宣教《せんきょう》の旅《たび》", skill3: "世界《せかい》をつなぐ教《おし》え",
     info: [
       "スペインの宣教師《せんきょうし》",
       "1549年に日本にキリスト教《きょう》を伝えた"
     ] },
-  { id: "nobunaga", name: "織田信長", yomi: "おだのぶなが", era: "戦国《せんごく》時代", type: "bushi",
+  { id: "nobunaga", name: "織田信長", yomi: "おだのぶなが", era: "安土桃山《あづちももやま》時代", type: "bushi",
     skill: "桶狭間《おけはざま》の戦《たたか》い", skill2: "長篠《ながしの》の戦《たたか》い", skill3: "天下布武《てんかふぶ》",
     info: [
       "桶狭間《おけはざま》の戦いで今川義元《いまがわよしもと》を破った",
@@ -205,19 +211,19 @@ var REKISHI_CHARS = [
       "日本全国の海岸を歩いて測量《そくりょう》した",
       "ほぼ正確《せいかく》な日本地図を完成させた（完成は亡くなった後）"
     ] },
-  { id: "perry", name: "ペリー", yomi: "ぺりー", era: "江戸《えど》時代の末", type: "chie",
+  { id: "perry", name: "ペリー", yomi: "ぺりー", era: "江戸《えど》時代", type: "chie",
     skill: "黒船《くろふね》", skill2: "開国《かいこく》の要求《ようきゅう》", skill3: "日米和親条約《にちべいわしんじょうやく》",
     info: [
       "1853年、アメリカの使節《しせつ》として鎖国中《さこくちゅう》の日本に軍艦《ぐんかん》を率いて来た",
       "幕府《ばくふ》に開国を求め、日米和親条約《にちべいわしんじょうやく》が結ばれた"
     ] },
-  { id: "kaishu", name: "勝海舟", yomi: "かつかいしゅう", era: "江戸《えど》時代の末", type: "chie",
+  { id: "kaishu", name: "勝海舟", yomi: "かつかいしゅう", era: "江戸《えど》時代", type: "chie",
     skill: "江戸城《えどじょう》明けわたし", skill2: "話《はな》し合《あ》いの力《ちから》", skill3: "戦《たたか》わない決断《けつだん》",
     info: [
       "幕府《ばくふ》の元役人《もとやくにん》",
       "西郷隆盛《さいごうたかもり》と話し合い、戦わずに江戸城《えどじょう》を明けわたすことを決めた"
     ] },
-  { id: "saigo", name: "西郷隆盛", yomi: "さいごうたかもり", era: "江戸《えど》時代の末〜明治《めいじ》時代", type: "bushi",
+  { id: "saigo", name: "西郷隆盛", yomi: "さいごうたかもり", era: "明治《めいじ》時代", type: "bushi",
     skill: "倒幕《とうばく》", skill2: "薩摩《さつま》の大将《たいしょう》", skill3: "明治維新《めいじいしん》",
     info: [
       "薩摩藩《さつまはん》の武士《ぶし》",
@@ -286,7 +292,7 @@ var REKISHI_CHARS = [
       "外務大臣《がいむだいじん》",
       "1911年に関税自主権《かんぜいじしゅけん》を確立《かくりつ》し、不平等条約《ふびょうどうじょうやく》の改正《かいせい》をなしとげた"
     ] },
-  { id: "noguchi", name: "野口英世", yomi: "のぐちひでよ", era: "明治《めいじ》時代", type: "chie",
+  { id: "noguchi", name: "野口英世", yomi: "のぐちひでよ", era: "大正《たいしょう》時代", type: "chie",
     skill: "医学《いがく》の力", skill2: "梅毒《ばいどく》の研究《けんきゅう》", skill3: "黄熱《おうねつ》とのたたかい",
     info: [
       "医学《いがく》の発展《はってん》につくした医師《いし》",
@@ -300,216 +306,401 @@ var REKISHI_CHARS = [
      bonusEra: この文字列を時代名にふくむ人物は「⭐じだいボーナス」で1.5倍（同じ時代を覚える仕掛け）
      baseHp: みかたの城のHP（こわされたら負け） / income: 1秒にたまるおかね / startMoney: さいしょのおかね
      ebase: 敵の城・町。これをこわすと勝ち（ボスは守り役。たおすとおかねボーナス）
+     ★絵（2026-08-08）: baseImg＝みかたの城 / ebase.img＝敵の城・町 / build.img＝つくるもの。
+       どれも images/bases/{その名前}.webp を出す。ファイルが無ければ 今までどおり絵文字。
+       絵の作りかたとプロンプトは PROMPTS-base.md、書き出しは build-bases.py。
+       ★baseImg は **時代でわけた7枚**の使い回し（mura/yakata/gosho/bune/toride/tenshu/youkan）。
+         ステージを足したら、その時代に合うものを1つえらんで書くだけでよい。
    敵＝史実の相手役（42人リスト外は敵専用）。文化・学問の時代は「疫病」「物の怪」「大火事」等の擬人化（設計合意6）。
-   ステージを足したら REKISHI_QUIZ と index.html の BG_DECOR（bg キー）も足すこと。 */
+   ステージを足したら REKISHI_QUIZ と index.html の BG_DECOR（bg キー）も足すこと。
+   ★このあとに「2」シリーズを自動で作っている（下の HARD2）。ここに1つ足せば 2も1つふえる。 */
 var REKISHI_STAGES = [
   { id: "st1",
     name: "卑弥呼《ひみこ》と邪馬台国《やまたいこく》",
     era: "弥生《やよい》時代",
     desc: "むらとむらが あらそっていた時代。みんなの力で まとめよう！",
     ticker: ["himiko"],
-    bonusEra: ["弥生"], bg: "yayoi", baseHp: 600, income: 10, startMoney: 100,
-    ebase:  { name: "あらそいの村《むら》", icon: "🛖", hp: 500 },
-    boss:   { name: "あらそいの王《おう》", icon: "👹", hp: 950,  atk: 22, range: 70, speed: 10, cd: 1.2 },
-    minion: { name: "あらそいの兵《へい》", icon: "🗡️", hp: 130,  atk: 14, range: 55, speed: 34, cd: 1.2, every: 6.5, max: 4 } },
+    bonusEra: ["弥生"], bg: "yayoi", photo: "yayoi", baseImg: "mura", baseHp: 600, income: 10, startMoney: 100,
+    ebase:  { name: "あらそいの村《むら》", icon: "🛖", hp: 500, img: "kango" },
+    boss:   { name: "狗奴国《くなこく》の王《おう》", img: "kunakoku", icon: "👹", hp: 950,  atk: 22, range: 70, speed: 10, cd: 1.2 },
+    minion: { name: "弥生《やよい》の戦士《せんし》", img: "yayoihei", icon: "🗡️", hp: 130,  atk: 14, range: 55, speed: 34, cd: 1.2, every: 6.5, max: 4 } },
   { id: "st4",
     name: "聖徳太子《しょうとくたいし》の国《くに》づくり",
     era: "飛鳥《あすか》時代",
     desc: "あらそう豪族《ごうぞく》たちを まとめて 新しい国を つくろう！",
     ticker: ["shotoku", "imoko"],
-    bonusEra: ["飛鳥"], bg: "asuka", baseHp: 650, income: 10, startMoney: 100,
-    ebase:  { name: "豪族《ごうぞく》のやかた", icon: "🏚", hp: 550 },
-    boss:   { name: "あばれ豪族《ごうぞく》の長《おさ》", icon: "👺", hp: 1200, atk: 26, range: 70, speed: 10, cd: 1.2 },
-    minion: { name: "あばれ豪族《ごうぞく》", icon: "🗡️", hp: 155,  atk: 15, range: 55, speed: 35, cd: 1.2, every: 5.5, max: 4 } },
+    bonusEra: ["飛鳥"], bg: "asuka", photo: "shoutokutaisinokunidukuri", baseImg: "yakata", baseHp: 650, income: 10, startMoney: 100,
+    ebase:  { name: "豪族《ごうぞく》のやかた", icon: "🏚", hp: 550, img: "gozoku" },
+    boss:   { name: "物部守屋《もののべのもりや》", img: "moriya", icon: "👺", hp: 1200, atk: 26, range: 70, speed: 10, cd: 1.2 },
+    minion: { name: "豪族《ごうぞく》の兵《へい》", img: "kodaihei", icon: "🗡️", hp: 155,  atk: 15, range: 55, speed: 35, cd: 1.2, every: 5.5, max: 4 } },
   { id: "st2",
     name: "大化《たいか》の改新《かいしん》",
     era: "飛鳥《あすか》時代",
     desc: "力を持ちすぎた蘇我氏《そがし》。新しい国づくりを 始めよう！",
     ticker: ["nakanooe", "kamatari"],
-    bonusEra: ["飛鳥"], bg: "asuka", baseHp: 700, income: 10, startMoney: 100,
-    ebase:  { name: "蘇我氏《そがし》のやしき", icon: "🏚", hp: 600 },
-    boss:   { name: "蘇我入鹿《そがのいるか》", icon: "😈", hp: 1500, atk: 30, range: 75, speed: 10, cd: 1.2 },
-    minion: { name: "蘇我《そが》の兵《へい》", icon: "🛡️", hp: 180,  atk: 16, range: 55, speed: 36, cd: 1.2, every: 5, max: 4 } },
+    bonusEra: ["飛鳥"], bg: "asuka", photo: "taikanokaisin", baseImg: "yakata", baseHp: 700, income: 10, startMoney: 100,
+    ebase:  { name: "蘇我氏《そがし》のやしき", icon: "🏚", hp: 600, img: "sogayashiki" },
+    boss:   { name: "蘇我入鹿《そがのいるか》", img: "iruka", icon: "😈", hp: 1500, atk: 30, range: 75, speed: 10, cd: 1.2 },
+    minion: { name: "蘇我《そが》の兵《へい》", img: "kodaihei", icon: "🛡️", hp: 180,  atk: 16, range: 55, speed: 36, cd: 1.2, every: 5, max: 4 } },
   { id: "st5",
     name: "大仏《だいぶつ》づくり",
     era: "奈良《なら》時代",
-    desc: "疫病《えきびょう》がはやる世《よ》を 仏教《ぶっきょう》の力で すくおう！",
+    desc: "みんなの力で 大仏《だいぶつ》を つくりあげよう！ 人をおくって はたらいてもらおう",
     ticker: ["shomu", "gyoki", "ganjin"],
-    bonusEra: ["奈良"], bg: "nara", baseHp: 750, income: 10, startMoney: 100,
-    ebase:  { name: "えきびょうの巣《す》", icon: "🕸", hp: 650 },
-    boss:   { name: "えきびょうのまおう", icon: "👾", hp: 1700, atk: 32, range: 75, speed: 10, cd: 1.2 },
-    minion: { name: "えきびょうのかげ", icon: "😷", hp: 200,  atk: 17, range: 55, speed: 36, cd: 1.2, every: 4.8, max: 4 } },
+    bonusEra: ["奈良"], bg: "nara", photo: "daibutudukuri", baseImg: "yakata", baseHp: 750, income: 10, startMoney: 100,
+    mode: "build",
+    build:  { name: "大仏《だいぶつ》", icon: "🗿", need: 900, word: "かんせい", sec: 75, img: "daibutsu" },
+    boss:   { name: "天然痘《てんねんとう》の鬼《おに》", img: "tennentou", icon: "👾", hp: 1700, atk: 32, range: 75, speed: 10, cd: 1.2 },
+    minion: { name: "えきびょうのかげ", img: "yamainokage", icon: "😷", hp: 200,  atk: 17, range: 55, speed: 36, cd: 1.2, every: 4.8, max: 4 } },
   { id: "st6",
     name: "貴族《きぞく》の世《よ》と物《もの》の怪《け》",
     era: "平安《へいあん》時代",
-    desc: "はなやかな都《みやこ》に あやしい物《もの》の怪《け》が！かな文字《もじ》の力で はらおう！",
+    desc: "かな文字《もじ》で 物語《ものがたり》を 書きあげよう！ 物《もの》の怪《け》に じゃまされないように",
     ticker: ["michinaga", "murasaki", "seishonagon"],
-    bonusEra: ["平安"], bg: "heian", baseHp: 800, income: 11, startMoney: 100,
-    ebase:  { name: "物《もの》の怪《け》のもり", icon: "🌲", hp: 680 },
-    boss:   { name: "物《もの》の怪《け》の王《おう》", icon: "👹", hp: 1800, atk: 32, range: 75, speed: 10, cd: 1.2 },
-    minion: { name: "物《もの》の怪《け》", icon: "👻", hp: 210,  atk: 17, range: 55, speed: 37, cd: 1.2, every: 4.6, max: 5 } },
+    bonusEra: ["平安"], bg: "heian", photo: "kizokunoyo", baseImg: "gosho", baseHp: 800, income: 11, startMoney: 100,
+    mode: "build",
+    build:  { name: "かな文字《もじ》の物語《ものがたり》", icon: "📜", need: 1100, word: "かんせい", sec: 80, img: "kanamoji" },
+    boss:   { name: "酒呑童子《しゅてんどうじ》", img: "shutendoji", icon: "👹", hp: 1800, atk: 32, range: 75, speed: 10, cd: 1.2 },
+    minion: { name: "物《もの》の怪《け》", img: "mononoke", icon: "👻", hp: 210,  atk: 17, range: 55, speed: 37, cd: 1.2, every: 4.6, max: 5 } },
   { id: "st3",
     name: "壇ノ浦《だんのうら》の戦《たたか》い",
-    era: "平安《へいあん》時代の末",
+    era: "平安《へいあん》時代",
     desc: "源氏《げんじ》と平氏《へいし》、さいごの決戦《けっせん》！",
     ticker: ["yoshitsune", "yoritomo", "kiyomori"],
-    bonusEra: ["平安"], bg: "umi", baseHp: 800, income: 11, startMoney: 100,
-    ebase:  { name: "平氏《へいし》の軍船《ぐんせん》", icon: "⛵", hp: 700 },
-    boss:   { name: "平氏《へいし》の大将《たいしょう》", icon: "👺", hp: 1900, atk: 34, range: 80, speed: 12, cd: 1.1 },
-    minion: { name: "平氏《へいし》の兵《へい》", icon: "🏴", hp: 220,  atk: 18, range: 55, speed: 38, cd: 1.1, every: 4.5, max: 5 } },
+    bonusEra: ["平安"], bg: "umi", photo: "dannoura", photoY: 80, baseImg: "bune", baseHp: 800, income: 11, startMoney: 100,
+    ebase:  { name: "平氏《へいし》の軍船《ぐんせん》", icon: "⛵", hp: 700, img: "heisen" },
+    boss:   { name: "平知盛《たいらのとももり》", img: "tomomori", icon: "👺", hp: 1900, atk: 34, range: 80, speed: 12, cd: 1.1 },
+    minion: { name: "平氏《へいし》の兵《へい》", img: "heishihei", icon: "🏴", hp: 220,  atk: 18, range: 55, speed: 38, cd: 1.1, every: 4.5, max: 5 } },
   { id: "st7",
     name: "元寇《げんこう》",
     era: "鎌倉《かまくら》時代",
     desc: "中国（元《げん》）の大軍《たいぐん》が せめてきた！日本を まもりぬこう！",
     ticker: ["yoritomo", "tokimune"],
-    bonusEra: ["鎌倉"], bg: "genko", baseHp: 850, income: 11, startMoney: 100,
-    ebase:  { name: "元軍《げんぐん》の軍船《ぐんせん》", icon: "🚢", hp: 750 },
-    boss:   { name: "元軍《げんぐん》の大将《たいしょう》", icon: "👹", hp: 2100, atk: 36, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "元軍《げんぐん》の兵《へい》", icon: "🏹", hp: 240,  atk: 16, range: 140, speed: 36, cd: 1.3, every: 4.3, max: 5 } },
+    bonusEra: ["鎌倉"], bg: "genko", photo: "genkou", baseImg: "toride", baseHp: 850, income: 11, startMoney: 100,
+    ebase:  { name: "元軍《げんぐん》の軍船《ぐんせん》", icon: "🚢", hp: 750, img: "gensen" },
+    boss:   { name: "フビライ・ハン", img: "fubirai", icon: "👹", hp: 2100, atk: 36, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "元軍《げんぐん》の兵《へい》", img: "genhei", icon: "🏹", hp: 240,  atk: 16, range: 140, speed: 36, cd: 1.3, every: 4.3, max: 5 } },
   { id: "st8",
     name: "金閣《きんかく》と銀閣《ぎんかく》",
     era: "室町《むろまち》時代",
-    desc: "京《みやこ》の文化《ぶんか》を 戦乱《せんらん》の火から まもろう！",
+    desc: "京《きょう》に 金閣《きんかく》を たてよう！ 戦乱《せんらん》の火から まもりながら",
     ticker: ["yoshimitsu", "yoshimasa", "sesshu"],
-    bonusEra: ["室町"], bg: "muromachi", baseHp: 900, income: 12, startMoney: 100,
-    ebase:  { name: "戦乱《せんらん》のほのお", icon: "🔥", hp: 800 },
-    boss:   { name: "乱《らん》のばけもの", icon: "👺", hp: 2300, atk: 38, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "あばれ足軽《あしがる》", icon: "🗡️", hp: 260,  atk: 20, range: 55, speed: 38, cd: 1.1, every: 4.2, max: 5 } },
+    bonusEra: ["室町"], bg: "muromachi", photo: "kinnkakutoginnkaku", baseImg: "toride", baseHp: 900, income: 12, startMoney: 100,
+    mode: "build",
+    build:  { name: "金閣《きんかく》", icon: "🏛", need: 1500, word: "かんせい", sec: 85, img: "kinkaku" },
+    boss:   { name: "応仁《おうにん》の乱《らん》の炎鬼《えんき》", img: "ounin", icon: "👺", hp: 2300, atk: 38, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "あばれ足軽《あしがる》", img: "ashigaru", icon: "🗡️", hp: 260,  atk: 20, range: 55, speed: 38, cd: 1.1, every: 4.2, max: 5 } },
   { id: "st9",
     name: "桶狭間《おけはざま》の戦《たたか》い",
-    era: "戦国《せんごく》時代",
+    era: "安土桃山《あづちももやま》時代",
     desc: "少ない軍《ぐん》で 大軍《たいぐん》にいどむ！信長《のぶなが》の出番《でばん》だ！",
     ticker: ["nobunaga", "xavier"],
-    bonusEra: ["戦国"], bg: "sengoku", baseHp: 950, income: 12, startMoney: 100,
-    ebase:  { name: "今川《いまがわ》の陣《じん》", icon: "⛺", hp: 850 },
-    boss:   { name: "今川義元《いまがわよしもと》", icon: "🏇", hp: 2500, atk: 40, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "今川《いまがわ》の兵《へい》", icon: "🗡️", hp: 280,  atk: 21, range: 55, speed: 38, cd: 1.1, every: 4, max: 5 } },
+    bonusEra: ["安土桃山"], bg: "sengoku", photo: "okehazamanotatakai", baseImg: "tenshu", baseHp: 950, income: 12, startMoney: 100,
+    ebase:  { name: "今川《いまがわ》の陣《じん》", icon: "⛺", hp: 850, img: "imagawajin" },
+    boss:   { name: "今川義元《いまがわよしもと》", img: "yoshimoto", icon: "🏇", hp: 2500, atk: 40, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "今川《いまがわ》の兵《へい》", img: "ashigaru", icon: "🗡️", hp: 280,  atk: 21, range: 55, speed: 38, cd: 1.1, every: 4, max: 5 } },
   { id: "st10",
     name: "本能寺《ほんのうじ》の変《へん》と天下統一《てんかとういつ》",
     era: "安土桃山《あづちももやま》時代",
     desc: "信長《のぶなが》のかたきを うて！天下統一《てんかとういつ》まで あと少し！",
     ticker: ["nobunaga", "hideyoshi"],
-    bonusEra: ["戦国", "安土桃山"], bg: "sengoku", baseHp: 1000, income: 12, startMoney: 100,
-    ebase:  { name: "明智《あけち》の陣《じん》", icon: "⛺", hp: 900 },
-    boss:   { name: "明智光秀《あけちみつひで》", icon: "😈", hp: 2700, atk: 42, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "明智《あけち》の兵《へい》", icon: "🛡️", hp: 300,  atk: 22, range: 55, speed: 38, cd: 1.1, every: 3.9, max: 5 } },
+    bonusEra: ["安土桃山"], bg: "sengoku", photo: "honnnoujinohenn", baseImg: "tenshu", baseHp: 1000, income: 12, startMoney: 100,
+    ebase:  { name: "明智《あけち》の陣《じん》", icon: "⛺", hp: 900, img: "akechijin" },
+    boss:   { name: "明智光秀《あけちみつひで》", img: "mitsuhide", icon: "😈", hp: 2700, atk: 42, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "明智《あけち》の兵《へい》", img: "ashigaru", icon: "🛡️", hp: 300,  atk: 22, range: 55, speed: 38, cd: 1.1, every: 3.9, max: 5 } },
   { id: "st11",
     name: "関ヶ原《せきがはら》の戦《たたか》い",
     era: "江戸《えど》時代",
     desc: "天下《てんか》分け目の 大決戦《だいけっせん》！",
     ticker: ["ieyasu", "iemitsu"],
-    bonusEra: ["江戸"], bg: "sengoku", baseHp: 1050, income: 13, startMoney: 100,
-    ebase:  { name: "西軍《せいぐん》の陣《じん》", icon: "⛺", hp: 950 },
-    boss:   { name: "石田三成《いしだみつなり》", icon: "👺", hp: 2900, atk: 44, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "西軍《せいぐん》の兵《へい》", icon: "🏴", hp: 320,  atk: 23, range: 55, speed: 38, cd: 1.1, every: 3.8, max: 5 } },
+    bonusEra: ["江戸"], bg: "sengoku", photo: "sekigaharanotatakai", baseImg: "tenshu", baseHp: 1050, income: 13, startMoney: 100,
+    ebase:  { name: "西軍《せいぐん》の陣《じん》", icon: "⛺", hp: 950, img: "seigunjin" },
+    boss:   { name: "石田三成《いしだみつなり》", img: "mitsunari", icon: "👺", hp: 2900, atk: 44, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "西軍《せいぐん》の兵《へい》", img: "ashigaru", icon: "🏴", hp: 320,  atk: 23, range: 55, speed: 38, cd: 1.1, every: 3.8, max: 5 } },
   { id: "st12",
     name: "花《はな》さく江戸《えど》の文化《ぶんか》",
     era: "江戸《えど》時代",
-    desc: "にぎやかな町《まち》を 大火事《おおかじ》から まもろう！",
+    desc: "芝居《しばい》と浮世絵《うきよえ》を 町じゅうに ひろめよう！ 大火事《おおかじ》に まけずに",
     ticker: ["chikamatsu", "hiroshige"],
-    bonusEra: ["江戸"], bg: "edo", baseHp: 1100, income: 13, startMoney: 100,
-    ebase:  { name: "大火事《おおかじ》のもと", icon: "🏮", hp: 1000 },
-    boss:   { name: "大火事《おおかじ》のばけもの", icon: "👹", hp: 3100, atk: 46, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "火《ひ》の粉《こ》", icon: "🔥", hp: 340,  atk: 24, range: 55, speed: 40, cd: 1.1, every: 3.7, max: 5 } },
+    bonusEra: ["江戸"], bg: "edo", photo: "edobunka", baseImg: "tenshu", baseHp: 1100, income: 13, startMoney: 100,
+    mode: "build",
+    build:  { name: "芝居《しばい》と浮世絵《うきよえ》", icon: "🎭", need: 2200, word: "ひろまり", sec: 90, img: "shibai" },
+    boss:   { name: "明暦《めいれき》の大火《たいか》", img: "meireki", icon: "👹", hp: 3100, atk: 46, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "火《ひ》の粉《こ》", img: "hinoko", icon: "🔥", hp: 340,  atk: 24, range: 55, speed: 40, cd: 1.1, every: 3.7, max: 5 } },
   { id: "st13",
     name: "新《あたら》しい学問《がくもん》",
     era: "江戸《えど》時代",
-    desc: "蘭学《らんがく》に国学《こくがく》！学びの力で なぞの病《やまい》に 立ち向かおう！",
+    desc: "蘭学《らんがく》と国学《こくがく》の力で 新《あたら》しい本《ほん》を まとめあげよう！",
     ticker: ["norinaga", "genpaku", "tadataka"],
-    bonusEra: ["江戸"], bg: "edo", baseHp: 1150, income: 13, startMoney: 100,
-    ebase:  { name: "まよいのやみ", icon: "🌫", hp: 1050 },
-    boss:   { name: "なぞの病《やまい》のぬし", icon: "💀", hp: 3300, atk: 48, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "病《やまい》のかげ", icon: "👻", hp: 360,  atk: 25, range: 55, speed: 38, cd: 1.1, every: 3.6, max: 5 } },
+    bonusEra: ["江戸"], bg: "edo", photo: "atarasiigakumon", baseImg: "tenshu", baseHp: 1150, income: 13, startMoney: 100,
+    mode: "build",
+    build:  { name: "新《あたら》しい本《ほん》", icon: "📖", need: 2500, word: "かんせい", sec: 90, img: "hon" },
+    boss:   { name: "なぞの霧《きり》の巨人《きょじん》", img: "nazo", icon: "💀", hp: 3300, atk: 48, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "病《やまい》のかげ", img: "yamainokage", icon: "👻", hp: 360,  atk: 25, range: 55, speed: 38, cd: 1.1, every: 3.6, max: 5 } },
   { id: "st14",
     name: "黒船《くろふね》来航《らいこう》",
-    era: "江戸《えど》時代の末",
+    era: "江戸《えど》時代",
     desc: "海のむこうから 黒船《くろふね》が やってきた！",
     ticker: ["perry", "kaishu"],
-    bonusEra: ["江戸時代の末"], bg: "bakumatsu", baseHp: 1200, income: 14, startMoney: 100,
-    ebase:  { name: "黒船《くろふね》のかんたい", icon: "🚢", hp: 1100 },
-    boss:   { name: "黒船《くろふね》のたいほう", icon: "⚓", hp: 3500, atk: 50, range: 85, speed: 11, cd: 1.1 },
-    minion: { name: "たいほうのたま", icon: "💣", hp: 380,  atk: 26, range: 55, speed: 42, cd: 1.1, every: 3.5, max: 6 } },
+    bonusEra: ["江戸"], bg: "bakumatsu", photo: "kurohuneraikou", baseImg: "tenshu", baseHp: 1200, income: 14, startMoney: 100,
+    ebase:  { name: "黒船《くろふね》のかんたい", icon: "🚢", hp: 1100, img: "kurofunekan" },
+    boss:   { name: "黒船《くろふね》のたいほう", img: "kurofune", icon: "⚓", hp: 3500, atk: 50, range: 85, speed: 11, cd: 1.1 },
+    minion: { name: "たいほうのたま", img: "houdan", icon: "💣", hp: 380,  atk: 26, range: 55, speed: 42, cd: 1.1, every: 3.5, max: 6 } },
   { id: "st15",
     name: "明治維新《めいじいしん》",
     era: "明治《めいじ》時代",
     desc: "江戸《えど》から明治《めいじ》へ。新しい世《よ》の中を つくろう！",
     ticker: ["saigo", "okubo", "takayoshi", "meiji"],
-    bonusEra: ["明治"], bg: "meiji", baseHp: 1250, income: 14, startMoney: 100,
-    ebase:  { name: "旧幕府軍《きゅうばくふぐん》の城《しろ》", icon: "🏰", hp: 1150 },
-    boss:   { name: "旧幕府軍《きゅうばくふぐん》の大将《たいしょう》", icon: "👺", hp: 3700, atk: 52, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "旧幕府《きゅうばくふ》の兵《へい》", icon: "🗡️", hp: 400,  atk: 27, range: 55, speed: 38, cd: 1.1, every: 3.4, max: 6 } },
+    bonusEra: ["明治"], bg: "meiji", photo: "meijiisin", baseImg: "youkan", baseHp: 1250, income: 14, startMoney: 100,
+    ebase:  { name: "旧幕府軍《きゅうばくふぐん》の城《しろ》", icon: "🏰", hp: 1150, img: "goryokaku" },
+    boss:   { name: "旧幕府軍《きゅうばくふぐん》の大将《たいしょう》", img: "enomoto", icon: "👺", hp: 3700, atk: 52, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "旧幕府《きゅうばくふ》の兵《へい》", img: "bakuhei", icon: "🗡️", hp: 400,  atk: 27, range: 55, speed: 38, cd: 1.1, every: 3.4, max: 6 } },
   { id: "st16",
     name: "憲法《けんぽう》と国会《こっかい》",
     era: "明治《めいじ》時代",
     desc: "みんなの声がとどく政治《せいじ》へ！自由民権運動《じゆうみんけんうんどう》だ！",
     ticker: ["yukichi", "okuma", "itagaki", "hirobumi"],
-    bonusEra: ["明治"], bg: "meiji", baseHp: 1300, income: 14, startMoney: 100,
-    ebase:  { name: "ふるい政治《せいじ》のやくしょ", icon: "🏛", hp: 1200 },
-    boss:   { name: "がんこがみ", icon: "👹", hp: 3900, atk: 54, range: 80, speed: 11, cd: 1.1 },
-    minion: { name: "はんたいのこえ", icon: "💢", hp: 420,  atk: 28, range: 55, speed: 40, cd: 1.1, every: 3.3, max: 6 } },
+    bonusEra: ["明治"], bg: "meiji", photo: "kenpoutokokkai", baseImg: "youkan", baseHp: 1300, income: 14, startMoney: 100,
+    ebase:  { name: "ふるい政治《せいじ》のやくしょ", icon: "🏛", hp: 1200, img: "yakusho" },
+    boss:   { name: "藩閥《はんばつ》のぬし", img: "hanbatsu", icon: "👹", hp: 3900, atk: 54, range: 80, speed: 11, cd: 1.1 },
+    minion: { name: "はんたいのこえ", img: "koe", icon: "💢", hp: 420,  atk: 28, range: 55, speed: 40, cd: 1.1, every: 3.3, max: 6 } },
   { id: "st17",
     name: "世界《せかい》の中《なか》の日本《にほん》",
     era: "明治《めいじ》時代",
     desc: "不平等条約《ふびょうどうじょうやく》をのりこえて 世界《せかい》へ はばたこう！",
     ticker: ["mutsu", "togo", "komura", "noguchi"],
-    bonusEra: ["明治"], bg: "meiji", baseHp: 1350, income: 15, startMoney: 100,
-    ebase:  { name: "不平等条約《ふびょうどうじょうやく》のかべ", icon: "🚧", hp: 1250 },
-    boss:   { name: "ロシアのかんたい", icon: "🚢", hp: 4100, atk: 56, range: 85, speed: 11, cd: 1.1 },
-    minion: { name: "あらなみ", icon: "🌊", hp: 440,  atk: 29, range: 55, speed: 42, cd: 1.1, every: 3.2, max: 6 } }
+    bonusEra: ["明治", "大正"], bg: "meiji", photo: "sekainonakanonihon", photoY: 80, baseImg: "youkan", baseHp: 1350, income: 15, startMoney: 100,
+    ebase:  { name: "不平等条約《ふびょうどうじょうやく》のかべ", icon: "🚧", hp: 1250, img: "kabe" },
+    boss:   { name: "バルチック艦隊《かんたい》", img: "baltic", icon: "🚢", hp: 4100, atk: 56, range: 85, speed: 11, cd: 1.1 },
+    minion: { name: "あらなみ", img: "aranami", icon: "🌊", hp: 440,  atk: 29, range: 55, speed: 42, cd: 1.1, every: 3.2, max: 6 } }
 ];
 
-/* --- 個性ステータス（2026-07-20追加・★先生の監修対象）
-   a=こうげき / d=まもり / s=はやさ（1〜5）。人物像から設定し、42人すべて組み合わせが異なる。
-   バランスの決め方: 強さの合計(a+d+s)が高いほど出撃コストも高い（cost=(a+d+s)×8 を5きざみに丸め）。
-   「安いけど弱い」「速いが攻撃ひかえめ」等はこの仕組みで自然に釣り合う。明らかな最強・最弱を作らない。
-   実際の強さへの反映は index.html 側: 倍率 = 0.55 + ★×0.15（★3=ふつう=1.0倍） --- */
+/* ===== 「2」「3」シリーズ（2＝2026-08-08 / 3＝2026-08-09。どちらもユーザー要望）=========
+   st17「世界《せかい》の中の日本」をクリアすると、同じ17場面が **もういちど「2」として出現**し、
+   その「2」を ぜんぶクリアすると **「3」（激ムズ）** が出る。ぜんぶで 17×3＝**51ステージ**。
+   （卑弥呼と邪馬台国 → … → 世界の中の日本２ → 卑弥呼と邪馬台国３ → … → 世界の中の日本３）
+
+   ★17ステージぶんを手で書き写さない。上の REKISHI_STAGES から **自動で作る**（CLAUDE.md §8）。
+     1シリーズにステージを1つ足せば、2も3も 自動でふえる。数字を直すのも HARD2 / HARD3 の1か所。
+
+   1シリーズとの ちがいは5つ（2も3も 同じ形。強さだけ ちがう）:
+     ① てきが つよい（ざこ・ボス・敵の城ぜんぶ 倍率をかける）
+     ② 波が はやく・多く くる（every をみじかく／同時に出る数を ふやす）
+     ③ つくる型は しごとの量がふえる（時間も少しだけ のばして 理不尽にしない）
+     ④ そのぶん みかたの城のHPと おかねも ふえる
+     ⑤ ガチャが よくなる（index.html の R_CHANCE2/3・SR_CHANCE2/3）
+
+   ★id は もとの id ＋ "b"（2）／"c"（3）。セーブの cleared は id ごとなので
+     **1・2シリーズでとった⭐は そのまま のこる**（CLAUDE.md §3）。
+   ★base に **もとの id**（st1）を入れてある。3も「st1」を指す＝クイズ（REKISHI_QUIZ）と
+     つくる型のできごと（index.html の BUILD_EVENTS）を 3シリーズとも共有する。
+   ★★**目じるしは `series`（1/2/3）**。`hard: true` は 2・3の両方に付けてある（＝
+     「1シリーズではない」の意味）が、**2と3を見わけるときは かならず series を見ること**。
+     index.html 側は `seriesOf(st)` 1か所に まとめてある。 --- */
+var HARD2 = {
+  mhp:   1.9,   /* ざこ敵のHP */
+  matk:  1.45,  /* ざこ敵のこうげき */
+  bhp:   1.9,   /* ボスのHP */
+  batk:  1.45,  /* ボスのこうげき */
+  ehp:   1.8,   /* 敵の城・町のHP */
+  every: 0.85,  /* 波の間かく（小さいほど 休みが短い） */
+  maxUp: 1,     /* 同時に出るざこの数 +1 */
+  need:  1.5,   /* つくる型の しごとの量 */
+  sec:   1.1,   /* つくる型の 制限時間（少しだけ のばす） */
+  base:  1.15,  /* みかたの城のHP */
+  income: 3     /* 1秒にたまるおかね（+3） */
+};
+/* ★★「3」＝激ムズ（2026-08-09・ユーザー指示
+     「３は激ムズに。スーパーレアが3体ぐらいないとクリアできないぐらい」）。
+   ねらいの線: **スーパーレア3体＋レア4体で 前半が やっと勝てる／レアだけでは 勝てない**。
+   ★カードの強さ（index.html の lvMult）は ノーマルLv1＝1.0 / レアLv5＝**1.5** /
+     スーパーレアLv30＝**3.25**。レアだけのデッキと SR3体入りのデッキでは
+     **こうげきの合計が だいたい2倍ちがう**ので、そのあいだに 壁を置いてある。
+   ★★数字は ぜんぶ **叩き台**（実機調整前提）。きつすぎたら mhp/bhp/ehp を先に下げること。
+   ★★★**2026-08-09・ユーザーが 弥生の面(st1c)を 実機で遊んで「普通にクリアできた」**。
+     「敵の出る量、スピードを1.2倍くらい増やして。ここまでクリアする子は **さくや旗を
+      うまく使う 熟練した子**。3の面は 簡単にはクリアできないくらいが ちょうどいい」。
+     → **波まわりの3つを 1.2倍**にした（maxMul / every / mspd）。ほかの数字は さわっていない。
+     ★★これで **こちらの自動プレイの見つもりは あてにならなくなった**。自動プレイは
+       さく・はた・あめ・💚いのり を1つも使えないが、**本物の子は 使う**。
+       ユーザーが 実機で かんたんに勝ったことが その証拠。**次の調整も 実機の声を正とする**。
+   ★★★**2026-08-09（3回目）・ユーザー「まだ簡単にクリアできるので、修正して」**。
+     ×1.2 でも まだ足りなかった。こんどは **えんりょせず 一段 上げた**。
+     上げたのは 2すじ。**敵を強くするだけでなく、おかねを しぼった**のが みそ:
+       ①敵の強さ  matk 2.2→**3.0** / mhp 3.0→**4.0** / batk 1.9→**2.6** / bhp 2.7→**3.5**
+       ②こちらの ゆとり  みかたの城HP 1.35→**1.15**
+     ★★**おかね(income)は しぼろうとして やめた**（+6→+3 を ためしたが もどした）。
+       ねらいは「熟練した子の さく・はた 連打に ブレーキ」だったが、実測すると
+       **後半の面が 上限デッキ(SR7)でも 勝てなくなった**（同時に出るざこが 10体に
+       増えているので、おかねが 足りないと そもそも 人を出しつづけられない）。
+       ＝**おかねは 3シリーズの調整レバーに 向かない**。次に きつくするときも
+       ここは さわらず、matk / mhp / PRESS3.first を うごかすこと。
+   ★★これに合わせて `PRESS3` を **1.7 → 1.0** にした（index.html）。①を上げたぶん
+     最後の面が 上限デッキでも 届かなくなるため。**入口の きびしさは 上がったまま**。 */
+/* ★★★**2026-08-10・ユーザー指示で もう一段 きつくした（2回目の ×1.2）**。
+   ユーザーの言葉:「レベル3をもう少し **敵を強く**してください。**敵が出る量、スピード**も
+   それぞれ 速めてください」。
+   ★**言われた3つに そろえて ×1.2 ずつ**かけた（強さ／出る量／スピード）。
+     ばらばらに いじらず 同じ倍率にしてあるので、**もどしたいときは ÷1.2 で もどせる**。
+   ★★**なぜ このタイミングで きつくなったのか**（次に読む人へ）:
+     同じ 2026-08-10に **プレイヤーが はっきり強くなっている**。
+       ①🏹ゆみが **相手の一番奥まで とどく**ようになった＝**ボスに 矢が当たる**
+         （前は 画面の64%までで、3シリーズのボス(x=510)には 当たらなかった）
+       ②🌀かみかぜ（敵を おしもどす）と 🍚年貢（みかたを回復）の 2つが 増えた
+     ＝ 3シリーズが **相対的に やさしくなった**ので、その ぶんを 戻している。
+   ★★**ehp と income は さわっていない**（HANDOFF の 2つの禁じ手）:
+     ehp を上げると 最後の st17c が「けずり切る前に 城が落ちる」＝クリア不能に なりやすい。
+     income を しぼるのは 2026-08-09に ためして **失敗している**（同時に10体出るので、
+     おかねが無いと そもそも 人を出しつづけられない）。 */
+/* ★★★2026-08-11・ユーザー指示「レベル3の激ムズステージは **敵の強さを 後1.2倍** 強くして」。
+     → **強さの4つ（mhp / matk / bhp / batk）だけ ×1.2**。もどすときは ÷1.2。
+   ★★**さわっていないもの と その理由**:
+     ・`ehp`（敵の城）… 上の★★の 禁じ手。上げると st17c が「けずり切る前に 城が落ちる」
+     ・`income`（おかね）… 2026-08-09に ためして 失敗ずみ（人を 出しつづけられなくなる）
+     ・`every` / `maxMul` / `mspd`（出る量・スピード）… **今回は「強さ」としか 言われていない**。
+       前回(2026-08-10)は「量・スピードも」と 言われたので かけた。指示の ちがいに 合わせてある。
+   ★★**同じ日に プレイヤーも 強くなっている**: せっきんの atk 30→42（+40%）。
+     3シリーズの ざこ・ボスは +20% なので、**差し引きでは まだ プレイヤー有利**。
+     だから 前回のように PRESS3.last を 下げる 手あては **今回は していない**。
+   ⚠️**あぶないのは 最後の st17c**（クリア不能に なりやすい面）。もし 勝てなくなったら
+     **PRESS3.last を 先に 下げる**こと（HARD3 を いじるより 安全。§PRESS3 の★★★）。 */
+var HARD3 = {
+  mhp:   5.76,  /* ざこ敵のHP（4.0 × 1.2 × 1.2） */
+  matk:  4.32,  /* ざこ敵のこうげき（3.0 × 1.2 × 1.2）。★きつすぎたら **ここから 先に下げる** */
+  bhp:   5.04,  /* ボスのHP（3.5 × 1.2 × 1.2） */
+  batk:  3.72,  /* ボスのこうげき（2.6 × 1.2 × 1.2） */
+  ehp:   2.3,   /* 敵の城・町のHP。★★**ここは 上げない**（上の★★）。
+                   上げると 最後の st17c が「けずり切る前に 城が落ちる」＝クリア不能に なりやすい */
+  /* ↓ここから3つが「敵の出る量・スピード」。2026-08-09に ×1.2、2026-08-10に **さらに ×1.2** */
+  every: 0.52,  /* 波と波の あいだ（0.625 ÷ 1.2）＝**波が さらに 1.2倍 はやく くる** */
+  maxUp: 2,     /* 同時に出るざこ +2（先に足す） */
+  maxMul: 1.44, /* そのうえで **1.44倍**（1.2 × 1.2）＝st1c 6→8体／st17c 8→12体 */
+  mspd:  1.44,  /* **ざこ敵の あるく はやさ 1.44倍**（1.2 × 1.2） */
+  need:  2.0,   /* つくる型の しごとの量 */
+  sec:   1.15,  /* つくる型の 制限時間 */
+  base:  1.15,  /* みかたの城のHP（理不尽にしないための ゆずり。1.35から しぼった） */
+  income: 6     /* 1秒にたまるおかね（+6）。★下げないこと（上の★★） */
+};
+(function () {
+  /* 古いiPadでも動くように Object.assign やスプレッドは使わない（HANDOFF「ES2017しばり」） */
+  function cp(o) { var d = {}, k; for (k in o) d[k] = o[k]; return d; }
+  function r1(v) { return Math.round(v * 10) / 10; }   /* 秒は小数第1位まで */
+  /* ★もとの17ステージを 先に ひかえておく（2を push したあと 3を作ると
+     「2の2」ができてしまう）。3の base も かならず もとの id を指すこと。 */
+  var origin = REKISHI_STAGES.slice();
+  function makeSeries(suffix, num, mark, tail, H) {
+    return origin.map(function (st) {
+      var s = cp(st);
+      s.id     = st.id + suffix;
+      s.base   = st.id;
+      s.hard   = true;      /* 「1シリーズではない」の目じるし（2と3の見わけは series） */
+      s.series = num;
+      s.name   = st.name + mark;
+      s.desc   = st.desc + tail;
+      s.baseHp = Math.round(st.baseHp * H.base);
+      s.income = st.income + H.income;
+      if (st.ticker)   s.ticker   = st.ticker.slice();
+      if (st.bonusEra) s.bonusEra = st.bonusEra.slice();
+      if (st.ebase) {
+        s.ebase = cp(st.ebase);
+        s.ebase.hp = Math.round(st.ebase.hp * H.ehp);
+      }
+      if (st.boss) {
+        s.boss = cp(st.boss);
+        s.boss.hp  = Math.round(st.boss.hp  * H.bhp);
+        s.boss.atk = Math.round(st.boss.atk * H.batk);
+      }
+      if (st.minion) {
+        s.minion = cp(st.minion);
+        s.minion.hp    = Math.round(st.minion.hp  * H.mhp);
+        s.minion.atk   = Math.round(st.minion.atk * H.matk);
+        s.minion.every = r1(st.minion.every * H.every);
+        /* ★maxMul / mspd は 3シリーズだけの もの。書いていない（＝2シリーズ）ときは
+           これまでどおり「+maxUp するだけ／はやさは そのまま」になる。 */
+        s.minion.max   = Math.round((st.minion.max + H.maxUp) * (H.maxMul || 1));
+        s.minion.speed = Math.round(st.minion.speed * (H.mspd || 1));
+      }
+      if (st.build) {
+        s.build = cp(st.build);
+        s.build.need = Math.round(st.build.need * H.need);
+        s.build.sec  = Math.round(st.build.sec  * H.sec);
+      }
+      return s;
+    });
+  }
+  var made = makeSeries("b", 2, "２", "　【2】もっと つよい てきが せめてくる！", HARD2)
+        .concat(makeSeries("c", 3, "３", "　【3】激《げき》ムズ！ スーパーレアの 力《ちから》が いる…", HARD3));
+  made.forEach(function (s) { REKISHI_STAGES.push(s); });
+})();
+
+/* --- 個性ステータス（2026-07-20追加 / 2026-07-28に「極端化」・★先生の監修対象）
+   a=こうげき（かいふく型では回復量） / d=まもり / s=はやさ（1〜5）。
+   人物像から設定し、42人すべて組み合わせが異なる（重複チェックずみ）。
+
+   ★2026-07-28の見直し: 「みんな満遍なく強くて簡単にクリアできる」というユーザーの指摘で
+     全員を作り直した。守るルールは4つ:
+       ① 全員に**弱点**がある（a/d/s のどれかが 1 か 2）
+       ② 全員に**強み**がある（どれかが 4 か 5）
+       ③ 合計(a+d+s) は 8〜11 におさめる（＝コストで釣り合う）
+       ④ 4-4-4 のような「全部そこそこ」は作らない。組み合わせの重複も作らない
+     はやい人はすぐやられる／強い人はおそい、という取りかえっこを必ず持たせる。
+   バランスの決め方: cost = (a+d+s)×8 を5きざみに丸め（65〜90）。
+   実際の強さへの反映は index.html 側の statMul()。★1=0.5倍〜★5=1.5倍（2026-07-28に
+   0.7〜1.3倍から広げた）。この数字を動かすと難易度が大きく変わるので注意。 --- */
 var REKISHI_STATS = {
-  himiko:      { a: 5, d: 3, s: 1, cost: 70 },  /* まじないの回復力はピカイチ・ゆっくり */
-  shotoku:     { a: 4, d: 4, s: 4, cost: 95 },  /* 万能の聖人。そのぶん高い */
-  imoko:       { a: 2, d: 3, s: 5, cost: 80 },  /* 隋までの長旅＝俊足 */
-  nakanooe:    { a: 4, d: 3, s: 4, cost: 90 },  /* 改新を決行する行動力 */
-  kamatari:    { a: 3, d: 3, s: 4, cost: 80 },  /* 名補佐役 */
-  shomu:       { a: 2, d: 5, s: 2, cost: 70 },  /* 大仏のようにどっしり */
-  gyoki:       { a: 2, d: 2, s: 5, cost: 70 },  /* 民のもとへ駆けまわる */
-  ganjin:      { a: 2, d: 5, s: 4, cost: 90 },  /* 何度失敗してもくじけない */
-  michinaga:   { a: 4, d: 4, s: 1, cost: 70 },  /* 権力の重み・動かない */
-  murasaki:    { a: 3, d: 4, s: 2, cost: 70 },  /* 長編を書き上げるねばり */
-  seishonagon: { a: 4, d: 2, s: 3, cost: 70 },  /* 随筆のキレ味 */
-  kiyomori:    { a: 4, d: 4, s: 2, cost: 80 },  /* 権勢どっしり */
-  yoshitsune:  { a: 4, d: 2, s: 5, cost: 90 },  /* 八艘跳びの俊足・打たれ弱い */
-  yoritomo:    { a: 3, d: 5, s: 2, cost: 80 },  /* 幕府を守るかたさ */
-  tokimune:    { a: 3, d: 5, s: 3, cost: 90 },  /* 元寇をはね返した守り */
-  yoshimitsu:  { a: 4, d: 4, s: 3, cost: 90 },  /* 金閣の華麗な力 */
+  himiko:      { a: 5, d: 2, s: 1, cost: 65 },  /* まじないの回復はピカイチ・体は弱くとてもおそい */
+  shotoku:     { a: 5, d: 4, s: 1, cost: 80 },  /* 考えぬく聖人。強いが とにかくおそい */
+  imoko:       { a: 2, d: 2, s: 5, cost: 70 },  /* 隋までの長旅＝俊足。ぶつかり合いには弱い */
+  nakanooe:    { a: 5, d: 2, s: 4, cost: 90 },  /* 改新を決行する行動力。守りはうすい */
+  kamatari:    { a: 2, d: 5, s: 3, cost: 80 },  /* 支える名補佐役。攻めは苦手 */
+  shomu:       { a: 2, d: 5, s: 1, cost: 65 },  /* 大仏のようにどっしり動かない */
+  gyoki:       { a: 2, d: 1, s: 5, cost: 65 },  /* 民のもとへ駆けまわる。紙のように打たれ弱い */
+  ganjin:      { a: 1, d: 5, s: 3, cost: 70 },  /* 何度失敗してもくじけない かたさ一本 */
+  michinaga:   { a: 4, d: 4, s: 1, cost: 70 },  /* 権力の重み。まったく動かない */
+  murasaki:    { a: 3, d: 5, s: 1, cost: 70 },  /* 長編を書き上げるねばり。歩みはおそい */
+  seishonagon: { a: 5, d: 1, s: 3, cost: 70 },  /* 随筆のキレ味。守りはまるで無い */
+  kiyomori:    { a: 4, d: 5, s: 1, cost: 80 },  /* 権勢どっしり。動きはにぶい */
+  yoshitsune:  { a: 4, d: 1, s: 5, cost: 80 },  /* 八艘跳びの俊足。打たれ弱さも一番 */
+  yoritomo:    { a: 2, d: 5, s: 2, cost: 70 },  /* 幕府を守るかたさ。攻めない */
+  tokimune:    { a: 3, d: 5, s: 2, cost: 80 },  /* 元寇をはね返した守り */
+  yoshimitsu:  { a: 5, d: 3, s: 2, cost: 80 },  /* 金閣の華麗な力。おごそかにゆっくり */
   yoshimasa:   { a: 2, d: 4, s: 2, cost: 65 },  /* 文化人・ひかえめで安い */
-  sesshu:      { a: 4, d: 3, s: 2, cost: 70 },  /* 筆の一閃 */
-  xavier:      { a: 3, d: 1, s: 5, cost: 70 },  /* 世界をめぐる宣教の旅 */
-  nobunaga:    { a: 5, d: 2, s: 4, cost: 90 },  /* 攻め特化・守りはうすい */
-  hideyoshi:   { a: 4, d: 3, s: 5, cost: 95 },  /* スピード出世の機動力 */
-  ieyasu:      { a: 4, d: 5, s: 2, cost: 90 },  /* 忍耐のかたさ・ゆっくり */
-  iemitsu:     { a: 3, d: 4, s: 3, cost: 80 },  /* 参勤交代の統率 */
-  chikamatsu:  { a: 3, d: 2, s: 4, cost: 70 },  /* 劇的な展開力 */
-  hiroshige:   { a: 3, d: 3, s: 5, cost: 90 },  /* 東海道を行く健脚 */
-  norinaga:    { a: 3, d: 5, s: 1, cost: 70 },  /* じっくり研究・動かない */
+  sesshu:      { a: 5, d: 2, s: 2, cost: 70 },  /* 筆の一閃。守りは薄く足もおそい */
+  xavier:      { a: 3, d: 1, s: 5, cost: 70 },  /* 世界をめぐる宣教の旅。体はうすい */
+  nobunaga:    { a: 5, d: 1, s: 4, cost: 80 },  /* 攻め特化。守りは紙 */
+  hideyoshi:   { a: 4, d: 2, s: 5, cost: 90 },  /* スピード出世の機動力。守りは犠牲 */
+  ieyasu:      { a: 4, d: 5, s: 2, cost: 90 },  /* 忍耐のかたさ。とにかく遅い */
+  iemitsu:     { a: 3, d: 4, s: 2, cost: 70 },  /* 参勤交代の統率。守り寄り */
+  chikamatsu:  { a: 4, d: 1, s: 4, cost: 70 },  /* 劇的な展開力。もろい */
+  hiroshige:   { a: 1, d: 3, s: 5, cost: 70 },  /* 東海道を行く健脚。戦う力はない */
+  norinaga:    { a: 4, d: 3, s: 1, cost: 65 },  /* じっくり研究。まったく動かない */
   genpaku:     { a: 2, d: 4, s: 3, cost: 70 },  /* 翻訳のねばり */
-  tadataka:    { a: 2, d: 4, s: 5, cost: 90 },  /* 全国を歩いた鉄の足 */
-  perry:       { a: 5, d: 4, s: 1, cost: 80 },  /* 黒船の大砲・船はおそい */
-  kaishu:      { a: 3, d: 3, s: 3, cost: 70 },  /* 交渉術のバランス型 */
-  saigo:       { a: 5, d: 4, s: 2, cost: 90 },  /* 豪傑の一撃 */
-  okubo:       { a: 2, d: 5, s: 3, cost: 80 },  /* 実務の鉄人・かたい */
-  takayoshi:   { a: 3, d: 2, s: 5, cost: 80 },  /* 調整役のフットワーク */
-  meiji:       { a: 4, d: 5, s: 3, cost: 95 },  /* 新時代の象徴・高いが強い */
-  yukichi:     { a: 5, d: 2, s: 3, cost: 80 },  /* ペンは剣よりも強し */
-  okuma:       { a: 4, d: 2, s: 4, cost: 80 },  /* 演説と行動力 */
-  itagaki:     { a: 3, d: 5, s: 4, cost: 95 },  /* 「板垣死すとも」の不屈 */
-  hirobumi:    { a: 4, d: 3, s: 3, cost: 80 },  /* 初代総理の統率 */
-  mutsu:       { a: 5, d: 1, s: 4, cost: 80 },  /* カミソリのキレ・打たれ弱い */
-  komura:      { a: 3, d: 4, s: 4, cost: 90 },  /* ねばり強い交渉 */
-  togo:        { a: 5, d: 3, s: 3, cost: 90 },  /* 海戦の名指揮 */
-  noguchi:     { a: 4, d: 1, s: 5, cost: 80 }   /* 研究一直線・体はこわしがち */
+  tadataka:    { a: 1, d: 4, s: 5, cost: 80 },  /* 全国を歩いた鉄の足。攻める人ではない */
+  perry:       { a: 5, d: 5, s: 1, cost: 90 },  /* 黒船の大砲とかたさは別格。船はとてもおそい */
+  kaishu:      { a: 4, d: 2, s: 4, cost: 80 },  /* 交渉の機転。守りはうすい */
+  saigo:       { a: 5, d: 4, s: 2, cost: 90 },  /* 豪傑の一撃。動きは重い */
+  okubo:       { a: 1, d: 5, s: 4, cost: 80 },  /* 実務の鉄人。かたくて速いが攻めない */
+  takayoshi:   { a: 2, d: 3, s: 5, cost: 80 },  /* 調整役のフットワーク */
+  meiji:       { a: 4, d: 4, s: 2, cost: 80 },  /* 新時代の象徴。重みがあり動きはゆっくり */
+  yukichi:     { a: 5, d: 2, s: 3, cost: 80 },  /* ペンは剣よりも強し。体は学者 */
+  okuma:       { a: 3, d: 2, s: 5, cost: 80 },  /* 演説と行動力。打たれ弱い */
+  itagaki:     { a: 2, d: 5, s: 4, cost: 90 },  /* 「板垣死すとも」の不屈。かたくて速い */
+  hirobumi:    { a: 4, d: 3, s: 2, cost: 70 },  /* 初代総理の統率。動きはゆっくり */
+  mutsu:       { a: 5, d: 1, s: 5, cost: 90 },  /* カミソリのキレと速さ。守りは紙 */
+  komura:      { a: 2, d: 4, s: 4, cost: 80 },  /* ねばり強い交渉。攻めは苦手 */
+  togo:        { a: 5, d: 3, s: 1, cost: 70 },  /* 大艦の一撃。艦《ふね》はおそい */
+  noguchi:     { a: 3, d: 1, s: 4, cost: 65 }   /* 研究一直線。体はこわしがち */
 };
 
-/* --- 時代クイズ（2026-07-20追加・★先生の監修対象）
-   人物あてクイズにまぜて出る「その時代に関する問題」。c[0] が正解（表示時にシャッフルされる） --- */
+/* --- 時代クイズ（2026-07-20追加 / 2026-07-28に全17ステージぶんへ拡充・★先生の監修対象）
+   人物あてクイズにまぜて出る「その時代に関する問題」。c[0] が正解（表示時にシャッフルされる）。
+
+   ★ここが空のステージがあると、クイズが3問そろわず3問目で止まる。
+     ステージを足したら**必ず**ここにも足すこと（2026-07-28にst4〜st17が空で発覚したバグ）。
+     index.html の startQuiz() 側にも足りないぶんを埋める保険を入れてあるが、
+     保険にたよると「同じ問題ばかり出る」ので、1ステージ5問以上を目安に書く。
+   ★ふりがなの注意: 《》の直前の「連続した漢字のかたまり」にだけ よみが付く。
+     かなが混ざる語は 五《ご》か条《じょう》の御誓文《ごせいもん》 のように分けて書く。 --- */
 var REKISHI_QUIZ = {
   st1: [
     { q: "邪馬台国《やまたいこく》が あったのは 何時代？",
@@ -519,7 +710,11 @@ var REKISHI_QUIZ = {
     { q: "卑弥呼《ひみこ》は 何の力で 国を おさめた？",
       c: ["まじない", "刀《かたな》", "お金"] },
     { q: "弥生《やよい》時代に さかんになったのは？",
-      c: ["米《こめ》づくり", "自動車《じどうしゃ》づくり", "テレビづくり"] }
+      c: ["米《こめ》づくり", "自動車《じどうしゃ》づくり", "テレビづくり"] },
+    { q: "卑弥呼《ひみこ》が おさめた 国の 名前は？",
+      c: ["邪馬台国《やまたいこく》", "大和朝廷《やまとちょうてい》", "江戸幕府《えどばくふ》"] },
+    { q: "卑弥呼《ひみこ》は 男の人？ 女の人？",
+      c: ["女王《じょおう》（女の人）", "王《おう》（男の人）", "どちらでもない"] }
   ],
   st2: [
     { q: "大化《たいか》の改新《かいしん》が あったのは 何時代？",
@@ -529,16 +724,510 @@ var REKISHI_QUIZ = {
     { q: "中大兄皇子《なかのおおえのおうじ》は のちに 何天皇になった？",
       c: ["天智天皇《てんじてんのう》", "聖武天皇《しょうむてんのう》", "明治天皇《めいじてんのう》"] },
     { q: "中臣鎌足《なかとみのかまたり》は 何氏《なにうじ》の先祖《せんぞ》？",
-      c: ["藤原氏《ふじわらし》", "源氏《げんじ》", "北条氏《ほうじょうし》"] }
+      c: ["藤原氏《ふじわらし》", "源氏《げんじ》", "北条氏《ほうじょうし》"] },
+    { q: "大化《たいか》の改新《かいしん》は 何を するための 改革《かいかく》？",
+      c: ["天皇《てんのう》を中心《ちゅうしん》とした 新しい国づくり", "外国との貿易《ぼうえき》", "お寺《てら》づくり"] },
+    { q: "大化《たいか》の改新《かいしん》を 中大兄皇子《なかのおおえのおうじ》と ともに 行ったのは？",
+      c: ["中臣鎌足《なかとみのかまたり》", "小野妹子《おののいもこ》", "行基《ぎょうき》"] }
   ],
   st3: [
     { q: "壇ノ浦《だんのうら》の戦いが あったのは いつ？",
-      c: ["平安《へいあん》時代の末", "飛鳥《あすか》時代", "明治《めいじ》時代"] },
+      c: ["平安《へいあん》時代", "飛鳥《あすか》時代", "明治《めいじ》時代"] },
     { q: "壇ノ浦《だんのうら》の戦いで ほろんだのは？",
       c: ["平氏《へいし》", "源氏《げんじ》", "蘇我氏《そがし》"] },
     { q: "壇ノ浦《だんのうら》の戦いで 平氏《へいし》を やぶったのは？",
       c: ["源義経《みなもとのよしつね》", "北条時宗《ほうじょうときむね》", "徳川家康《とくがわいえやす》"] },
     { q: "武士《ぶし》で 初めて 太政大臣《だいじょうだいじん》になったのは？",
-      c: ["平清盛《たいらのきよもり》", "源頼朝《みなもとのよりとも》", "足利義満《あしかがよしみつ》"] }
+      c: ["平清盛《たいらのきよもり》", "源頼朝《みなもとのよりとも》", "足利義満《あしかがよしみつ》"] },
+    { q: "平清盛《たいらのきよもり》が 港《みなと》を整備《せいび》して 貿易《ぼうえき》をした 相手の国は？",
+      c: ["中国（宋《そう》）", "アメリカ", "スペイン"] },
+    { q: "源義経《みなもとのよしつね》は 源頼朝《みなもとのよりとも》の 何にあたる？",
+      c: ["弟《おとうと》", "父《ちち》", "家来《けらい》ではない他人《たにん》"] }
+  ],
+
+  st4: [
+    { q: "聖徳太子《しょうとくたいし》が 摂政《せっしょう》になったのは どの天皇《てんのう》のとき？",
+      c: ["推古天皇《すいこてんのう》", "天智天皇《てんじてんのう》", "明治天皇《めいじてんのう》"] },
+    { q: "役人《やくにん》の心がまえを しめした きまりは？",
+      c: ["十七条《じゅうしちじょう》の憲法《けんぽう》", "大日本帝国憲法《だいにっぽんていこくけんぽう》", "解体新書《かいたいしんしょ》"] },
+    { q: "家《いえ》がらに かかわらず 力のある人を 役人《やくにん》にする しくみは？",
+      c: ["冠位十二階《かんいじゅうにかい》", "参勤交代《さんきんこうたい》", "廃藩置県《はいはんちけん》"] },
+    { q: "遣隋使《けんずいし》として 中国（隋《ずい》）にわたったのは？",
+      c: ["小野妹子《おののいもこ》", "行基《ぎょうき》", "雪舟《せっしゅう》"] },
+    { q: "聖徳太子《しょうとくたいし》が 建てたと いわれる お寺《てら》は？",
+      c: ["法隆寺《ほうりゅうじ》", "東大寺《とうだいじ》", "金閣《きんかく》"] },
+    { q: "聖徳太子《しょうとくたいし》が 活やくしたのは 何時代？",
+      c: ["飛鳥《あすか》時代", "縄文《じょうもん》時代", "明治《めいじ》時代"] }
+  ],
+
+  st5: [
+    { q: "大仏《だいぶつ》を つくらせた 天皇《てんのう》は？",
+      c: ["聖武天皇《しょうむてんのう》", "推古天皇《すいこてんのう》", "明治天皇《めいじてんのう》"] },
+    { q: "大仏《だいぶつ》が ある お寺《てら》は？",
+      c: ["東大寺《とうだいじ》", "法隆寺《ほうりゅうじ》", "唐招提寺《とうしょうだいじ》"] },
+    { q: "聖武天皇《しょうむてんのう》が 全国に 建てさせた お寺《てら》は？",
+      c: ["国分寺《こくぶんじ》", "銀閣《ぎんかく》", "大阪城《おおさかじょう》"] },
+    { q: "大仏《だいぶつ》づくりに 協力《きょうりょく》した お坊《ぼう》さんは？",
+      c: ["行基《ぎょうき》", "ザビエル", "近松門左衛門《ちかまつもんざえもん》"] },
+    { q: "中国（唐《とう》）から 日本に わたって きた お坊《ぼう》さんは？",
+      c: ["鑑真《がんじん》", "小野妹子《おののいもこ》", "伊能忠敬《いのうただたか》"] },
+    { q: "鑑真《がんじん》が 開いた お寺《てら》は？",
+      c: ["唐招提寺《とうしょうだいじ》", "東大寺《とうだいじ》", "法隆寺《ほうりゅうじ》"] },
+    { q: "聖武天皇《しょうむてんのう》は 何の力で 国を おさめようと した？",
+      c: ["仏教《ぶっきょう》", "大砲《たいほう》", "お金"] }
+  ],
+
+  st6: [
+    { q: "「源氏物語《げんじものがたり》」を 書いたのは？",
+      c: ["紫式部《むらさきしきぶ》", "清少納言《せいしょうなごん》", "卑弥呼《ひみこ》"] },
+    { q: "「枕草子《まくらのそうし》」を 書いたのは？",
+      c: ["清少納言《せいしょうなごん》", "紫式部《むらさきしきぶ》", "北条時宗《ほうじょうときむね》"] },
+    { q: "紫式部《むらさきしきぶ》や 清少納言《せいしょうなごん》が つかった 日本の文字は？",
+      c: ["かな文字", "ローマ字", "数字《すうじ》"] },
+    { q: "むすめを 天皇《てんのう》のきさきにして 力を 強めたのは？",
+      c: ["藤原道長《ふじわらのみちなが》", "源頼朝《みなもとのよりとも》", "徳川家光《とくがわいえみつ》"] },
+    { q: "日本らしさが 育った この ころの 文化を 何という？",
+      c: ["国風文化《こくふうぶんか》", "元禄文化《げんろくぶんか》", "化政文化《かせいぶんか》"] },
+    { q: "藤原氏《ふじわらし》が ひとりじめした 地位《ちい》は？",
+      c: ["摂政《せっしょう》・関白《かんぱく》", "将軍《しょうぐん》", "内閣総理大臣《ないかくそうりだいじん》"] }
+  ],
+
+  st7: [
+    { q: "元寇《げんこう》のとき 鎌倉幕府《かまくらばくふ》の執権《しっけん》だったのは？",
+      c: ["北条時宗《ほうじょうときむね》", "源頼朝《みなもとのよりとも》", "足利義満《あしかがよしみつ》"] },
+    { q: "日本に 2度 せめてきた 国は？",
+      c: ["元《げん》（中国）", "アメリカ", "スペイン"] },
+    { q: "元《げん》が せめてきた 2度の 戦《たたか》いの 名前は？",
+      c: ["文永《ぶんえい》の役《えき》・弘安《こうあん》の役《えき》", "関ヶ原《せきがはら》の戦《たたか》い", "桶狭間《おけはざま》の戦《たたか》い"] },
+    { q: "鎌倉幕府《かまくらばくふ》を 開いたのは？",
+      c: ["源頼朝《みなもとのよりとも》", "北条時宗《ほうじょうときむね》", "足利義政《あしかがよしまさ》"] },
+    { q: "源頼朝《みなもとのよりとも》が 征夷大将軍《せいいたいしょうぐん》に なったのは 何年？",
+      c: ["1192年《ねん》", "1603年《ねん》", "1889年《ねん》"] },
+    { q: "将軍《しょうぐん》と 御家人《ごけにん》の むすびつきを 何という？",
+      c: ["ご恩《おん》と奉公《ほうこう》", "参勤交代《さんきんこうたい》", "版籍奉還《はんせきほうかん》"] }
+  ],
+
+  st8: [
+    { q: "金閣《きんかく》を 建てたのは？",
+      c: ["足利義満《あしかがよしみつ》", "足利義政《あしかがよしまさ》", "織田信長《おだのぶなが》"] },
+    { q: "銀閣《ぎんかく》を 建てたのは？",
+      c: ["足利義政《あしかがよしまさ》", "足利義満《あしかがよしみつ》", "徳川家康《とくがわいえやす》"] },
+    { q: "金閣《きんかく》が ある 京都《きょうと》の 場所は？",
+      c: ["北山《きたやま》", "東山《ひがしやま》", "桶狭間《おけはざま》"] },
+    { q: "日本の様式《ようしき》の 水墨画《すいぼくが》を 完成させたのは？",
+      c: ["雪舟《せっしゅう》", "歌川広重《うたがわひろしげ》", "近松門左衛門《ちかまつもんざえもん》"] },
+    { q: "足利義満《あしかがよしみつ》が 貿易《ぼうえき》をした 中国の国は？",
+      c: ["明《みん》", "隋《ずい》", "ロシア"] },
+    { q: "雪舟《せっしゅう》が 絵のわざを 学びに 行った 国は？",
+      c: ["中国", "アメリカ", "スペイン"] },
+    { q: "足利義満《あしかがよしみつ》が 統一《とういつ》したのは？",
+      c: ["南朝《なんちょう》と北朝《ほくちょう》", "日本と中国", "源氏《げんじ》と平氏《へいし》"] }
+  ],
+
+  st9: [
+    { q: "桶狭間《おけはざま》の戦《たたか》いで 織田信長《おだのぶなが》が やぶったのは？",
+      c: ["今川義元《いまがわよしもと》", "明智光秀《あけちみつひで》", "豊臣秀吉《とよとみひでよし》"] },
+    { q: "日本に キリスト教《きょう》を 伝えたのは？",
+      c: ["ザビエル", "ペリー", "野口英世《のぐちひでよ》"] },
+    { q: "キリスト教《きょう》が 日本に 伝わったのは 何年？",
+      c: ["1549年《ねん》", "1192年《ねん》", "1853年《ねん》"] },
+    { q: "ザビエルは どこの国の 宣教師《せんきょうし》？",
+      c: ["スペイン", "アメリカ", "中国"] },
+    { q: "織田信長《おだのぶなが》が ほろぼした 幕府《ばくふ》は？",
+      c: ["室町幕府《むろまちばくふ》", "鎌倉幕府《かまくらばくふ》", "江戸幕府《えどばくふ》"] },
+    /* ★★こたえは 史実どおり「戦国時代」（1560年）。2026-08-09にユーザー指示でもどした。
+         このアプリの 時代わけ（年表ずかん・ステージ）には 戦国時代が 無く、
+         織田信長は「安土桃山時代」に入れてあるが、**桶狭間は 戦国時代**が正しい。
+       ★まちがいの選択肢に **安土桃山時代を 入れないこと**。入れると
+         「信長＝安土桃山」と おぼえた子が そちらを えらんでしまい、
+         正しく おぼえているのに ×になる（アプリの都合で 子どもを まちがえさせない）。 */
+    { q: "桶狭間《おけはざま》の戦《たたか》いが あったのは 何時代？",
+      c: ["戦国《せんごく》時代", "奈良《なら》時代", "明治《めいじ》時代"] }
+  ],
+
+  st10: [
+    { q: "本能寺《ほんのうじ》で 織田信長《おだのぶなが》に そむいたのは？",
+      c: ["明智光秀《あけちみつひで》", "今川義元《いまがわよしもと》", "北条時宗《ほうじょうときむね》"] },
+    { q: "織田信長《おだのぶなが》の死後《しご》、天下統一《てんかとういつ》を なしとげたのは？",
+      c: ["豊臣秀吉《とよとみひでよし》", "徳川家康《とくがわいえやす》", "足利義満《あしかがよしみつ》"] },
+    { q: "豊臣秀吉《とよとみひでよし》が 全国を 統一したのは 何年？",
+      c: ["1590年《ねん》", "1192年《ねん》", "1889年《ねん》"] },
+    { q: "百姓《ひゃくしょう》から 武器《ぶき》を とりあげた 政策《せいさく》は？",
+      c: ["刀狩《かたながり》", "参勤交代《さんきんこうたい》", "鎖国《さこく》"] },
+    { q: "田畑《たはた》の広さや 収穫《しゅうかく》を 調べた 政策《せいさく》は？",
+      c: ["検地《けんち》", "廃藩置県《はいはんちけん》", "版籍奉還《はんせきほうかん》"] },
+    { q: "豊臣秀吉《とよとみひでよし》が 2度 せめた 国は？",
+      c: ["明《みん》（中国）", "アメリカ", "ロシア"] }
+  ],
+
+  st11: [
+    { q: "関ヶ原《せきがはら》の戦《たたか》いに 勝ったのは？",
+      c: ["徳川家康《とくがわいえやす》", "豊臣秀吉《とよとみひでよし》", "織田信長《おだのぶなが》"] },
+    { q: "徳川家康《とくがわいえやす》が 征夷大将軍《せいいたいしょうぐん》に なったのは 何年？",
+      c: ["1603年《ねん》", "1192年《ねん》", "1853年《ねん》"] },
+    { q: "徳川家康《とくがわいえやす》が 開いた 幕府《ばくふ》は？",
+      c: ["江戸幕府《えどばくふ》", "鎌倉幕府《かまくらばくふ》", "室町幕府《むろまちばくふ》"] },
+    { q: "大名《だいみょう》を 江戸《えど》と領地《りょうち》に 行き来させた 制度《せいど》は？",
+      c: ["参勤交代《さんきんこうたい》", "刀狩《かたながり》", "検地《けんち》"] },
+    { q: "参勤交代《さんきんこうたい》を 定めたのは？",
+      c: ["徳川家光《とくがわいえみつ》", "徳川家康《とくがわいえやす》", "源頼朝《みなもとのよりとも》"] },
+    { q: "徳川家光《とくがわいえみつ》が 進めた、外国との 行き来を 制限《せいげん》する 政策《せいさく》は？",
+      c: ["鎖国《さこく》", "開国《かいこく》", "日明貿易《にちみんぼうえき》"] },
+    { q: "徳川家康《とくがわいえやす》が 大阪城《おおさかじょう》を せめて ほろぼしたのは？",
+      c: ["豊臣氏《とよとみし》", "平氏《へいし》", "蘇我氏《そがし》"] }
+  ],
+
+  st12: [
+    { q: "「曽根崎心中《そねざきしんじゅう》」を 書いたのは？",
+      c: ["近松門左衛門《ちかまつもんざえもん》", "歌川広重《うたがわひろしげ》", "本居宣長《もとおりのりなが》"] },
+    { q: "「東海道五十三次《とうかいどうごじゅうさんつぎ》」を えがいたのは？",
+      c: ["歌川広重《うたがわひろしげ》", "雪舟《せっしゅう》", "紫式部《むらさきしきぶ》"] },
+    { q: "近松門左衛門《ちかまつもんざえもん》が 脚本《きゃくほん》を 書いた 演劇《えんげき》は？",
+      c: ["歌舞伎《かぶき》", "水墨画《すいぼくが》", "オペラ"] },
+    { q: "歌川広重《うたがわひろしげ》が えがいたような 絵を 何という？",
+      c: ["浮世絵《うきよえ》", "水墨画《すいぼくが》", "油絵《あぶらえ》"] },
+    { q: "近松門左衛門《ちかまつもんざえもん》が 活やくした ころの 文化は？",
+      c: ["元禄文化《げんろくぶんか》", "国風文化《こくふうぶんか》", "化政文化《かせいぶんか》"] },
+    { q: "歌川広重《うたがわひろしげ》が 活やくした ころの 文化は？",
+      c: ["化政文化《かせいぶんか》", "元禄文化《げんろくぶんか》", "国風文化《こくふうぶんか》"] }
+  ],
+
+  st13: [
+    { q: "「古事記伝《こじきでん》」を 書いたのは？",
+      c: ["本居宣長《もとおりのりなが》", "杉田玄白《すぎたげんぱく》", "伊能忠敬《いのうただたか》"] },
+    { q: "本居宣長《もとおりのりなが》が 発展《はってん》させた 学問《がくもん》は？",
+      c: ["国学《こくがく》", "医学《いがく》", "測量《そくりょう》"] },
+    { q: "「解体新書《かいたいしんしょ》」を 出したのは？",
+      c: ["杉田玄白《すぎたげんぱく》", "本居宣長《もとおりのりなが》", "福沢諭吉《ふくざわゆきち》"] },
+    { q: "「解体新書《かいたいしんしょ》」は どこの国の 医学書《いがくしょ》を ほんやくした もの？",
+      c: ["オランダ", "アメリカ", "中国"] },
+    { q: "日本全国の 海岸《かいがん》を 歩いて 測量《そくりょう》したのは？",
+      c: ["伊能忠敬《いのうただたか》", "歌川広重《うたがわひろしげ》", "勝海舟《かつかいしゅう》"] },
+    { q: "伊能忠敬《いのうただたか》が 完成させたのは？",
+      c: ["ほぼ正確《せいかく》な 日本地図《にほんちず》", "世界地図《せかいちず》", "星《ほし》の地図"] }
+  ],
+
+  st14: [
+    { q: "1853年《ねん》に 軍艦《ぐんかん》（黒船《くろふね》）で 日本に 来たのは？",
+      c: ["ペリー", "ザビエル", "野口英世《のぐちひでよ》"] },
+    { q: "ペリーは どこの国の 使節《しせつ》？",
+      c: ["アメリカ", "スペイン", "ロシア"] },
+    { q: "ペリーが 幕府《ばくふ》に 求めたのは？",
+      c: ["開国《かいこく》", "鎖国《さこく》", "参勤交代《さんきんこうたい》"] },
+    { q: "ペリーの来航《らいこう》で 結ばれた 条約《じょうやく》は？",
+      c: ["日米和親条約《にちべいわしんじょうやく》", "大日本帝国憲法《だいにっぽんていこくけんぽう》", "五《ご》か条《じょう》の御誓文《ごせいもん》"] },
+    { q: "西郷隆盛《さいごうたかもり》と 話し合って 江戸城《えどじょう》を 明けわたしたのは？",
+      c: ["勝海舟《かつかいしゅう》", "木戸孝允《きどたかよし》", "伊藤博文《いとうひろぶみ》"] },
+    { q: "江戸城《えどじょう》は どのように 明けわたされた？",
+      c: ["戦《たたか》わずに 話し合いで", "大きな 戦《たたか》いの あとで", "くじ引きで"] }
+  ],
+
+  st15: [
+    { q: "薩摩藩《さつまはん》の武士《ぶし》で 西南戦争《せいなんせんそう》に 敗《やぶ》れたのは？",
+      c: ["西郷隆盛《さいごうたかもり》", "大久保利通《おおくぼとしみち》", "板垣退助《いたがきたいすけ》"] },
+    { q: "版籍奉還《はんせきほうかん》や 廃藩置県《はいはんちけん》を 進めたのは？",
+      c: ["大久保利通《おおくぼとしみち》", "西郷隆盛《さいごうたかもり》", "東郷平八郎《とうごうへいはちろう》"] },
+    { q: "長州藩《ちょうしゅうはん》の武士《ぶし》で 倒幕運動《とうばくうんどう》の中心の一人は？",
+      c: ["木戸孝允《きどたかよし》", "東郷平八郎《とうごうへいはちろう》", "小村寿太郎《こむらじゅたろう》"] },
+    { q: "明治政府《めいじせいふ》の方針《ほうしん》として 発表されたのは？",
+      c: ["五《ご》か条《じょう》の御誓文《ごせいもん》", "十七条《じゅうしちじょう》の憲法《けんぽう》", "解体新書《かいたいしんしょ》"] },
+    { q: "藩《はん》を なくして 県《けん》を 置いた 改革《かいかく》は？",
+      c: ["廃藩置県《はいはんちけん》", "参勤交代《さんきんこうたい》", "刀狩《かたながり》"] },
+    { q: "外国を 見て まわった 使節団《しせつだん》は？",
+      c: ["岩倉使節団《いわくらしせつだん》", "遣隋使《けんずいし》", "日明貿易《にちみんぼうえき》"] }
+  ],
+
+  st16: [
+    { q: "「学問《がくもん》のすゝめ」を 書いたのは？",
+      c: ["福沢諭吉《ふくざわゆきち》", "大隈重信《おおくましげのぶ》", "板垣退助《いたがきたいすけ》"] },
+    { q: "慶應義塾大学《けいおうぎじゅくだいがく》を つくったのは？",
+      c: ["福沢諭吉《ふくざわゆきち》", "大隈重信《おおくましげのぶ》", "伊藤博文《いとうひろぶみ》"] },
+    { q: "早稲田大学《わせだだいがく》を つくったのは？",
+      c: ["大隈重信《おおくましげのぶ》", "福沢諭吉《ふくざわゆきち》", "板垣退助《いたがきたいすけ》"] },
+    { q: "自由党《じゆうとう》を つくったのは？",
+      c: ["板垣退助《いたがきたいすけ》", "大隈重信《おおくましげのぶ》", "陸奥宗光《むつむねみつ》"] },
+    { q: "日本で 最初の 内閣総理大臣《ないかくそうりだいじん》は？",
+      c: ["伊藤博文《いとうひろぶみ》", "西郷隆盛《さいごうたかもり》", "明治天皇《めいじてんのう》"] },
+    { q: "大日本帝国憲法《だいにっぽんていこくけんぽう》が 発布《はっぷ》されたのは 何年？",
+      c: ["1889年《ねん》", "1603年《ねん》", "1549年《ねん》"] },
+    { q: "国民《こくみん》が 政治《せいじ》に 参加することを 求めた 運動は？",
+      c: ["自由民権運動《じゆうみんけんうんどう》", "西南戦争《せいなんせんそう》", "日露戦争《にちろせんそう》"] }
+  ],
+
+  st17: [
+    { q: "治外法権《ちがいほうけん》を なくしたのは？",
+      c: ["陸奥宗光《むつむねみつ》", "小村寿太郎《こむらじゅたろう》", "東郷平八郎《とうごうへいはちろう》"] },
+    { q: "関税自主権《かんぜいじしゅけん》を 確立《かくりつ》したのは？",
+      c: ["小村寿太郎《こむらじゅたろう》", "陸奥宗光《むつむねみつ》", "福沢諭吉《ふくざわゆきち》"] },
+    { q: "日露戦争《にちろせんそう》で 日本海軍《にほんかいぐん》を 指揮《しき》したのは？",
+      c: ["東郷平八郎《とうごうへいはちろう》", "西郷隆盛《さいごうたかもり》", "伊藤博文《いとうひろぶみ》"] },
+    { q: "日露戦争《にちろせんそう》で 日本が やぶったのは どこの 艦隊《かんたい》？",
+      c: ["ロシア", "アメリカ", "中国"] },
+    { q: "黄熱《おうねつ》の研究中《けんきゅうちゅう》に 亡くなった 医師《いし》は？",
+      c: ["野口英世《のぐちひでよ》", "杉田玄白《すぎたげんぱく》", "伊能忠敬《いのうただたか》"] },
+    { q: "野口英世《のぐちひでよ》が わたって 研究《けんきゅう》した 国は？",
+      c: ["アメリカ", "オランダ", "中国"] },
+    { q: "関税自主権《かんぜいじしゅけん》を 確立《かくりつ》したのは 何年？",
+      c: ["1911年《ねん》", "1853年《ねん》", "1192年《ねん》"] }
   ]
 };
+
+/* =====================================================================
+   ★史実のコンビ（2026-08-09・ユーザー要望「ゲームをもっと面白く」）
+   ---------------------------------------------------------------------
+   **2人そろって場に出ているあいだ、2人とも こうげきが つよくなる**。
+   ねらい: このゲームは これまで「人物を ひとりずつ」おぼえさせる形しかなかった
+   （ティッカーもクイズも人物単体。組み合わせの理由は ⭐じだいボーナス だけ）。
+   歴史のおもしろさは「**だれと だれが 組んで 何をしたか**」なので、そこを
+   デッキ編成の判断と ごほうびに つなげる。
+   ★name は **その2人が いっしょに やったこと**（＝業績名）。§2-B と同じ流儀で、
+     カットインに どーんと出す＝**遊びながら 組み合わせを おぼえる**。
+   ★**ここに1行足すだけで コンビが増える**（判定・カットイン・クイズは自動。CLAUDE.md §8）。
+   ★内容は先生の監修対象。史実としてあやしい組み合わせは入れないこと
+     （「なんとなく同じ時代」でつなぐと、まちがって覚えてしまう）。
+   ★**敵どうしの組み合わせは入れない**（平清盛と源義経など）。味方として一緒に戦う話に
+     なってしまい、史実とくいちがう。
+   ===================================================================== */
+var REKISHI_PAIRS = [
+  { a: "shotoku",  b: "imoko",     name: "遣隋使《けんずいし》" },
+  { a: "nakanooe", b: "kamatari",  name: "大化《たいか》の改新《かいしん》" },
+  { a: "shomu",    b: "gyoki",     name: "大仏《だいぶつ》づくり" },
+  { a: "shomu",    b: "ganjin",    name: "唐《とう》からの教《おし》え" },
+  { a: "michinaga", b: "murasaki", name: "源氏物語《げんじものがたり》" },
+  { a: "murasaki", b: "seishonagon", name: "かな文字《もじ》の文学《ぶんがく》" },
+  { a: "yoritomo", b: "yoshitsune", name: "源氏《げんじ》の兄弟《きょうだい》" },
+  { a: "yoshimitsu", b: "yoshimasa", name: "金閣《きんかく》と銀閣《ぎんかく》" },
+  { a: "nobunaga", b: "hideyoshi", name: "天下統一《てんかとういつ》へ" },
+  { a: "ieyasu",   b: "iemitsu",   name: "江戸幕府《えどばくふ》のしくみ" },
+  { a: "genpaku",  b: "tadataka",  name: "新《あたら》しい学問《がくもん》" },
+  { a: "saigo",    b: "kaishu",    name: "江戸城《えどじょう》の明《あ》けわたし" },
+  { a: "saigo",    b: "okubo",     name: "明治維新《めいじいしん》" },
+  { a: "okubo",    b: "takayoshi", name: "新《あたら》しい政府《せいふ》づくり" },
+  { a: "meiji",    b: "hirobumi",  name: "大日本帝国憲法《だいにっぽんていこくけんぽう》" },
+  { a: "itagaki",  b: "okuma",     name: "自由民権運動《じゆうみんけんうんどう》" },
+  { a: "mutsu",    b: "komura",    name: "条約改正《じょうやくかいせい》" },
+  { a: "togo",     b: "komura",    name: "日露戦争《にちろせんそう》とポーツマス条約《じょうやく》" }
+];
+
+/* =====================================================================
+   🎓 まめちしき（2026-08-10・ユーザー要望）
+   ---------------------------------------------------------------------
+   ユーザーの言葉:「カードを獲得した後に その時代の ちょっとした豆知識や
+   面白い雑学などを 200個くらい用意してもらい、それが出てくると
+   もっと歴史に興味を持ってくれるかな」。
+   ★ねらい: ガチャの あと＝**いちばん うれしい しゅんかん**に 1つだけ 知識をさす。
+     クイズ（覚えているかを ためす）とは 役わりが ちがい、こちらは
+     **「へえ！」を もらうだけ**。おぼえなくてよい・点数にもならない。
+   ★出しかた: ひいた人物の まめちしき → その人の 時代の まめちしき → まだ読んでいないもの、の順。
+     読んだものは save.tseen に ばんごうで のこして、なるべく 新しいものから 出す。
+   ★★**新しい まめちしきは かならず この配列の うしろに 足すこと**。
+     あいだに 入れると、うしろの ばんごうが ぜんぶ ずれて
+     **もう読んだ／まだ読んでいない が 入れかわる**（読んだ数は 変わらないので こわれはしない）。
+   ★who＝人物のid（REKISHI_CHARS の id）／era＝時代の名前（人物の era から 《》を のぞいたもの）。
+     どちらか一方だけ 書く。
+   ★★内容は **先生の監修対象**。言いつたえ・逸話《いつわ》は「〜という話がある」の形にして、
+     史実と まぜないこと（子どもが まちがって おぼえるため）。
+   ===================================================================== */
+var REKISHI_TRIVIA = [
+  { who: "himiko", t: "卑弥呼《ひみこ》は 中国に 使いをおくって「親魏倭王《しんぎわおう》」という よび名と 金印《きんいん》を もらった" },
+  { who: "himiko", t: "卑弥呼《ひみこ》には 弟《おとうと》がいて、政治《せいじ》を 手つだっていたと 書かれている" },
+  { who: "himiko", t: "邪馬台国《やまたいこく》が どこにあったのかは、いまも わかっていない。九州《きゅうしゅう》説と 近畿《きんき》説が ある" },
+  { who: "shotoku", t: "聖徳太子《しょうとくたいし》には「一度に 何人もの話を 聞き分けた」という 言いつたえが ある" },
+  { who: "shotoku", t: "中国（隋《ずい》）へ おくった手紙に「日出《ひい》ずる処《ところ》の天子《てんし》」と 書いた" },
+  { who: "shotoku", t: "聖徳太子《しょうとくたいし》が 建てた法隆寺《ほうりゅうじ》は、世界でいちばん 古い 木の建物と いわれている" },
+  { who: "imoko", t: "小野妹子《おののいもこ》は「妹子」という名前だが、男の人" },
+  { who: "imoko", t: "隋《ずい》からの 返事の手紙を 帰り道で なくしてしまった、と 日本書紀《にほんしょき》に 書かれている" },
+  { who: "imoko", t: "小野妹子《おののいもこ》は 隋《ずい》へ 2回 わたっている" },
+  { who: "nakanooe", t: "蘇我入鹿《そがのいるか》を たおした事件《じけん》は「乙巳《いっし》の変《へん》」と よばれる" },
+  { who: "nakanooe", t: "日本ではじめて 全国の 戸籍《こせき》「庚午年籍《こうごねんじゃく》」を つくった" },
+  { who: "nakanooe", t: "水時計《みずどけい》で 時をしらせた。そこから 6月10日が「時《とき》の記念日《きねんび》」に なった" },
+  { who: "kamatari", t: "「藤原《ふじわら》」の名字《みょうじ》は、亡《な》くなる直前に 天智天皇《てんじてんのう》から もらったもの" },
+  { who: "kamatari", t: "中大兄皇子《なかのおおえのおうじ》と 出会ったのは 蹴鞠《けまり》の会《かい》だったと つたえられている" },
+  { who: "kamatari", t: "中臣鎌足《なかとみのかまたり》の子孫《しそん》が、平安《へいあん》時代に 力をもった 藤原氏《ふじわらし》" },
+  { who: "shomu", t: "大仏《だいぶつ》づくりには、のべ 260万人《まんにん》もの人が かかわったと つたえられている" },
+  { who: "shomu", t: "聖武天皇《しょうむてんのう》の持ち物は 正倉院《しょうそういん》に おさめられ、1200年以上《ねんいじょう》 のこっている" },
+  { who: "shomu", t: "病気《びょうき》や 争《あらそ》いが つづいたので、仏《ほとけ》の力で 国を まもろうとした" },
+  { who: "gyoki", t: "行基《ぎょうき》は ため池や 橋《はし》・道を つくって 人びとを たすけた" },
+  { who: "gyoki", t: "はじめは 国から 活動《かつどう》を 止められていたが、のちに 大仏《だいぶつ》づくりの リーダーに むかえられた" },
+  { who: "gyoki", t: "日本ではじめて「大僧正《だいそうじょう》」という いちばん上の位《くらい》に なった お坊《ぼう》さん" },
+  { who: "ganjin", t: "日本へ わたろうとして 5回 失敗《しっぱい》し、6回目《かいめ》で ついに たどりついた" },
+  { who: "ganjin", t: "何度もの 航海《こうかい》のあいだに 目が 見えなくなった" },
+  { who: "ganjin", t: "奈良《なら》に 唐招提寺《とうしょうだいじ》を ひらいた" },
+  { who: "michinaga", t: "「この世《よ》をば わが世とぞ思《おも》ふ…」と、自分の満足《まんぞく》を 満月《まんげつ》に たとえて うたった" },
+  { who: "michinaga", t: "むすめを 4人も 天皇《てんのう》の きさきにして、大きな力を もった" },
+  { who: "michinaga", t: "道長《みちなが》の日記《にっき》「御堂関白記《みどうかんぱくき》」は、自筆《じひつ》が のこる めずらしい 記録《きろく》" },
+  { who: "murasaki", t: "「源氏物語《げんじものがたり》」は 54帖《じょう》もある 長いお話" },
+  { who: "murasaki", t: "紫式部《むらさきしきぶ》の 本当の名前は わかっていない" },
+  { who: "murasaki", t: "「源氏物語《げんじものがたり》」は 世界でも とても古い 長編小説《ちょうへんしょうせつ》として 知られている" },
+  { who: "seishonagon", t: "「枕草子《まくらのそうし》」は「春《はる》はあけぼの」で 始まる" },
+  { who: "seishonagon", t: "「枕草子《まくらのそうし》」は 見たこと・感じたことを 短く書きとめた 随筆《ずいひつ》" },
+  { who: "seishonagon", t: "清少納言《せいしょうなごん》と 紫式部《むらさきしきぶ》は、それぞれ ちがう きさきに 仕《つか》えていた" },
+  { who: "kiyomori", t: "武士《ぶし》で はじめて 太政大臣《だじょうだいじん》に なった" },
+  { who: "kiyomori", t: "中国（宋《そう》）との 貿易《ぼうえき》のために、兵庫《ひょうご》の港《みなと》を ととのえた" },
+  { who: "kiyomori", t: "厳島神社《いつくしまじんじゃ》を いまの すがたに ととのえた" },
+  { who: "yoshitsune", t: "一《いち》の谷《たに》の戦《たたか》いでは、けわしい がけを 馬で かけおりて おそったと つたえられる" },
+  { who: "yoshitsune", t: "兄《あに》の頼朝《よりとも》と 対立《たいりつ》し、追《お》われる身《み》に なった" },
+  { who: "yoshitsune", t: "子どものころは「牛若丸《うしわかまる》」と よばれた" },
+  { who: "yoritomo", t: "鎌倉《かまくら》に 幕府《ばくふ》をひらいた。海と山にかこまれた まもりやすい 土地《とち》だった" },
+  { who: "yoritomo", t: "家来《けらい》の武士《ぶし》を「御家人《ごけにん》」とよび、「御恩《ごおん》と 奉公《ほうこう》」の関係《かんけい》で むすばれた" },
+  { who: "yoritomo", t: "征夷大将軍《せいいたいしょうぐん》に 任《にん》じられた" },
+  { who: "tokimune", t: "元《げん》が せめてきたとき、北条時宗《ほうじょうときむね》は まだ 20代《だい》の わかさだった" },
+  { who: "tokimune", t: "元軍《げんぐん》は「てつはう」という 火薬《かやく》の武器《ぶき》を 使った" },
+  { who: "tokimune", t: "元《げん》は 2度《ど》 せめてきた（文永《ぶんえい》の役《えき》・弘安《こうあん》の役《えき》）" },
+  { who: "yoshimitsu", t: "金閣《きんかく》は 3つの階《かい》が それぞれ ちがう つくりに なっている" },
+  { who: "yoshimitsu", t: "中国（明《みん》）と 貿易《ぼうえき》をした。合《あ》い札《ふだ》を 使ったので「勘合貿易《かんごうぼうえき》」という" },
+  { who: "yoshimitsu", t: "能《のう》を 大成《たいせい》した 観阿弥《かんあみ》・世阿弥《ぜあみ》を 応援《おうえん》した" },
+  { who: "yoshimasa", t: "銀閣《ぎんかく》は 名前は 銀閣だが、銀《ぎん》は はられていない" },
+  { who: "yoshimasa", t: "銀閣《ぎんかく》のとなりの 東求堂《とうぐどう》は、いまの和室《わしつ》のもとに なった 書院造《しょいんづくり》" },
+  { who: "yoshimasa", t: "足利義政《あしかがよしまさ》のころの 文化《ぶんか》を「東山文化《ひがしやまぶんか》」という" },
+  { who: "sesshu", t: "しかられて しばられたとき、足の指《ゆび》と なみだで ねずみを 描《か》いた、という 話が ある" },
+  { who: "sesshu", t: "中国（明《みん》）に わたって 絵を 学んだ" },
+  { who: "sesshu", t: "墨《すみ》だけで 描《か》く「水墨画《すいぼくが》」を 日本の絵として 完成《かんせい》させた" },
+  { who: "xavier", t: "1549年、鹿児島《かごしま》に ついて 日本に キリスト教《きょう》を つたえた" },
+  { who: "xavier", t: "日本にいたのは 2年ほど。そのあと 中国をめざし、とちゅうで 亡《な》くなった" },
+  { who: "xavier", t: "日本人のことを「これまで 出会った中で いちばん すぐれた人びと」と 手紙に 書いた" },
+  { who: "nobunaga", t: "長篠《ながしの》の戦《たたか》いで 鉄砲《てっぽう》を 大量《たいりょう》に つかった" },
+  { who: "nobunaga", t: "城下町《じょうかまち》で だれでも 商売《しょうばい》できるようにした（楽市《らくいち》・楽座《らくざ》）" },
+  { who: "nobunaga", t: "安土城《あづちじょう》は 完成《かんせい》から わずか3年で 焼《や》けてしまった" },
+  { who: "hideyoshi", t: "豊臣秀吉《とよとみひでよし》は 農民《のうみん》の子から 天下《てんか》を とった" },
+  { who: "hideyoshi", t: "田畑《たはた》の広さや とれ高《だか》を しらべる「検地《けんち》」を 全国で 行った" },
+  { who: "hideyoshi", t: "刀狩《かたながり》で 百姓《ひゃくしょう》から 武器《ぶき》を 集め、武士《ぶし》と 百姓を 分けた" },
+  { who: "ieyasu", t: "関《せき》ヶ原《はら》の戦《たたか》いに 勝って、江戸《えど》に 幕府《ばくふ》を ひらいた" },
+  { who: "ieyasu", t: "将軍《しょうぐん》を わずか2年で 息子《むすこ》にゆずり、徳川家《とくがわけ》が つづく形を つくった" },
+  { who: "ieyasu", t: "徳川家康《とくがわいえやす》が ひらいた 江戸幕府《えどばくふ》は、およそ260年《ねん》 つづいた" },
+  { who: "iemitsu", t: "大名《だいみょう》に 1年おきに 江戸《えど》へ 来させる「参勤交代《さんきんこうたい》」を 制度《せいど》にした" },
+  { who: "iemitsu", t: "鎖国《さこく》を 完成《かんせい》させ、長崎《ながさき》の 出島《でじま》を 窓口《まどぐち》にした" },
+  { who: "iemitsu", t: "「生まれながらの将軍《しょうぐん》」と 名のった。徳川家康《とくがわいえやす》の 孫《まご》にあたる" },
+  { who: "chikamatsu", t: "人形浄瑠璃《にんぎょうじょうるり》や 歌舞伎《かぶき》の 台本《だいほん》を 書いた" },
+  { who: "chikamatsu", t: "「曽根崎心中《そねざきしんじゅう》」は、実際《じっさい》にあった 出来事《できごと》を もとにしている" },
+  { who: "chikamatsu", t: "「日本のシェークスピア」と よばれることが ある" },
+  { who: "hiroshige", t: "「東海道五十三次《とうかいどうごじゅうさんつぎ》」で 旅《たび》の風景《ふうけい》を 描《か》いた" },
+  { who: "hiroshige", t: "雨や雪《ゆき》の 描《か》きかたが うまく、「雨の広重《ひろしげ》」と よばれた" },
+  { who: "hiroshige", t: "広重《ひろしげ》の絵は ヨーロッパにわたり、画家《がか》のゴッホが 模写《もしゃ》した" },
+  { who: "norinaga", t: "「古事記《こじき》」を 35年《ねん》かけて 読みとき、「古事記伝《こじきでん》」を 書いた" },
+  { who: "norinaga", t: "昼《ひる》は お医者《いしゃ》さん、夜《よる》は 学者《がくしゃ》として 研究《けんきゅう》した" },
+  { who: "norinaga", t: "日本人の むかしからの 心を さがす学問《がくもん》「国学《こくがく》」を 大成《たいせい》した" },
+  { who: "genpaku", t: "オランダ語《ご》の 人体《じんたい》の本を 前野良沢《まえのりょうたく》たちと 翻訳《ほんやく》した" },
+  { who: "genpaku", t: "訳《やく》した本が「解体新書《かいたいしんしょ》」。辞書《じしょ》も ほとんど無いところからの 作業《さぎょう》だった" },
+  { who: "genpaku", t: "翻訳《ほんやく》の苦労《くろう》は「蘭学事始《らんがくことはじめ》」に 書かれている" },
+  { who: "tadataka", t: "伊能忠敬《いのうただたか》は 50歳《さい》をすぎてから 天文学《てんもんがく》を 学びはじめた" },
+  { who: "tadataka", t: "17年《ねん》かけて 全国を 歩いて 測量《そくりょう》した。歩いた道のりは 地球《ちきゅう》1周分《しゅうぶん》をこえる" },
+  { who: "tadataka", t: "できあがった 日本地図《にほんちず》は とても正確《せいかく》で、明治《めいじ》になっても 使われた" },
+  { who: "perry", t: "1853年、4せきの 黒船《くろふね》で 浦賀《うらが》に 来た" },
+  { who: "perry", t: "黒船《くろふね》が 黒く見えたのは、船体《せんたい》に 黒い タールが ぬられていたためと いわれる" },
+  { who: "perry", t: "翌年《よくねん》 また来て、日米和親条約《にちべいわしんじょうやく》を むすんだ" },
+  { who: "kaishu", t: "咸臨丸《かんりんまる》で 太平洋《たいへいよう》をわたり、アメリカへ 行った" },
+  { who: "kaishu", t: "西郷隆盛《さいごうたかもり》と 話しあい、江戸城《えどじょう》を 戦《たたか》わずに あけわたした" },
+  { who: "kaishu", t: "神戸《こうべ》に 海軍《かいぐん》の学校をつくり、坂本龍馬《さかもとりょうま》たちを 育《そだ》てた" },
+  { who: "saigo", t: "上野《うえの》公園《こうえん》の 銅像《どうぞう》が 有名《ゆうめい》。犬《いぬ》を つれている" },
+  { who: "saigo", t: "江戸城《えどじょう》を 戦《たたか》わずに あけわたす話しあいを、勝海舟《かつかいしゅう》と 行った" },
+  { who: "saigo", t: "はっきりした 写真《しゃしん》が のこっておらず、銅像《どうぞう》の顔は 想像《そうぞう》で つくられた" },
+  { who: "okubo", t: "岩倉使節団《いわくらしせつだん》の 一員《いちいん》として、欧米《おうべい》を 見てまわった" },
+  { who: "okubo", t: "「富国強兵《ふこくきょうへい》」「殖産興業《しょくさんこうぎょう》」を すすめた" },
+  { who: "okubo", t: "西郷隆盛《さいごうたかもり》とは、同じ鹿児島《かごしま》の おさななじみ だった" },
+  { who: "takayoshi", t: "木戸孝允《きどたかよし》の もとの名前は 桂小五郎《かつらこごろう》" },
+  { who: "takayoshi", t: "薩摩《さつま》と 長州《ちょうしゅう》がむすんだ「薩長同盟《さっちょうどうめい》」の、長州《ちょうしゅう》がわの 代表《だいひょう》" },
+  { who: "takayoshi", t: "西郷隆盛《さいごうたかもり》・大久保利通《おおくぼとしみち》と あわせて「維新《いしん》の三傑《さんけつ》」と よばれる" },
+  { who: "meiji", t: "「五《ご》か条《じょう》の御誓文《ごせいもん》」で、新しい国の 方針《ほうしん》を しめした" },
+  { who: "meiji", t: "都《みやこ》を 京都《きょうと》から 東京《とうきょう》へ うつした" },
+  { who: "meiji", t: "明治天皇《めいじてんのう》の時代に、鉄道《てつどう》・郵便《ゆうびん》・学校の しくみが できた" },
+  { who: "yukichi", t: "「学問《がくもん》のすゝめ」は、当時《とうじ》の ベストセラーだった" },
+  { who: "yukichi", t: "福沢諭吉《ふくざわゆきち》は 慶應義塾《けいおうぎじゅく》を つくった" },
+  { who: "yukichi", t: "1万円札《まんえんさつ》の 顔《かお》として、ながく 使われた" },
+  { who: "okuma", t: "大隈重信《おおくましげのぶ》は 早稲田大学《わせだだいがく》の もとになった 学校を つくった" },
+  { who: "okuma", t: "2回 内閣総理大臣《ないかくそうりだいじん》に なった" },
+  { who: "okuma", t: "日本で 野球《やきゅう》の 始球式《しきゅうしき》を はじめて 行った人と いわれている" },
+  { who: "itagaki", t: "「自由民権運動《じゆうみんけんうんどう》」を すすめた" },
+  { who: "itagaki", t: "「板垣死《いたがきし》すとも 自由《じゆう》は死《し》せず」ということばで 知られる" },
+  { who: "itagaki", t: "自由党《じゆうとう》をつくり、国会《こっかい》をひらくよう うったえた" },
+  { who: "hirobumi", t: "伊藤博文《いとうひろぶみ》は 日本ではじめての 内閣総理大臣《ないかくそうりだいじん》" },
+  { who: "hirobumi", t: "ヨーロッパで 憲法《けんぽう》を 学び、大日本帝国憲法《だいにっぽんていこくけんぽう》を つくった" },
+  { who: "hirobumi", t: "若《わか》いころ、こっそり イギリスへ 留学《りゅうがく》した" },
+  { who: "mutsu", t: "イギリスとの 交渉《こうしょう》で、領事裁判権《りょうじさいばんけん》を なくすことに 成功《せいこう》した" },
+  { who: "mutsu", t: "交渉《こうしょう》の うまさから「カミソリ大臣《だいじん》」と よばれた" },
+  { who: "mutsu", t: "外交《がいこう》の記録《きろく》「蹇蹇録《けんけんろく》」を 書きのこした" },
+  { who: "togo", t: "日本海海戦《にほんかいかいせん》で、ロシアの バルチック艦隊《かんたい》を やぶった" },
+  { who: "togo", t: "イギリスに 留学《りゅうがく》して 海軍《かいぐん》を 学んだ" },
+  { who: "togo", t: "世界から「東洋《とうよう》のネルソン」と よばれた" },
+  { who: "komura", t: "ポーツマス条約《じょうやく》の 日本がわの 代表《だいひょう》を つとめた" },
+  { who: "komura", t: "1911年、関税自主権《かんぜいじしゅけん》を とりもどし、条約改正《じょうやくかいせい》を 成《な》しとげた" },
+  { who: "komura", t: "小村寿太郎《こむらじゅたろう》は アメリカの ハーバード大学《だいがく》で 学んだ" },
+  { who: "noguchi", t: "子どものころ やけどで 左手《ひだりて》の指《ゆび》が くっついてしまったが、手術《しゅじゅつ》で よくなった" },
+  { who: "noguchi", t: "アメリカで 細菌《さいきん》の研究《けんきゅう》をし、ノーベル賞《しょう》の 候補《こうほ》に 何度も なった" },
+  { who: "noguchi", t: "アフリカで 黄熱病《おうねつびょう》の研究《けんきゅう》中に、自分も かかって 亡《な》くなった" },
+
+  { era: "弥生時代", t: "米《こめ》づくりが 大陸《たいりく》から つたわり、むらが できた" },
+  { era: "弥生時代", t: "高床倉庫《たかゆかそうこ》には、ねずみが のぼれないように「ねずみ返《がえ》し」が ついている" },
+  { era: "弥生時代", t: "銅鐸《どうたく》は、まつりに 使われたと 考えられている" },
+  { era: "弥生時代", t: "「漢委奴国王《かんのわのなのこくおう》」と ほられた 金印《きんいん》が、福岡《ふくおか》で 見つかった" },
+  { era: "弥生時代", t: "佐賀県《さがけん》の 吉野《よしの》ヶ里《り》遺跡《いせき》では、ほりと さくで かこまれた むらの あとが 見つかった" },
+  { era: "弥生時代", t: "米《こめ》が とれるようになって「たくわえ」ができ、そこから むら同士《どうし》の 争《あらそ》いが 生まれた" },
+  { era: "飛鳥時代", t: "飛鳥《あすか》は、いまの 奈良県《ならけん》に ある 地名《ちめい》" },
+  { era: "飛鳥時代", t: "日本ではじめて「大化《たいか》」という 年号《ねんごう》が つかわれた" },
+  { era: "飛鳥時代", t: "法隆寺《ほうりゅうじ》は、日本ではじめて 世界文化遺産《せかいぶんかいさん》に 登録《とうろく》された ひとつ" },
+  { era: "飛鳥時代", t: "遣隋使《けんずいし》・遣唐使《けんとうし》は、中国の すすんだ文化を 学ぶために おくられた" },
+  { era: "飛鳥時代", t: "「日本」という 国の名前は、このころから 使われはじめたと 考えられている" },
+  { era: "飛鳥時代", t: "仏教《ぶっきょう》が つたわり、各地《かくち》に 寺《てら》が 建てられるようになった" },
+  { era: "飛鳥時代", t: "白村江《はくすきのえ》の戦《たたか》いのあと、九州《きゅうしゅう》に「水城《みずき》」という 土のかべが つくられた" },
+  { era: "奈良時代", t: "都《みやこ》は 平城京《へいじょうきょう》。中国の 長安《ちょうあん》を まねて つくられた" },
+  { era: "奈良時代", t: "奈良《なら》の大仏《だいぶつ》は、高さ およそ15メートル" },
+  { era: "奈良時代", t: "「古事記《こじき》」「日本書紀《にほんしょき》」が まとめられた" },
+  { era: "奈良時代", t: "「万葉集《まんようしゅう》」には、天皇《てんのう》から 農民《のうみん》まで、いろいろな人の歌が 入っている" },
+  { era: "奈良時代", t: "正倉院《しょうそういん》には、シルクロードを 通ってきた 宝物《ほうもつ》が のこっている" },
+  { era: "奈良時代", t: "木簡《もっかん》という 木のふだに 字を書いて、荷札《にふだ》や メモに つかった" },
+  { era: "奈良時代", t: "農民《のうみん》には、租《そ》・庸《よう》・調《ちょう》という 重い税《ぜい》が あった" },
+  { era: "平安時代", t: "都《みやこ》が 平安京《へいあんきょう》（いまの京都《きょうと》）に うつった" },
+  { era: "平安時代", t: "ひらがな・カタカナが 生まれ、日本の言葉を そのまま 書きあらわせるようになった" },
+  { era: "平安時代", t: "貴族《きぞく》の家は 寝殿造《しんでんづくり》。広い庭に 池《いけ》を つくった" },
+  { era: "平安時代", t: "十二単《じゅうにひとえ》は とても重く、10キロを こえることも あった" },
+  { era: "平安時代", t: "「源氏物語《げんじものがたり》」「枕草子《まくらのそうし》」など、女性《じょせい》の文学《ぶんがく》が さかえた" },
+  { era: "平安時代", t: "遣唐使《けんとうし》が とりやめになり、日本ふうの「国風文化《こくふうぶんか》」が 育《そだ》った" },
+  { era: "平安時代", t: "藤原氏《ふじわらし》は、むすめを 天皇《てんのう》のきさきにして 力をもった（摂関政治《せっかんせいじ》）" },
+  { era: "平安時代", t: "平等院鳳凰堂《びょうどういんほうおうどう》は、10円玉《えんだま》に えがかれている" },
+  { era: "鎌倉時代", t: "武士《ぶし》が はじめて 政治《せいじ》の 中心《ちゅうしん》に なった" },
+  { era: "鎌倉時代", t: "鎌倉《かまくら》は 三方《さんぽう》を山に、一方《いっぽう》を海に かこまれた まもりやすい 土地《とち》" },
+  { era: "鎌倉時代", t: "「いざ鎌倉《かまくら》」は、一大事《いちだいじ》のときに かけつけることを あらわす ことば" },
+  { era: "鎌倉時代", t: "元寇《げんこう》のあと、御家人《ごけにん》は ほうびが もらえず 不満《ふまん》を もった" },
+  { era: "鎌倉時代", t: "元軍《げんぐん》を ふせぐため、博多湾《はかたわん》に 石《いし》のかべ（石塁《せきるい》）が つくられた" },
+  { era: "鎌倉時代", t: "「平家物語《へいけものがたり》」は、琵琶法師《びわほうし》が 語《かた》りつたえた" },
+  { era: "鎌倉時代", t: "東大寺《とうだいじ》の 南大門《なんだいもん》の 金剛力士像《こんごうりきしぞう》は、運慶《うんけい》たちの 作《さく》" },
+  { era: "室町時代", t: "幕府《ばくふ》が 京都《きょうと》の 室町《むろまち》に おかれたので、この名前" },
+  { era: "室町時代", t: "能《のう》・狂言《きょうげん》・茶《ちゃ》の湯《ゆ》・生《い》け花《ばな》など、いまに つづく文化が 生まれた" },
+  { era: "室町時代", t: "書院造《しょいんづくり》の たたみ・ふすま・障子《しょうじ》は、いまの和室《わしつ》の もと" },
+  { era: "室町時代", t: "応仁《おうにん》の乱《らん》で 京都《きょうと》は 焼《や》け野原《のはら》になり、戦国《せんごく》の世《よ》へ すすんだ" },
+  { era: "室町時代", t: "一寸法師《いっすんぼうし》や 浦島太郎《うらしまたろう》などの おとぎ話が まとめられた" },
+  { era: "室町時代", t: "村では 農民《のうみん》が 話しあいで 決《き》める「惣《そう》」という しくみが 生まれた" },
+  { era: "室町時代", t: "水墨画《すいぼくが》や 枯山水《かれさんすい》など、すみと石《いし》で あらわす美《うつく》しさが 育《そだ》った" },
+  { era: "安土桃山時代", t: "織田信長《おだのぶなが》の 安土城《あづちじょう》と、豊臣秀吉《とよとみひでよし》の 城のあった 桃山《ももやま》から この名前" },
+  { era: "安土桃山時代", t: "鉄砲《てっぽう》は 種子島《たねがしま》に つたわった" },
+  { era: "安土桃山時代", t: "南蛮貿易《なんばんぼうえき》で、パン・カステラ・てんぷらなどが 日本に 入ってきた" },
+  { era: "安土桃山時代", t: "千利休《せんのりきゅう》が、しずかな お茶の作法《さほう》「わび茶《ちゃ》」を 大成《たいせい》した" },
+  { era: "安土桃山時代", t: "城の 天守《てんしゅ》が つくられるようになったのは、この時代" },
+  { era: "安土桃山時代", t: "検地《けんち》と 刀狩《かたながり》で、武士《ぶし》と 百姓《ひゃくしょう》の 区別《くべつ》が はっきりした" },
+  { era: "安土桃山時代", t: "少年《しょうねん》たちが ローマへ おくられた（天正遣欧少年使節《てんしょうけんおうしょうねんしせつ》）" },
+  { era: "安土桃山時代", t: "狩野永徳《かのうえいとく》たちが、金《きん》をつかった はなやかな 屏風絵《びょうぶえ》を えがいた" },
+  { era: "江戸時代", t: "江戸《えど》は 人口《じんこう》100万人《まんにん》をこえ、当時《とうじ》 世界でも 有数《ゆうすう》の 大きな町だった" },
+  { era: "江戸時代", t: "参勤交代《さんきんこうたい》の 行列《ぎょうれつ》には たくさんの お金がかかり、大名《だいみょう》の力を おさえた" },
+  { era: "江戸時代", t: "「鎖国《さこく》」のあいだも、長崎《ながさき》で オランダ・中国と、対馬《つしま》で 朝鮮《ちょうせん》と つながっていた" },
+  { era: "江戸時代", t: "寺子屋《てらこや》で 読み書き そろばんを 習《なら》った。当時《とうじ》の 日本は 字を読める人が 多かったと いわれる" },
+  { era: "江戸時代", t: "五街道《ごかいどう》が ととのえられ、旅《たび》が さかんに なった" },
+  { era: "江戸時代", t: "浮世絵《うきよえ》は 木の版《はん》で 刷《す》るので、たくさん作れて 安《やす》かった" },
+  { era: "江戸時代", t: "歌舞伎《かぶき》・人形浄瑠璃《にんぎょうじょうるり》が、町人《ちょうにん》の 楽しみだった" },
+  { era: "江戸時代", t: "そば・すし・てんぷらは、江戸《えど》の 屋台《やたい》で 気がるに 食べられる 料理《りょうり》だった" },
+  { era: "江戸時代", t: "「解体新書《かいたいしんしょ》」から、オランダの学問《がくもん》「蘭学《らんがく》」が ひろまった" },
+  { era: "江戸時代", t: "ききんのときには、大塩平八郎《おおしおへいはちろう》の乱《らん》のような 打《う》ちこわしや 一揆《いっき》が おきた" },
+  { era: "江戸時代", t: "火事《かじ》が 多く、「火事《かじ》と けんかは 江戸《えど》の花《はな》」と いわれた" },
+  { era: "江戸時代", t: "260年《ねん》ちかく 大きな戦《いくさ》がない、めずらしく 平和《へいわ》な時代だった" },
+  { era: "明治時代", t: "「文明開化《ぶんめいかいか》」で、ざんぎり頭《あたま》・洋服《ようふく》・牛肉《ぎゅうにく》などが 広まった" },
+  { era: "明治時代", t: "日本ではじめての 鉄道《てつどう》は、新橋《しんばし》と 横浜《よこはま》の あいだ" },
+  { era: "明治時代", t: "学制《がくせい》が しかれ、すべての子どもが 学校へ 行くことに なった" },
+  { era: "明治時代", t: "富岡製糸場《とみおかせいしじょう》で 生糸《きいと》をつくり、外国へ 売《う》った" },
+  { era: "明治時代", t: "太陽暦《たいようれき》に かわり、1日が24時間・1週間が7日に なった" },
+  { era: "明治時代", t: "大日本帝国憲法《だいにっぽんていこくけんぽう》ができ、国会《こっかい》が ひらかれた" },
+  { era: "明治時代", t: "不平等条約《ふびょうどうじょうやく》を なおすのに、およそ50年《ねん》 かかった" },
+  { era: "明治時代", t: "廃藩置県《はいはんちけん》で、藩《はん》が なくなり 県《けん》に なった" },
+  { era: "大正時代", t: "大正《たいしょう》時代は 15年《ねん》ほどの みじかい時代" },
+  { era: "大正時代", t: "ラジオ放送《ほうそう》が 始まったのは、大正《たいしょう》の おわりごろ" },
+  { era: "大正時代", t: "カレーライス・コロッケ・とんかつが「三大洋食《さんだいようしょく》」として 人気《にんき》に なった" },
+  { era: "大正時代", t: "25歳《さい》以上《いじょう》の 男子《だんし》 みんなが 選挙《せんきょ》できるように なった" }
+];

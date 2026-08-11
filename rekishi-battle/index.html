@@ -2413,9 +2413,28 @@ function renderHensei() {
          見くらべようがなかった。**かならず めあての文そのもの**を書く。
          `chalName()` を通しているので、弥生の「卑弥呼を つかって かつ」にも ついてくる。 */
     /* ★ふりがなの《》は のこしたまま rubi() に わたすこと（plain() で消すと ふりがなが 出ない） */
-    + '<div class="hc-bonus">' + rubi("🎁 「" + chalName(CHALS[1], st) + "」と 「"
-      + CHALS[2].name + "」を いっしょに できたら、"
-      + "ガチャで レアが 出やすくなる！（＋" + Math.round(CHAL_R_BONUS * 100) + "％）") + '</div>';
+    /* ★★`his`の面は ⏳が「ひっさつを **つかって**」なので 🕊「**つかわずに**」とは
+         同時に できない。その面は **⏳ひとつで** ボーナス（winBattle の hardWin と 対）。
+         `use`の面は 両立するので これまでどおり 2つそろえて。
+         ここを 直しわすれると 画面の やくそくと 中身が くいちがう。 */
+    + '<div class="hc-bonus">' + rubi(stageChalKind(st) === "his"
+        ? "🎁 「" + chalName(CHALS[1], st) + "」が できたら、"
+          + "ガチャで レアが 出やすくなる！（＋" + Math.round(CHAL_R_BONUS * 100) + "％）"
+        : "🎁 「" + chalName(CHALS[1], st) + "」と 「" + CHALS[2].name + "」を いっしょに できたら、"
+          + "ガチャで レアが 出やすくなる！（＋" + Math.round(CHAL_R_BONUS * 100) + "％）") + '</div>'
+    /* ★★まだ もっていない人が いるときは そう言う（2026-08-11）。
+       合戦の面の ⏳は **名ざしの人物**が いないと ぜったいに とれない。
+       それを 書かないと、子どもは「なんど やっても ⭐が つかない」だけになって、
+       **とれない理由**に たどりつけない（CLAUDE.md §5「見て分かる」）。
+       ★せめる言い方には しない。「ガチャで さがそう！」＝つぎの行動を 示す。 */
+    + (function () {
+        var yet = stageChalChars(st).filter(function (c) { return ownedTotal(c.id) <= 0; });
+        return yet.length
+          ? '<div class="hc-bonus">' + rubi("🔎 " + yet.map(function (c) {
+              return plain(c.name) + "《" + c.yomi + "》";
+            }).join("・") + " は まだ なかまに いないよ。ガチャで さがそう！") + '</div>'
+          : "";
+      })();
   var slots = $("deck-slots");
   slots.innerHTML = "";
   for (var i = 0; i < DECK_MAX; i++) {
@@ -2497,6 +2516,83 @@ var CHALS = [
   { id: "nohis", icon: "🕊", name: "ひっさつを つかわずに かつ" }
 ];
 
+/* ★★★⭐2つ目は **面ごとの 手書きミッション**（2026-08-11・ユーザー要望）
+   ---------------------------------------------------------------
+   ①「星２つ目のミッションは 例えば 織田信長と豊臣秀吉、徳川家康を つかって
+      それぞれ必殺技を使う みたいなミッションもいいと思う！」
+   ②「星２つ目のミッションを 全て作成して！ 基本難し目に設定で、できる限りその時代に合った
+      キャラ3名以上を使って勝つ みたいにすることで、**キャラの固定化をなくします**」
+
+   ⏳は もともと ぜんぶ自動判定（その時代の人だけで かつ）で、**どの面も おなじ めあて**。
+   それだと 強い人ばかり 出すクセが ついて、**42人のうち 数人しか 育たない**。
+   そこで 17面 ぜんぶに 手書きの めあてを 置いた。
+
+   ★★★**42人 ぜんいんが どこかの めあてに 出る**ように 組んである（下の表で 確認ずみ）。
+     ＝どの人物にも「この子を そだてる理由」が 1つ以上ある。
+     人物を 足したときは **その人が どこにも 出ていない状態にしないこと**。
+
+   ★2つの型がある（1つの面に どちらか 1つ）:
+       { use: [人物id, …] } … その人たちを **ぜんいん 出して** かつ（3人以上が 基本）
+       { his: [人物id, …] } … その人たちの **ひっさつを ぜんぶ** つかって かつ
+     ・`use` は「その時代の人を そろえて おぼえる」ための型。
+     ・`his` は 合戦の面や、その時代に 3人 いない面（弥生1人・鎌倉2人）で つかう。
+       「できる限り 3名以上」＝**3人 いない時代は むりに ふやさず、ひっさつで むずかしくする**。
+   ★人物idは chars-data.js の id。**ここに1行足すだけで増える**（CLAUDE.md §8）。
+   ★「2」「3」シリーズは st.base で 1シリーズの めあてを 受けつぐ（クイズと 同じ流儀）。
+   ★ここに 書かない面は 自動判定（その時代の人 だけで／つかって かつ）に もどる。
+   ★★**⭐の数は 3つのまま**（4つ目には しない）。ふやすと ステージ一覧の ⭐⭐⭐が
+     面によって そろわなくなる。CHALS[1] の **id は "era" のまま**なので、
+     もう ⭐をとってある子の きろくは そのまま 生きる（CLAUDE.md §3）。
+   ★★`his` の面だけ 🎁レア率ボーナスの じょうけんが 変わる（下の hardWin の★）。
+     「ひっさつを つかって」と「ひっさつを つかわずに」は 同時に できないため。
+     **`use` の面は これまでどおり ⏳＋🕊**（出して勝つのと ひっさつ無しは 両立する）。 */
+var STAGE_CHAL = {
+  /* 弥生 — 卑弥呼ひとりしか いない。人数で むずかしくできないので ひっさつで */
+  st1:  { his: ["himiko"] },
+  /* 飛鳥 — 国づくりの3人。つぎの 大化の改新で 4人ぜんいんに 上がる（だんだん むずかしく） */
+  st4:  { use: ["shotoku", "imoko", "kamatari"] },
+  st2:  { use: ["shotoku", "imoko", "nakanooe", "kamatari"] },
+  /* 奈良 — 大仏づくりの3人。3人とも かいふく型なので **出すだけ**の型にしてある
+     （ひっさつ縛りにすると 火力が足りず 勝てない） */
+  st5:  { use: ["shomu", "gyoki", "ganjin"] },
+  /* 平安 — 貴族と 武士で 面を 分ける。同じ時代でも **出す人が ちがう** */
+  st6:  { use: ["michinaga", "murasaki", "seishonagon"] },   /* 貴族の世 — 国風文化の3人 */
+  st3:  { his: ["kiyomori", "yoshitsune"] },                 /* 壇ノ浦 — 平氏と源氏、両方の大将 */
+  /* 鎌倉 — 2人しか いないので ひっさつ（2人とも 撃つ） */
+  st7:  { his: ["yoritomo", "tokimune"] },
+  /* 室町 — 金閣の義満・銀閣の義政・水墨画の雪舟 */
+  st8:  { use: ["yoshimitsu", "yoshimasa", "sesshu"] },
+  /* 安土桃山 — 3人ぜんいん。★ザビエル（かいふく）を 入れることで
+     「強い武将だけ 出す」クセを くずす＝固定化ふせぎの ねらいそのもの */
+  st9:  { use: ["xavier", "nobunaga", "hideyoshi"] },
+  st10: { his: ["nobunaga", "hideyoshi", "ieyasu"] },        /* 天下統一 — 三英傑（ユーザーの例） */
+  /* 江戸 — 9人いるので 4面で **ひとりも かぶらない**ように 分けた */
+  st11: { his: ["ieyasu", "iemitsu"] },                      /* 関ヶ原 — 幕府をひらいた家康と 固めた家光 */
+  st12: { his: ["chikamatsu", "hiroshige"] },                /* 花さく江戸の文化 — 浄瑠璃と 浮世絵 */
+  st13: { use: ["norinaga", "genpaku", "tadataka"] },        /* 新しい学問 — 国学・蘭学・測量 */
+  st14: { use: ["perry", "kaishu"] },                        /* 黒船来航 — 来た人と むかえた人 */
+  /* 明治・大正 — 11＋1人。3面で ぜんいんに 出番がまわるように 4人ずつ */
+  st15: { use: ["saigo", "okubo", "takayoshi", "yukichi"] }, /* 明治維新 — 維新三傑＋福沢諭吉 */
+  st16: { use: ["meiji", "hirobumi", "itagaki", "okuma"] },  /* 憲法と国会 — 発布した天皇と 政治の3人 */
+  st17: { use: ["mutsu", "komura", "togo", "noguchi"] }      /* 世界の中の日本 — 条約改正・日露・医学 */
+};
+/* その面の 専用めあて（なければ null）。★「2」「3」シリーズは 元の面から 受けつぐ */
+function stageChal(st) {
+  if (!st) return null;
+  return STAGE_CHAL[st.id] || STAGE_CHAL[st.base] || null;
+}
+/* 専用めあての 型（"his" か "use" か。なければ null） */
+function stageChalKind(st) {
+  var sc = stageChal(st);
+  return sc ? (sc.his ? "his" : "use") : null;
+}
+/* 専用めあての 人物たち（データに ない id を 書いてしまっても 落ちないように ふるいにかける） */
+function stageChalChars(st) {
+  var sc = stageChal(st);
+  if (!sc) return [];
+  return (sc.his || sc.use).map(function (id) { return CHAR_BY_ID[id]; }).filter(Boolean);
+}
+
 /* ★★人数の少ない時代は ⏳を ゆるめる（2026-08-09・ユーザー指示）
    ---------------------------------------------------------------
    **同じ人物は場に1人まで**（設計合意1）なので、その時代の人が3人しか いなければ
@@ -2504,8 +2600,9 @@ var CHALS = [
    ⏳は とれる気がしない めあてになっていた。
    そこで **その時代の人が ERA_ONLY_MIN 人より少ないステージ**だけ、
    「その時代の人 **だけ** で かつ」→「その時代の人を **つかって** かつ」に ゆるめる。
-   ★いまの人数: 弥生1(st1) / 鎌倉2(st7) だけが ゆるいほう。奈良・室町・安土桃山は3人＝そのまま。
+   ★いまの人数で ここに かかるのは 弥生1(st1) / 鎌倉2(st7)。室町・安土桃山は3人＝そのまま。
      **人物を足すと 自動で きりかわる**（ステージごとに 何も書かなくてよい。CLAUDE.md §8）。
+   ★奈良(3人)は 人数では かからないが、下の eraCanFight で ゆるいほうに入る。
    ★ゆるくても ⭐の数は同じ（⏳は⏳）。ここを別あつかいにすると、
      ステージ一覧の「⭐⭐⭐」が そろわない面ができて 気持ちわるいため。 */
 var ERA_ONLY_MIN = 3;
@@ -2517,10 +2614,41 @@ function eraChars(st) {
     return st.bonusEra.some(function (k) { return e.indexOf(k) >= 0; });
   });
 }
-function eraChalEasy(st) { return eraChars(st).length < ERA_ONLY_MIN; }
-/* めあての文。⏳だけ ステージによって 変わる（人がひとりなら その人の名前で言う） */
+/* ★★かいふくの人しか いない時代も ⏳を ゆるめる（2026-08-11・ユーザー指摘
+     「弥生時代と奈良時代は回復キャラしかいないので（その時代の人だけ は）難しい」）
+   ---------------------------------------------------------------
+   人数だけ見ていたのが 抜けだった。**奈良時代は ちょうど3人（聖武天皇・行基・鑑真）**なので
+   上の ERA_ONLY_MIN には かからないが、3人とも かいふく型（atk 12）で
+   **てきを たおせる人が ひとりも いない**＝「その時代の人だけで かつ」は 手も足も出ない。
+   そこで **こうげきできる人（かいふく以外）が 0人の時代**も ゆるいほうに入れる。
+   ★いま かかるのは 弥生(1人・0)と 奈良(3人・0)だけ。安土桃山は ザビエルが かいふくでも
+     信長・秀吉が いるので そのまま（＝ほかの面の むずかしさは 1つも 変わらない）。
+   ★**人物を足すと 自動で きりかわる**（奈良に 武士や 知恵の人を 1人足せば もとの
+     「だけで かつ」に もどる）。ステージごとに 何も書かなくてよい（CLAUDE.md §8）。 */
+function eraCanFight(st) {
+  return eraChars(st).some(function (ch) { return ch.type !== "inori"; });
+}
+function eraChalEasy(st) {
+  return eraChars(st).length < ERA_ONLY_MIN || !eraCanFight(st);
+}
+/* めあての文。⏳だけ ステージによって 変わる。
+   ①合戦の面（STAGE_CHAL にある）＝ その面の主役の ひっさつ
+   ②人が少ない・かいふくしか いない時代 ＝ ゆるい「つかって かつ」
+   ③そのほか ＝ もとの「その時代の人だけで かつ」 */
 function chalName(k, st) {
-  if (k.id !== "era" || !eraChalEasy(st)) return k.name;
+  if (k.id !== "era") return k.name;
+  var cs = stageChalChars(st);
+  if (cs.length) {
+    /* ★名前は 《よみ》つきで つなぐ（呼び出し側が rubi() を通すので ここでは 消さない）。
+       「・」で ならべる＝4人でも 1行～2行に おさまる。
+       ★★「ぜんいん」を 入れること。入れないと「どれか1人でいい」と 読まれる
+         （☆のうちは まだ 何も 起きていないので、文だけが たより）。 */
+    var names = cs.map(function (c) { return plain(c.name) + "《" + c.yomi + "》"; }).join("・");
+    return stageChalKind(st) === "his"
+      ? names + " の ひっさつを ぜんぶ つかって かつ"
+      : names + " を ぜんいん 出《だ》して かつ";
+  }
+  if (!eraChalEasy(st)) return k.name;
   var pool = eraChars(st);
   return pool.length === 1
     ? plain(pool[0].name) + "《" + pool[0].yomi + "》を つかって かつ"
@@ -2529,6 +2657,15 @@ function chalName(k, st) {
 /* この たたかいで ⏳の じょうけんを みたしたか（B を見るので バトル中・勝った直後だけ） */
 function eraChalOk() {
   if (!B || B.deployed <= 0) return false;   /* だれも出していないなら つけない（下の★） */
+  var cs = stageChalChars(state.stage);
+  if (cs.length) {
+    /* ★**ぜんいんぶん** そろえること。ひとりでも のこっていたら つかない。
+       his … B.hisBy（fireHissatsu で 人物idごとに ○。同じ人を2回撃っても 1つぶん）
+       use … B.depBy（deploy で ○。**出しただけで ○**＝たおされても 消えない。
+              倒されたら 消す にすると、うしろの波で 死ぬたびに めあてが 逃げていく） */
+    var mark = stageChalKind(state.stage) === "his" ? B.hisBy : B.depBy;
+    return cs.every(function (c) { return mark[c.id]; });
+  }
   return eraChalEasy(state.stage) ? B.eraAny : B.allEra;
 }
 function chalOf(id) { return save.chal[id] || {}; }
@@ -3221,8 +3358,10 @@ function startBattle() {
         pairSeen: {},
         /* ⭐チャレンジの判定用（2026-08-09）。deployed=出撃させた のべ人数 /
            allEra=出した人が ぜんいん その時代の人か / eraAny=その時代の人を ひとりでも出したか
-           （人数の少ない時代の ゆるい ⏳で使う。eraChalOk）/ usedHis=ひっさつを使ったか */
-        deployed: 0, allEra: true, eraAny: false, usedHis: false,
+           （人数の少ない時代の ゆるい ⏳で使う。eraChalOk）/ usedHis=ひっさつを使ったか /
+           hisBy=**だれの** ひっさつを 撃ったか / depBy=**だれを** 出したか
+           （どちらも 面ごとの めあて STAGE_CHAL で使う。2026-08-11） */
+        deployed: 0, allEra: true, eraAny: false, usedHis: false, hisBy: {}, depBy: {},
         /* 🏅 ふりかえり用（2026-08-10）。dmgBy=人物ごとの ダメージ合計 /
            dmgPw=城のちからで あたえた合計 /
            skillCnt=業績の技が 出た回数。★★**人物ごと**に分けて数える（skillCnt[人のid][技名]）。
@@ -3351,6 +3490,7 @@ function deploy(id) {
   /* ⭐チャレンジ ⏳の判定。「だけで」は 1人でも ちがう時代を出したら 消え、
      「つかって」（人数の少ない時代）は その時代の人を 1人でも出せば つく */
   B.deployed++;
+  B.depBy[id] = true;   /* ⭐チャレンジ「○○を ぜんいん 出して かつ」に ○がつく（2026-08-11） */
   if (eraBonus(ch)) B.eraAny = true; else B.allEra = false;
   spawnAlly(ch);
 }
@@ -4121,6 +4261,9 @@ function fireHissatsu(id, kindId) {
   if (!pick2) return;
   var u = pick2.u, ch = u.ch;
   B.usedHis = true;          /* ⭐チャレンジ「ひっさつを つかわずに かつ」が 消える */
+  B.hisBy[id] = true;        /* ⭐チャレンジ「○○の ひっさつを つかって かつ」に ○がつく（2026-08-11）。
+                                ★id は **えらんだ人物**（pick2.id）。技の種類（kindId）は 見ない＝
+                                  なぎはらいでも いのりでも、その人で 撃てば ○。 */
   sfx("hissatsu");
   var ki = 0;
   HIS_KINDS.forEach(function (k, i) { if (k.id === kindId) ki = i; });
@@ -5412,7 +5555,14 @@ function winBattle() {
   /* ★★レアアップの判定は **ここでしかできない**（B はバトルが終わると 用ずみになる）。
      ⭐が すでに付いているかは 見ない＝**この たたかい**で むずかしい かちかたを したか、で見る
      （2回目からは 上がらない、では もどってくる理由にならないため）。 */
-  var hardWin = eraChalOk() && !B.usedHis;
+  /* ★★`his`の面（合戦など）は ⏳が「ひっさつを **つかって** かつ」なので、
+       🕊「ひっさつを **つかわずに** かつ」とは **同時に できない**。
+       そのままだと その面だけ 🎁ボーナスが 一生とれなくなるので、
+       `his`の面は **⏳だけで** ボーナスにする（⏳自体が じゅうぶん むずかしい）。
+       ★★`use`の面（○○を ぜんいん 出して かつ）は **両立する**ので これまでどおり ⏳＋🕊。
+         ここを ひとまとめに すると、`use`の面の ボーナスが かんたんに なりすぎる。
+       ★へんせい画面の 🎁の文（renderHensei）も 同じ分けかたで 書いてある。 */
+  var hardWin = eraChalOk() && (stageChalKind(state.stage) === "his" ? true : !B.usedHis);
   var got = giveStars();      /* ⭐チャレンジ。persist は giveStars の中でやっている */
   state.chalHard = hardWin;   /* ガチャ（rollCard / showGacha）が これを見る */
   persist();
@@ -5426,9 +5576,12 @@ function winBattle() {
         return c.icon + " " + rubi(chalName(c, state.stage));
       }).join("<br>") + '</div>'
     : "";
-  /* ⏳＋🕊 でかった回は ここでも ほめる（クイズの前に 分かっていると がんばれる） */
+  /* ⏳＋🕊 でかった回は ここでも ほめる（クイズの前に 分かっていると がんばれる）
+     ★合戦の面は ⏳ひとつが じょうけん（hardWin の★）なので、**2つ そろえた とは 言わない**。 */
   var hardHtml = hardWin
-    ? '<div class="ov-star">' + rubi("🎁 めあてを 2つ そろえた ボーナス！ このあとの ガチャで レアが 出やすい！") + '</div>'
+    ? '<div class="ov-star">' + rubi(stageChalKind(state.stage) === "his"
+        ? "🎁 むずかしい めあてを やりきった ボーナス！ このあとの ガチャで レアが 出やすい！"
+        : "🎁 めあてを 2つ そろえた ボーナス！ このあとの ガチャで レアが 出やすい！") + '</div>'
     : "";
   /* 🏅 たたかいの ふりかえり（2026-08-10）。★**winBattle でしか 出せない**
      （B はここを すぎると null になるので、あとの画面では 数えられない）。 */
@@ -5592,7 +5745,55 @@ function whoQ(id, line) {
     }
   };
 }
-/* ② 人物 → したことは？（①の逆引き）
+/* ★★info の1行が「したこと（行動）」か「どんな人（説明）」かを 見わける
+     （2026-08-11・ユーザー指摘「この問題の内容が変です」）
+   ---------------------------------------------------------------
+   もとは info の **ぜんぶの行**を ②の「〜が したことは どれ？」に つかっていた。
+   ところが info には 「源頼朝の弟」「邪馬台国の女王」「医者」のような **体言止めの説明**が
+   まざっていて、**「源義経が したことは どれ？」→ こたえ「源頼朝の弟」** という
+   日本語にならない問題が 出ていた（先生が 実機で見つけた）。
+   ★見わけかた: おしりの（…）を おとして 「た」か「だ」で おわれば 行動、でなければ 説明。
+     いまのデータは 行動77行／説明26行に きれいに 分かれる（103行ぜんぶ 目で見て たしかめた）。
+   ★★**chars-data.js は 1行も 書きかえていない**。人物の業績文は 先生の原文が 正（§冒頭）なので、
+     直すのは **出しかた**のほう。説明の行は ②' の「どんな人？」で ちゃんと 出番がある。
+   ★人物を足すときは 「〜した」で おわる文なら ②に、体言止めなら ②' に **自動でふり分く**
+     （行ごとに しるしを 書かなくてよい。CLAUDE.md §8）。 */
+function isDeed(line) {
+  var s = plain(line).replace(/[（(][^）)]*[）)]\s*$/, "");
+  return /[ただ]$/.test(s);
+}
+/* ②②' の まちがいの選択肢のもと。★**同じ種類の行だけ** あつめる
+   （したことの問題に 体言止めをまぜると、そこだけ 形がちがって ひと目で分かってしまう）。
+   ★近い時代の人から 順に（nearChars の順）。6人で 2つ そろわないときだけ 全員に広げる
+     ＝ ふだんの見え方は これまでと同じで、そろわない人だけ 救われる。 */
+function infoPool(id, line, deed) {
+  var pool, seen;
+  function gather(n) {
+    pool = []; seen = {};
+    seen[plain(line)] = 1;
+    nearChars(id, n).forEach(function (c) {
+      c.info.forEach(function (l) {
+        if (isDeed(l) !== deed) return;
+        /* ★★**文が おなじものを のぞくこと**（2026-08-09に直したバグ）。
+           紫式部と清少納言は どちらも「国風文化のころに活やくした」を持っているので、
+           のぞかないと **正解とまったく同じ文が まちがいの選択肢に並ぶ**問題ができる。
+           人ではなく **文で** 見くらべること（別人でも 文が同じなら だめ）。 */
+        var k = plain(l);
+        if (seen[k]) return;
+        seen[k] = 1; pool.push(l);
+      });
+    });
+  }
+  gather(6);
+  if (pool.length < 2) gather(CHARS.length);
+  return pool;
+}
+/* ②③ 共通の 組み立て（正解1つ＋まちがい2つを まぜる） */
+function pickQ(line, pool) {
+  return shuffle([{ html: rubi(line), ok: true }].concat(
+    shuffle(pool).slice(0, 2).map(function (l) { return { html: rubi(l), ok: false }; })));
+}
+/* ② 人物 → したことは？（①の逆引き）★「〜した」で おわる行だけ ここに来る。
    ★まちがいの業績も **同じ時代の人のもの**から取る（2026-08-09）。
      でたらめに取ると「明治の人の業績」が 飛鳥の問題にまざって ひと目で分かってしまう。 */
 function deedQ(id, line) {
@@ -5600,23 +5801,20 @@ function deedQ(id, line) {
     key: "deed:" + id + ":" + line,
     ask: "ただしい こたえは どれ？",
     q: nameRuby(CHAR_BY_ID[id]) + " が したことは どれ？",
-    make: function () {
-      /* ★★**文が おなじものを のぞくこと**（2026-08-09に直したバグ）。
-         紫式部と清少納言は どちらも「国風文化のころに活やくした」を持っているので、
-         のぞかないと **正解とまったく同じ文が まちがいの選択肢に並ぶ**問題ができる。
-         人ではなく **文で** 見くらべること（別人でも 文が同じなら だめ）。 */
-      var pool = [], seen = {};
-      seen[plain(line)] = 1;
-      nearChars(id, 6).forEach(function (c) {
-        c.info.forEach(function (l) {
-          var k = plain(l);
-          if (seen[k]) return;
-          seen[k] = 1; pool.push(l);
-        });
-      });
-      return shuffle([{ html: rubi(line), ok: true }].concat(
-        shuffle(pool).slice(0, 2).map(function (l) { return { html: rubi(l), ok: false }; })));
-    }
+    make: function () { return pickQ(line, infoPool(id, line, true)); }
+  };
+}
+/* ②' 人物 → どんな人？（体言止めの説明の行。2026-08-11に ②から わけた）
+   ★②と 中身は 同じ形。**きき方だけ** 文の形に あわせてある。
+     「源義経は どんな人？」→「源頼朝の弟」なら ちゃんと 日本語になる。 */
+function aboutQ(id, line) {
+  return {
+    key: "about:" + id + ":" + line,
+    ask: "ただしい こたえは どれ？",
+    /* ★q は そのまま innerHTML に入る（showQuiz の `$("quiz-line").innerHTML = q.q`）。
+       **《》を のこしたまま 書かないこと**。かならず rubi() を 通す。 */
+    q: nameRuby(CHAR_BY_ID[id]) + rubi(" は どんな人《ひと》？"),
+    make: function () { return pickQ(line, infoPool(id, line, false)); }
   };
 }
 /* ---------- ここから3つは 2026-08-09に足した型（ユーザー「クイズが単調」） ----------
@@ -5645,7 +5843,9 @@ function eraWhoQ(id) {
   return {
     key: "erawho:" + id,
     ask: "ただしい こたえは どれ？",
-    q: rubi(ch.era) + " に 活《かつ》やくしたのは だれ？",
+    /* ★rubi() の 外に 《》を 出さないこと（2026-08-11に「活《かつ》やく」が
+       そのまま 画面に 出ていたのを 直した）。q は innerHTML に じか入れ。 */
+    q: rubi(ch.era + " に 活《かつ》やくしたのは だれ？"),
     make: function () {
       /* ★まちがいの人も **近い時代**から（遠い時代だと ひと目で分かってしまう）。
          ただし 同じ時代は 正解になってしまうので 外す。時代も かぶらせない。
@@ -5675,7 +5875,8 @@ function oddOneQ(id, mate, odd) {
   return {
     key: "odd:" + [id, mate.id].sort().join(",") + ":" + odd.id,
     ask: "ただしい こたえは どれ？",
-    q: "この中で ひとりだけ <b>時代《じだい》が ちがう</b>のは だれ？",
+    /* ★同上。<b> の中でも rubi() を 通すこと（2026-08-11に 直した） */
+    q: "この中で ひとりだけ <b>" + rubi("時代《じだい》が ちがう") + "</b>のは だれ？",
     make: function () {
       var ch = CHAR_BY_ID[id];
       return shuffle([
@@ -5752,10 +5953,15 @@ function pairQ(pr, askA) {
 function startQuiz() {
   B = null;
   var st = state.stage;
-  var who = [], deed = [], eraOf = [], eraWho = [], oldest = [], odd = [], pair = [];
+  var who = [], deed = [], about = [], eraOf = [], eraWho = [], oldest = [], odd = [], pair = [];
   st.ticker.forEach(function (id) {
     var ch = CHAR_BY_ID[id];
-    ch.info.forEach(function (line) { who.push(whoQ(id, line)); deed.push(deedQ(id, line)); });
+    /* ★①「これは だれのこと？」は どちらの文でも 日本語になるので ぜんぶ入れる。
+       ②「したことは？」と ②'「どんな人？」は **文の形で ふり分ける**（isDeed の★） */
+    ch.info.forEach(function (line) {
+      who.push(whoQ(id, line));
+      (isDeed(line) ? deed : about).push(isDeed(line) ? deedQ(id, line) : aboutQ(id, line));
+    });
     eraOf.push(eraOfQ(id));
     eraWho.push(eraWhoQ(id));
     /* ⑤ いちばん むかしは？ … この面の人＋時代のちがう2人。組み合わせを3通り作る */
@@ -5787,7 +5993,7 @@ function startQuiz() {
      ここを まぜてしまうと「ティッカーを読んでいれば解ける」という 核の仕掛けが
      消えてしまう（設計合意§2）。のこり1問が more から出るので、毎回ちがう型が来る。 */
   var core = shuffle([freshFirst(era, seen), freshFirst(who, seen)]);
-  var more = shuffle([freshFirst(deed, seen), freshFirst(eraOf, seen),
+  var more = shuffle([freshFirst(deed, seen), freshFirst(about, seen), freshFirst(eraOf, seen),
                       freshFirst(eraWho, seen), freshFirst(oldest, seen), freshFirst(odd, seen),
                       freshFirst(pair, seen)]);
   var groups = core.concat(more);

@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#b71c1c">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- PWA（2026-08-11）。iPadの ホーム画面に 追加して、オフラインでも あそべるように。
+     ★キャッシュの中身と 版あげの きまりは sw.js の あたまに 書いてある（CLAUDE.md §4）。 -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
 <title>レキシバトル</title>
 <style>
   /* ═══════════════════════════════════════════════════════════════════════
@@ -2175,20 +2179,36 @@ function ownedIds() { return CHARS.filter(function (c) { return ownedTotal(c.id)
      はじめのデッキ（固定の3人）が **持っていない人**を指したままになる。
    ★ここが動くのは `ownedIds().length === 0` のとき＝**1枚も持っていない人だけ**。
      いまあるセーブには いっさい さわらない（CLAUDE.md §3）。 */
-if (ownedIds().length === 0) {
-  var starter = [];
-  ["inori", "chie", "bushi"].forEach(function (t) {
-    var pool = CHARS.filter(function (c) { return c.type === t; });
-    if (pool.length) starter.push(pick(pool).id);
+/* ★★★2026-08-11・ユーザー指示で **だまって3枚わたす → ガチャを3回まわす** に変えた
+     「初めてこのゲームをする人は ガチャを3回引く形をとってください。そのガチャは
+      必ずレベル1しか出ないように。3人全員が回復系だとゲームクリアが難しいので、
+      最初のガチャは 接近や遠距離のキャラが出るように」。
+   ★どうやって まもっているか:
+     ①**レベル1だけ** … わたすのは ノーマル1枚ずつ／**3人とも ちがう人物**。
+       同じ人が2回出ると カードが重なって Lv2になってしまうので、
+       **先に3人ぶんの ならびを 決めてから** 1回ずつ 出している（引くたびに 抽選しない）。
+     ②**1回めは かならず せっきん か えんきょり**（＝こうげきできる人）。
+     ③のこり2回で 3つの型が ちょうど1人ずつ そろう（かいふくだけ、は 起きない）。
+   ★ならびは save に のこす（`save.starterQ`）＝**とちゅうで アプリを閉じても つづきから**。
+     3回ぜんぶ 引いたら 消す。 */
+function makeStarterQueue() {
+  var first = pick(["chie", "bushi"]);                     /* 1回めは こうげきできる型 */
+  var rest = shuffle(["inori", "chie", "bushi"].filter(function (t) { return t !== first; }));
+  return [first].concat(rest).map(function (t) {
+    return pick(CHARS.filter(function (c) { return c.type === t; })).id;
   });
-  starter.forEach(function (id) { addCard(id, "n"); });
-  save.deck = starter.slice();
+}
+/* ★ここが動くのは `ownedIds().length === 0` のとき＝**1枚も持っていない人だけ**。
+   いまあるセーブには いっさい さわらない（CLAUDE.md §3）。 */
+if (ownedIds().length === 0 && !(save.starterQ && save.starterQ.length)) {
+  save.starterQ = makeStarterQueue();
+  save.deck = [];              /* ★引いた人だけを 入れる（セーブの はじめのデッキは 持っていない人） */
   persist();
 }
 
 /* ---------- 画面の切りかえ ---------- */
 var cur = "";
-var state = { stage: null, quiz: null };
+var state = { stage: null, quiz: null, starter: false };   /* starter＝はじめてのガチャ3回の さいちゅう */
 function showView(id, title, backable) {
   cur = id;
   document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("on"); });
@@ -5871,6 +5891,44 @@ function showGacha() {
   b.textContent = "🎁 まわす！";
   showView("v-gacha", "ガチャ", false);
 }
+/* ---------- はじめての ガチャ（3回。2026-08-11） ----------
+   ★ふつうのガチャと **同じ画面・同じ演出**を つかう（作り直さない）。ちがうのは
+     「何が出るか」だけ＝`state.starter` が true のときは rollStarterCard() を通る。 */
+function showStarterGacha() {
+  state.starter = true;
+  var no = 4 - save.starterQ.length;                    /* 1／3 → 2／3 → 3／3 */
+  $("gc-msg").innerHTML = rubi("はじめまして！ ガチャを 3回 まわして<br>さいしょの なかま 3人を むかえよう！")
+    + '<br><b>' + no + '／3回め</b>';
+  $("gc-tip").textContent = "ボタンを おして カードを もらおう！";
+  var mc = $("gc-machine");
+  mc.className = "";
+  mc.querySelector("img").src = "images/ui/gacha.webp?v=" + ASSET_V;
+  var v = $("v-gacha");
+  v.classList.remove("hint1");
+  v.classList.remove("hint2");
+  var b = $("btn-spin");
+  b.disabled = false;
+  b.textContent = "🎁 まわす！";
+  showView("v-gacha", "はじめての ガチャ", false);
+}
+/* ★**抽選しない**。先に決めた ならびから 1人ずつ 出すだけ＝かならず Lv1・かならず3人ちがう。
+   かえす形は rollCard() と そろえてある（showReward が 同じものを 受けとる）。 */
+function rollStarterCard() {
+  var id = save.starterQ.shift(), ch = CHAR_BY_ID[id];
+  addCard(id, "n");                                     /* ノーマル1枚＝Lv1 */
+  if (save.deck.indexOf(id) < 0 && save.deck.length < DECK_MAX) save.deck.push(id);
+  persist();
+  return { ch: ch, rar: "n", isNew: true, after: "n", lv: charLevel(id), evolved: false, correct: null };
+}
+/* 「つぎのガチャ！」／3回めのあとは ホームへ */
+function starterNext() {
+  if (save.starterQ && save.starterQ.length) { showStarterGacha(); return; }
+  state.starter = false;
+  delete save.starterQ;                                 /* もう はじめての人ではない */
+  persist();
+  goHome();
+}
+
 $("btn-spin").onclick = function () {
   var b = $("btn-spin");
   if (b.disabled) return;            /* 連打よけ（二重にカードが出ないように） */
@@ -5879,8 +5937,8 @@ $("btn-spin").onclick = function () {
   $("gc-tip").textContent = "ゴロゴロ…";
   /* ★ここでカードを決める。光の色とまわる長さをレア度に合わせるため、
      演出のまえに ひいておく必要がある（確率は今までとまったく同じ）。 */
-  var g = state.gacha = rollCard();
-  var tier = gachaTier(g);
+  var g = state.gacha = state.starter ? rollStarterCard() : rollCard();
+  var tier = gachaTier(g);          /* はじめてのガチャは ぜんぶ ノーマル＝0（白い光・みじかい） */
   var ms = SPIN_MS[tier];
   var mc = $("gc-machine"), v = $("v-gacha");
   mc.className = "spin";
@@ -6032,7 +6090,12 @@ var TIER_RAR = ["n", "r", "sr"];
 function showReward() {
   var g = state.gacha;
   var ch = g.ch, rar = g.rar, after = g.after;
-  $("rw-result").textContent = "クイズ せいかい " + g.correct + "／" + state.quiz.qs.length + "！ カードを 1まい ゲット！";
+  /* ★はじめてのガチャ（g.correct === null）は クイズを していないので、
+     クイズの文を 出さない。**state.quiz を 見にいかない**こと（null で こわれる）。 */
+  var st = state.starter;
+  $("rw-result").textContent = st
+    ? "なかまに なってくれた！（" + (3 - (save.starterQ ? save.starterQ.length : 0)) + "／3人め）"
+    : "クイズ せいかい " + g.correct + "／" + state.quiz.qs.length + "！ カードを 1まい ゲット！";
   var card = $("rw-card");
   /* ★わくの色**も 文字も** かならず gachaTier() から作ること（条件を書き写さない）。
      書き写すと ガチャの光の色と ここがズレて、いちばん がっかりさせるバグになる。
@@ -6068,10 +6131,20 @@ function showReward() {
   $("rw-trivia").innerHTML = triviaHTML(ti);
   if (g.evolved || rar === "sr") confettiBurst(90);
   else if (rar === "r" || g.isNew) confettiBurst(50);
-  showView("v-reward", "カードゲット！", false);
+  /* はじめてのガチャは 下のボタンを **1つだけ**にする（「もういちど このステージ」は
+     まだ ステージに 入っていないので 押せると こわれる） */
+  var left = st && save.starterQ ? save.starterQ.length : 0;
+  $("btn-retry").style.display = st ? "none" : "";
+  $("btn-rhome").textContent = st
+    ? (left ? "🎁 つぎの ガチャ！" : "🏠 ぼうけんを はじめる！")
+    : "🏠 ホームへ";
+  showView("v-reward", st ? "なかまが ふえた！" : "カードゲット！", false);
 }
 $("btn-retry").onclick = function () { renderHensei(); };
-$("btn-rhome").onclick = function () { goHome(); };
+$("btn-rhome").onclick = function () {
+  if (state.starter) { starterNext(); return; }   /* はじめてのガチャの つづき */
+  goHome();
+};
 
 /* ---------- コンフェッティ（自前・外部ライブラリなし） ---------- */
 function confettiBurst(n) {
@@ -6103,8 +6176,17 @@ function confettiBurst(n) {
       return;
     }
   }
+  /* ★はじめての人は **ホームより先に ガチャ3回**（2026-08-11・ユーザー指示）。
+     とちゅうで 閉じても save.starterQ が のこっているので つづきから 出る。 */
+  if (save.starterQ && save.starterQ.length) { showStarterGacha(); return; }
   goHome();
 })();
+
+/* PWA（2026-08-11）。★file:// で ひらいたときは 登録しない（エラーになるだけ）。
+   ★sw.js の あたまに「更新したら CACHE の版を あげる」きまりを 書いてある。 */
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+}
 </script>
 </body>
 </html>

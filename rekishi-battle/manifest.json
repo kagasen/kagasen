@@ -1,0 +1,15 @@
+{
+  "name": "レキシバトル",
+  "short_name": "レキシバトル",
+  "description": "歴史人物42人のカードをあつめて、おかねをためて仲間を出撃させるリアルタイム合戦。弥生時代から明治時代まで51ステージ。年表ずかん・まめちしき・クイズつきの社会科アプリ。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#111b2b",
+  "theme_color": "#b71c1c",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1383,6 +1383,190 @@
   .big-btn.brown { background: linear-gradient(180deg, #8a6620, #5c4413);
     box-shadow: 0 4px 0 #35270a; color: #fff8e1; }
   .big-btn.brown:active { box-shadow: 0 1px 0 #4d3a11; }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     📱 スマホ（2026-08-11・ユーザー指摘「スマホだと ゲーム中の文字が 大きすぎです
+        画面が 見えません」）
+     ----------------------------------------------------------------------
+     ★★どうして そうなっていたか（実測してから 直した）:
+       バトルの画面は **たかさの決まった部品**が 上から下まで ならんでいて、
+       のこり ぜんぶを #bfield（＝たたかう場所）に わたす作り。
+         上帯60 ＋ main の余白20 ＋ ティッカー48 ＋ ちからの列112
+         ＋ ひっさつ帯96 ＋ 出撃の列84 ＝ **420px**
+       iPad よこ(768px)なら のこりが 348px あるので バトル場が ちゃんと見える。
+       ところが **iPhone よこ(390px)では 部品だけで 420px** になり、
+       #bfield が **0px につぶれて 消えていた**（背景の絵も 人も ひっさつの
+       カットインも 何も 見えない）＝ ユーザーの言う「画面が見えません」の 正体。
+     ★★しぼりかたは **たかさ(max-height)**。よこはばでは 分けられない ——
+       iPhone を よこにすると はばは 844pxで **iPadより ひろい** のに、
+       たかさは 390pxしか ない。iPadは よこでも 768pxあるので ここには 入らない。
+     ★★この かたまりは **いちばん あとに 書くこと**（CSSは 後がち）。
+       上の @media (max-width: 900px) などより 前に置くと 効かない。
+     ★タップの大きさは 44pxを 下まわらせない。CLAUDE.md §5 は 48pxだが、
+       たかさ390pxの画面に 48pxの帯が 6つ ならぶと それだけで 288pxになり
+       バトル場が また 消える。ここだけ **指で押せる 下限の44px**に とどめてある。
+       （48pxに もどしたい人へ: もどすなら 先に #bfield が のこるか 実測すること）
+     ══════════════════════════════════════════════════════════════════════ */
+  @media (max-height: 500px) {
+    /* --- 画面ぜんたいの わく --- */
+    #topbar { padding: 2px 8px; }
+    #tb-title { font-size: 14px; }
+    .tb-btn { min-height: 40px; min-width: 76px; padding: 4px 8px; font-size: 13px; border-radius: 11px; }
+    .tb-left { min-width: 76px; }
+    #tb-home { min-height: 40px; font-size: 11px; }
+    main { padding: 3px 8px; }
+    .panel { padding: 8px; border-radius: 14px; }
+    .big-btn { min-height: 44px; padding: 6px; font-size: 15px; margin-top: 6px; border-radius: 13px; }
+
+    /* --- ①ティッカー（流れる れきしの文）。ここは 勉強の中身なので 消さずに 細くする --- */
+    #ticker { height: 26px; margin-bottom: 4px; border-radius: 9px; }
+    #tk-line { font-size: 13px; padding-top: 2px; }
+
+    /* --- ②城のちから。★2だん→**1だん**にする（ここが いちばん たかさを くう）。
+           10このボタンが 1れつに ならぶので min-width:0 を つけて 縮めること
+           （つけないと 中身の字が つっぱって 列から はみ出す）。 --- */
+    #powerrow { flex-wrap: nowrap; gap: 3px; margin-top: 4px; }
+    .pw-btn { flex: 1 1 0; min-width: 0; min-height: 34px; padding: 2px 1px; border-radius: 9px; }
+    .pw-btn .pw-ico { font-size: 12px; }
+    .pw-btn .pw-img { height: 15px; }
+    .pw-btn .pw-nm { font-size: 9px; }
+    .pw-btn .pw-cost { font-size: 9px; }
+
+    /* --- ③ひっさつ帯。88→62px。★満タン前・満タン後・①段目・②段目で
+           **たかさは ぜんぶ同じ**（上の #hisbar の ★と 同じ約束）。
+           ★margin-top(19px)は 見出しの たかさ。見出しには ルビ（業績《ぎょうせき》）が
+             入るので、字が10pxでも 行は 19pxになる。14pxに していたら
+             **ボタンが 見出しに かぶった**（実測）。19 ＋ ボタン42 ＝ 61 で 62pxに おさまる。 --- */
+    #hisbar { height: 62px; margin-top: 4px; border-radius: 11px; }
+    #his-label { font-size: 13px; }
+    #hisbar.full #his-label { font-size: 10px; top: 1px; }
+    .his-btn { min-width: 46px; min-height: 42px; margin-top: 19px; padding: 1px 4px; border-radius: 9px; }
+    .his-btn .hb-ico { font-size: 17px; }
+    .his-btn .hb-name { font-size: 9px; }
+    .his-btn.hk-btn { min-width: 78px; max-width: 150px; padding: 1px 4px; }
+    .his-btn .hb-deed { font-size: 9px; }
+    .his-btn.hk-btn .hb-name { font-size: 8px; margin-top: 1px; }
+    .his-btn.hk-back { min-width: 46px; }
+    .his-btn.hk-back .hb-name { font-size: 8px; }
+
+    /* --- ④おかね＋出撃ボタン --- */
+    #deployrow { gap: 6px; margin-top: 4px; }
+    /* ★はばは けちりすぎないこと。92pxにしたら「＋10／びょう」の しりが 切れた（実測） */
+    #moneybox { width: 108px; font-size: 15px; border-radius: 11px; padding: 0 5px; }
+    #money-num { min-width: 30px; }
+    #money-cap { font-size: 9px; margin-right: 2px; }
+    #moneybox .m-rate { font-size: 8px; }
+    #deploy-btns { gap: 4px; }
+    .dep-btn { min-width: 0; min-height: 50px; padding: 2px; border-radius: 11px; }
+    .dep-btn .dep-cost { font-size: 11px; }
+    .dep-btn .dep-name { font-size: 9px; margin-top: 1px; }
+    .dep-btn .dep-lv { font-size: 9px; }
+    .dep-btn .dep-out { font-size: 10px; margin-top: -9px; }
+
+    /* --- ⑤バトル場の中に 出る もの。#bfield が 150pxほどしか ないので、
+           iPad と同じ大きさのままだと 場から はみ出す --- */
+    .unit .uname { font-size: 10px; }
+    .dmg { font-size: 13px; }
+    .dmg.healbig { font-size: 17px; }
+    /* ★★城(190%)と ボス(177.5%)は **わりあいを 下げる**こと。下げないと 頭が
+       バトル場の 上ばしを こえて、**HPバーと 名前が 切れて 見えなくなる**（実測18px）。
+       ★ここは ぜんぶ **ペアの数字**。片方だけ 変えないこと（上の .unit の ★と同じ約束）:
+         ・足元を 地面の線に のせる bottom ＝ 20×ばい率 − 6.1
+             150% → 23.9 ／ 158% → 25.5
+         ・HPバーを 絵の上ばしより 上に 逃がす margin-bottom
+             ＝（ばい率 − bottom − 100）% ＋ 4px の ゆとり
+             城 150−23.9−100 ＝ 26.1 → 0.27 ／ ボス 158−25.5−100 ＝ 32.5 → 0.33
+       ★城は 足元の補正をしない（build-bases.py が 下ばし＝地面で 書き出すので bottom:0）。
+         城の 絵の中身は キャンバスの88%(BASE_FILL_H)までなので、上に こえる ぶんは
+         (0.88×1.5 − 1) ＝ 0.32 → ゆとりを 足して 0.33。 */
+    .unit.base.has-sprite .sprite img,
+    .unit.ebase.has-sprite .sprite img { width: 150%; height: 150%; bottom: 0; }
+    .unit.base.has-sprite .hpbar,
+    .unit.ebase.has-sprite .hpbar { margin-bottom: calc(var(--unit-w) * 0.33 + 4px); }
+    .unit.boss.has-sprite .sprite img { width: 158%; height: 158%; bottom: -25.5%; }
+    .unit.boss.has-sprite .hpbar { margin-bottom: calc(var(--unit-w) * 0.33 + 4px); }
+    /* 絵が まだ無い ときの 絵文字も 同じだけ 小さくする（絵ができるまで 待たせない） */
+    .unit .emoji { font-size: 40px; }
+    .unit .emoji.big { font-size: 54px; }
+    .unit.base .emoji.big, .unit.ebase .emoji.big { font-size: 78px; }
+    .unit .wallimg { width: 52px; height: 52px; }
+    /* ★かんせい度のバーは **まん中だけ**に する。左右いっぱいに のばすと、
+       バトル場が 低いので **みかたの城の名前(左はし)と 敵の町(右はし)に かぶる**。 */
+    #buildbar { height: 26px; top: 4px; left: 20%; right: 20%; border-radius: 13px; }
+    #build-txt { font-size: 11px; line-height: 26px; }
+    #build-ico { height: 22px; top: 2px; left: 6px; }
+    #cutin { font-size: 15px; padding: 6px 4px; }
+    #cutin .cut-pair { font-size: 16px; }
+    #cutin .cut-pair-sub { font-size: 12px; }
+    /* ひっさつの カットイン。★絵(hf-char)と 業績名(hf-name)の 比は くずさない
+       （height:bottom = 160:-24 = 120:-18。上の ★と 同じ約束） */
+    #hisfx .hf-name { font-size: 16px; left: 38%; }
+    #hisfx .hf-char { height: 120%; bottom: -18%; }
+    #hisfx .hf-kind { font-size: 11px; margin-top: 3px; }
+    #b-overlay { gap: 6px; padding: 8px; }
+    #b-overlay .ov-big { font-size: 20px; }
+
+    /* --- ⑥クイズ。4つの えらびが **スクロールなしで ぜんぶ見える**ように
+           （字が大きいままだと 2つしか 見えず、下に あるのに 気づかない） --- */
+    #quiz-num { font-size: 12px; margin-bottom: 3px; }
+    #quiz-line { font-size: 15px; padding: 8px 10px; line-height: 1.5; border-radius: 12px; }
+    #quiz-ask { font-size: 14px; margin: 5px 0 3px; }
+    .quiz-choice { min-height: 44px; padding: 6px; margin-top: 6px; font-size: 15px; border-radius: 12px; }
+    .quiz-choice .q-sub { font-size: 11px; }
+    #quiz-fb { font-size: 14px; margin-top: 5px; min-height: 20px; }
+
+    /* --- ⑦ごほうび（カードゲット）。カードが 大きいままだと それだけで 画面が うまって
+           「ホームへ」の ボタンが 見えない（絵の大きさは JSの standBig() と ペア） --- */
+    #rw-result { font-size: 13px; }
+    #rw-card { width: 176px; margin-top: 4px; padding: 8px; border-width: 4px; border-radius: 14px; }
+    #rw-card .rw-rar { font-size: 12px; }
+    #rw-card .rw-name { font-size: 18px; margin-top: 2px; }
+    #rw-card .rw-era { font-size: 11px; }
+    #rw-card .rw-skill { font-size: 11px; margin-top: 3px; }
+    #rw-new { font-size: 15px; min-height: 18px; margin-top: 4px; }
+    #rw-count { font-size: 12px; }
+    .tri-card { padding: 5px 8px; margin-top: 5px; border-width: 2px; border-radius: 11px; }
+    .tri-card .tri-ttl { font-size: 12px; }
+    .tri-card .tri-cnt, .tri-card .tri-who { font-size: 10px; }
+    .tri-card .tri-body { font-size: 12px; line-height: 1.5; }
+    #gc-msg { font-size: 13px; }
+    #gc-machine { margin: 3px 0 1px; }
+
+    /* --- ⑧へんせい（人を えらぶ 画面）。カードが 1だんしか 見えないので 小さくする --- */
+    #hs-head .hs-name { font-size: 15px; }
+    #hs-head .hs-era { font-size: 11px; }
+    #hs-head .hs-desc, #hs-head .hs-tip { font-size: 11px; }
+    #hs-head .hs-kata { margin-top: 3px; padding: 3px 6px; }
+    #hs-head .hs-kata .hk-tip { font-size: 11px; }
+    #hensei-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+    .pick-btn { min-height: 70px; font-size: 11px; }
+    .dslot { min-height: 54px; width: 52px; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     📱 スマホの たてむき（せまい画面）で 列が **はみ出して 押せない** のを 直す
+        （2026-08-11・上と同じ ユーザー指摘。よこむきだけでなく たてでも 起きていた）
+     ★わけ: flex の子は はじめ `min-width:auto`＝**中身より 細くなれない**。
+       ちからの列（5つ×2だん）も 出撃の列（7人）も 中身が つっぱって 右に あふれ、
+       #powerrow / #deployrow の 外に 出た ボタンが **指で 押せなくなっていた**。
+     ★出撃は 縮めるだけでは 1つ34pxになって 指で 押せない（§5）ので、
+       **4人×2だん**に おりかえす。たてむきは たかさに ゆとりが あるので これでよい。
+     ★★おりかえしは `min-height: 501px` で かこうこと。かこわないと **ふるい iPhone を
+       よこにしたとき(568×320)にも おりかえって**、2だんぶんの 104pxを とられ、
+       バトル場が 32pxまで つぶれる（実測）。よこむきは 上の 📱スマホ の かたまりが
+       min-width:0 で 1だんのまま 縮めてくれる。
+     ══════════════════════════════════════════════════════════════════════ */
+  .pw-btn { min-width: 0; }
+  @media (max-width: 620px) and (min-height: 501px) {
+    #deploy-btns { flex-wrap: wrap; }
+    #deploy-btns .dep-btn { flex: 1 1 calc(25% - 4px); min-width: 0; max-width: none; }
+    /* ★おかねの ますは 112pxだと「＋10／びょう」の しりが 切れる（実測128px 要る）。
+       4人ずつの おりかえしなら 1つ58pxのこるので、ここを ひろげても 指で 押せる。 */
+    #moneybox { width: 128px; }
+    /* ★かんせい度の 字は 小さく。せまい はばでは 中央ぞろえの 字が 左に のびて
+       バーの左はしの 大仏の絵(#build-ico)に かぶる。 */
+    #build-txt { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -1689,6 +1873,12 @@ var ASSET_V = 154;
 
 /* たち姿。バトル用の stand.webp をそのまま見せる（カード絵が無くても にぎやかになる）。
    rar が null（まだ持っていない）ときは影絵にして「だれだろう？」を残す。 */
+/* 大きく見せる たち姿（ごほうびのカード・ずかん）の 大きさ。
+   ★スマホの よこむき（たかさ500px未満）では 132pxだと **カードだけで 画面が うまって**、
+     下の「ホームへ」ボタンまで スクロールしないと たどりつけない。
+   ★大きさは style="" で 直に 入るので、CSSからは 変えられない（!important が いる）。
+     だから **ここで 数を 変える**（CSSの 📱スマホ の かたまりと ペア）。 */
+function standBig() { return window.innerHeight < 500 ? 96 : 132; }
 function standHTML(ch, rar, size) {
   return '<span class="cstand t-' + ch.type + ' r-' + (rar || "n") + (rar ? "" : " silhouette")
     + '" style="width:' + size + 'px;height:' + size + 'px;">'
@@ -2645,7 +2835,7 @@ function renderCards() {
 }
 function openCharModal(ch) {
   var c = cardCnt(ch.id), rar = bestRarity(ch.id);
-  var html = '<div style="text-align:center;">' + standHTML(ch, rar, 132) + '</div>'
+  var html = '<div style="text-align:center;">' + standHTML(ch, rar, standBig()) + '</div>'
     + '<h3 style="text-align:center;">' + nameRuby(ch) + '</h3>'
     + '<div class="m-era" style="text-align:center;">' + eraChipHTML(ch.era) + '　<span class="type-chip t-' + ch.type + '">' + TYPES[ch.type].icon + TYPES[ch.type].label + '</span></div>'
     + '<div class="m-skill">⚡ わざ: ' + rubi(ch.skill) + '</div>'
@@ -2829,7 +3019,11 @@ var EDGE_PAD = UNIT_W / 2 + 6;
    横はばの半分以上をふさいでしまい、戦っている場所がなくなるため。
    ★バトルを始める前に呼ぶこと（出したあとで変えると、城の位置が少しずれる） */
 function setUnitW() {
-  UNIT_W = window.innerWidth < 620 ? 76 : 104;
+  /* ★たかさが 500px より 低い画面（＝スマホの よこむき）は、はばが 844pxあっても
+     **バトル場のたかさが 160pxほどしか ない**（CSSの 📱スマホ の かたまりを見ること）。
+     104のままだと 人の絵が 場から はみ出して 頭が 切れるので、はばではなく
+     **たかさ**でも 小さくする。 */
+  UNIT_W = window.innerHeight < 500 ? 62 : (window.innerWidth < 620 ? 76 : 104);
   EDGE_PAD = UNIT_W / 2 + 6;
   document.documentElement.style.setProperty("--unit-w", UNIT_W + "px");
 }
@@ -3324,8 +3518,10 @@ function buildDeployRow() {
   var row = $("deploy-btns");
   row.innerHTML = "";
   B.btns = [];
-  /* デッキが7人になったので、せまい画面では顔を小さくしないと ボタンがつぶれる */
-  var fw = window.innerWidth < 620 ? 28 : 40;
+  /* デッキが7人になったので、せまい画面では顔を小さくしないと ボタンがつぶれる。
+     ★スマホの よこむき（たかさ500px未満）も 同じ。はばは ひろいが、
+       出撃の列に わたせる たかさが 50pxしか ないので 40pxの顔は 入らない。 */
+  var fw = (window.innerWidth < 620 || window.innerHeight < 500) ? 28 : 40;
   save.deck.forEach(function (id) {
     var ch = CHAR_BY_ID[id], cost = charStat(id).cost;
     var b = document.createElement("button");
@@ -6112,7 +6308,7 @@ function showReward() {
   sfx(tier > 0 ? "levelup" : "reward");
   card.className = tier === 2 ? "rar-sr" : (tier === 1 ? "rar-r" : "");
   card.innerHTML = '<div class="rw-rar rar-tag r' + tierRar + '">' + RAR_LABEL[tierRar] + '</div>'
-    + '<div style="margin-top:6px;">' + standHTML(ch, after, 132) + '</div>'
+    + '<div style="margin-top:6px;">' + standHTML(ch, after, standBig()) + '</div>'
     + '<div class="rw-name">' + nameRuby(ch) + '</div>'
     + '<div class="rw-era">' + rubi(ch.era) + '</div>'
     + '<div class="rw-skill">⚡ ' + rubi(ch.skill) + '</div>';

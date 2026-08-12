@@ -6120,6 +6120,13 @@ $("btn-qnext").onclick = function () {
    ふつう / レア / スーパーレア の順（ミリびょう） */
 var SPIN_MS = [1300, 2100, 3000];
 function showGacha() {
+  /* ★★ここに来た＝**ふつうのガチャ**（クイズのあと）。はじめてのガチャの しるしを 落とす。
+     2026-08-11に これが 無くて クラッシュした（`state.starter` が true のまま のこると、
+     まわすボタンが rollStarterCard() を 呼び、からっぽの save.starterQ を shift して
+     TypeError で **ボタンが「まわしています…」のまま 固まる**）。
+     ★はじめてのガチャは 3回で かならず starterNext() を 通るので ふつうは 起きないが、
+       ハッシュ(#st1)で とちゅうから 入る等の 抜け道が あるので ここで 止める。 */
+  state.starter = false;
   var c = state.quiz.correct, n = state.quiz.qs.length;
   $("gc-msg").innerHTML = "クイズ せいかい " + c + "／" + n + "！<br>ガチャを まわして カードを もらおう！"
     + (seriesOf(state.stage) === 3 ? '<br>' + rubi("💀 「3」のガチャ！ スーパーレアが たくさん 出る！")
@@ -6186,7 +6193,9 @@ $("btn-spin").onclick = function () {
   $("gc-tip").textContent = "ゴロゴロ…";
   /* ★ここでカードを決める。光の色とまわる長さをレア度に合わせるため、
      演出のまえに ひいておく必要がある（確率は今までとまったく同じ）。 */
-  var g = state.gacha = state.starter ? rollStarterCard() : rollCard();
+  /* ★**ならびが のこっているか**まで見る（しるしだけ 見ない）。上の showGacha の★と対。 */
+  var useStarter = state.starter && save.starterQ && save.starterQ.length > 0;
+  var g = state.gacha = useStarter ? rollStarterCard() : rollCard();
   var tier = gachaTier(g);          /* はじめてのガチャは ぜんぶ ノーマル＝0（白い光・みじかい） */
   var ms = SPIN_MS[tier];
   var mc = $("gc-machine"), v = $("v-gacha");

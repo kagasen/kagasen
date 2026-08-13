@@ -271,6 +271,33 @@ input[type=date],input[type=text],select{
 }
 .section-tabs button.active{background:var(--sky-dark);color:#fff;}
 
+/* ---------- できたことリスト(あしあと) ---------- */
+.dk-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;}
+.dk-head{
+  width:100%;border:none;font-family:inherit;color:#fff;cursor:pointer;text-align:left;
+  display:flex;align-items:center;gap:10px;padding:10px 14px;min-height:56px;
+}
+.dk-head:active{filter:brightness(.94);}
+.dk-head .em{font-size:27px;line-height:1;flex:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));}
+.dk-head .nm{font-weight:800;font-size:16px;flex:1;min-width:0;line-height:1.25;}
+.dk-head .nm .sb{display:block;font-size:11.5px;font-weight:700;opacity:.95;}
+.dk-head .cnt{font-size:21px;font-weight:800;flex:none;}
+.dk-head .cnt .tt{font-size:12px;opacity:.85;}
+.dk-head .go{font-size:13px;opacity:.9;flex:none;}
+.dk-bar{height:8px;background:#EDF4F9;}
+.dk-bar .fill{height:100%;border-radius:0 999px 999px 0;transition:width .6s;}
+.dk-chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 12px;}
+.dk-chip{
+  border-radius:12px;padding:6px 10px;font-size:12.5px;font-weight:700;line-height:1.35;
+  display:inline-flex;gap:6px;align-items:baseline;max-width:100%;
+}
+.dk-chip b{font-weight:800;white-space:nowrap;}
+.dk-yet{display:flex;flex-wrap:wrap;gap:8px;}
+.dk-yet button{
+  border:2px dashed var(--line);background:#F8FCFF;color:#9DB4C6;border-radius:14px;
+  padding:8px 12px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;min-height:48px;
+}
+
 @media (min-width:520px){
   .sport-grid{grid-template-columns:repeat(3,1fr);}
 }
@@ -293,19 +320,20 @@ input[type=date],input[type=text],select{
    ============================================================ */
 
 /* ---------------- 種目データ ---------------- */
+/* col/bg = できたことリスト(あしあと)のいろわけ。cls のグラデーションとそろえること */
 const SPORTS = {
-  nawatobi:{ name:'なわとび', em:'🪢', cls:'sc-nawatobi', sub:'わざ19こ＋30びょうチャレンジ' },
-  tetsubo:{ name:'てつぼう', em:'🤾', cls:'sc-tetsubo', sub:'けんてい20わざ' },
-  mat:{ name:'マットうんどう', em:'🤸', cls:'sc-mat', sub:'わざ10こ' },
-  tobibako:{ name:'とびばこ', em:'🦘', cls:'sc-tobibako', sub:'わざ×なんだん？' },
-  suiei:{ name:'すいえい', em:'🏊', cls:'sc-suiei', sub:'けんてい22だんかい' },
-  marathon:{ name:'マラソン', em:'🏃', cls:'sc-marathon', sub:'きょり・タイム' },
-  soccer:{ name:'サッカー', em:'⚽', cls:'sc-soccer', sub:'チャレンジ7こ' },
-  basket:{ name:'バスケットボール', em:'🏀', cls:'sc-basket', sub:'チャレンジ7こ' },
-  volley:{ name:'バレーボール', em:'🏐', cls:'sc-volley', sub:'チャレンジ7こ' },
-  baseball:{ name:'やきゅう', em:'⚾', cls:'sc-baseball', sub:'チャレンジ7こ' },
-  dodge:{ name:'ドッジボール', em:'🤾', cls:'sc-dodge', sub:'チャレンジ7こ' },
-  relay:{ name:'リレー・かけっこ', em:'🏁', cls:'sc-relay', sub:'チャレンジ7こ' },
+  nawatobi:{ name:'なわとび', em:'🪢', cls:'sc-nawatobi', col:'#2563EB', bg:'#E7EEFF', sub:'わざ19こ＋30びょうチャレンジ' },
+  tetsubo:{ name:'てつぼう', em:'🤾', cls:'sc-tetsubo', col:'#EA580C', bg:'#FFEEE0', sub:'けんてい20わざ' },
+  mat:{ name:'マットうんどう', em:'🤸', cls:'sc-mat', col:'#16A34A', bg:'#E5FAEC', sub:'わざ10こ' },
+  tobibako:{ name:'とびばこ', em:'🦘', cls:'sc-tobibako', col:'#DB2777', bg:'#FFE9F3', sub:'わざ×なんだん？' },
+  suiei:{ name:'すいえい', em:'🏊', cls:'sc-suiei', col:'#0891B2', bg:'#E0F7FB', sub:'けんてい22だんかい' },
+  marathon:{ name:'マラソン', em:'🏃', cls:'sc-marathon', col:'#7C3AED', bg:'#F0E9FF', sub:'きょり・タイム' },
+  soccer:{ name:'サッカー', em:'⚽', cls:'sc-soccer', col:'#059669', bg:'#E1F7F0', sub:'チャレンジ7こ' },
+  basket:{ name:'バスケットボール', em:'🏀', cls:'sc-basket', col:'#B45309', bg:'#FDEFDB', sub:'チャレンジ7こ' },
+  volley:{ name:'バレーボール', em:'🏐', cls:'sc-volley', col:'#A16207', bg:'#FBF3D6', sub:'チャレンジ7こ' },
+  baseball:{ name:'やきゅう', em:'⚾', cls:'sc-baseball', col:'#475569', bg:'#EDF1F6', sub:'チャレンジ7こ' },
+  dodge:{ name:'ドッジボール', em:'🤾', cls:'sc-dodge', col:'#DC2626', bg:'#FFE9E9', sub:'チャレンジ7こ' },
+  relay:{ name:'リレー・かけっこ', em:'🏁', cls:'sc-relay', col:'#0D9488', bg:'#DEF6F3', sub:'チャレンジ7こ' },
 };
 
 /* なわとび: 級ひょう(かいすう→級) 0=特級 0.5=準特級 */
@@ -1431,7 +1459,7 @@ function viewHome(){
   </div>`:''}
 
   <div class="card center">
-    <div class="muted small">きろくがたまると「あしあと」でせいちょうが見えるよ</div>
+    <div class="muted small">「あしあと」で いままでにできたこと ぜんぶが見られるよ</div>
     <button class="btn wide" style="margin-top:8px" onclick="go('progress')">👣 せいちょうのあしあと</button>
   </div>`;
 }
@@ -1926,10 +1954,136 @@ const SPORT_VIEWS = {
   dodge:()=>viewBallSport('dodge'), relay:()=>viewBallSport('relay'),
 };
 /* ---------------- せいちょうのあしあと ---------------- */
+/* しゅもくごとに「いまできること」をあつめる。
+   items: {nm:なまえ, val:きろく, ex:1ならおまけ(できたかず にはカウントしない)} */
+function dekitaOf(id){
+  const out = { items:[], total:0, sub:'' };
+  if(id==='nawatobi'){
+    out.total = NAWATOBI_SKILLS.length;
+    NAWATOBI_SKILLS.forEach(sk=>{
+      const b = S.nawatobi.best[sk.id]||0;
+      if(b>0){
+        const k = nawaSkillKyu(sk, b);
+        out.items.push({ nm:sk.name, val:b+'かい'+(k!==null?' ('+rankLabel(k)+')':'') });
+      }
+    });
+    const mae = Math.max(0,...S.nawatobi.speed.map(r=>r.mae||0));
+    const ushiro = Math.max(0,...S.nawatobi.speed.map(r=>r.ushiro||0));
+    if(mae) out.items.push({ nm:'30びょう まえまわし', val:mae+'かい', ex:1 });
+    if(ushiro) out.items.push({ nm:'30びょう うしろまわし', val:ushiro+'かい', ex:1 });
+    const k = nawaKyu(S);
+    if(k!==null) out.sub = 'いまは '+rankLabel(k);
+  }else if(id==='tetsubo' || id==='mat'){
+    const skills = id==='tetsubo' ? TETSUBO_SKILLS : MAT_SKILLS;
+    out.total = skills.length;
+    skills.forEach(sk=>{ if(S[id].done.includes(sk.id)) out.items.push({ nm:sk.name, val:'できた!' }); });
+    if(id==='tetsubo' && S.tetsubo.done.length>0) out.sub = 'いまは '+tetsuKyu(S);
+  }else if(id==='tobibako'){
+    out.total = TOBIBAKO_SKILLS.length;
+    TOBIBAKO_SKILLS.forEach(sk=>{
+      const d = S.tobibako.dan[sk.id]||0;
+      if(d>=2) out.items.push({ nm:sk.name, val:d+'だん' });
+    });
+    const mx = danMax(S);
+    if(mx) out.sub = 'さいこう '+mx+'だん';
+  }else if(id==='suiei'){
+    out.total = SUIEI_KYU.length;
+    SUIEI_KYU.forEach(k=>{ if(S.suiei.kyu.includes(k.id)) out.items.push({ nm:k.label, val:k.name }); });
+    const totals = {};
+    for(const l of S.suiei.log) totals[l.stroke] = (totals[l.stroke]||0) + l.m;
+    STROKES.forEach(st=>{ if(totals[st.id]) out.items.push({ nm:st.em+' '+st.name, val:'るいけい '+totals[st.id]+'m', ex:1 }); });
+    const lb = suieiKyuLabel(S);
+    if(lb) out.sub = 'いまは '+lb;
+  }else if(id==='marathon'){
+    const total = marathonTotal(S);
+    if(total>0){
+      const longest = Math.max(0,...S.marathon.log.map(r=>r.m));
+      out.items.push({ nm:'るいけい', val:(total/1000).toFixed(1)+'km', ex:1 });
+      out.items.push({ nm:'はしったかいすう', val:S.marathon.log.length+'かい', ex:1 });
+      out.items.push({ nm:'いちばんながい日', val:(longest/1000).toFixed(1)+'km', ex:1 });
+      out.sub = 'ぜんぶで '+(total/1000).toFixed(1)+'km';
+    }
+  }else if(BALL_SPORTS[id]){
+    const skills = BALL_SPORTS[id].skills;
+    out.total = skills.length;
+    skills.forEach(sk=>{
+      if(sk.type==='check'){
+        if(S[id].done.includes(sk.id)) out.items.push({ nm:sk.name, val:'できた!' });
+      }else{
+        const b = S[id].best[sk.id]||0;
+        if(b>0) out.items.push({ nm:sk.name, val:'ベスト '+b+sk.unit });
+      }
+    });
+  }
+  return out;
+}
+
+/* できたことリスト本体。しゅもくカードは色わけ(SPORTS の col/bg) */
+function dekitaHtml(){
+  const cards = [], yet = [];
+  let allDone = 0;
+  Object.keys(SPORTS).forEach(id=>{
+    const sp = SPORTS[id], d = dekitaOf(id);
+    const done = d.items.filter(i=>!i.ex).length;
+    allDone += done;
+    if(d.items.length===0){ yet.push({ id, sp }); return; }
+    cards.push(`<div class="dk-card">
+      <button class="dk-head ${sp.cls}" onclick="go('sport/${id}')">
+        <span class="em">${sp.em}</span>
+        <span class="nm">${sp.name}${d.sub?`<span class="sb">${d.sub}</span>`:''}</span>
+        ${d.total?`<span class="cnt">${done}<span class="tt">/${d.total}</span></span>`:''}
+        <span class="go">▶</span>
+      </button>
+      ${d.total?`<div class="dk-bar"><div class="fill" style="width:${done/d.total*100}%;background:${sp.col}"></div></div>`:''}
+      <div class="dk-chips">
+        ${d.items.map(i=>`<span class="dk-chip" style="background:${sp.bg};color:${sp.col}">${esc(i.nm)}<b>${esc(i.val)}</b></span>`).join('')}
+      </div>
+    </div>`);
+  });
+  if(cards.length===0){
+    return `<div class="card center">
+      <div style="font-size:44px">🌱</div>
+      <p class="muted">まだ「できたこと」がないよ。<br>わざができたら ここにどんどんならんでいくよ!</p>
+      <button class="btn wide orange" onclick="go('sports')">きろくをはじめる!</button>
+    </div>`;
+  }
+  return `<div class="card center" style="background:linear-gradient(160deg,#FFFBEB,#fff)">
+    <div class="muted small">いま できるようになったこと</div>
+    <div style="font-size:30px;font-weight:800;color:var(--orange-dark)">ぜんぶで ${allDone}こ!</div>
+    <div class="muted small">しゅもくの いろのバーをおすと れんしゅうページにいけるよ</div>
+  </div>
+  ${cards.join('')}
+  ${yet.length?`<div class="card">
+    <h3>🌱 これからチャレンジ</h3>
+    <div class="dk-yet">
+      ${yet.map(y=>`<button onclick="go('sport/${y.id}')">${y.sp.em} ${y.sp.name}</button>`).join('')}
+    </div>
+  </div>`:''}`;
+}
+
+let progressTab = 'dekita';
+function setProgressTab(t){ progressTab=t; render(); scrollTo(0,0); }
+
 function viewProgress(){
   const days = [...new Set(S.records.map(r=>r.date))].sort().reverse();
   const li = levelInfo(S.profile.totalXp);
   const recent = days.slice(0,14);
+  const timeline = recent.length===0
+    ? `<div class="card center">
+        <div style="font-size:44px">🌱</div>
+        <p class="muted">まだきろくがないよ。<br>きょうのうんどうをきろくして、あしあとをのこそう!</p>
+        <button class="btn wide orange" onclick="go('sports')">きろくをはじめる!</button>
+      </div>`
+    : recent.map(d=>{
+        const recs = S.records.filter(r=>r.date===d).slice().reverse();
+        return `<div class="tl-date">📅 ${fmtDate(d)}${d===todayStr()?' (きょう)':''}</div>`+
+          recs.map(r=>`<div class="tl-item">
+            <span class="em">${SPORTS[r.sport]?SPORTS[r.sport].em:'🏅'}</span>
+            <span>${esc(r.label)}</span>
+            <span class="xp">+${r.xp}XP</span></div>`).join('');
+      }).join('')
+      + (days.length>14?`<div class="center muted small" style="margin-top:10px">さいきん14日ぶんをひょうじしているよ</div>`:'');
+
   return headerHtml('せいちょうのあしあと','👣')+`
   <div class="stat-grid" style="margin-bottom:14px">
     <div class="stat-box"><div class="val">${S.records.length}</div><div class="lbl">きろくしたかいすう</div></div>
@@ -1939,20 +2093,11 @@ function viewProgress(){
     <div class="stat-box"><div class="val">🔥${S.streak.best}</div><div class="lbl">さいこうれんぞく日すう</div></div>
     <div class="stat-box"><div class="val">${(marathonTotal(S)/1000).toFixed(1)}<span style="font-size:13px;color:var(--ink-soft)">km</span></div><div class="lbl">はしったきょり</div></div>
   </div>
-  ${recent.length===0?`<div class="card center">
-      <div style="font-size:44px">🌱</div>
-      <p class="muted">まだきろくがないよ。<br>きょうのうんどうをきろくして、あしあとをのこそう!</p>
-      <button class="btn wide orange" onclick="go('sports')">きろくをはじめる!</button>
-    </div>`
-  : recent.map(d=>{
-      const recs = S.records.filter(r=>r.date===d).slice().reverse();
-      return `<div class="tl-date">📅 ${fmtDate(d)}${d===todayStr()?' (きょう)':''}</div>`+
-        recs.map(r=>`<div class="tl-item">
-          <span class="em">${SPORTS[r.sport]?SPORTS[r.sport].em:'🏅'}</span>
-          <span>${esc(r.label)}</span>
-          <span class="xp">+${r.xp}XP</span></div>`).join('');
-    }).join('')}
-  ${days.length>14?`<div class="center muted small" style="margin-top:10px">さいきん14日ぶんをひょうじしているよ</div>`:''}`;
+  <div class="section-tabs">
+    <button class="${progressTab==='dekita'?'active':''}" onclick="setProgressTab('dekita')">🌟 できたこと</button>
+    <button class="${progressTab==='log'?'active':''}" onclick="setProgressTab('log')">📅 さいきんのきろく</button>
+  </div>
+  ${progressTab==='dekita' ? dekitaHtml() : timeline}`;
 }
 
 /* ---------------- バッジずかん ---------------- */

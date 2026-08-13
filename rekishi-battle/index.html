@@ -380,7 +380,8 @@
   /* 🏅 たたかいの ふりかえり（2026-08-10・ユーザー要望）。
      ★勝利画面の まん中に 出す わく。⭐の帯（黄色）と 見分けがつくよう **白いわく**にしてある。
      ★中身は MVP 1人＋いちばん出たわざ＋しろのちから の 3行まで。ふやさないこと
-       （3.4秒で つぎのクイズへ 進むので、それ以上は 読めない）。 */
+       （スマホの バトル場は 350pxほどしか 高さがない。ふやすと クイズボタンと 同じだんを
+        とりあって、また どちらかが 見えなくなる。2026-08-13に 一度 やらかしている）。 */
   #b-overlay .ov-look {
     background: rgba(255,255,255,0.94); color: #4e342e; border-radius: 14px;
     padding: 8px 14px; margin: 2px 0 8px; max-width: 460px; text-shadow: none;
@@ -1023,7 +1024,18 @@
          上が 切れて、スクロールしても 出てこない）。対応していない ふるい端末では
          上の center が のこる＝これまでどおり。
        ③だいじな ボタンは **いちばん上**に出す（winBattle の中を 見ること）
-     ★ボタンを 下に もどさないこと。 */
+     ★ボタンを 下に もどさないこと。
+
+   ★★★2026-08-13（同じ日の 2回目）・ユーザー指摘「クイズへ すすむボタンが 出るようになったのは
+       いいのですが、**MVPなどが 出ないように なりました**」。
+     ③のせいで ボタンより **下**に MVPが 行き、スマホでは 画面の外＝ながさないと 見えなかった。
+     ＝ ふりかえり（人物と業績を むすぶ ひとこと）は このアプリの ねらいそのものなので、
+       見えないのは クイズボタンが 押せないのと 同じくらい まずい。
+     いまの かたち: **2だん組み**にして 両方 いつでも 見えるようにした。
+       ・.ov-scroll … 上（🎉→🏅MVP→⭐）。ここ**だけ**が のびる／ながれる（min-height:0 が キモ。
+         これが無いと flex の中身は ちぢまず、下の ボタンを 押し出す）
+       ・.ov-foot  … 下。ボタンは **いつも 画面の中**（flex:none なので ちぢまない）
+     ★どちらかを 消して 1だんに もどさないこと（もどすと 上のどちらかが かならず 見えなくなる）。 */
   #b-overlay {
     position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10; display: none;
     align-items: center; justify-content: center; flex-direction: column; gap: 10px;
@@ -1034,6 +1046,38 @@
   #b-overlay.show { display: flex; }
   #b-overlay .ov-big { font-size: 34px; font-weight: 800; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
   #b-overlay .big-btn { max-width: 320px; }
+  /* 上のだん（ながれる）／下のだん（ボタン。いつも見える） */
+  #b-overlay .ov-scroll {
+    flex: 1 1 auto; min-height: 0; width: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  }
+  #b-overlay .ov-scroll { justify-content: safe center; }
+  #b-overlay .ov-foot { flex: none; width: 100%; }
+  #b-overlay .ov-foot .big-btn { margin: 0 auto; }   /* .big-btn の margin-top:12px を 打ち消す */
+  /* スマホ（たて・よこ とも バトル場が ひくい）は 字を 少し小さくして
+     🎉・⭐・🏅MVP・ボタン が **ながさなくても** 入るようにする */
+  @media (max-width: 620px), (max-height: 560px) {
+    #b-overlay .ov-big { font-size: 26px; }
+    #b-overlay .ov-look { padding: 6px 12px; }
+    #b-overlay .ov-mvp { font-size: 17px; }
+  }
+  /* ★それでも 入りきらないとき（⭐が 一度に 3つ ついた回など）だけ JSが `ov-tight` を つける。
+     ながせば 読めるとはいえ、**字が とちゅうで 切れて 見える**のは こわれて見えるので、
+     まず 字を小さくして 入れることを ためす（fitOverlay を 見ること）。
+     ★メディアクエリで はなく JSなのは、はば・高さでは なく **バトル場の 高さ**で
+       決まるから（同じ画面でも 面によって ちがう）。 */
+  #b-overlay.ov-tight { padding: 8px; gap: 6px; }
+  /* ★min-height … スマホを よこむきに すると バトル場が 102pxしか なくなる面がある。
+       0 のままだと 上のだんが **高さ0に つぶれて** MVPが 見えも ながせも しなくなる。
+       すくなくとも 1行ぶんは のこして、あとは 指で ながせるようにする。
+     ★ボタンは それでも 下に のこる（.ov-foot は flex:none）＝ かならず 押せる。 */
+  #b-overlay.ov-tight .ov-scroll { gap: 4px; min-height: 38px; }
+  #b-overlay.ov-tight .big-btn { min-height: 46px; font-size: 16px; }
+  #b-overlay.ov-tight .ov-big { font-size: 22px; }
+  #b-overlay.ov-tight .ov-star { font-size: 14px; margin: 0; line-height: 1.4; }
+  #b-overlay.ov-tight .ov-look { padding: 5px 10px; margin: 0; }
+  #b-overlay.ov-tight .ov-mvp { font-size: 16px; }
+  #b-overlay.ov-tight .ov-sub { font-size: 12px; }
   /* 出撃まわり（にゃんこ式: おかねをためて、はらって出す） */
   /* ひっさつゲージ（2026-07-28）。高さは満タン前後で変えない＝ボタンが出た瞬間に
      画面がガタッと動かないように（教室の大型モニタでもチラつかせない） */
@@ -5008,12 +5052,36 @@ POWERS.forEach(function (p) {
      下げるので、ここに その数字を わたすこと（わたし忘れると 見た目だけ 城にかかる）。
    ★つくる型でも同じ（B.ebaseU は無いが、右はしに つくっている物の絵がある）。
      金閣を建てているのに 金閣に かみなりを落とせたら おかしい。
-   ★ここ1か所に まとめてあるので、ちからを足すときも この関数を通すだけでよい（CLAUDE.md §8）。 */
+   ★ここ1か所に まとめてあるので、ちからを足すときも この関数を通すだけでよい（CLAUDE.md §8）。
+
+   ★★★2026-08-13・ユーザー指摘「スマホだと てつはう・かみなりの 範囲を選べる箇所が せまい。
+       ちゃんと **相手の陣地手前ぐらいまで** 攻めれるようにしてください」。
+     なぜ せまかったか: 立入禁止のはば（城の半分 keep ＋ わの半径 rad）は **UNIT_W の px** で
+     決まるのに、バトル場の よこはば(B.W)だけが スマホで 半分以下になるから。
+     実測（iPhone・バトル場 351px・城の絵の左はし=212px）:
+       ⚡かみなり … ねらえるのは 63〜**98**px（画面の 1わりしか ない）
+       💣てつはう … 108.6〜**117**px ＝ **9pxのすきま**。指では ほぼ 押せない。
+     なおしかた: **せまい画面のときだけ** わの半径ぶんの 立入禁止を PW_RAD_KEEP(何わり)に ちぢめる。
+       ・ねらう点（まん中）は これまでどおり **城の絵の 手前**で 止まる＝城の上を ねらえはしない
+       ・わの はしだけ 城の絵に かかる。城のHPが 1も へらない しくみ（fireKaminari 等が
+         ebase を 当たり判定から 外している）は **1行も さわっていない**
+     ★PW_FAR_MAX＝**どんな画面でも バトル場の6わりより先は ねらえない**という ふた。
+     ★実測（かみなり／てつはう の ねらえる いちばん右）:
+         スマホ  B.W=351 … 98→**172** ／ 117→**179**（城の絵の左はし 212）
+         PC/iPad B.W=672 … 329→**403** ／ 355→**403**（城の絵の左はし 486）
+       ＝ ひろい画面も 少し のびる（0.6の ふたで 止まる）。どちらも わの はしは
+         城の絵の 手前がわを かすめるだけで、**まるごとは のみこまない**（画面で 確かめずみ）。
+     ★rad を わたさない ちから（🔥火ぜめ・🪵さく・🚩はた＝powerFarX(0)）は
+       **1pxも 変わらない**。ゆみは この関数を 通らない（yumiFarX）。 */
+var PW_RAD_KEEP = 0.35;   /* せまい画面で のこす わの半径ぶん（1＝これまでどおり 全部よける） */
+var PW_FAR_MAX  = 0.6;    /* せまい画面での ねらえる いちばん右（バトル場の よこはばの わりあい） */
 function powerFarX(rad) {
   var big = (B.ebaseU && B.ebaseU.el.classList.contains("has-sprite"))
          || $("buildsite").className === "on";
   var keep = (big ? YUMI_KEEP_IMG : YUMI_KEEP_W) * UNIT_W;
-  return B.W - EDGE_PAD - keep - (rad || 0);
+  var front = B.W - EDGE_PAD - keep;          /* 敵の城の絵の 左はし＝「相手の陣地の 手前」 */
+  var far   = front - (rad || 0);             /* ふつう（わの はしも 城に かけない） */
+  return Math.max(far, Math.min(front - (rad || 0) * PW_RAD_KEEP, B.W * PW_FAR_MAX));
 }
 /* ★★🏹ゆみ だけ ねらえる いちばん右（2026-08-10・ユーザー指示「相手の一番奥まで」）。
    ほかの ちからは powerFarX（城の手前で止まる）を 通すが、**弓だけ そこを 通さない**。
@@ -5691,21 +5759,59 @@ function winBattle() {
   /* 🏅 たたかいの ふりかえり（2026-08-10）。★**winBattle でしか 出せない**
      （B はここを すぎると null になるので、あとの画面では 数えられない）。 */
   var look = battleLook();
-  /* ★★ボタンは **いちばん上**（しょうり！の すぐ下）。2026-08-13・ユーザー指摘
-       「クイズへのボタンが見切れて押せません。一番前に出てくる感じにして」。
-     ふりかえり(look.html)は そのあとに 置く＝読みたい人は 下に ながして 読める。
-     ★ボタンを いちばん下に もどさないこと。中身が のびると また 押せなくなる。 */
-  ov.innerHTML = '<div class="ov-big">🎉 しょうり！</div>'
-    + '<button class="big-btn" onclick="startQuiz()">📝 クイズへ すすむ ▶</button>'
-    + '<div style="font-size:15px; font-weight:700;">ながれてきた じょうほうを 思い出そう</div>'
-    + gotHtml + hardHtml + look.html;
+  /* ★★2だん組み（2026-08-13）。**上のだんに ふりかえり・下のだんに ボタン**。
+       ・上（.ov-scroll）… 🎉→🏅MVP→⭐ の じゅんばん。あふれたら ここだけ ながれる。
+       ・下（.ov-foot） … クイズボタン。**いつも 画面の中**にいる。
+     こうなった わけ:
+       1回目の直し（同日）で ボタンを いちばん上に あげたら、こんどは **MVPが 下に 行って
+       スマホで 見えなくなった**（ユーザー指摘「MVPなどが 出ないようになりました」）。
+       ボタンも MVPも どちらも だいじなので、**べつのだん**に分けて 両方 見せる形にした。
+     ★1だんに もどさないこと（上下どちらかが かならず 見えなくなる）。CSSの .ov-scroll も ペア。 */
+  ov.innerHTML = '<div class="ov-scroll">'
+    +   '<div class="ov-big">🎉 しょうり！</div>'
+    /* ★ならびは 🏅MVP → ⭐ の じゅん。⭐を 先にすると、⭐が 3つ 一度に ついた回に
+         MVPが 下へ おされて また 見えなくなる。⭐は ホームの ステージ表にも のこるが、
+         **MVPは ここでしか 見られない**ので、こちらを 上に置く。 */
+    +   look.html + gotHtml + hardHtml
+    /* ★みじかい1行にすること。「つぎは クイズ！」は ボタンに 書いてあるので いらない。
+         2行になると そのぶん MVPが 上に おされる（スマホは 1行が とても おもい）。 */
+    +   '<div style="font-size:15px; font-weight:700;">ながれてきた じょうほうを 思い出そう</div>'
+    + '</div>'
+    + '<div class="ov-foot">'
+    +   '<button class="big-btn" onclick="startQuiz()">📝 クイズへ すすむ ▶</button>'
+    + '</div>';
   ov.classList.add("show");
+  fitOverlay(ov);               /* 入りきらないときだけ 字を小さくする（下の関数） */
   /* ★★★**じどうで クイズに 入らないこと**（2026-08-13・ユーザー要望
        「試合に勝った後に勝手にクイズに入るので、誤ってクイズを間違えることがあります」）。
      もとは 3.4秒で かってに startQuiz() を 呼んでいた。勝った よろこびで 画面を
      さわっている ところに クイズが 出るので、**1問めを 見ないまま 押してしまう**。
      いまは ボタンを 押したときだけ すすむ。ふりかえり（MVP・⭐）も 好きなだけ 読める。
      ★ここに setTimeout を もどさないこと。 */
+}
+/* 勝った画面が バトル場に 入りきらないとき だけ 字を小さくする（2026-08-13）。
+   ★ながせば 読めるとはいえ、**字が とちゅうで 切れて 見える**のは 子どもには
+     こわれて見える。まず 小さくして 入れることを ためし、それでも あふれたら ながす。
+   ★はば・高さの メディアクエリでは 決められない（同じ画面でも 面の絵の高さで 変わる）ので、
+     出したあとに 実さいの 高さを はかって 決めている。
+   ★はかるのは **いちばん下の子の 下ばし**。scrollHeight は まん中ぞろえ(flex)のとき
+     上に はみ出したぶんを 数えないので あてにならない。 */
+function fitOverlay(ov) {
+  var run = function () {
+    var s = ov.querySelector(".ov-scroll");
+    if (!s || !s.lastElementChild) return;
+    ov.classList.remove("ov-tight");          /* ★かならず 小さくない状態で はかる */
+    var over = s.scrollHeight > s.clientHeight + 1
+            || s.lastElementChild.getBoundingClientRect().bottom
+                 > s.getBoundingClientRect().bottom + 1;
+    if (over) ov.classList.add("ov-tight");
+  };
+  run();
+  /* ★★**1回だけでは 足りない**。バトル場(#bfield)の 高さは 背景の絵が 読めたあとに
+       決まることがあり、出したしゅんかんに はかると「入っている」と まちがえる
+       （実測で 高さ 401 → 217 に 変わった）。つぎのコマと 0.3秒後に はかりなおす。 */
+  requestAnimationFrame(function () { requestAnimationFrame(run); });
+  setTimeout(run, 300);
 }
 /* 🏅 だれが いちばん はたらいたか を まとめて、記録にも のこす。
    ★出すのは **MVP 1人と いちばん出た技 1つ**だけ。表にして ずらずら出すと

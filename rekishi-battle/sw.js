@@ -4,7 +4,7 @@
 //   CACHE のバージョン番号を上げる（v1 -> v2 …）。CLAUDE.md §4 の儀式。
 // ★chars-data.js の ?v= は index.html の <script src> と **同じ数字**にすること。
 //   ちがうと、キャッシュに入っていない別URLを毎回とりに行くことになる。
-const CACHE = 'rekishi-cache-v5';
+const CACHE = 'rekishi-cache-v6';
 
 // ① かならず要るもの（小さい・約0.5MB）。ここが1つでも取れないと install は失敗させる
 //    ＝「中途はんぱに入って 動かない」より「入っていない」ほうが 安全。

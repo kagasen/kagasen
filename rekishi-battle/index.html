@@ -96,11 +96,15 @@
      もとの決まりは くずさない。人物のカードは 文ではなく ならべる物なので、ひろいほど よい。 */
   main.wide { max-width: 1560px; }
   .view { display: none; }
-  .view.on { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  /* ★★★min-width:0 が いる（2026-08-13）。main は **よこならびのflex**なので、
+       flexの子は 中身より 小さくならない（min-width:auto）＝中身が ふとると
+       **画面ごと 横に はみ出す**。実測: 7人ぶんの出撃ボタンで **297px** はみ出していた。
+     ★min-height:0 と セットで 消さないこと。 */
+  .view.on { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
   .panel {
     background: #fffdf7; border-radius: 18px; padding: 14px;
     box-shadow: 0 4px 14px rgba(191,54,12,0.16);
-    display: flex; flex-direction: column; min-height: 0;
+    display: flex; flex-direction: column; min-width: 0; min-height: 0;   /* ★min-width:0 の わけは .view.on の★ */
   }
   .scroll { overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
 
@@ -1011,11 +1015,22 @@
     #hisfx .hf-name { font-size: 24px; left: 38%; }
     #hisfx .hf-char { height: 120%; bottom: -18%; }
   }
+  /* ★★★2026-08-13・ユーザー指摘「勝った後のクイズへのボタンが見切れて押せません」。
+     ふりかえり（MVP・⭐・コンフェッティ）を 足したぶん 中身が 縦に のびて、
+     バトル場より 高くなると **下の ボタンが 枠の外に 出て 押せなかった**。
+       ①`overflow-y: auto` … あふれても 指で ながせる
+       ②`justify-content: safe center` … 中身が 高いときは **上ぞろえ**（ふつうの center だと
+         上が 切れて、スクロールしても 出てこない）。対応していない ふるい端末では
+         上の center が のこる＝これまでどおり。
+       ③だいじな ボタンは **いちばん上**に出す（winBattle の中を 見ること）
+     ★ボタンを 下に もどさないこと。 */
   #b-overlay {
     position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10; display: none;
     align-items: center; justify-content: center; flex-direction: column; gap: 10px;
     background: rgba(78,52,46,0.55); color: #fff; text-align: center; padding: 16px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
+  #b-overlay { justify-content: safe center; }
   #b-overlay.show { display: flex; }
   #b-overlay .ov-big { font-size: 34px; font-weight: 800; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
   #b-overlay .big-btn { max-width: 320px; }
@@ -1128,7 +1143,9 @@
      ★ねらっているちから（ゆみ・さく）は .armed で赤いふちが付く＝「いま指でねらえる」しるし。 */
   #powerrow { flex: none; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .pw-btn {
-    flex: 1; min-height: 50px; border: none; border-radius: 12px; cursor: pointer;
+    /* ★min-width:0 が ないと 「兵糧攻め」「かみかぜ」の 字で ボタンが ふくらみ、
+       5つ×2だんに おさまらない（2026-08-13）。字のほうを 切る。 */
+    flex: 1; min-width: 0; min-height: 50px; border: none; border-radius: 12px; cursor: pointer;
     position: relative; overflow: hidden; background: #d7ccc8; opacity: 0.75; padding: 3px 2px;
   }
   .pw-btn .pw-cd {
@@ -1161,7 +1178,7 @@
     .pw-btn .pw-nm { font-size: 10px; }
     .pw-btn .pw-cost { font-size: 10px; }
   }
-  #deployrow { flex: none; display: flex; gap: 10px; margin-top: 8px; align-items: stretch; }
+  #deployrow { flex: none; display: flex; gap: 10px; margin-top: 8px; align-items: stretch; min-width: 0; }
   /* 幅は固定（数字のケタが変わるたびに出撃ボタンの列が揺れないように） */
   #moneybox {
     flex: none; width: 172px; background: #4e342e; color: #ffd54f; border-radius: 14px;
@@ -1172,9 +1189,20 @@
   #money-cap { font-size: 14px; color: #d7ccc8; font-weight: 700; margin-right: 4px; }
   #moneybox .m-rate { white-space: nowrap; }
   #moneybox .m-rate { font-size: 11px; color: #d7ccc8; font-weight: 700; }
-  #deploy-btns { flex: 1; display: flex; gap: 8px; }
+  /* ★★★2026-08-13・ユーザー指摘「キャラクターが増えると見切れています」の 正体。
+     flexの子は **min-width:auto**（中身より 小さくならない）。7人ぶんの出撃ボタンは
+     中身（顔＋ねだん＋「中大兄皇子 Lv.1」）で 1つ 60pxほど 要るので、
+     せまい画面では **入れものが 外へ ふくらんで、ページごと 横に はみ出して**いた。
+     → ①入れものに `min-width: 0`（ふくらませない）②入りきらないぶんは **横スクロール**
+       （ユーザー了承ずみ:「どうしても難しいならスクロールできる形にしてもいい」）。
+     ★`min-width: 0` を 消さないこと。消すと ページ全体の 横はみ出しが もどる。 */
+  #deploy-btns {
+    flex: 1; min-width: 0; display: flex; gap: 8px;
+    overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+  }
+  #deploy-btns::-webkit-scrollbar { height: 0; }      /* すじは出さない（指で ながせる） */
   .dep-btn {
-    flex: 1; max-width: 120px; min-height: 76px; border: none; border-radius: 14px; cursor: pointer;
+    flex: 1 0 auto; max-width: 120px; min-height: 76px; border: none; border-radius: 14px; cursor: pointer;
     position: relative; overflow: hidden; background: #d7ccc8; padding: 4px; opacity: 0.8;
   }
   .dep-btn .cd-fill {
@@ -1201,7 +1229,11 @@
     #moneybox { width: 112px; font-size: 19px; }
     #money-num { min-width: 40px; }
     #deploy-btns { gap: 4px; }
-    .dep-btn { min-height: 66px; padding: 2px; }
+    /* ★せまい画面では **大きさを 決めうち**（つぶさない）＝指で 押せる 74px を まもり、
+       入りきらないぶんは 横に ながして 出す。48px以上（CLAUDE.md §5）。 */
+    .dep-btn { flex: 0 0 74px; min-height: 66px; padding: 2px; }
+    /* 名前は 1行に おさめる（長い名前が ボタンを おし広げないように） */
+    .dep-btn .dep-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .dep-btn .dep-cost { font-size: 12px; }
     .dep-btn .dep-name { font-size: 10px; }
     .dep-btn .dep-lv { font-size: 10px; }
@@ -1619,6 +1651,15 @@
 
 /* ---------- ちいさな道具 ---------- */
 function $(id) { return document.getElementById(id); }
+/* ★★★画面のはば。**CSSと 同じ はば**（レイアウトの はば）を かえす。
+   2026-08-13・ユーザー指摘「キャラクターが増えると見切れています」の 根っこは これだった。
+   `window.innerWidth` は 端末や 表示のしかたによって **CSSの はばと ちがう数**を かえす
+   （実測: CSSは 375pxなのに innerWidth は **672**）。
+   JSだけ「ひろい画面」だと 思いこんで **ユニットも 顔も 大きいまま** 作るので、
+   出撃ボタンの中身が ふくらんで 横に はみ出していた。
+   → はばで 見た目を 変えるところは **かならず この関数**を つかうこと。
+     `document.documentElement.clientWidth` は CSSの `@media (max-width: …)` と 同じ ものさし。 */
+function viewW() { return document.documentElement.clientWidth || window.innerWidth; }
 function rubi(s) { return String(s).replace(/([一-龠々〆ヵヶノ]+)《([^》]+)》/g, '<ruby>$1<rt>$2</rt></ruby>'); }
 function plain(s) { return String(s).replace(/《[^》]*》/g, ''); }
 function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
@@ -2496,7 +2537,7 @@ function renderHensei() {
       /* ★顔・名前・レベルだけ（レア度の帯は カードのほうで見える）。
          ここを みじかくしたぶん、下の 人物のカードが 多く見える（2026-08-09） */
       d.className = "dslot filled";
-      d.innerHTML = faceHTML(ch, rar, window.innerWidth < 640 ? 24 : 32)
+      d.innerHTML = faceHTML(ch, rar, viewW() < 640 ? 24 : 32)
         + '<span class="dname">' + (eraBonus(ch) ? "⭐" : "") + ch.name + '</span>'
         + lvBadge(id);
     } else {
@@ -3025,7 +3066,7 @@ var EDGE_PAD = UNIT_W / 2 + 6;
    横はばの半分以上をふさいでしまい、戦っている場所がなくなるため。
    ★バトルを始める前に呼ぶこと（出したあとで変えると、城の位置が少しずれる） */
 function setUnitW() {
-  UNIT_W = window.innerWidth < 620 ? 76 : 104;
+  UNIT_W = viewW() < 620 ? 76 : 104;      /* ★viewW＝CSSと同じはば（innerWidth を つかわない） */
   SPRITE_OVER = Math.round(((UNIT_W + 4) * 1.42 - UNIT_W) / 2);
   EDGE_PAD = UNIT_W / 2 + SPRITE_OVER + 6;
   document.documentElement.style.setProperty("--unit-w", UNIT_W + "px");
@@ -3524,7 +3565,7 @@ function buildDeployRow() {
   row.innerHTML = "";
   B.btns = [];
   /* デッキが7人になったので、せまい画面では顔を小さくしないと ボタンがつぶれる */
-  var fw = window.innerWidth < 620 ? 28 : 40;
+  var fw = viewW() < 620 ? 28 : 40;       /* ★同上。ここが ずれると ボタンが ふくらむ */
   save.deck.forEach(function (id) {
     var ch = CHAR_BY_ID[id], cost = charStat(id).cost;
     var b = document.createElement("button");
@@ -5650,9 +5691,14 @@ function winBattle() {
   /* 🏅 たたかいの ふりかえり（2026-08-10）。★**winBattle でしか 出せない**
      （B はここを すぎると null になるので、あとの画面では 数えられない）。 */
   var look = battleLook();
-  ov.innerHTML = '<div class="ov-big">🎉 しょうり！</div>' + gotHtml + hardHtml + look.html
-    + '<div style="font-size:17px; font-weight:700;">つぎは クイズ！ ながれてきた じょうほうを 思い出そう</div>'
-    + '<button class="big-btn" onclick="startQuiz()">📝 クイズへ すすむ ▶</button>';
+  /* ★★ボタンは **いちばん上**（しょうり！の すぐ下）。2026-08-13・ユーザー指摘
+       「クイズへのボタンが見切れて押せません。一番前に出てくる感じにして」。
+     ふりかえり(look.html)は そのあとに 置く＝読みたい人は 下に ながして 読める。
+     ★ボタンを いちばん下に もどさないこと。中身が のびると また 押せなくなる。 */
+  ov.innerHTML = '<div class="ov-big">🎉 しょうり！</div>'
+    + '<button class="big-btn" onclick="startQuiz()">📝 クイズへ すすむ ▶</button>'
+    + '<div style="font-size:15px; font-weight:700;">ながれてきた じょうほうを 思い出そう</div>'
+    + gotHtml + hardHtml + look.html;
   ov.classList.add("show");
   /* ★★★**じどうで クイズに 入らないこと**（2026-08-13・ユーザー要望
        「試合に勝った後に勝手にクイズに入るので、誤ってクイズを間違えることがあります」）。

@@ -1232,6 +1232,10 @@
   /* 「いちばん むかしの人は？」の 名前の下に出す 時代の小さい字（2026-08-09）。
      ★時代を かくすと ただの あてずっぽうになる。**見せたうえで ならびを考えさせる**問題。 */
   .quiz-choice .q-sub { display: block; font-size: 14px; font-weight: 700; color: #8d6e63; margin-top: 2px; }
+  /* えらんだところ（まだ こたえあわせ前）。★正解の緑・不正解の赤とは **べつの色**にする
+     ＝「えらんだだけ」と「合っていた」を 見まちがえないように（2026-08-13） */
+  .quiz-choice.picked { border-color: #ffb300; background: #fff8e1; box-shadow: 0 0 0 3px #ffe082, 0 3px 8px rgba(191,54,12,0.15); }
+  .quiz-choice.picked::before { content: "✓ "; color: #ef6c00; font-weight: 800; }
   .quiz-choice.good { border-color: #43a047; background: #e8f5e9; }
   .quiz-choice.bad { border-color: #e53935; background: #ffebee; }
   #quiz-fb { flex: none; text-align: center; font-size: 19px; font-weight: 800; margin-top: 10px; min-height: 28px; }
@@ -1568,6 +1572,10 @@
         <div id="quiz-choices"></div>
         <div id="quiz-fb"></div>
       </div>
+      <!-- ★えらんでから **けってい** で こたえあわせ（2026-08-13・ユーザー要望
+           「クイズの時に押したあとに OKボタンを押して、正解不正解が出るように」）。
+           まちがえて さわった1回で 不正解に なってしまうのを ふせぐ。 -->
+      <button id="btn-qok" class="big-btn" style="display:none;">⭕ これで けってい！</button>
       <button id="btn-qnext" class="big-btn" style="display:none;">つぎへ ▶</button>
     </div>
   </section>
@@ -3003,14 +3011,23 @@ function eraBonus(ch) {
    位置は必ず unitLeft() を通すこと。x から引く値がCSSの幅の半分とズレると、
    みかたの城や敵の町が枠からはみ出して見切れる（2026-07-20に一度やらかしている）。 */
 var UNIT_W = 104;
-/* 城・町を枠の中におさめるための余白。左右の端からこれだけ内側に置く */
+/* ★★★スプライトは わく(--unit-w)より **142%** 大きく描いてある（.unit .sprite img）。
+   その **はみ出しぶん**（片がわ）。EDGE_PAD に足さないと、画面のはしに立った人物が
+   #bfield の overflow:hidden で **半分 切れて 見える**。
+   2026-08-13・ユーザー指摘「スマホだとキャラが見切れてしまいます」。
+   実測（iPhone・はば390px）: 味方が 右はしで x=346 まで来ると 絵の右はしが 403px＝13px はみ出し、
+   みかたの城も 左に 20px はみ出していた。
+   ★142 は CSSの `.unit .sprite img { width:142% }` と ペア。**片方だけ 変えないこと**。 */
+var SPRITE_OVER = 0;
+/* 城・町・人物を 枠の中に おさめるための余白。左右の端から これだけ内側に置く */
 var EDGE_PAD = UNIT_W / 2 + 6;
 /* せまい画面（スマホのたて向きなど）では小さくする。104のままだと みかたの城と敵の町だけで
    横はばの半分以上をふさいでしまい、戦っている場所がなくなるため。
    ★バトルを始める前に呼ぶこと（出したあとで変えると、城の位置が少しずれる） */
 function setUnitW() {
   UNIT_W = window.innerWidth < 620 ? 76 : 104;
-  EDGE_PAD = UNIT_W / 2 + 6;
+  SPRITE_OVER = Math.round(((UNIT_W + 4) * 1.42 - UNIT_W) / 2);
+  EDGE_PAD = UNIT_W / 2 + SPRITE_OVER + 6;
   document.documentElement.style.setProperty("--unit-w", UNIT_W + "px");
 }
 setUnitW();
@@ -4280,16 +4297,20 @@ function renderHisBar() {
   fitHisBtns(box);
 }
 /* ★ひっさつの名前＝**その人の業績名**（2026-08-08・ユーザー指示「勉強が目的なので」）。
-   3つの技に、その人が使える業績を 上から順ぐりに わりあてる。
-   ★レア度で使える業績が増える（N=1つ / R=2つ / SR=3つ）という決まり（§2）は そのまま。
-     足りないぶんは 頭にもどって くり返す（自動発動の技が「順ぐりに出す」のと同じ流儀）。
-       ノーマルの聖徳太子 → 3つとも「十七条の憲法」
-       レア          → 一げき=十七条の憲法 / なぎはらい=冠位十二階 / いのり=十七条の憲法
-       スーパーレア  → 一げき=十七条の憲法 / なぎはらい=冠位十二階 / いのり=法隆寺建立
-     ＝**育てるほど 読める業績名が増える**（カードを集める理由が 学習につながる）。 */
+   ★★★2026-08-13・ユーザー指示で **レア度に関係なく 3つとも ちがう業績**にした。
+     ユーザー:「織田信長の必殺技が全部 桶狭間の戦いになっています。全員3つ違う技（業績）に
+     してください」。
+     もとは `skillList(ch, rar)`（レア度で 使える業績が増える）を 順ぐりに していたので、
+     **ノーマルの人は 3つとも 同じ業績**になっていた（Lv1で 遊びはじめた人が いちばん
+     たくさん見る画面なのに、そこで 業績が 1つしか 出ない＝いちばん もったいなかった）。
+     いまは 42人 ぜんいん skill/skill2/skill3 が そろっているので、
+       一げき＝skill ／ なぎはらい＝skill2 ／ いのり＝skill3
+     と 決めうちで わりあてる。**ここを skillList に もどさないこと。**
+   ★つよさ（HIS_MULT）は これまでどおり レア度で 変わる。名前だけの話。
+   ★万が一 業績が 3つ そろっていない人物を 足したときは、足りないぶんだけ 頭にもどる。 */
 function hisSkillName(ch, rar, i) {
-  var list = skillList(ch, rar);
-  return list[i % list.length];
+  var all = [ch.skill, ch.skill2, ch.skill3].filter(function (s) { return !!s; });
+  return all[i % all.length];
 }
 /* ボタンが帯に入りきらないときだけ 横スクロールに切りかえる（入るときは 中央ぞろえのまま）。
    ★入るのに .scrollx を付けないこと。左よせになって 見た目が ぶれる。 */
@@ -5630,11 +5651,15 @@ function winBattle() {
      （B はここを すぎると null になるので、あとの画面では 数えられない）。 */
   var look = battleLook();
   ov.innerHTML = '<div class="ov-big">🎉 しょうり！</div>' + gotHtml + hardHtml + look.html
-    + '<div style="font-size:17px; font-weight:700;">つぎは クイズ！ ながれてきた じょうほうを 思い出そう</div>';
+    + '<div style="font-size:17px; font-weight:700;">つぎは クイズ！ ながれてきた じょうほうを 思い出そう</div>'
+    + '<button class="big-btn" onclick="startQuiz()">📝 クイズへ すすむ ▶</button>';
   ov.classList.add("show");
-  /* ★ふりかえりを 読む時間ぶん のばす（1.8秒 → 3.4秒）。読ませたいものを足したのに
-     時間を そのままにすると、出したことに 気づかれない。 */
-  setTimeout(function () { if (cur === "v-battle") startQuiz(); }, 3400);
+  /* ★★★**じどうで クイズに 入らないこと**（2026-08-13・ユーザー要望
+       「試合に勝った後に勝手にクイズに入るので、誤ってクイズを間違えることがあります」）。
+     もとは 3.4秒で かってに startQuiz() を 呼んでいた。勝った よろこびで 画面を
+     さわっている ところに クイズが 出るので、**1問めを 見ないまま 押してしまう**。
+     いまは ボタンを 押したときだけ すすむ。ふりかえり（MVP・⭐）も 好きなだけ 読める。
+     ★ここに setTimeout を もどさないこと。 */
 }
 /* 🏅 だれが いちばん はたらいたか を まとめて、記録にも のこす。
    ★出すのは **MVP 1人と いちばん出た技 1つ**だけ。表にして ずらずら出すと
@@ -6069,20 +6094,45 @@ function renderQuiz() {
   $("btn-qnext").style.display = "none";
   var box = $("quiz-choices");
   box.innerHTML = "";
+  /* ★★えらんだだけでは こたえあわせ しない（2026-08-13・ユーザー要望）。
+     もとは 押した しゅんかんに answerQuiz を 呼んでいたので、**指が すべって
+     さわっただけで 不正解**になっていた。いまは
+       ①札を押す＝えらぶ（何回でも 変えられる）→ ②「けってい」で はじめて まる・ばつ
+     ★state.quiz.pick に えらんだものを ためておく。 */
+  state.quiz.pick = null;
+  $("btn-qok").style.display = "none";
   q.make().forEach(function (c) {
     var b = document.createElement("button");
     b.className = "quiz-choice";
     if (c.ok) b.setAttribute("data-ok", "1");
     b.innerHTML = c.html;
-    b.onclick = function () { answerQuiz(c.ok, b); };
+    b.onclick = function () {
+      if (state.quiz.judged) return;              /* こたえあわせ後は さわれない */
+      document.querySelectorAll(".quiz-choice").forEach(function (o) { o.classList.remove("picked"); });
+      b.classList.add("picked");
+      state.quiz.pick = { ok: c.ok, btn: b };
+      sfx("tap");
+      $("quiz-fb").innerHTML = "";
+      $("btn-qok").style.display = "block";
+    };
     box.appendChild(b);
   });
+  state.quiz.judged = false;
   showView("v-quiz", "れきしクイズ", false);
 }
+/* 「⭕ これで けってい！」＝ここで はじめて こたえあわせ（2026-08-13） */
+$("btn-qok").onclick = function () {
+  var p = state.quiz && state.quiz.pick;
+  if (!p || state.quiz.judged) return;
+  $("btn-qok").style.display = "none";
+  answerQuiz(p.ok, p.btn);
+};
 function answerQuiz(ok, btn) {
+  state.quiz.judged = true;
   var goodBtn = null;
   document.querySelectorAll(".quiz-choice").forEach(function (b) {
     b.onclick = null;
+    b.classList.remove("picked");        /* えらんだ しるしは 消して、まる・ばつだけ 見せる */
     if (b.getAttribute("data-ok")) goodBtn = b;
   });
   if (ok) {

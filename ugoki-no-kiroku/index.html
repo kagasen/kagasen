@@ -153,6 +153,12 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
   background-image:radial-gradient(#fff 1.6px,transparent 1.7px);background-size:15px 15px;}
 .sport-card:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(9,45,75,.22),0 4px 10px rgba(14,116,180,.18);}
 .sport-card .em{font-size:40px;line-height:1.05;filter:drop-shadow(0 3px 4px rgba(0,0,0,.22));}
+/* 自前SVGアイコン(てつぼうなど)を絵文字と同じ大きさでそろえる */
+.em.ic{display:inline-flex;align-items:center;justify-content:center;}
+.em.ic svg{width:1em;height:1em;display:block;}
+.tl-item .em.ic svg,.dk-head .em.ic svg{width:1em;height:1em;}
+.page-title .em svg{width:1.05em;height:1.05em;display:block;}
+.dk-yet button svg{width:1.25em;height:1.25em;vertical-align:-0.25em;display:inline-block;}
 .sport-card .nm{font-weight:800;font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.18);}
 .sport-card .sub{font-size:11px;opacity:.95;}
 /* しんちょく: つかうほどカードが「そだつ」 */
@@ -426,7 +432,29 @@ input[type=date],input[type=text],select{
 /* col/bg = できたことリスト(あしあと)のいろわけ。cls のグラデーションとそろえること */
 const SPORTS = {
   nawatobi:{ name:'なわとび', em:'🪢', cls:'sc-nawatobi', col:'#2563EB', bg:'#E7EEFF', sub:'わざ19こ＋30びょうチャレンジ' },
-  tetsubo:{ name:'てつぼう', em:'🤾', cls:'sc-tetsubo', col:'#EA580C', bg:'#FFEEE0', sub:'けんてい20わざ' },
+  /* てつぼうは絵文字に「鉄棒」がないので自前SVG（🤾だとドッジボールと同じ絵になってしまう） */
+  tetsubo:{ name:'てつぼう', em:'🤾', cls:'sc-tetsubo', col:'#EA580C', bg:'#FFEEE0', sub:'けんてい20わざ',
+    icon:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" style="width:1em;height:1em;display:block">
+      <line x1="7" y1="35" x2="13" y2="35" stroke="#94A3B8" stroke-width="2.4" stroke-linecap="round"/>
+      <line x1="31" y1="35" x2="37" y2="35" stroke="#94A3B8" stroke-width="2.4" stroke-linecap="round"/>
+      <line x1="10" y1="11" x2="10" y2="35" stroke="#7C93A9" stroke-width="3"/>
+      <line x1="34" y1="11" x2="34" y2="35" stroke="#7C93A9" stroke-width="3"/>
+      <line x1="5" y1="10.5" x2="39" y2="10.5" stroke="#4B5D70" stroke-width="3.8" stroke-linecap="round"/>
+      <line x1="7" y1="9.3" x2="37" y2="9.3" stroke="#DCE9F4" stroke-width="1.4" stroke-linecap="round"/>
+      <g stroke="#1E3A5F" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M15.5,11 L19.6,21.5"/><path d="M28.5,11 L24.4,21.5"/>
+        <path d="M22,29.5 L17.6,37.5"/><path d="M22,29.5 L26.4,37.5"/></g>
+      <g stroke="#FFD9B0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M15.5,11 L19.6,21.5"/><path d="M28.5,11 L24.4,21.5"/>
+        <path d="M22,29.5 L17.6,37.5"/><path d="M22,29.5 L26.4,37.5"/></g>
+      <path d="M22,21.5 L22,29.5" stroke="#BE1236" stroke-width="6.6" stroke-linecap="round"/>
+      <path d="M22,21.5 L22,29.5" stroke="#F43F5E" stroke-width="4.4" stroke-linecap="round"/>
+      <circle cx="22" cy="17.2" r="4.4" fill="#FFD9B0" stroke="#1E3A5F" stroke-width="1.6"/>
+      <path d="M17.8,15.6 A4.4,4.4 0 0 1 26.2,15.6" fill="none" stroke="#1E3A5F" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="20.4" cy="18" r="0.8" fill="#1E3A5F"/><circle cx="23.6" cy="18" r="0.8" fill="#1E3A5F"/>
+      <circle cx="18.9" cy="19.4" r="0.95" fill="#FB9BAF" opacity=".7"/>
+      <circle cx="25.1" cy="19.4" r="0.95" fill="#FB9BAF" opacity=".7"/>
+    </svg>` },
   mat:{ name:'マットうんどう', em:'🤸', cls:'sc-mat', col:'#16A34A', bg:'#E5FAEC', sub:'わざ10こ' },
   tobibako:{ name:'とびばこ', em:'🦘', cls:'sc-tobibako', col:'#DB2777', bg:'#FFE9F3', sub:'わざ×なんだん？' },
   suiei:{ name:'すいえい', em:'🏊', cls:'sc-suiei', col:'#0891B2', bg:'#E0F7FB', sub:'けんてい22だんかい' },
@@ -2188,12 +2216,24 @@ function viewHome(){
   </div>`;
 }
 
+/* しゅもくのアイコン。icon(SVG)があればそれを、なければ絵文字を出す */
+function sportIcon(sp){ return sp.icon ? `<span class="em ic">${sp.icon}</span>` : `<span class="em">${sp.em}</span>`; }
+/* カードの下に出すせつめい。データから作るので、わざを増やしても数がズレない */
+function sportSub(id){
+  const sp = SPORTS[id];
+  if(BALL_SPORTS[id]) return 'チャレンジ'+BALL_SPORTS[id].skills.length+'こ';
+  if(id==='nawatobi') return 'わざ'+NAWATOBI_SKILLS.length+'こ＋30びょうチャレンジ';
+  if(id==='tetsubo')  return 'けんてい'+TETSUBO_SKILLS.length+'わざ';
+  if(id==='mat')      return 'わざ'+MAT_SKILLS.length+'こ';
+  if(id==='suiei')    return 'けんてい'+SUIEI_KYU.length+'だんかい';
+  return sp.sub;
+}
 /* しゅもくカード。つかいはじめると「せつめい」→「しんちょくバー」にかわって、そだった感じが出る */
 function sportCardsHtml(){
   return Object.entries(SPORTS).map(([id,sp])=>{
     const d = dekitaOf(id);
     const done = d.items.filter(i=>!i.ex).length;
-    let foot = `<span class="sub">${sp.sub}</span>`;
+    let foot = `<span class="sub">${sportSub(id)}</span>`;
     if(d.total && done>0){
       const pct = Math.min(100, done/d.total*100);
       foot = `<span class="prog"><span class="bar"><i style="width:${pct}%"></i></span>
@@ -2202,7 +2242,7 @@ function sportCardsHtml(){
       foot = `<span class="kmchip">${d.sub}</span>`;
     }
     return `<button class="sport-card ${sp.cls}" onclick="go('sport/${id}')">
-      <span class="em">${sp.em}</span><span class="nm">${sp.name}</span>${foot}
+      ${sportIcon(sp)}<span class="nm">${sp.name}</span>${foot}
     </button>`;
   }).join('');
 }
@@ -2461,7 +2501,7 @@ function toggleSkill(sport, id){
 function viewTetsubo(){
   const n = S.tetsubo.done.length;
   const half = halfSkills(TETSUBO_SKILLS, S.tetsubo.done);
-  return headerHtml('てつぼうけんてい','🤾','sports')+`
+  return headerHtml('てつぼうけんてい',SPORTS.tetsubo.icon,'sports')+`
   <div class="card center" style="background:linear-gradient(160deg,#FFF3E4,#fff)">
     <div class="muted small">できたわざ <b>${n} / 20</b>${half?` ＋ステップだけ <b>${half}</b>わざ`:''}</div>
     <div style="font-size:30px;font-weight:800;color:var(--orange-dark)">${tetsuKyu(S)}</div>
@@ -2879,7 +2919,7 @@ function dekitaHtml(){
     if(d.items.length===0){ yet.push({ id, sp }); return; }
     cards.push(`<div class="dk-card">
       <button class="dk-head ${sp.cls}" onclick="go('sport/${id}')">
-        <span class="em">${sp.em}</span>
+        ${sportIcon(sp)}
         <span class="nm">${sp.name}${d.sub?`<span class="sb">${d.sub}</span>`:''}</span>
         ${d.total?`<span class="cnt">${done}<span class="tt">/${d.total}</span></span>`:''}
         <span class="go">▶</span>
@@ -2906,7 +2946,7 @@ function dekitaHtml(){
   ${yet.length?`<div class="card">
     <h3>🌱 これからチャレンジ</h3>
     <div class="dk-yet">
-      ${yet.map(y=>`<button onclick="go('sport/${y.id}')">${y.sp.em} ${y.sp.name}</button>`).join('')}
+      ${yet.map(y=>`<button onclick="go('sport/${y.id}')">${y.sp.icon?y.sp.icon:y.sp.em} ${y.sp.name}</button>`).join('')}
     </div>
   </div>`:''}`;
 }
@@ -2928,7 +2968,7 @@ function viewProgress(){
         const recs = S.records.filter(r=>r.date===d).slice().reverse();
         return `<div class="tl-date">📅 ${fmtDate(d)}${d===todayStr()?' (きょう)':''}</div>`+
           recs.map(r=>`<div class="tl-item">
-            <span class="em">${SPORTS[r.sport]?SPORTS[r.sport].em:'🏅'}</span>
+            ${SPORTS[r.sport]?sportIcon(SPORTS[r.sport]):'<span class="em">🏅</span>'}
             <span>${esc(r.label)}</span>
             <span class="xp">+${r.xp}XP</span></div>`).join('');
       }).join('')

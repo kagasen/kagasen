@@ -22,7 +22,12 @@
 html,body{margin:0;padding:0;}
 body{
   font-family:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic','Yu Gothic UI','Yu Gothic',sans-serif;
-  background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;
+  background:
+    radial-gradient(circle at 100% 0%, #E7F6FF 0%, rgba(231,246,255,0) 42%),
+    radial-gradient(circle at 0% 100%, #FFF6E2 0%, rgba(255,246,226,0) 40%),
+    radial-gradient(#D8EDFA 1.6px, transparent 1.7px) 0 0/24px 24px,
+    var(--bg);
+  color:var(--ink); font-size:16px; line-height:1.55;
   padding-bottom:calc(76px + env(safe-area-inset-bottom));
   user-select:none; -webkit-user-select:none;
 }
@@ -38,12 +43,18 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
   border-radius:14px;min-width:48px;height:44px;font-size:17px;font-weight:700;cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 14px;
 }
-.page-title{font-size:20px;font-weight:800;margin:4px 0 12px;display:flex;align-items:center;gap:8px;}
-.page-title .em{font-size:26px;}
+.page-title{font-size:21px;font-weight:800;margin:4px 0 13px;display:flex;align-items:center;gap:9px;}
+.page-title .em{font-size:28px;filter:drop-shadow(0 2px 3px rgba(14,116,180,.25));}
+.page-title:after{content:'';flex:1;height:5px;border-radius:999px;
+  background:linear-gradient(90deg,#BAE6FD,rgba(186,230,253,0));}
+.topbar .logo{text-shadow:0 2px 0 rgba(255,255,255,.9);}
 
 /* ---------- cards ---------- */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;}
-.card h3{margin:0 0 10px;font-size:16px;color:var(--sky-deep);display:flex;align-items:center;gap:6px;}
+.card h3{margin:0 0 10px;font-size:16.5px;color:var(--sky-deep);display:flex;align-items:center;gap:7px;
+  padding-left:10px;position:relative;}
+.card h3:before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:5px;height:19px;border-radius:999px;background:linear-gradient(180deg,var(--sky),var(--sky-deep));}
 .muted{color:var(--ink-soft);font-size:13px;}
 .small{font-size:12px;}
 .center{text-align:center;}
@@ -66,40 +77,92 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
 .btn.smallbtn{min-height:40px;font-size:14px;padding:6px 12px;border-radius:12px;}
 .btn:disabled{opacity:.45;cursor:default;}
 
-/* ---------- home ---------- */
+/* ---------- home: そらとおかの ステージ ---------- */
 .hero{
-  background:linear-gradient(160deg,#E0F4FF 0%,#FDF6E3 100%);
-  border-radius:24px;box-shadow:var(--shadow);padding:18px 16px 16px;margin-bottom:14px;
-  position:relative;overflow:hidden;
+  background:linear-gradient(172deg,#A8E1FF 0%,#D7F1FF 38%,#EFFAFF 62%,#FFF6DF 100%);
+  border-radius:28px;padding:16px 15px 40px;margin-bottom:16px;
+  position:relative;overflow:hidden;border:3px solid #fff;
+  box-shadow:0 12px 26px rgba(14,116,180,.20), inset 0 -2px 0 rgba(255,255,255,.6);
 }
-.hero .char-wrap{display:flex;align-items:center;gap:14px;}
-.hero .char-svg{width:120px;height:120px;flex:none;filter:drop-shadow(0 6px 8px rgba(14,116,180,.18));animation:bob 2.6s ease-in-out infinite;}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.hero>*{position:relative;z-index:2;}
+.hero .sun{position:absolute;right:-30px;top:-40px;width:150px;height:150px;border-radius:50%;z-index:0;
+  background:radial-gradient(circle,#FFF6C9 0%,#FFE9A3 48%,rgba(255,233,163,0) 72%);}
+.hero .cloud{position:absolute;z-index:0;background:#fff;border-radius:999px;opacity:.9;}
+.hero .cloud:before,.hero .cloud:after{content:'';position:absolute;background:#fff;border-radius:50%;}
+.hero .c1{width:64px;height:20px;left:14px;top:20px;animation:drift 9s ease-in-out infinite;}
+.hero .c1:before{width:26px;height:26px;left:10px;top:-12px;}
+.hero .c1:after{width:20px;height:20px;left:34px;top:-9px;}
+.hero .c2{width:48px;height:16px;right:56px;top:56px;opacity:.75;animation:drift 12s ease-in-out infinite reverse;}
+.hero .c2:before{width:20px;height:20px;left:8px;top:-10px;}
+.hero .c2:after{width:15px;height:15px;left:25px;top:-7px;}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(12px)}}
+.hero .hill{position:absolute;left:-6%;right:-6%;bottom:-30px;height:86px;z-index:0;
+  background:linear-gradient(180deg,#BDF2CE 0%,#8FE3AF 62%,#6ED396 100%);
+  border-radius:50% 50% 0 0/60px 60px 0 0;box-shadow:inset 0 3px 0 rgba(255,255,255,.55);}
+.hero .char-wrap{display:flex;align-items:center;gap:12px;}
+.hero .char-hold{position:relative;flex:none;}
+.hero .char-hold:before{content:'';position:absolute;left:50%;top:52%;width:126px;height:126px;margin:-63px 0 0 -63px;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.85),rgba(255,255,255,0) 68%);}
+.hero .char-svg{position:relative;width:126px;height:126px;display:block;
+  filter:drop-shadow(0 8px 10px rgba(14,116,180,.22));animation:bob 2.8s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
 .hero .char-info{flex:1;min-width:0;}
-.hero .char-name{font-size:19px;font-weight:800;}
-.hero .char-stage{font-size:12px;color:var(--ink-soft);margin-bottom:6px;}
-.lv-chip{display:inline-block;background:var(--sky-deep);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:2px 12px;margin-right:6px;}
-.xpbar{height:16px;background:#DCEFFB;border-radius:999px;overflow:hidden;margin-top:8px;box-shadow:inset 0 1px 3px rgba(0,0,0,.08);}
-.xpbar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--sky));transition:width .6s cubic-bezier(.22,1.2,.36,1);}
-.xp-label{font-size:12px;color:var(--ink-soft);margin-top:4px;display:flex;justify-content:space-between;}
+.hero .char-name{font-size:20px;font-weight:800;text-shadow:0 2px 0 rgba(255,255,255,.7);}
+.hero .char-stage{font-size:12px;color:#3D6B8C;margin-bottom:7px;text-shadow:0 1px 0 rgba(255,255,255,.6);}
+.lv-chip{
+  display:inline-block;color:#fff;font-weight:800;font-size:14px;border-radius:999px;padding:3px 14px;margin-right:6px;
+  background:linear-gradient(180deg,#38BDF8,#0284C7);box-shadow:0 3px 0 rgba(2,132,199,.5),inset 0 1px 0 rgba(255,255,255,.6);
+}
+.xpbar{
+  height:20px;background:#E3F2FB;border-radius:999px;overflow:hidden;margin-top:9px;
+  box-shadow:inset 0 2px 4px rgba(2,60,100,.16),0 1px 0 rgba(255,255,255,.8);position:relative;
+}
+.xpbar .fill{
+  height:100%;border-radius:999px;position:relative;
+  background:linear-gradient(180deg,#7BE8A6,#34D399 55%,#22C55E);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.10),inset 0 2px 0 rgba(255,255,255,.55);
+  transition:width .7s cubic-bezier(.22,1.2,.36,1);
+}
+.xpbar .fill:after{content:'';position:absolute;inset:0;border-radius:999px;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.30) 0 8px,rgba(255,255,255,0) 8px 18px);
+  animation:xpflow 1.6s linear infinite;}
+@keyframes xpflow{to{background-position:36px 0}}
+.xp-label{font-size:12px;color:#3D6B8C;margin-top:5px;display:flex;justify-content:space-between;font-weight:700;}
 .streak-chip{
-  display:inline-flex;align-items:center;gap:5px;background:#FFF3E4;color:#B45309;
-  border-radius:999px;padding:4px 12px;font-weight:800;font-size:13px;margin-top:10px;
+  display:inline-flex;align-items:center;gap:5px;background:linear-gradient(180deg,#FFF6E6,#FFE9C7);color:#B45309;
+  border-radius:999px;padding:5px 14px;font-weight:800;font-size:13.5px;margin-top:11px;
+  box-shadow:0 2px 0 rgba(180,83,9,.22),inset 0 1px 0 rgba(255,255,255,.8);
 }
 .kyu-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.kyu-chip{background:#fff;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--sky-deep);box-shadow:0 1px 4px rgba(14,116,180,.15);}
+.kyu-chip{background:rgba(255,255,255,.95);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800;color:var(--sky-deep);
+  box-shadow:0 2px 5px rgba(14,116,180,.18);}
 
 /* ---------- sport grid ---------- */
 .sport-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .sport-card{
-  border:none;border-radius:20px;padding:16px 10px 12px;cursor:pointer;color:#fff;
-  display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--shadow);
-  font-family:inherit;transition:transform .08s;min-height:110px;
+  border:none;border-radius:22px;padding:14px 10px 11px;cursor:pointer;color:#fff;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  font-family:inherit;transition:transform .1s,box-shadow .1s;min-height:118px;
+  position:relative;overflow:hidden;isolation:isolate;
+  box-shadow:0 6px 0 rgba(9,45,75,.22),0 10px 18px rgba(14,116,180,.20),inset 0 2px 0 rgba(255,255,255,.35);
 }
-.sport-card:active{transform:scale(.96);}
-.sport-card .em{font-size:38px;line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.15));}
-.sport-card .nm{font-weight:800;font-size:16px;}
-.sport-card .sub{font-size:11px;opacity:.92;}
+/* 上のつやと、うっすらした水玉もよう */
+.sport-card:before{content:'';position:absolute;z-index:-1;left:-20%;top:-60%;width:140%;height:110%;
+  background:radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.42),rgba(255,255,255,0) 70%);}
+.sport-card:after{content:'';position:absolute;z-index:-1;inset:0;opacity:.20;
+  background-image:radial-gradient(#fff 1.6px,transparent 1.7px);background-size:15px 15px;}
+.sport-card:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(9,45,75,.22),0 4px 10px rgba(14,116,180,.18);}
+.sport-card .em{font-size:40px;line-height:1.05;filter:drop-shadow(0 3px 4px rgba(0,0,0,.22));}
+.sport-card .nm{font-weight:800;font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.18);}
+.sport-card .sub{font-size:11px;opacity:.95;}
+/* しんちょく: つかうほどカードが「そだつ」 */
+.sport-card .prog{display:flex;align-items:center;gap:6px;width:100%;padding:0 4px;margin-top:1px;}
+.sport-card .prog .bar{flex:1;height:8px;border-radius:999px;background:rgba(9,45,75,.28);overflow:hidden;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.18);}
+.sport-card .prog .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(180deg,#FFF7C2,#FDE047);
+  box-shadow:0 0 6px rgba(253,224,71,.7);transition:width .6s;}
+.sport-card .prog .num{font-size:11.5px;font-weight:800;flex:none;text-shadow:0 1px 2px rgba(0,0,0,.25);}
+.sport-card .kmchip{font-size:11.5px;font-weight:800;background:rgba(255,255,255,.28);border-radius:999px;padding:2px 9px;}
 .sc-nawatobi{background:linear-gradient(160deg,#38BDF8,#2563EB);}
 .sc-tetsubo{background:linear-gradient(160deg,#FB923C,#EA580C);}
 .sc-mat{background:linear-gradient(160deg,#4ADE80,#16A34A);}
@@ -126,7 +189,9 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
 .skill-kotsu b{color:var(--sky-deep);}
 .skill-body{display:flex;gap:10px;margin-top:8px;align-items:stretch;flex-wrap:wrap;}
 .skill-body .skill-kotsu{flex:1 1 150px;margin-top:0;}
-.skill-art{flex:none;width:108px;min-height:84px;background:#F0FAFF;border:2px solid #E3F3FC;border-radius:12px;display:flex;align-items:center;}
+.skill-art{flex:none;width:108px;min-height:84px;border:2px solid #E3F3FC;border-radius:14px;display:flex;align-items:center;
+  background:linear-gradient(180deg,#F7FCFF 0%,#E9F6FE 62%,#DFF2FC 100%);
+  box-shadow:inset 0 2px 4px rgba(14,116,180,.10);overflow:hidden;}
 .skill-art svg{width:100%;height:auto;display:block;}
 .done-badge{background:var(--green-dark);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;flex:none;}
 .best-chip{background:#E8F6FF;color:var(--sky-deep);font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;flex:none;}
@@ -298,8 +363,46 @@ input[type=date],input[type=text],select{
   padding:8px 12px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;min-height:48px;
 }
 
+/* ---------- スモールステップ（わざカードの中の折りたたみ） ---------- */
+.step-wrap{margin-top:8px;}
+.step-head{
+  width:100%;border:none;font-family:inherit;cursor:pointer;text-align:left;
+  background:#FFF7E8;color:#B45309;border-radius:12px;min-height:48px;padding:8px 12px;
+  font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:7px;
+}
+.step-head.all{background:#EDFCF2;color:var(--green-dark);}
+.step-head .ar{font-size:11px;flex:none;}
+.step-head .cnt{margin-left:auto;background:#fff;border-radius:999px;padding:2px 10px;font-size:12.5px;flex:none;}
+.step-list{margin-top:6px;}
+.step-item{
+  display:flex;gap:9px;align-items:flex-start;cursor:pointer;
+  background:#FBFDFF;border:2px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:6px;min-height:48px;
+}
+.step-item.on{background:linear-gradient(160deg,#F2FFF5,#fff);border-color:var(--green-dark);}
+.step-item .bx{
+  width:30px;height:30px;border-radius:9px;flex:none;background:#E8F6FF;color:var(--sky-deep);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;margin-top:1px;
+}
+.step-item.on .bx{background:var(--green-dark);color:#fff;}
+.step-item .tx{flex:1;min-width:0;}
+.step-item .tx b{display:block;font-size:14.5px;font-weight:800;line-height:1.35;}
+.step-item .tx small{display:block;font-size:12px;color:var(--ink-soft);line-height:1.4;margin-top:2px;}
+.step-chip{background:#FFF7E8;color:#B45309;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;
+  display:inline-block;margin-top:6px;}
+
 @media (min-width:520px){
   .sport-grid{grid-template-columns:repeat(3,1fr);}
+}
+/* スマホのせまい幅: キャラを少し小さくして、XPの字が おりかえさないように */
+@media (max-width:400px){
+  .hero{padding:14px 12px 34px;}
+  .hero .char-svg{width:104px;height:104px;}
+  .hero .char-hold:before{width:106px;height:106px;margin:-53px 0 0 -53px;}
+  .hero .char-name{font-size:18px;}
+  .hero .char-info .small{font-size:11px;}
+  .xp-label{font-size:11px;}
+  .xp-label span{white-space:nowrap;}
+  .lv-chip{font-size:13px;padding:3px 11px;}
 }
 </style>
 </head>
@@ -440,42 +543,359 @@ const STROKES = [
   { id:'back', name:'せおよぎ', em:'🛶' },
   { id:'fly', name:'バタフライ', em:'🦋' },
 ];
-/* ---------------- わざイラスト(SVG) ---------------- */
-const INK='#1E3A5F', SKIN='#FFD9B0', SHIRT='#F43F5E', ARW='#F97316';
-/* あたま(かみの毛つき)。rotでかみの向きを回せる(さかさま=180) */
+
+/* ---------------- スモールステップ ----------------
+   わざが「まだできない子」のための、できるまでのちいさな階段。
+   STEPS[わざのid] = [{id, name, kotsu}] 。わざidは全しゅもくでユニークなので1つにまとめている。
+   ステップを足すときは、ここに1行たすだけでUI・XP・カウントぜんぶに反映される。
+   ★ステップぜんぶ達成 = そのわざ「はんぶんできた」ぶんとして できたわざ数にカウントされる
+     (てつぼうの級もこれで上がる。なわとび・すいえいは級が回数・検定そのものなので級は動かさない) */
+const STEPS = {
+  /* ===== マットうんどう ===== */
+  m1:[ {id:'m1s1', name:'ゆりかご', kotsu:'たいいくずわりで体をまるめて、前後にゆらゆら。10かいゆれてみよう。'},
+       {id:'m1s2', name:'おへそを見る', kotsu:'あごを引いて、じぶんのおへそをずっと見る。頭のてっぺんはつかないよ。'},
+       {id:'m1s3', name:'さかみちで くるん', kotsu:'マットをかさねたゆるい坂で回ると、いきおいがついて回りやすいよ。'},
+       {id:'m1s4', name:'手でマットをおして立つ', kotsu:'さいごに手でマットをドンとおすと、手をつかずに立てるよ。'} ],
+  m2:[ {id:'m2s1', name:'ゆりかご大きく', kotsu:'ゆりかごで、足が頭のうしろの床につくまで大きくゆれてみよう。'},
+       {id:'m2s2', name:'耳のよこで手をかまえる', kotsu:'手のひらを上にして耳のよこ。ここが後転のいちばんのポイント！'},
+       {id:'m2s3', name:'おしりを高く上げる', kotsu:'おしりをグッと上に上げると、体がうしろへ回っていくよ。'},
+       {id:'m2s4', name:'さかみちで こうてん', kotsu:'ゆるい坂だと回りきれる！せいこうのかんかくをおぼえよう。'} ],
+  m3:[ {id:'m3s1', name:'ぜんてんがまっすぐ', kotsu:'まずは前転がまがらずにできること。線の上で回ってみよう。'},
+       {id:'m3s2', name:'足をパッと開く', kotsu:'立ったまま足を大きく開くれんしゅう。かかとで着地するよ。'},
+       {id:'m3s3', name:'手でおしてから開く', kotsu:'まわりおわるちょくぜんに手でマットをおす→足を開く、のじゅんばん。'} ],
+  m4:[ {id:'m4s1', name:'こうてんができる', kotsu:'まずはふつうの後転を3かいれんぞくで。'},
+       {id:'m4s2', name:'足を開いて手をつく', kotsu:'足を大きく開くと、頭がぬけやすくなるよ。'},
+       {id:'m4s3', name:'手のおしを強く', kotsu:'「トン！」と音がするくらい手でおしてみよう。'} ],
+  m5:[ {id:'m5s1', name:'かめのポーズ', kotsu:'あお向けで、ひざを立てて 耳のよこに手をつく。ここがスタート。'},
+       {id:'m5s2', name:'おしりだけ上げる', kotsu:'まず足の力だけでおしりを上げる(おしり上げ)。5びょうキープ。'},
+       {id:'m5s3', name:'あたまをつけて はんブリッジ', kotsu:'頭を軽くつけて、うでをのばすじゅんび。'},
+       {id:'m5s4', name:'うでをのばして5びょう', kotsu:'おへそを天じょうへ！ゆっくりおりるところまでやろう。'} ],
+  m6:[ {id:'m6s1', name:'くまあるき', kotsu:'手と足で4本あるき。おしりを高くすると倒立にちかづくよ。'},
+       {id:'m6s2', name:'かえるの足うち', kotsu:'手をついてジャンプ、空中で足をパンとうつ。1かい→3かい。'},
+       {id:'m6s3', name:'かべに足を3ぽのぼる', kotsu:'かべに足をかけて、手をかべに近づけながらのぼる。'},
+       {id:'m6s4', name:'うでピンで5びょう', kotsu:'ひじをまげない！目せんは手と手のあいだ。'} ],
+  m7:[ {id:'m7s1', name:'よこにくまあるき', kotsu:'手・手・足・足のじゅんに横へすすむ。リズムをおぼえよう。'},
+       {id:'m7s2', name:'川とび', kotsu:'ゆかの2本の線を「川」にして、手をついてとびこす。だんだん広く！'},
+       {id:'m7s3', name:'足を高く上げる', kotsu:'かべに向かって片足ずつ上げる。大きな「一」の字をめざそう。'},
+       {id:'m7s4', name:'線の上でまっすぐ', kotsu:'1本の線からはみ出さずに手・手・足・足。'} ],
+  m8:[ {id:'m8s1', name:'かべ倒立3びょう', kotsu:'かべに足をかけて さかさまになれた！まずはここから。'},
+       {id:'m8s2', name:'足をもってもらう', kotsu:'先生や友だちに足をもってもらって、まっすぐの形をおぼえる。'},
+       {id:'m8s3', name:'ゆびで地めんをつかむ', kotsu:'ゆびに力を入れると、たおれそうな体をささえられるよ。'},
+       {id:'m8s4', name:'ひとりで3びょう', kotsu:'ふらついてOK！3びょう止まれたらせいこう。'} ],
+  m9:[ {id:'m9s1', name:'かべ倒立からおりる', kotsu:'かべ倒立から、ゆっくり足をおろすれんしゅう。'},
+       {id:'m9s2', name:'あごを引いて背中から', kotsu:'あごを引くと、頭ではなく背中からマットにつくよ。'},
+       {id:'m9s3', name:'ほじょありで通し', kotsu:'倒立→前転をひとつづきで。さいしょは補助してもらおう。'} ],
+  m10:[{id:'m10s1', name:'そくてんがまっすぐ', kotsu:'まずは側転が線の上でできること。'},
+       {id:'m10s2', name:'後はんで4ぶんの1ひねり', kotsu:'足がいちばん高いところで、体を少しひねる。'},
+       {id:'m10s3', name:'りょう足でピタッ', kotsu:'両足そろえて着地→まっすぐ立つ。'} ],
+
+  /* ===== てつぼう ===== */
+  t1:[ {id:'t1s1', name:'ジャンプでとび上がる', kotsu:'うでをのばして、おなかがぼうの上にくるまでジャンプ。'},
+       {id:'t1s2', name:'ひじピンで3びょう', kotsu:'ひじをまっすぐ！ぷるぷるしてもだいじょうぶ。'},
+       {id:'t1s3', name:'目せんを前に5びょう', kotsu:'下を見るとおちちゃう。前を見るとバランスがとれるよ。'} ],
+  t2:[ {id:'t2s1', name:'おなかをかけてぶら下がる', kotsu:'ぼうにおなかをのせて、体をふたつにおるかんじ。'},
+       {id:'t2s2', name:'手をはなしてみる', kotsu:'かた手ずつはなしてみよう。おなかでささえられているよ。'},
+       {id:'t2s3', name:'10びょう ぶら〜ん', kotsu:'力をぬくのがコツ。ふとんみたいにだらーん。'} ],
+  t3:[ {id:'t3s1', name:'つばめができる', kotsu:'まずはつばめで3びょうとまれること。'},
+       {id:'t3s2', name:'ゆっくり前にたおれる', kotsu:'こわいときは補助してもらって、スピードをおさえる。'},
+       {id:'t3s3', name:'ひざをまげて着地', kotsu:'手ははなさない！ひざをまげてふわっとおりる。'} ],
+  t4:[ {id:'t4s1', name:'だんごむし5びょう', kotsu:'ひじをまげてぶら下がる。うでの力をつけよう。'},
+       {id:'t4s2', name:'足をうでの間に通す', kotsu:'ひざをかかえて、りょう足をゆっくり通す。'},
+       {id:'t4s3', name:'そのまま回る', kotsu:'通したらいきおいで1かいてん。手をはなさないでね。'} ],
+  t5:[ {id:'t5s1', name:'ひざをかけてぶら下がる', kotsu:'かた足ずつかけて、手はぼうを持ったまま。'},
+       {id:'t5s2', name:'手をはなして3びょう', kotsu:'さかさまの世界にちょうせん！こわければ補助してもらおう。'},
+       {id:'t5s3', name:'さかさまで手をふる', kotsu:'よゆうが出てきたしょうこ。にっこり手をふろう。'} ],
+  t6:[ {id:'t6s1', name:'こうもりができる', kotsu:'まずはこうもりで5びょうぶら下がれること。'},
+       {id:'t6s2', name:'手を地めんにつける', kotsu:'体をおこして、手をマットにつく。マットをしいてね。'},
+       {id:'t6s3', name:'足をはずしておりる', kotsu:'手でささえながら、ひざをそっとはずす。'} ],
+  t7:[ {id:'t7s1', name:'あしぬきまわりができる', kotsu:'まずは足ぬきまわりを1かい。'},
+       {id:'t7s2', name:'とちゅうで足をはずす', kotsu:'回っているとちゅうで、かた足をぬく。'},
+       {id:'t7s3', name:'かけかえて1かいてん', kotsu:'ぬいた足をもういちどかけて、ぐるん！'} ],
+  t8:[ {id:'t8s1', name:'ぼうに足のうらをのせる', kotsu:'つばめから、かた足の うらをぼうにのせる。'},
+       {id:'t8s2', name:'またぎこす', kotsu:'のせた足をこえて、体を前へ。'},
+       {id:'t8s3', name:'手をはなさずおりる', kotsu:'さいごまで手はぼう！ゆっくりおりよう。'} ],
+  t9:[ {id:'t9s1', name:'かた足をかけてぶら下がる', kotsu:'ひざのうらをぼうにしっかりかける。'},
+       {id:'t9s2', name:'ふりこでゆらす', kotsu:'かけていない足を大きく前後にふる。1・2・3のリズム。'},
+       {id:'t9s3', name:'3かいめのふりで上がる', kotsu:'いちばん大きくふれた3かいめに、うでで引きつける！'} ],
+  t10:[{id:'t10s1', name:'あしかけあがりができる', kotsu:'まずは足かけあがりが1かいできること。'},
+       {id:'t10s2', name:'ふとんほしの形から', kotsu:'足をかけたまま上体をたおして、いきおいをつくる。'},
+       {id:'t10s3', name:'スピードをつけて1かいてん', kotsu:'とちゅうで止まらない。一気にまわろう。'} ],
+  t11:[{id:'t11s1', name:'足をかけて上体をたおす', kotsu:'うしろに大きくたおすほど、回るちからになるよ。'},
+       {id:'t11s2', name:'うでで引きつける', kotsu:'ぼうをおへそに引きよせるように。'},
+       {id:'t11s3', name:'れんぞくで2かい', kotsu:'1かい回れたら、止まらずにもう1かい。'} ],
+  t12:[{id:'t12s1', name:'だんごむし5びょう', kotsu:'ひじをまげて、あごをぼうの上に。さかあがりの土台になる力！'},
+       {id:'t12s2', name:'おへそをぼうにつけたまま', kotsu:'ぼうから体がはなれると回れないよ。ずっとくっつける。'},
+       {id:'t12s3', name:'けり足は「うしろの上」へ', kotsu:'上にけるのではなく、うしろの空にけり上げるかんじ！'},
+       {id:'t12s4', name:'ふみきり台やゴムで1かい', kotsu:'台やほじょベルトを使って「回れた！」をさきに味わおう。'} ],
+  t13:[{id:'t13s1', name:'ひざをかかえて丸くなる', kotsu:'ぼうにひざをかけて、体をぎゅっと小さく。'},
+       {id:'t13s2', name:'ゆれをつける', kotsu:'小さいゆれから、だんだん大きく。'},
+       {id:'t13s3', name:'1かいてん', kotsu:'丸いままだと、するんと回れるよ。'} ],
+  t14:[{id:'t14s1', name:'体をよこ向きに', kotsu:'ぼうをおなかにあてて、体を横にする。'},
+       {id:'t14s2', name:'かた手ずつ持ちかえる', kotsu:'回りながら手をつけかえるのがコツ。'},
+       {id:'t14s3', name:'1かいてん', kotsu:'プロペラみたいにくるっと！'} ],
+  t15:[{id:'t15s1', name:'つばめで5びょう', kotsu:'しっかりささえられることがスタート。'},
+       {id:'t15s2', name:'うしろに大きくたおす', kotsu:'空を見るくらい大きくたおすと回れる。'},
+       {id:'t15s3', name:'ひじをまげて引きつけ', kotsu:'ぼうを体に引きよせて1かいてん。補助ありでOK。'} ],
+  t16:[{id:'t16s1', name:'ぼうの上にしゃがむ', kotsu:'足のうらをぼうにのせて、しゃがんでバランス。'},
+       {id:'t16s2', name:'うでを広げてバランス', kotsu:'手ははなさず、少しずつうでを開く。'},
+       {id:'t16s3', name:'ジャンプしておりる', kotsu:'前に高くジャンプ！マットをしいて安心して。'} ],
+  t17:[{id:'t17s1', name:'ひざうらをかけてぶら下がる', kotsu:'こうもりのしせいが安定すること。'},
+       {id:'t17s2', name:'手でぼうを引きつける', kotsu:'うでの力で体をぼうに近づける。'},
+       {id:'t17s3', name:'ゆっくり1かいてん', kotsu:'いきおいより、ゆっくりていねいに。'} ],
+  t18:[{id:'t18s1', name:'じごくまわりができる', kotsu:'まずはじごくまわりを1かい。'},
+       {id:'t18s2', name:'まわる向きをかくにん', kotsu:'ぎゃく回り。手のにぎりかたも かくにんしよう。'},
+       {id:'t18s3', name:'ゆっくり1かいてん', kotsu:'補助してもらってから ひとりで。'} ],
+  t19:[{id:'t19s1', name:'つばめが安定', kotsu:'つばめで10びょう止まれるうでの力をつけよう。'},
+       {id:'t19s2', name:'前にたおしてささえる', kotsu:'ひじをまげて体をささえるかんかくをつかむ。'},
+       {id:'t19s3', name:'1かいてんして着地', kotsu:'補助ありで通してみよう。'} ],
+  t20:[{id:'t20s1', name:'けんすい5びょう', kotsu:'ひじをまげてぶら下がる。さいごの1わざは力がいるよ。'},
+       {id:'t20s2', name:'足を上げてキープ', kotsu:'ひざをのばしたまま、足を上へ。おなかの力！'},
+       {id:'t20s3', name:'うでの力だけで回る', kotsu:'けらずに回る。さいきょうのわざにちょうせん！'} ],
+
+  /* ===== とびばこ ===== */
+  b1:[ {id:'b1s1', name:'ふみきり板で両足ジャンプ', kotsu:'「トン！」と両足でふみきるれんしゅう。音が1かいならOK。'},
+       {id:'b1s2', name:'手をついておしりを浮かす', kotsu:'とびばこに手をついて、おしりを高く上げる。'},
+       {id:'b1s3', name:'またいでのる→おりる', kotsu:'のれたら大成功！手でおしながら前へすすもう。'} ],
+  b2:[ {id:'b2s1', name:'うさぎとび', kotsu:'手→足のじゅんに。ゆかで10かいれんしゅう。'},
+       {id:'b2s2', name:'手を「おく」につく', kotsu:'手前につくと足がひっかかる。おくにつくのがいちばんのコツ。'},
+       {id:'b2s3', name:'1〜2だんでとぶ', kotsu:'ひくい段でせいこうしてから高くする。'},
+       {id:'b2s4', name:'目せんを前に', kotsu:'下を見ると前にたおれる。とびばこの先を見よう。'} ],
+  b3:[ {id:'b3s1', name:'うさぎとびでひざをむねへ', kotsu:'ゆかで、ひざをむねにかかえるジャンプ。'},
+       {id:'b3s2', name:'ひくい段でまたぎのり', kotsu:'2だんで、かかえこんでのる→おりる。'},
+       {id:'b3s3', name:'手のあいだを通る', kotsu:'手でおして、ひざをかかえたまま通りぬける！'} ],
+  b4:[ {id:'b4s1', name:'マットで前転がまっすぐ', kotsu:'まがって回ると台の上ではあぶない。まずはまっすぐ。'},
+       {id:'b4s2', name:'ひくい段で回る', kotsu:'2〜3だん＋マットで、頭のうしろをつけてくるん。'},
+       {id:'b4s3', name:'おしりを高く上げて', kotsu:'おしりが高いほど、まっすぐ回れるよ。'} ],
+  b5:[ {id:'b5s1', name:'だいじょうぜんてんが安定', kotsu:'まずは台上前転をていねいに3かい。'},
+       {id:'b5s2', name:'首をつけて ためる', kotsu:'とちゅうで止まって「ため」をつくる。補助してもらおう。'},
+       {id:'b5s3', name:'足がおちる時にはねる', kotsu:'タイミングがすべて。先生の合図でバーン！'} ],
+  b6:[ {id:'b6s1', name:'ブリッジができる', kotsu:'体をそらす力がひつよう。マット運動のブリッジから。'},
+       {id:'b6s2', name:'あたまをついて3点キープ', kotsu:'手・手・頭の3点で三角。5びょう止まれるかな。'},
+       {id:'b6s3', name:'ほじょありではねる', kotsu:'ぜったいに ひとりでやらない。先生といっしょに。'} ],
+
+  /* ===== なわとび（回すまえの じゅんびから） ===== */
+  n1:[ {id:'n1s1', name:'なわなしで20かいジャンプ', kotsu:'その場で、つまさきでトントン。ひざはやわらかく。'},
+       {id:'n1s2', name:'なわを前において またぐ', kotsu:'なわを回さずに、前においてピョンとこえる。'},
+       {id:'n1s3', name:'トン・トンのリズム', kotsu:'「なわが1しゅう＝ジャンプ2かい」。声に出すとそろうよ。'} ],
+  n2:[ {id:'n2s1', name:'かた手でなわを回す', kotsu:'なわを半分におって、体のよこでビュンビュン。手くびだけで回すれんしゅう。'},
+       {id:'n2s2', name:'なわなしジャンプ30かい', kotsu:'とぶ力をつけよう。同じ場所でとべたらはなまる。'},
+       {id:'n2s3', name:'1かいせん2ちょうやくで10かい', kotsu:'ゆっくりでOK。つづけられたら まえとびはすぐそこ！'} ],
+  n3:[ {id:'n3s1', name:'なわを後ろに回して止める', kotsu:'まず「うしろに回す」かんかくだけ。足の前で止まればOK。'},
+       {id:'n3s2', name:'うしろで1かいせん2ちょうやく', kotsu:'ゆっくり回して、2かいジャンプで1回とぶ。'},
+       {id:'n3s3', name:'れんぞく5かい', kotsu:'かかとの後ろをなわが通る音を聞こう。'} ],
+  n4:[ {id:'n4s1', name:'その場かけあし20かい', kotsu:'なわなしで、ひざを上げてタッタッ。'},
+       {id:'n4s2', name:'まえとびに1かいだけまぜる', kotsu:'まえとびのとちゅうで1かいだけかけあし。'} ],
+  n5:[ {id:'n5s1', name:'なわなしでグー・チョキ', kotsu:'足だけのれんしゅう。声に出しながら。'},
+       {id:'n5s2', name:'まえとびに1かいまぜる', kotsu:'できたら2かい、3かいとふやそう。'} ],
+  n6:[ {id:'n6s1', name:'なわなしでグー・パー', kotsu:'足をとじる・ひらくだけ。10かいれんぞくで。'},
+       {id:'n6s2', name:'まえとびに1かいまぜる', kotsu:'ひらくときは大きく！'} ],
+  n7:[ {id:'n7s1', name:'なわなしで左右ステップ', kotsu:'スキーみたいに左右へトントン。'},
+       {id:'n7s2', name:'まえとびに1かいまぜる', kotsu:'すこしずつ動くのがコツ。'} ],
+  n8:[ {id:'n8s1', name:'なわなしで足を前にふる', kotsu:'かた足ずつ前へ。バランスをとろう。'},
+       {id:'n8s2', name:'まえとびに1かいまぜる', kotsu:'ふりすぎるとバランスをくずすよ。'} ],
+  n9:[ {id:'n9s1', name:'うでをクロスして持つ', kotsu:'とばずに、クロスの形を作るだけ。むねの前でバッテン。'},
+       {id:'n9s2', name:'なわなしでクロス⇄ひらく', kotsu:'うでの動きだけ10かい。リズムをおぼえよう。'},
+       {id:'n9s3', name:'まえとび→1かいだけクロス', kotsu:'クロスは大きく、ひじはおへその前！'} ],
+  n10:[{id:'n10s1', name:'クロスのまま その場で回す', kotsu:'とばずに、クロスでなわを回しつづける。'},
+       {id:'n10s2', name:'クロスで1かいとぶ', kotsu:'なわがせまくなるから、高くとぼう。'},
+       {id:'n10s3', name:'れんぞく3かい', kotsu:'ひじの高さをかえないのがコツ。'} ],
+  n11:[{id:'n11s1', name:'うしろとび10かい', kotsu:'まずはうしろとびを安定させよう。'},
+       {id:'n11s2', name:'うしろでクロスを作る', kotsu:'とばずに、うしろ回しでバッテンを作る。'},
+       {id:'n11s3', name:'1かいせいこう', kotsu:'音でタイミングをつかもう。'} ],
+  n12:[{id:'n12s1', name:'うしろあやとび3かい', kotsu:'まずはうしろあやとびから。'},
+       {id:'n12s2', name:'クロスをキープして1かい', kotsu:'手くびの力で回すのがコツ。'} ],
+  n13:[{id:'n13s1', name:'その場で高くジャンプ10かい', kotsu:'とび上がるだけで、なわは持たない。ひざをまげすぎない！'},
+       {id:'n13s2', name:'30びょうはやまわし70かい', kotsu:'これができる回すスピードがあれば、二重とびはできるよ。'},
+       {id:'n13s3', name:'まえとび→1かいだけ2回まわし', kotsu:'とんでいるあいだに「シュ・シュ」と2かい。'},
+       {id:'n13s4', name:'れんぞく3かい', kotsu:'着地したらすぐつぎのジャンプ。'} ],
+  n14:[{id:'n14s1', name:'にじゅうとび3かいれんぞく', kotsu:'まずは二重とびを安定させよう。'},
+       {id:'n14s2', name:'「トン・シュシュ」を口で言う', kotsu:'2かいめをクロスにするリズムをおぼえる。'},
+       {id:'n14s3', name:'1かいせいこう', kotsu:'1かい成功したら体がおぼえるよ。'} ],
+  n15:[{id:'n15s1', name:'はやぶさ3かい', kotsu:'はやぶさが安定してからちょうせん。'},
+       {id:'n15s2', name:'クロスのまま高くとぶ', kotsu:'なわがせまいぶん、たかさが必要。'} ],
+  n16:[{id:'n16s1', name:'うしろとび30かい', kotsu:'うしろ回しが安定していることがだいじ。'},
+       {id:'n16s2', name:'うしろ30びょう60かい', kotsu:'うしろのはやまわしでスピードをつくる。'},
+       {id:'n16s3', name:'1かいせいこう', kotsu:'あわてず、たかくとぶ！'} ],
+  n17:[{id:'n17s1', name:'うしろにじゅうとび3かい', kotsu:'まずはうしろ二重とびから。'},
+       {id:'n17s2', name:'せなかがわの音を聞く', kotsu:'目で見えないぶん、音でリズムをとる。'} ],
+  n18:[{id:'n18s1', name:'うしろはやぶさ3かい', kotsu:'ちょうじょうきゅうへの道。あせらずに。'},
+       {id:'n18s2', name:'1かいせいこう', kotsu:'できたら学校でじまんできるレベル！'} ],
+  n19:[{id:'n19s1', name:'30びょうはやまわし100かい', kotsu:'三重とびに必要な回すスピードの目やす。'},
+       {id:'n19s2', name:'にじゅうとび50かい', kotsu:'ジャンプ力とスタミナをつけよう。'},
+       {id:'n19s3', name:'1かいせいこう', kotsu:'でんせつのわざ！ビデオにとってもらおう。'} ],
+
+  /* ===== すいえい（水がこわい子のための もっと手前のステップ） ===== */
+  sw20:[{id:'sw20s1', name:'シャワーを頭からあびる', kotsu:'いきをとめる れんしゅうにもなるよ。3びょうから。'},
+        {id:'sw20s2', name:'手で水をすくって顔にパシャ', kotsu:'じぶんのペースでOK。目はつぶっていていいよ。'} ],
+  sw19:[{id:'sw19s1', name:'口まで水につけて1びょう', kotsu:'あごから ゆっくり。すぐ上げてだいじょうぶ。'},
+        {id:'sw19s2', name:'口で「ブクブク」', kotsu:'いきをはくと、水が口に入ってこないよ。'} ],
+  sw18:[{id:'sw18s1', name:'はなまでつけて2びょう', kotsu:'いきは口からはく。とめてもOK。'} ],
+  sw17:[{id:'sw17s1', name:'手すりを持ってしゃがむ', kotsu:'手すりがあれば すぐ立てるから あんしん。'},
+        {id:'sw17s2', name:'3・2・1でもぐる', kotsu:'こえに出してカウントすると こわくないよ。'} ],
+  sw16:[{id:'sw16s1', name:'水中でじゃんけん', kotsu:'目をあける りゆうができると、しぜんに あけられる。'},
+        {id:'sw16s2', name:'そこのものを見る', kotsu:'しずめたリングを見つけよう。'} ],
+  sw15:[{id:'sw15s1', name:'口で「ブク〜」5びょう', kotsu:'ながくはくのがコツ。'},
+        {id:'sw15s2', name:'はなからもブクブク', kotsu:'はなから出すと、水が入ってこないよ。'} ],
+  sw14:[{id:'sw14s1', name:'手すりを持って歩く', kotsu:'水の中はあるきにくい。まずは10ぽ。'},
+        {id:'sw14s2', name:'水中おにごっこ', kotsu:'あそびながら水になれよう。'} ],
+  sw13:[{id:'sw13s1', name:'わっかくぐり', kotsu:'しずんだわっかを くぐってみよう。'},
+        {id:'sw13s2', name:'5びょうしゃがむ', kotsu:'そこにおしりがつくまで しずむ。'} ],
+  sw12:[{id:'sw12s1', name:'ひざをかかえて3びょう', kotsu:'力をぬくと ぷかっとうくよ。'} ],
+  sw11:[{id:'sw11s1', name:'だるまうきから足をのばす', kotsu:'まるい形から ゆっくり「大の字」へ。'},
+        {id:'sw11s2', name:'3びょう→5びょう', kotsu:'いきをすってから うくと、うきやすい。'} ],
+  sw10:[{id:'sw10s1', name:'かべをけって2m', kotsu:'うでを耳にはさんで、まっすぐ！'},
+        {id:'sw10s2', name:'手をかさねて5m', kotsu:'手のひらをかさねると、水をきりやすいよ。'} ],
+  sw9:[ {id:'sw9s1', name:'ビートばんでばた足5m', kotsu:'ひざをまげすぎない。ふとももから動かそう。'},
+        {id:'sw9s2', name:'足のこうで水をける', kotsu:'水しぶきが小さいほど、じょうずなばた足。'} ],
+  sw8:[ {id:'sw8s1', name:'けのび→ばた足5m', kotsu:'ビートばんなしにちょうせん。顔はつけたまま。'},
+        {id:'sw8s2', name:'10mまでのばす', kotsu:'いきがつづくところまでで大丈夫。'} ],
+  sw7:[ {id:'sw7s1', name:'めんかぶりクロール10かき', kotsu:'まずは息つぎなしで。うでを大きく回そう。'},
+        {id:'sw7s2', name:'よこ向きで息つぎ', kotsu:'顔を上げずに「よこ」を向く。かた耳は水の中。'},
+        {id:'sw7s3', name:'かえる足を かべにつかまって', kotsu:'ひらおよぎは足がだいじ。かかとをおしりへ→けってとじる。'} ],
+  sw6:[ {id:'sw6s1', name:'にがてなほうを13m', kotsu:'とくいなほうはできている。もう1つにちょうせん！'} ],
+  sw5:[ {id:'sw5s1', name:'13m→20m', kotsu:'すこしずつのばそう。とちゅうで立たないのが目標。'} ],
+  sw4:[ {id:'sw4s1', name:'にがてなほうを25m', kotsu:'ゆっくりでいい。とまらずに25m！'} ],
+  sw3:[ {id:'sw3s1', name:'25m×2(休けいあり)', kotsu:'まずは分けて50m。'},
+        {id:'sw3s2', name:'通しで50m', kotsu:'ペースを一定に。'} ],
+  sw2:[ {id:'sw2s1', name:'せうきで10びょう', kotsu:'おなかを上に、耳まで水に。あごを上げるとしずむよ。'},
+        {id:'sw2s2', name:'足だけで13m', kotsu:'ビートばんをおなかにのせて。'} ],
+  sw1:[ {id:'sw1s1', name:'3しゅもくを1本ずつ50m', kotsu:'1日1しゅもくずつでもOK。'} ],
+  swS1:[{id:'swS1s1', name:'1しゅもくずつタイムをはかる', kotsu:'いまのタイムを知ることがスタート。'},
+        {id:'swS1s2', name:'3しゅもく通しでおよぐ', kotsu:'タイムはあとから。まずは通せること。'} ],
+  swS2:[{id:'swS2s1', name:'しょだんのタイムを10びょうちぢめる', kotsu:'ターンとスタートでちぢめよう。'} ],
+
+  /* ===== マラソン（はしるまえの ちいさなステップ） ===== */
+  mara:[{id:'maras1', name:'5ふん あるく', kotsu:'まずは外に出るだけで はなまる！'},
+        {id:'maras2', name:'1ぷん走って1ぷん歩く×3', kotsu:'歩いてOK。くりかえすと ながくはしれる体になるよ。'},
+        {id:'maras3', name:'とちゅうで歩いても1km', kotsu:'ゴールできたことがだいじ。'},
+        {id:'maras4', name:'歩かずに1km', kotsu:'ゆっくりでいい。「話せるはやさ」がちょうどいいよ。'},
+        {id:'maras5', name:'すきなおんがくで10ぷん', kotsu:'時間をきめて走るのもコツ。'} ],
+
+  /* ===== ボールしゅもく（さいしょの1歩） ===== */
+  sc2:[{id:'sc2s1', name:'足のうらで10かいタッチ', kotsu:'まずはゆっくり、ボールを見ないでできたらすごい。'} ],
+  sc5:[{id:'sc5s1', name:'ころがるボールを足で止める', kotsu:'足のうらでフタをするように。力をぬこう。'} ],
+  sc3:[{id:'sc3s1', name:'まっすぐドリブル10ぽ', kotsu:'足からボールをはなさない。小さくさわる。'},
+       {id:'sc3s2', name:'コーン1本をよける', kotsu:'1本できたら2本、3本とふやそう。'} ],
+  sc6:[{id:'sc6s1', name:'かべにインサイドパス', kotsu:'あしのうちがわで。かべなら1人でれんしゅうできる。'} ],
+  sc4:[{id:'sc4s1', name:'とまったボールをける', kotsu:'じくあしをボールのよこに。'},
+       {id:'sc4s2', name:'大きなまとに当てる', kotsu:'近くから。だんだん遠くへ。'} ],
+  sc1:[{id:'sc1s1', name:'手でおとしてワンバウンドける', kotsu:'いきなり空中はむずかしい。バウンドさせてOK。'},
+       {id:'sc1s2', name:'ももで3かい', kotsu:'ももはひろい！足のこうより かんたんだよ。'} ],
+  sc7:[{id:'sc7s1', name:'ふうせんをおでこで', kotsu:'こわくないふうせんで。目をあけたままね。'} ],
+  bk1:[{id:'bk1s1', name:'りょう手で10かいつく', kotsu:'手のひらでたたかず、ゆびでおし出す。'},
+       {id:'bk1s2', name:'かた手で10かい', kotsu:'ひじをやわらかく。'} ],
+  bk2:[{id:'bk2s1', name:'ひざをまげてつく', kotsu:'こしを落とすと、ボールがひくくなるよ。'} ],
+  bk5:[{id:'bk5s1', name:'ちかくで3かいパス', kotsu:'2mくらいから。むねをねらおう。'} ],
+  bk6:[{id:'bk6s1', name:'おなかのまわりを1しゅう', kotsu:'おとしてもOK。だんだんはやく。'} ],
+  bk7:[{id:'bk7s1', name:'あるきながらドリブル', kotsu:'まずは歩いて。走るのはそのあと。'} ],
+  bk3:[{id:'bk3s1', name:'ゴールの下からシュート', kotsu:'ちかくからならとどく！'},
+       {id:'bk3s2', name:'ひざをつかってなげる', kotsu:'うでだけだととどかない。ひざのばねを使おう。'} ],
+  bk4:[{id:'bk4s1', name:'2ステップであるく', kotsu:'「トン・トン・ジャンプ」を歩いてかくにん。'} ],
+  vb5:[{id:'vb5s1', name:'なげてもらってキャッチ', kotsu:'おでこの上でキャッチできたらOK。'} ],
+  vb7:[{id:'vb7s1', name:'ふうせんを3かい', kotsu:'ゆっくりおちるから ねらいやすいよ。'} ],
+  vb1:[{id:'vb1s1', name:'うでを組んで形をつくる', kotsu:'ひじをのばして、うでを1まいの板に。'},
+       {id:'vb1s2', name:'1かいだけ上にあげる', kotsu:'ひざをつかってポン。うではふらない。'} ],
+  vb2:[{id:'vb2s1', name:'おでこの上でさんかくの まど', kotsu:'手の形だけつくってみよう。'},
+       {id:'vb2s2', name:'キャッチしてから上へ', kotsu:'いったん止めてOK。だんだんノーキャッチへ。'} ],
+  vb6:[{id:'vb6s1', name:'かべに5かい当てる', kotsu:'とれなくてもOK。当てるだけ。'} ],
+  vb4:[{id:'vb4s1', name:'ワンバウンドありでラリー', kotsu:'1回ついてもOKにすると つづくよ。'} ],
+  vb3:[{id:'vb3s1', name:'ネットなしで10mとばす', kotsu:'うでをふりこにして下からポン。'} ],
+  bb7:[{id:'bb7s1', name:'上になげてキャッチ', kotsu:'低くてOK。りょう手でつつみこむ。'} ],
+  bb1:[{id:'bb1s1', name:'2mでキャッチボール', kotsu:'近くから。とれたらすこし下がる。'} ],
+  bb3:[{id:'bb3s1', name:'ころがしたボールを止める', kotsu:'こしをひくく、りょう手をじめんへ。'} ],
+  bb2:[{id:'bb2s1', name:'ふわりとしたボールをキャッチ', kotsu:'やわらかいボールから。目をはなさない。'} ],
+  bb6:[{id:'bb6s1', name:'ティーにのせて打つ', kotsu:'とまっているボールなら当たる！'} ],
+  bb4:[{id:'bb4s1', name:'10きゅう中1ぼん当てる', kotsu:'当たるだけでOK。だんだんふやそう。'} ],
+  bb5:[{id:'bb5s1', name:'ななめ上になげる', kotsu:'まっすぐなげると とばない。45どの空へ。'} ],
+  dg3:[{id:'dg3s1', name:'やわらかいボールでキャッチ', kotsu:'こわくないボールから はじめよう。'} ],
+  dg1:[{id:'dg1s1', name:'かべに当てる', kotsu:'とれなくてOK。当てるところから。'} ],
+  dg6:[{id:'dg6s1', name:'ころがしパス', kotsu:'まずは ころがしてわたす。'} ],
+  dg4:[{id:'dg4s1', name:'1かいよける', kotsu:'ゆっくりのボールで。よく見てヒラリ。'} ],
+  dg2:[{id:'dg2s1', name:'むねでうけ止める', kotsu:'にげずに体の正めんへ。ボールをだきしめる。'} ],
+  dg7:[{id:'dg7s1', name:'ふみこんでなげる', kotsu:'足を1ぽ前に出すだけで とぶきょりがかわるよ。'} ],
+  dg5:[{id:'dg5s1', name:'さいごの5人までのこる', kotsu:'にげるのも りっぱなさくせん！'} ],
+  rl3:[{id:'rl3s1', name:'「よーいドン」で5m', kotsu:'合図でとび出すれんしゅう。'} ],
+  rl6:[{id:'rl6s1', name:'その場でスキップ10かい', kotsu:'「タッ・タン」のリズムをおぼえよう。'} ],
+  rl7:[{id:'rl7s1', name:'ゴールの3ぽ先まで走る', kotsu:'ゴールで止まらないくせをつける。'} ],
+  rl2:[{id:'rl2s1', name:'うでをふってジャンプ', kotsu:'うでを大きくふると とおくへとべる。'} ],
+  rl4:[{id:'rl4s1', name:'止まってバトンわたし', kotsu:'手をうしろにのばして「ハイ!」。'},
+       {id:'rl4s2', name:'あるきながらわたす', kotsu:'前を見たままもらうのがコツ。'} ],
+  rl5:[{id:'rl5s1', name:'20mターンを5かい', kotsu:'ターンでスピードを落とさない。'} ],
+  rl1:[{id:'rl1s1', name:'30mを ぜんりょくで', kotsu:'みじかいきょりで しっかり走る。'},
+       {id:'rl1s2', name:'うでを大きくふって50m', kotsu:'うでをふるほど、足はうごくよ。'} ],
+};
+
+/* ---------------- わざイラスト(SVG) ----------------
+   すべてのイラストは この共通パーツからできている。
+   ここの見た目をよくすると、100いじょうのわざの絵がまとめてよくなる。
+   手足は「こい輪郭＋はだ色の中身」の2本がさねにして、線画っぽさを出している */
+const INK='#1E3A5F', SKIN='#FFD9B0', SKIN_D='#E9A96F', SHIRT='#F43F5E', SHIRT_D='#BE1236', ARW='#F97316';
+/* あたま(かみの毛・かお つき)。rotでむきを回せる(さかさま=180) */
 function aHead(x,y,rot){
   return `<g transform="translate(${x},${y})${rot?` rotate(${rot})`:''}">
-    <circle r="6.8" fill="${SKIN}" stroke="${INK}" stroke-width="2.2"/>
-    <path d="M-6,-2.8 A6.8,6.8 0 0 1 6,-2.8" fill="none" stroke="${INK}" stroke-width="4.2" stroke-linecap="round"/>
+    <circle r="7.1" fill="${SKIN}" stroke="${INK}" stroke-width="2"/>
+    <path d="M-7.1,-2.2 A7.1,7.1 0 0 1 7.1,-2.2 Q4,-4.6 0,-4 Q-4,-4.6 -7.1,-2.2Z" fill="${INK}"/>
+    <path d="M-7,-2.6 A7,7 0 0 1 7,-2.6" fill="none" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="-2.6" cy="1.4" r="1.15" fill="${INK}"/><circle cx="2.6" cy="1.4" r="1.15" fill="${INK}"/>
+    <path d="M-2,4.2 Q0,5.8 2,4.2" fill="none" stroke="${INK}" stroke-width="1.1" stroke-linecap="round"/>
+    <circle cx="-4.8" cy="3.2" r="1.5" fill="#FB9BAF" opacity=".65"/>
+    <circle cx="4.8" cy="3.2" r="1.5" fill="#FB9BAF" opacity=".65"/>
+    <circle cx="-3.1" cy="-1.1" r="1.5" fill="#fff" opacity=".35"/>
   </g>`;
 }
-function aTorso(pts){ return `<polyline points="${pts}" fill="none" stroke="${SHIRT}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`; }
-function aLimb(pts){ return `<polyline points="${pts}" fill="none" stroke="${INK}" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>`; }
+function aTorso(pts){
+  return `<polyline points="${pts}" fill="none" stroke="${SHIRT_D}" stroke-width="9.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="${pts}" fill="none" stroke="${SHIRT}" stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="${pts}" fill="none" stroke="#FF8FA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".55" transform="translate(-1.1,-1.1)"/>`;
+}
+function aLimb(pts){
+  return `<polyline points="${pts}" fill="none" stroke="${INK}" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="${pts}" fill="none" stroke="${SKIN}" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
 function aLn(pts,w){ return `<polyline points="${pts}" fill="none" stroke="${INK}" stroke-width="${w||4}" stroke-linecap="round" stroke-linejoin="round"/>`; }
-function aArr(d){ return `<path d="${d}" fill="none" stroke="${ARW}" stroke-width="3.5" stroke-linecap="round"/>`; }
-function aTip(x,y,ang){ return `<polygon points="0,-5.5 11,0 0,5.5" transform="translate(${x},${y}) rotate(${ang})" fill="${ARW}"/>`; }
+function aArr(d){
+  return `<path d="${d}" fill="none" stroke="#C2410C" stroke-width="5.4" stroke-linecap="round" opacity=".28"/>
+  <path d="${d}" fill="none" stroke="${ARW}" stroke-width="3.6" stroke-linecap="round"/>`;
+}
+function aTip(x,y,ang){
+  return `<g transform="translate(${x},${y}) rotate(${ang})">
+    <polygon points="0,-6.2 12,0 0,6.2" fill="#C2410C" opacity=".28"/>
+    <polygon points="0,-5.3 10.6,0 0,5.3" fill="${ARW}"/></g>`;
+}
 function aSpin(cx,cy,r,back){
   return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${ARW}" stroke-width="3" stroke-dasharray="5 6" opacity=".9"/>`+aTip(cx+r,cy,back?-90:90);
 }
 function aBar(){
-  return `<line x1="14" y1="87" x2="30" y2="87" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
+  return `<ellipse cx="60" cy="88" rx="46" ry="3.4" fill="#1E3A5F" opacity=".10"/>
+  <line x1="14" y1="87" x2="30" y2="87" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
   <line x1="90" y1="87" x2="106" y2="87" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
-  <line x1="22" y1="30" x2="22" y2="86" stroke="#8CA3B8" stroke-width="5"/>
-  <line x1="98" y1="30" x2="98" y2="86" stroke="#8CA3B8" stroke-width="5"/>
-  <line x1="10" y1="30" x2="110" y2="30" stroke="#55677A" stroke-width="6" stroke-linecap="round"/>
-  <line x1="13" y1="28.4" x2="107" y2="28.4" stroke="#C6D6E4" stroke-width="1.6" stroke-linecap="round"/>`;
+  <line x1="22" y1="30" x2="22" y2="86" stroke="#7C93A9" stroke-width="5.4"/>
+  <line x1="98" y1="30" x2="98" y2="86" stroke="#7C93A9" stroke-width="5.4"/>
+  <line x1="20.6" y1="32" x2="20.6" y2="84" stroke="#C6D6E4" stroke-width="1.5"/>
+  <line x1="96.6" y1="32" x2="96.6" y2="84" stroke="#C6D6E4" stroke-width="1.5"/>
+  <line x1="10" y1="30" x2="110" y2="30" stroke="#4B5D70" stroke-width="6.4" stroke-linecap="round"/>
+  <line x1="13" y1="28.3" x2="107" y2="28.3" stroke="#DCE9F4" stroke-width="1.9" stroke-linecap="round"/>`;
 }
 function aMat(){
-  return `<rect x="6" y="74" width="108" height="13" rx="6.5" fill="#7DE8A9" stroke="#3FBF77" stroke-width="2.5"/>
-  <line x1="14" y1="79" x2="106" y2="79" stroke="#B8F5CF" stroke-width="2" stroke-linecap="round"/>`;
+  return `<ellipse cx="60" cy="88" rx="48" ry="3" fill="#1E3A5F" opacity=".10"/>
+  <rect x="6" y="73" width="108" height="15" rx="7.5" fill="#3FBF77"/>
+  <rect x="6" y="73" width="108" height="12" rx="6" fill="#7DE8A9"/>
+  <line x1="14" y1="77.5" x2="106" y2="77.5" stroke="#C7F8DC" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="40" y1="73" x2="40" y2="85" stroke="#4FCE86" stroke-width="1.6"/>
+  <line x1="80" y1="73" x2="80" y2="85" stroke="#4FCE86" stroke-width="1.6"/>`;
 }
 /* とびばこ: 下の段ほど大きい台形＋最上段は革のクッション */
 function aBox(tx){
   return `<g transform="translate(${tx||0},0)">
+    <ellipse cx="90" cy="89" rx="26" ry="3" fill="#1E3A5F" opacity=".12"/>
     <polygon points="73,57 107,57 109,67 71,67" fill="#FDE68A" stroke="#D97706" stroke-width="2.2"/>
+    <polygon points="73,57 107,57 107.6,60 72.4,60" fill="#FFF3C4" opacity=".8"/>
     <polygon points="71,67 109,67 111,77 69,77" fill="#FBBF24" stroke="#D97706" stroke-width="2.2"/>
+    <polygon points="71,67 109,67 109.6,70 70.4,70" fill="#FDE68A" opacity=".75"/>
     <polygon points="69,77 111,77 113,88 67,88" fill="#FDE68A" stroke="#D97706" stroke-width="2.2"/>
+    <polygon points="69,77 111,77 111.6,80 68.4,80" fill="#FFF3C4" opacity=".8"/>
     <path d="M72,57 L74,50 Q74.5,47 78,47 L102,47 Q105.5,47 106,50 L108,57 Z" fill="#C2410C" stroke="#7C2D12" stroke-width="2"/>
+    <path d="M75,52 Q76,49.5 79,49.5 L101,49.5" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>
   </g>`;
 }
 /* ロイター板(ふみきり板) */
@@ -485,7 +905,12 @@ function aSpring(tx){
     <line x1="41" y1="83.5" x2="56" y2="80.5" stroke="#FDE68A" stroke-width="2" stroke-linecap="round"/>
   </g>`;
 }
-function aGround(){ return `<line x1="4" y1="88" x2="116" y2="88" stroke="#86EFAC" stroke-width="4" stroke-linecap="round"/>`; }
+function aGround(){
+  return `<line x1="4" y1="88" x2="116" y2="88" stroke="#5FD98F" stroke-width="4.6" stroke-linecap="round"/>
+  <line x1="6" y1="86.6" x2="114" y2="86.6" stroke="#A7F3C6" stroke-width="1.8" stroke-linecap="round"/>
+  <g stroke="#5FD98F" stroke-width="1.8" stroke-linecap="round" opacity=".9">
+    <path d="M16,86 l-2,-4 M20,86 l1.5,-4.5 M100,86 l-2,-4 M104,86 l1.5,-4.5"/></g>`;
+}
 function aLabel(t){ return `<rect x="4" y="3" width="${t.length*11+14}" height="18" rx="9" fill="#E0F2FE"/><text x="11" y="16.5" font-size="11" font-weight="700" fill="#0369A1">${t}</text>`; }
 
 /* つばめのしせい(支持): りょううでで支えて体をまっすぐ */
@@ -1061,6 +1486,13 @@ const BADGES = [
   { cat:'リレー・かけっこ', id:'rlShuttle20', em:'🔂', name:'シャトルラン20かい', cond:'シャトルラン20かい',              test:s=>(s.relay.best.rl5||0)>=20 },
   { cat:'リレー・かけっこ', id:'rlAll',       em:'🏎️', name:'リレーはかせ',       cond:'リレーのチャレンジぜんぶ!',       test:s=>ballAll(s,'relay') },
   // スペシャル
+  // スモールステップ（できるまでの ちいさな階段）
+  { cat:'ステップ', id:'step1',    em:'👣', name:'はじめのひとあし',   cond:'ステップを1こクリア',   test:s=>(s.steps||[]).length>=1 },
+  { cat:'ステップ', id:'step10',   em:'🪜', name:'こつこつのぼる',     cond:'ステップを10こクリア',  test:s=>(s.steps||[]).length>=10 },
+  { cat:'ステップ', id:'step30',   em:'🧗', name:'ステップマスター',   cond:'ステップを30こクリア',  test:s=>(s.steps||[]).length>=30 },
+  { cat:'ステップ', id:'step60',   em:'🏔️', name:'一歩一歩のたつじん', cond:'ステップを60こクリア',  test:s=>(s.steps||[]).length>=60 },
+  { cat:'ステップ', id:'stepall1', em:'🌟', name:'わざへの道',         cond:'あるわざのステップをぜんぶクリア',
+    test:s=>Object.keys(STEPS).some(id=>STEPS[id].length>0 && STEPS[id].every(st=>(s.steps||[]).indexOf(st.id)>=0)) },
   { cat:'スペシャル', id:'allsports',   em:'🌍', name:'うんどうおう',           cond:'6しゅもくいじょうできろくした', test:s=>new Set(s.records.map(r=>r.sport)).size>=6 },
   { cat:'スペシャル', id:'allsports12', em:'🌏', name:'スポーツマスター',       cond:'ぜん12しゅもくできろくした',    test:s=>Object.keys(SPORTS).every(sp=>s.records.some(r=>r.sport===sp)) },
   { cat:'スペシャル', id:'triday',      em:'🎭', name:'なんでもチャレンジャー', cond:'1日に3しゅもくきろくした',      test:s=>tridaySports(s) },
@@ -1078,7 +1510,7 @@ function ballAll(s, sport){
 }
 
 /* ---------------- XPルール ---------------- */
-const XP = { record:10, firstSkill:30, best:20, badge:50, streak7:100 };
+const XP = { record:10, firstSkill:30, best:20, badge:50, streak7:100, step:15 };
 
 /* ---------------- キャラクター ---------------- */
 const CHAR_STAGES = [
@@ -1093,57 +1525,171 @@ function charStage(level){
   for(const c of CHAR_STAGES){ if(level>=c.min) st=c; }
   return st;
 }
+let _uid = 0;                                    // グラデーションidの重複よけ
 function charSvg(level, size){
   const stage = charStage(level).name;
-  const s = size||120;
-  const open = `<svg class="char-svg" style="width:${s}px;height:${s}px" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">`;
+  // サイズ指定なし(ホーム)のときはCSSにまかせる。指定あり(モーダル)はその大きさで固定
+  const st = size ? ` style="width:${size}px;height:${size}px"` : '';
+  const u = 'c'+(++_uid);
+  const open = `<svg class="char-svg"${st} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">`;
+  /* ---- 共通パーツ ---- */
+  const shadow = (cy,rx)=>`<ellipse cx="60" cy="${cy}" rx="${rx}" ry="6.5" fill="#0E74B4" opacity=".13"/>`;
+  // 目: 白目＋黒目＋ハイライト2つ(いきいきした目つき)
+  const eye = (x,y,r)=>`<g><ellipse cx="${x}" cy="${y}" rx="${r*1.02}" ry="${r*1.14}" fill="#22364A"/>
+    <circle cx="${x-r*0.3}" cy="${y-r*0.36}" r="${r*0.42}" fill="#fff"/>
+    <circle cx="${x+r*0.32}" cy="${y+r*0.34}" r="${r*0.2}" fill="#fff" opacity=".8"/></g>`;
+  const blush = (x,y,c)=>`<ellipse cx="${x}" cy="${y}" rx="6" ry="3.6" fill="${c}" opacity=".55"/>`;
+  const beak = (x,y,w,h,c1,c2)=>`<path d="M${x-w} ${y} L${x+w} ${y} L${x} ${y+h} Z" fill="${c1}"/>
+    <path d="M${x-w} ${y} L${x+w} ${y} L${x} ${y+h*0.42} Z" fill="${c2}"/>`;
+  const sparkle = (x,y,r,c)=>`<path d="M${x} ${y-r} Q${x+r*0.22} ${y-r*0.22} ${x+r} ${y}
+    Q${x+r*0.22} ${y+r*0.22} ${x} ${y+r} Q${x-r*0.22} ${y+r*0.22} ${x-r} ${y}
+    Q${x-r*0.22} ${y-r*0.22} ${x} ${y-r} Z" fill="${c}"/>`;
+  const gloss = (cx,cy,rx,ry,rot)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
+    fill="#fff" opacity=".38" transform="rotate(${rot} ${cx} ${cy})"/>`;
+
   if(stage==='たまご') return open+`
-    <ellipse cx="60" cy="100" rx="30" ry="8" fill="rgba(14,116,180,.10)"/>
-    <path d="M60 22 C38 22 28 52 28 72 a32 30 0 0 0 64 0 C92 52 82 22 60 22Z" fill="#FFF7E0" stroke="#F3D9A4" stroke-width="3"/>
-    <path d="M42 62 l8 8 8-8 8 8 8-8" fill="none" stroke="#F3C56B" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="49" cy="48" r="3" fill="#D9A94F"/><circle cx="71" cy="48" r="3" fill="#D9A94F"/></svg>`;
+    <defs>
+      <radialGradient id="${u}e" cx="38%" cy="30%" r="78%">
+        <stop offset="0" stop-color="#FFFDF5"/><stop offset="62%" stop-color="#FFF3D6"/><stop offset="1" stop-color="#F6DFAE"/>
+      </radialGradient>
+    </defs>
+    ${shadow(102,27)}
+    <path d="M60 20 C39 20 27 50 27 71 a33 31 0 0 0 66 0 C93 50 81 20 60 20Z" fill="url(#${u}e)" stroke="#E9C685" stroke-width="2.6"/>
+    <g opacity=".5" fill="#E4C489">
+      <ellipse cx="45" cy="42" rx="2.6" ry="2" transform="rotate(-20 45 42)"/>
+      <ellipse cx="76" cy="55" rx="2.2" ry="1.7" transform="rotate(15 76 55)"/>
+      <ellipse cx="52" cy="82" rx="2.8" ry="2.1" transform="rotate(-8 52 82)"/>
+      <ellipse cx="72" cy="78" rx="2" ry="1.6"/>
+    </g>
+    ${gloss(46,42,9,15,-24)}
+    <path d="M36 64 l8 7 8.5 -8 8 8 8.5 -8 8 7" fill="none" stroke="#E0AE55" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 64 l8 7 8.5 -8 8 8 8.5 -8 8 7" fill="none" stroke="#FFE9A8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,-1.6)"/>
+    ${eye(50,52,3.4)}${eye(70,52,3.4)}
+    ${blush(42,58,'#FBA5B5')}${blush(78,58,'#FBA5B5')}
+    <path d="M55.5 59 q4.5 4 9 0" fill="none" stroke="#C79A4E" stroke-width="2" stroke-linecap="round"/>
+    ${sparkle(97,32,6,'#FDE68A')}${sparkle(24,26,4.5,'#FDE68A')}
+    </svg>`;
+
   if(stage==='ひよこ') return open+`
-    <ellipse cx="60" cy="104" rx="28" ry="7" fill="rgba(14,116,180,.10)"/>
-    <circle cx="60" cy="66" r="34" fill="#FFE066" stroke="#F3C947" stroke-width="3"/>
-    <circle cx="60" cy="40" r="22" fill="#FFE879" stroke="#F3C947" stroke-width="3"/>
-    <circle cx="52" cy="38" r="3.5" fill="#333"/><circle cx="68" cy="38" r="3.5" fill="#333"/>
-    <polygon points="56,45 64,45 60,52" fill="#FB923C"/>
-    <path d="M32 66 q-10 4 -8 14" stroke="#F3C947" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M88 66 q10 4 8 14" stroke="#F3C947" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M50 100 l0 6 M70 100 l0 6" stroke="#FB923C" stroke-width="4" stroke-linecap="round"/></svg>`;
+    <defs>
+      <radialGradient id="${u}b" cx="36%" cy="28%" r="80%">
+        <stop offset="0" stop-color="#FFF3B8"/><stop offset="60%" stop-color="#FFE066"/><stop offset="1" stop-color="#F7C93F"/>
+      </radialGradient>
+      <radialGradient id="${u}h" cx="36%" cy="26%" r="80%">
+        <stop offset="0" stop-color="#FFF8CC"/><stop offset="70%" stop-color="#FFE879"/><stop offset="1" stop-color="#F9D24F"/>
+      </radialGradient>
+    </defs>
+    ${shadow(105,25)}
+    <path d="M50 98 l-1 8 M70 98 l1 8" stroke="#EA8C1F" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M44 106 h11 M65 106 h11" stroke="#F59E0B" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M30 62 q-13 6 -10 18 q11 3 20 -8Z" fill="#FBD34D" stroke="#EFBC33" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M90 62 q13 6 10 18 q-11 3 -20 -8Z" fill="#FBD34D" stroke="#EFBC33" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="60" cy="68" r="33" fill="url(#${u}b)" stroke="#EFBC33" stroke-width="2.6"/>
+    <ellipse cx="60" cy="76" rx="15" ry="13" fill="#FFF7D6" opacity=".75"/>
+    <circle cx="60" cy="40" r="23" fill="url(#${u}h)" stroke="#EFBC33" stroke-width="2.6"/>
+    <path d="M56 17 q3 -9 8 -6 q-2 4 1 7" fill="#FBD34D" stroke="#EFBC33" stroke-width="2" stroke-linejoin="round"/>
+    ${gloss(48,30,8,12,-20)}
+    ${eye(51,39,4)}${eye(69,39,4)}
+    ${beak(60,45,6,8,'#F97316','#FBBF24')}
+    ${blush(42,47,'#FB7185')}${blush(78,47,'#FB7185')}
+    ${sparkle(100,30,5.5,'#FDE68A')}
+    </svg>`;
+
   if(stage==='とり') return open+`
-    <ellipse cx="60" cy="106" rx="30" ry="7" fill="rgba(14,116,180,.10)"/>
-    <ellipse cx="60" cy="68" rx="34" ry="32" fill="#7DD3FC" stroke="#38BDF8" stroke-width="3"/>
-    <circle cx="60" cy="38" r="21" fill="#A5E3FF" stroke="#38BDF8" stroke-width="3"/>
-    <circle cx="52" cy="36" r="3.5" fill="#0F3350"/><circle cx="68" cy="36" r="3.5" fill="#0F3350"/>
-    <polygon points="55,43 65,43 60,51" fill="#FB923C"/>
-    <path d="M28 62 q-14 2 -16 16 q10 2 20 -6" fill="#38BDF8"/>
-    <path d="M92 62 q14 2 16 16 q-10 2 -20 -6" fill="#38BDF8"/>
-    <ellipse cx="60" cy="74" rx="16" ry="14" fill="#E8F8FF"/>
-    <path d="M50 100 l0 8 M70 100 l0 8" stroke="#FB923C" stroke-width="4" stroke-linecap="round"/>
-    <path d="M43 22 q4 -10 12 -8" stroke="#38BDF8" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
+    <defs>
+      <radialGradient id="${u}b" cx="36%" cy="26%" r="82%">
+        <stop offset="0" stop-color="#BEE9FF"/><stop offset="58%" stop-color="#7DD3FC"/><stop offset="1" stop-color="#38A9E8"/>
+      </radialGradient>
+      <radialGradient id="${u}h" cx="36%" cy="26%" r="80%">
+        <stop offset="0" stop-color="#DFF4FF"/><stop offset="70%" stop-color="#A5E3FF"/><stop offset="1" stop-color="#5CC2F2"/>
+      </radialGradient>
+    </defs>
+    ${shadow(107,27)}
+    <path d="M84 88 q16 6 22 -2 q-8 -3 -12 -10Z" fill="#5CC2F2" stroke="#2E9AD6" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M50 99 l-1 9 M70 99 l1 9" stroke="#EA8C1F" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M43 108 h12 M65 108 h12" stroke="#F59E0B" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M28 60 q-16 4 -18 18 q13 4 24 -8Z" fill="#5CC2F2" stroke="#2E9AD6" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M92 60 q16 4 18 18 q-13 4 -24 -8Z" fill="#5CC2F2" stroke="#2E9AD6" stroke-width="2.2" stroke-linejoin="round"/>
+    <ellipse cx="60" cy="69" rx="34" ry="32" fill="url(#${u}b)" stroke="#2E9AD6" stroke-width="2.6"/>
+    <ellipse cx="60" cy="76" rx="17" ry="15" fill="#F2FBFF" opacity=".9"/>
+    <circle cx="60" cy="39" r="22" fill="url(#${u}h)" stroke="#2E9AD6" stroke-width="2.6"/>
+    <path d="M52 19 q4 -11 12 -8 q-4 4 -1 9" fill="#5CC2F2" stroke="#2E9AD6" stroke-width="2" stroke-linejoin="round"/>
+    ${gloss(48,29,8,12,-20)}
+    ${eye(51,38,4.2)}${eye(69,38,4.2)}
+    ${beak(60,44,6.5,8.5,'#F97316','#FBBF24')}
+    ${blush(41,46,'#FB7185')}${blush(79,46,'#FB7185')}
+    ${sparkle(102,28,5.5,'#BAE6FD')}${sparkle(18,86,4,'#BAE6FD')}
+    </svg>`;
+
   if(stage==='つばさ') return open+`
-    <ellipse cx="60" cy="108" rx="32" ry="7" fill="rgba(14,116,180,.10)"/>
-    <path d="M25 60 Q2 46 6 26 Q26 32 36 50Z" fill="#60A5FA"/>
-    <path d="M95 60 Q118 46 114 26 Q94 32 84 50Z" fill="#60A5FA"/>
-    <ellipse cx="60" cy="70" rx="33" ry="32" fill="#60A5FA" stroke="#3B82F6" stroke-width="3"/>
-    <circle cx="60" cy="38" r="21" fill="#93C5FD" stroke="#3B82F6" stroke-width="3"/>
-    <circle cx="52" cy="36" r="3.5" fill="#0F3350"/><circle cx="68" cy="36" r="3.5" fill="#0F3350"/>
-    <polygon points="55,43 65,43 60,51" fill="#F97316"/>
-    <ellipse cx="60" cy="76" rx="16" ry="15" fill="#EAF4FF"/>
-    <path d="M50 102 l0 8 M70 102 l0 8" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
-    <path d="M40 20 q6 -12 16 -9 M64 11 q8 -2 12 6" stroke="#3B82F6" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
+    <defs>
+      <linearGradient id="${u}w" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#93C5FD"/><stop offset="1" stop-color="#3B82F6"/>
+      </linearGradient>
+      <radialGradient id="${u}b" cx="36%" cy="26%" r="82%">
+        <stop offset="0" stop-color="#A9CCFF"/><stop offset="58%" stop-color="#60A5FA"/><stop offset="1" stop-color="#2D6FE0"/>
+      </radialGradient>
+      <radialGradient id="${u}h" cx="36%" cy="26%" r="80%">
+        <stop offset="0" stop-color="#DCE9FF"/><stop offset="70%" stop-color="#93C5FD"/><stop offset="1" stop-color="#4A87EE"/>
+      </radialGradient>
+    </defs>
+    ${shadow(109,29)}
+    <g stroke="#2B62C9" stroke-width="2.2" stroke-linejoin="round" fill="url(#${u}w)">
+      <path d="M30 62 Q6 50 4 26 Q26 30 38 52Z"/>
+      <path d="M31 70 Q10 66 4 48 Q24 46 39 60Z" opacity=".92"/>
+      <path d="M90 62 Q114 50 116 26 Q94 30 82 52Z"/>
+      <path d="M89 70 Q110 66 116 48 Q96 46 81 60Z" opacity=".92"/>
+    </g>
+    <path d="M50 101 l-1 9 M70 101 l1 9" stroke="#EA8C1F" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M43 110 h12 M65 110 h12" stroke="#F59E0B" stroke-width="4.6" stroke-linecap="round"/>
+    <ellipse cx="60" cy="71" rx="33" ry="31" fill="url(#${u}b)" stroke="#2B62C9" stroke-width="2.6"/>
+    <ellipse cx="60" cy="78" rx="16" ry="14" fill="#EFF6FF" opacity=".92"/>
+    <circle cx="60" cy="40" r="22" fill="url(#${u}h)" stroke="#2B62C9" stroke-width="2.6"/>
+    <path d="M52 20 q4 -11 12 -8 q-4 4 -1 9" fill="#6EA8FF" stroke="#2B62C9" stroke-width="2" stroke-linejoin="round"/>
+    ${gloss(48,30,8,12,-20)}
+    ${eye(51,39,4.2)}${eye(69,39,4.2)}
+    ${beak(60,45,6.5,8.5,'#F97316','#FBBF24')}
+    ${blush(41,47,'#FB7185')}${blush(79,47,'#FB7185')}
+    ${sparkle(104,20,6,'#DBEAFE')}${sparkle(14,74,4.5,'#DBEAFE')}
+    </svg>`;
+
   return open+`
-    <ellipse cx="60" cy="108" rx="34" ry="7" fill="rgba(14,116,180,.10)"/>
-    <path d="M24 58 Q-4 44 2 20 Q28 26 36 48Z" fill="#FBBF24"/>
-    <path d="M96 58 Q124 44 118 20 Q92 26 84 48Z" fill="#FBBF24"/>
-    <ellipse cx="60" cy="70" rx="33" ry="32" fill="#FCD34D" stroke="#F59E0B" stroke-width="3"/>
-    <circle cx="60" cy="38" r="21" fill="#FDE68A" stroke="#F59E0B" stroke-width="3"/>
-    <circle cx="52" cy="36" r="3.5" fill="#7C2D12"/><circle cx="68" cy="36" r="3.5" fill="#7C2D12"/>
-    <polygon points="55,43 65,43 60,51" fill="#EA580C"/>
-    <ellipse cx="60" cy="76" rx="16" ry="15" fill="#FFFBEB"/>
-    <path d="M50 102 l0 8 M70 102 l0 8" stroke="#EA580C" stroke-width="4" stroke-linecap="round"/>
-    <path d="M60 8 l4 9 9 1 -6.5 6.5 1.5 9 -8 -4.5 -8 4.5 1.5 -9 -6.5 -6.5 9 -1Z" fill="#FBBF24" stroke="#F59E0B" stroke-width="2"/></svg>`;
+    <defs>
+      <linearGradient id="${u}w" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FDE68A"/><stop offset="55%" stop-color="#FBBF24"/><stop offset="1" stop-color="#F97316"/>
+      </linearGradient>
+      <radialGradient id="${u}b" cx="36%" cy="26%" r="82%">
+        <stop offset="0" stop-color="#FFF3C4"/><stop offset="58%" stop-color="#FCD34D"/><stop offset="1" stop-color="#F0A417"/>
+      </radialGradient>
+      <radialGradient id="${u}h" cx="36%" cy="26%" r="80%">
+        <stop offset="0" stop-color="#FFFAE0"/><stop offset="70%" stop-color="#FDE68A"/><stop offset="1" stop-color="#F5BE3C"/>
+      </radialGradient>
+      <radialGradient id="${u}g" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FDE68A" stop-opacity=".55"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="60" cy="62" r="58" fill="url(#${u}g)"/>
+    ${shadow(109,31)}
+    <g stroke="#D97706" stroke-width="2.2" stroke-linejoin="round" fill="url(#${u}w)">
+      <path d="M28 62 Q0 50 3 24 Q29 30 40 52Z"/>
+      <path d="M29 72 Q6 66 1 46 Q23 46 38 62Z" opacity=".93"/>
+      <path d="M92 62 Q120 50 117 24 Q91 30 80 52Z"/>
+      <path d="M91 72 Q114 66 119 46 Q97 46 82 62Z" opacity=".93"/>
+      <path d="M52 96 q-10 14 -2 20 q8 -4 12 -12Z" opacity=".9"/>
+      <path d="M68 96 q10 14 2 20 q-8 -4 -12 -12Z" opacity=".9"/>
+    </g>
+    <ellipse cx="60" cy="71" rx="33" ry="31" fill="url(#${u}b)" stroke="#D97706" stroke-width="2.6"/>
+    <ellipse cx="60" cy="78" rx="16" ry="14" fill="#FFFBEB" opacity=".92"/>
+    <circle cx="60" cy="40" r="22" fill="url(#${u}h)" stroke="#D97706" stroke-width="2.6"/>
+    ${gloss(48,30,8,12,-20)}
+    ${eye(51,39,4.2)}${eye(69,39,4.2)}
+    ${beak(60,45,6.5,8.5,'#EA580C','#FBBF24')}
+    ${blush(41,47,'#FB7185')}${blush(79,47,'#FB7185')}
+    <path d="M60 6 l4.6 9.6 10.4 1.4 -7.6 7.4 1.8 10.4 -9.2 -5 -9.2 5 1.8 -10.4 -7.6 -7.4 10.4 -1.4Z"
+      fill="#FEF3C7" stroke="#D97706" stroke-width="2.4" stroke-linejoin="round"
+      transform="translate(9,-6) scale(0.85)"/>
+    ${sparkle(104,18,7,'#FEF3C7')}${sparkle(14,72,5,'#FEF3C7')}${sparkle(96,92,4.5,'#FEF3C7')}
+    </svg>`;
 }
 
 /* ---------------- 状態管理 ---------------- */
@@ -1164,6 +1710,7 @@ function defaultState(){
     baseball:{ best:{}, done:[] },
     dodge:{ best:{}, done:[] },
     relay:{ best:{}, done:[] },
+    steps:[],                                    // できたスモールステップのid(ぜんしゅもく共通)
     badges:[],
     streak:{ last:'', count:0, best:0 },
   };
@@ -1221,12 +1768,31 @@ function nawaKyu(s){
   }
   return best;
 }
-/* てつぼう: できたわざの数 → 級 (20=特級, 2きざみ) */
+/* ---------------- スモールステップの計算 ----------------
+   ステップぜんぶ達成 = そのわざ「はんぶん(0.5わざ)」ぶんとしてカウントする。
+   てつぼうは わざの数で級が決まるので、この0.5ぶんで級も上がる。
+   （なわとび=回数・すいえい=検定そのものが級の定義なので、そちらの級は動かさない） */
+function stepsOf(id){ return STEPS[id] || []; }
+function stepDone(stepId){ return (S.steps||[]).indexOf(stepId) >= 0; }
+function stepDoneCount(id){ return stepsOf(id).filter(st=>stepDone(st.id)).length; }
+function stepAll(id){ const a = stepsOf(id); return a.length>0 && a.every(st=>stepDone(st.id)); }
+/* まだできていないわざのうち、ステップだけぜんぶ終わっているわざの数 */
+function halfSkills(skills, doneIds){
+  return skills.filter(k=>doneIds.indexOf(k.id)<0 && stepAll(k.id)).length;
+}
+/* しゅもくぜんたいで できたステップの数 */
+function stepTotalOf(skills){ return skills.reduce((a,k)=>a+stepDoneCount(k.id), 0); }
+function stepMaxOf(skills){ return skills.reduce((a,k)=>a+stepsOf(k.id).length, 0); }
+
+/* てつぼう: できたわざの数 → 級 (20=特級, 2きざみ)。ステップは0.5わざぶんとして足す */
+function tetsuPoints(s){
+  return s.tetsubo.done.length + 0.5 * halfSkills(TETSUBO_SKILLS, s.tetsubo.done);
+}
 function tetsuKyu(s){
-  const n = s.tetsubo.done.length;
-  if(n>=20) return 'とっきゅう';
+  if(s.tetsubo.done.length>=20) return 'とっきゅう';   // 特級は本わざ20こでのみ
+  const n = Math.floor(tetsuPoints(s));
   if(n<2) return '10きゅう';
-  return (10-Math.floor(n/2))+'きゅう';
+  return Math.max(1, 10-Math.floor(n/2))+'きゅう';
 }
 function suieiKyuLabel(s){
   let label = null;
@@ -1431,8 +1997,9 @@ function viewHome(){
 
   return headerHtml('')+`
   <div class="hero">
+    <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="hill"></div>
     <div class="char-wrap">
-      ${charSvg(li.level)}
+      <div class="char-hold">${charSvg(li.level)}</div>
       <div class="char-info">
         <div class="char-name">${esc(S.profile.charName)||'ぴよ'}</div>
         <div class="char-stage">${stage.name} — ${stage.desc}</div>
@@ -1464,11 +2031,23 @@ function viewHome(){
   </div>`;
 }
 
+/* しゅもくカード。つかいはじめると「せつめい」→「しんちょくバー」にかわって、そだった感じが出る */
 function sportCardsHtml(){
-  return Object.entries(SPORTS).map(([id,sp])=>
-    `<button class="sport-card ${sp.cls}" onclick="go('sport/${id}')">
-      <span class="em">${sp.em}</span><span class="nm">${sp.name}</span><span class="sub">${sp.sub}</span>
-    </button>`).join('');
+  return Object.entries(SPORTS).map(([id,sp])=>{
+    const d = dekitaOf(id);
+    const done = d.items.filter(i=>!i.ex).length;
+    let foot = `<span class="sub">${sp.sub}</span>`;
+    if(d.total && done>0){
+      const pct = Math.min(100, done/d.total*100);
+      foot = `<span class="prog"><span class="bar"><i style="width:${pct}%"></i></span>
+        <span class="num">${done}/${d.total}</span></span>`;
+    }else if(!d.total && d.sub){
+      foot = `<span class="kmchip">${d.sub}</span>`;
+    }
+    return `<button class="sport-card ${sp.cls}" onclick="go('sport/${id}')">
+      <span class="em">${sp.em}</span><span class="nm">${sp.name}</span>${foot}
+    </button>`;
+  }).join('');
 }
 
 /* ---------------- しゅもく一覧 ---------------- */
@@ -1550,6 +2129,7 @@ function nawaWazaHtml(){
         <button class="step-btn" onclick="stepCount('${sk.id}',1)">＋</button>
         <button class="btn green smallbtn" onclick="saveNawa('${sk.id}')">きろく!</button>
       </div>
+      ${stepsHtml('nawatobi', sk.id)}
     </div>`;
   }).join('');
 }
@@ -1614,6 +2194,69 @@ function saveSpeed(){
   render(); playCelebrations();
 }
 
+/* ---------------- スモールステップのUI ----------------
+   わざカードの中に折りたたみで入る。ふだんは閉じていて、つまずいた子だけ開く。
+   ひらいている状態はセッション中だけおぼえる(保存しない) */
+let openSteps = {};
+function toggleStepOpen(id){ openSteps[id] = !openSteps[id]; render(); }
+function skillNameOf(id){
+  if(id==='mara') return 'マラソン';
+  const all = [].concat(NAWATOBI_SKILLS, TETSUBO_SKILLS, MAT_SKILLS, TOBIBAKO_SKILLS,
+    SUIEI_KYU.map(k=>({id:k.id, name:k.label})),
+    Object.keys(BALL_SPORTS).map(k=>BALL_SPORTS[k].skills).reduce((a,b)=>a.concat(b), []));
+  const f = all.find(x=>x.id===id);
+  return f ? f.name : id;
+}
+function stepsHtml(sport, skillId){
+  const list = stepsOf(skillId);
+  if(list.length===0) return '';
+  const n = list.filter(st=>stepDone(st.id)).length;
+  const open = !!openSteps[skillId];
+  return `<div class="step-wrap">
+    <button class="step-head ${n===list.length?'all':''}" onclick="toggleStepOpen('${skillId}')">
+      <span class="ar">${open?'▼':'▶'}</span>${n===list.length?'ステップ ぜんぶできた!':'できるまでの ステップ'}
+      <span class="cnt">${n}/${list.length}</span>
+    </button>
+    ${open?`<div class="step-list">
+      ${list.map((st,i)=>{
+        const on = stepDone(st.id);
+        return `<div class="step-item ${on?'on':''}" onclick="toggleStep('${sport}','${skillId}','${st.id}')">
+          <span class="bx">${on?'✓':(i+1)}</span>
+          <span class="tx"><b>${st.name}</b><small>${st.kotsu}</small></span>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+  </div>`;
+}
+function toggleStep(sport, skillId, stepId){
+  const st = stepsOf(skillId).find(x=>x.id===stepId);
+  if(!st) return;
+  if(!S.steps) S.steps = [];
+  const label = skillNameOf(skillId)+'／ステップ「'+st.name+'」できた!';
+  if(stepDone(stepId)){
+    if(!confirm('「'+st.name+'」のチェックをはずす?\n(もらったXPももどるよ)')) return;
+    S.steps = S.steps.filter(x=>x!==stepId);
+    removeRecordXp(r=>r.sport===sport && r.label===label);
+    S.ever_steps = (S.ever_steps||[]).filter(x=>x!==stepId);
+    save(); render();
+    showToast('チェックをはずして XPをもどしたよ');
+    return;
+  }
+  S.steps.push(stepId);
+  if(!S.ever_steps) S.ever_steps = [];
+  let extra = 0;
+  if(S.ever_steps.indexOf(stepId)<0){ S.ever_steps.push(stepId); extra = XP.step; }
+  addRecord(sport, label, extra);
+  showToast('👍 '+st.name+' できた! +'+(XP.record+extra)+'XP');
+  render(); playCelebrations();
+}
+/* しゅもくの上に出す「ステップぜんぶ」のまとめ */
+function stepSummaryHtml(skills){
+  const now = stepTotalOf(skills), max = stepMaxOf(skills);
+  if(max===0) return '';
+  return `<div class="step-chip">🪜 スモールステップ ${now} / ${max}</div>`;
+}
+
 /* ---------------- チェックカードしき (てつぼう・マット) ---------------- */
 function checkSkillsHtml(sport, skills){
   const done = S[sport].done;
@@ -1629,6 +2272,7 @@ function checkSkillsHtml(sport, skills){
       <div class="skill-body">${skillArt(sport,sk.id)}
         <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
       </div>
+      ${stepsHtml(sport, sk.id)}
     </div>`;
   }).join('');
 }
@@ -1659,22 +2303,27 @@ function toggleSkill(sport, id){
 
 function viewTetsubo(){
   const n = S.tetsubo.done.length;
+  const half = halfSkills(TETSUBO_SKILLS, S.tetsubo.done);
   return headerHtml('てつぼうけんてい','🤾','sports')+`
   <div class="card center" style="background:linear-gradient(160deg,#FFF3E4,#fff)">
-    <div class="muted small">できたわざ <b>${n} / 20</b></div>
+    <div class="muted small">できたわざ <b>${n} / 20</b>${half?` ＋ステップだけ <b>${half}</b>わざ`:''}</div>
     <div style="font-size:30px;font-weight:800;color:var(--orange-dark)">${tetsuKyu(S)}</div>
-    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${n/20*100}%"></div></div>
-    <div class="muted small" style="margin-top:6px">20わざぜんぶで とっきゅう! (がっこうのてつぼうけんていカードとおなじ)</div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${Math.min(100,tetsuPoints(S)/20*100)}%"></div></div>
+    <div class="muted small" style="margin-top:6px">20わざぜんぶで とっきゅう! (がっこうのてつぼうけんていカードとおなじ)<br>
+      ステップを ぜんぶクリアしたわざは <b>はんぶんできた</b> ぶんとして きゅうに入るよ</div>
+    ${stepSummaryHtml(TETSUBO_SKILLS)}
   </div>
   ${checkSkillsHtml('tetsubo', TETSUBO_SKILLS)}`;
 }
 function viewMat(){
   const n = S.mat.done.length;
+  const half = halfSkills(MAT_SKILLS, S.mat.done);
   return headerHtml('マットうんどう','🤸','sports')+`
   <div class="card center" style="background:linear-gradient(160deg,#EFFFF4,#fff)">
-    <div class="muted small">できたわざ</div>
+    <div class="muted small">できたわざ${half?`（＋ステップだけ ${half}わざ）`:''}</div>
     <div style="font-size:30px;font-weight:800;color:var(--green-dark)">${n} / ${MAT_SKILLS.length}</div>
-    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${n/MAT_SKILLS.length*100}%"></div></div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${Math.min(100,(n+half*0.5)/MAT_SKILLS.length*100)}%"></div></div>
+    ${stepSummaryHtml(MAT_SKILLS)}
   </div>
   ${checkSkillsHtml('mat', MAT_SKILLS)}`;
 }
@@ -1683,11 +2332,14 @@ function viewMat(){
 function viewTobibako(){
   const cleared = TOBIBAKO_SKILLS.filter(k=>(S.tobibako.dan[k.id]||0)>=2).length;
   const maxDan = Math.max(0,...Object.values(S.tobibako.dan));
+  const doneIds = TOBIBAKO_SKILLS.filter(k=>(S.tobibako.dan[k.id]||0)>=2).map(k=>k.id);
+  const half = halfSkills(TOBIBAKO_SKILLS, doneIds);
   return headerHtml('とびばこ','🦘','sports')+`
   <div class="card center" style="background:linear-gradient(160deg,#FFEDF5,#fff)">
-    <div class="muted small">できたわざ <b>${cleared} / ${TOBIBAKO_SKILLS.length}</b></div>
+    <div class="muted small">できたわざ <b>${cleared} / ${TOBIBAKO_SKILLS.length}</b>${half?` ＋ステップだけ <b>${half}</b>わざ`:''}</div>
     <div style="font-size:30px;font-weight:800;color:#DB2777">${maxDan?('さいこう '+maxDan+'だん!'):'これから!'}</div>
     <div class="muted small">とべた「だんすう」のボタンをおしてきろくしよう</div>
+    ${stepSummaryHtml(TOBIBAKO_SKILLS)}
   </div>
   ${TOBIBAKO_SKILLS.map(sk=>{
     const cur = S.tobibako.dan[sk.id]||0;
@@ -1704,6 +2356,7 @@ function viewTobibako(){
         ${DAN_LIST.map(d=>`<button class="dan-btn ${cur>=d?'reached':''} ${cur===d?'max':''}"
           onclick="saveDan('${sk.id}',${d})">${d}だん</button>`).join('')}
       </div>
+      ${stepsHtml('tobibako', sk.id)}
     </div>`;
   }).join('')}`;
 }
@@ -1730,10 +2383,12 @@ function viewSuiei(){
     <div class="muted small">いまのきみは…</div>
     <div style="font-size:30px;font-weight:800;color:#0891B2">${label?('すいえい '+label):'これから!'}</div>
     <div class="muted small">20きゅうから2だんまで、ぜんぶで22だんかい! かおに水をつけるところからスタート!</div>
+    ${stepSummaryHtml(SUIEI_KYU)}
   </div>
 
   <div class="card">
     <h3>🏆 けんていにちょうせん</h3>
+    <div class="muted small" style="margin:-4px 0 8px">むずかしいときは「できるまでの ステップ」をひらいてね。もっと手前からはじめられるよ。</div>
     ${SUIEI_KYU.map(k=>{
       const on = S.suiei.kyu.includes(k.id);
       return `<div class="skill-card ${on?'done':''}" style="margin-bottom:8px">
@@ -1745,6 +2400,7 @@ function viewSuiei(){
         <div class="skill-body">${skillArt('suiei',k.id)}
           <div class="skill-kotsu">${k.name}</div>
         </div>
+        ${stepsHtml('suiei', k.id)}
       </div>`;
     }).join('')}
   </div>
@@ -1815,6 +2471,12 @@ function viewMarathon(){
   </div>
 
   <div class="card">
+    <h3>🪜 はしるまえの ちいさなステップ</h3>
+    <div class="muted small" style="margin:-4px 0 6px">「ずっとはしるのはむり…」でもだいじょうぶ。あるくところからでOK!</div>
+    ${stepsHtml('marathon', 'mara')}
+  </div>
+
+  <div class="card">
     <h3>✏️ きょうのラン</h3>
     <div class="form-row"><label>日づけ</label><input type="date" id="mr-date" value="${todayStr()}"></div>
     <div class="form-row"><label>きょり</label>
@@ -1878,6 +2540,12 @@ function delRun(id){
 }
 
 /* ---------------- ボールしゅもく(サッカーなど6しゅもく) ---------------- */
+function ballDoneIds(sportId){
+  return BALL_SPORTS[sportId].skills.filter(k=>
+    k.type==='check' ? S[sportId].done.includes(k.id) : (S[sportId].best[k.id]||0)>0
+  ).map(k=>k.id);
+}
+function ballHalf(sportId){ return halfSkills(BALL_SPORTS[sportId].skills, ballDoneIds(sportId)); }
 function ballDoneCount(sportId){
   return BALL_SPORTS[sportId].skills.filter(k=>
     k.type==='check' ? S[sportId].done.includes(k.id) : (S[sportId].best[k.id]||0)>0
@@ -1890,8 +2558,9 @@ function viewBallSport(sportId){
   <div class="card center" style="background:linear-gradient(160deg,#F0FDF9,#fff)">
     <div class="muted small">できたチャレンジ</div>
     <div style="font-size:30px;font-weight:800;color:var(--sky-deep)">${done} / ${total}</div>
-    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${done/total*100}%"></div></div>
+    <div class="goalbar" style="margin-top:6px"><div class="fill" style="width:${Math.min(100,(done+ballHalf(sportId)*0.5)/total*100)}%"></div></div>
     <div class="muted small" style="margin-top:6px">かんたんなチャレンジからじゅんばんにならんでいるよ!</div>
+    ${stepSummaryHtml(cfg.skills)}
   </div>
   ${cfg.skills.map(sk=>{
     if(sk.type==='check'){
@@ -1906,6 +2575,7 @@ function viewBallSport(sportId){
         <div class="skill-body">${skillArt(sportId,sk.id)}
           <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
         </div>
+        ${stepsHtml(sportId, sk.id)}
       </div>`;
     }
     const best = S[sportId].best[sk.id]||0;
@@ -1924,6 +2594,7 @@ function viewBallSport(sportId){
         <button class="step-btn" onclick="stepCount('${sk.id}',1)">＋</button>
         <button class="btn green smallbtn" onclick="saveBallCount('${sportId}','${sk.id}')">きろく!</button>
       </div>
+      ${stepsHtml(sportId, sk.id)}
     </div>`;
   }).join('')}`;
 }
@@ -2015,7 +2686,27 @@ function dekitaOf(id){
       }
     });
   }
+  /* スモールステップの がんばりも ならべる（わざはまだでも ここに出る） */
+  const skills = skillsOfSport(id);
+  let stepN = 0;
+  skills.forEach(sk=>{
+    stepN += stepDoneCount(sk.id);
+    const already = out.items.some(i=>i.nm===sk.name || i.nm===sk.label);
+    if(!already && stepAll(sk.id)) out.items.push({ nm:sk.name||sk.label, val:'ステップ ぜんぶ!', ex:1 });
+  });
+  if(stepN>0) out.items.push({ nm:'🪜 スモールステップ', val:stepN+'こクリア', ex:1 });
   return out;
+}
+/* しゅもく → わざの配列（できたことリストとステップ集計で共用） */
+function skillsOfSport(id){
+  if(id==='nawatobi') return NAWATOBI_SKILLS;
+  if(id==='tetsubo')  return TETSUBO_SKILLS;
+  if(id==='mat')      return MAT_SKILLS;
+  if(id==='tobibako') return TOBIBAKO_SKILLS;
+  if(id==='suiei')    return SUIEI_KYU.map(k=>({id:k.id, name:k.label}));
+  if(id==='marathon') return [{id:'mara', name:'はしるじゅんび'}];
+  if(BALL_SPORTS[id]) return BALL_SPORTS[id].skills;
+  return [];
 }
 
 /* できたことリスト本体。しゅもくカードは色わけ(SPORTS の col/bg) */

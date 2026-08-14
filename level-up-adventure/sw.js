@@ -1,7 +1,7 @@
 // 自分レベルアップアドベンチャー — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // 仕様変更でアセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'lua-cache-v5';
+const CACHE = 'lua-cache-v6';
 const ASSETS = [
   './',
   './index.html',

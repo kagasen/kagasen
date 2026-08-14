@@ -2,7 +2,7 @@
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセット（データ.js・フォント・index.html等）を更新したら CACHE のバージョン番号を上げる(v1->v2...)。
 // 注意: データ.jsの ?v= と、ここのURLの ?v= は index.html の読み込みと一致させること。
-const CACHE = 'kanji-cache-v4';
+const CACHE = 'kanji-cache-v5';
 const ASSETS = [
   './',
   './index.html',

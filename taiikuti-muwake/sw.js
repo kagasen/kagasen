@@ -1,7 +1,7 @@
 // 体育チーム分け — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'taiikuti-muwake-cache-v1';
+const CACHE = 'taiikuti-muwake-cache-v2';
 const ASSETS = [
   './',
   './index.html',

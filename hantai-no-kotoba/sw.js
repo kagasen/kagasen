@@ -1,7 +1,7 @@
 // はんたいの言葉 — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'hantai-no-kotoba-cache-v1';
+const CACHE = 'hantai-no-kotoba-cache-v2';
 const ASSETS = [
   './',
   './index.html',

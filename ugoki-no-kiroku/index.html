@@ -369,6 +369,19 @@ input[type=date],input[type=text],select{
   padding:8px 12px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;min-height:48px;
 }
 
+/* ---------- アプリ集へもどるカード ---------- */
+.portal-card{
+  display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
+  background:linear-gradient(160deg,#FFFDF5,#FFF4DC);border:2px solid #FDE9C0;
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:14px;min-height:64px;
+}
+.portal-card:active{transform:translateY(2px);}
+.portal-card .pc-icon{font-size:30px;line-height:1;flex:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));}
+.portal-card .pc-tx{flex:1;min-width:0;line-height:1.35;}
+.portal-card .pc-tx b{display:block;font-size:15px;font-weight:800;color:#B45309;}
+.portal-card .pc-tx small{display:block;font-size:12px;color:var(--ink-soft);}
+.portal-card .pc-go{flex:none;color:#B45309;font-weight:800;font-size:13px;}
+
 /* ---------- スモールステップ（わざカードの中の折りたたみ） ---------- */
 .step-wrap{margin-top:8px;}
 .step-head{
@@ -2213,7 +2226,13 @@ function viewHome(){
   <div class="card center">
     <div class="muted small">「あしあと」で いままでにできたこと ぜんぶが見られるよ</div>
     <button class="btn wide" style="margin-top:8px" onclick="go('progress')">👣 せいちょうのあしあと</button>
-  </div>`;
+  </div>
+
+  <a class="portal-card" href="../index.html">
+    <span class="pc-icon">🏠</span>
+    <span class="pc-tx"><b>かがせんの HAPPY アプリ集</b><small>ほかのアプリも あそんでみよう!</small></span>
+    <span class="pc-go">▶</span>
+  </a>`;
 }
 
 /* しゅもくのアイコン。icon(SVG)があればそれを、なければ絵文字を出す */

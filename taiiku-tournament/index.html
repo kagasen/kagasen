@@ -1051,6 +1051,25 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
 }
 </script>
+
+<!-- 🏠 かがせんのHAPPYアプリ集へもどるリンク（全アプリ共通・2026-08-14）
+     ・アプリ側のCSSに影響されないよう id で完結。z-indexは最前面。
+     ・タップ高さ44px（CLAUDE.md §5）／印刷には出ない／セーフエリア対応 -->
+<a href="../index.html" id="kagasen-home" aria-label="かがせんのHAPPYアプリ集にもどる">🏠 アプリ集</a>
+<style>
+#kagasen-home{
+  position:fixed; left:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:2147483000;
+  display:inline-flex; align-items:center; gap:5px; min-height:44px; padding:0 15px;
+  box-sizing:border-box; background:rgba(255,255,255,.93); color:#0F3350;
+  border:2px solid rgba(15,51,80,.10); border-radius:999px;
+  font-family:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;
+  font-size:13px; font-weight:800; line-height:1; text-decoration:none; white-space:nowrap;
+  box-shadow:0 3px 10px rgba(15,51,80,.20); opacity:.94;
+}
+#kagasen-home:hover{opacity:1;}
+#kagasen-home:active{transform:translateY(1px);}
+@media print{#kagasen-home{display:none!important;}}
+</style>
 </body>
 
 </html>

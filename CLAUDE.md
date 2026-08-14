@@ -74,6 +74,11 @@ GitHub Pages で公開する静的サイト。各アプリ＝「フォルダ + i
 ## 7. 公開時チェックリスト
 
 - [ ] ルートの `apps.js` にカード追加、`images/` にサムネイルSVG追加
+- [ ] **「かがせんのHAPPYアプリ集」へもどるリンクを入れる**（`../index.html`）。全28アプリに入っている（2026-08-14）。
+      作りは2通り: ①**共通の浮きボタン**（`id="kagasen-home"` の `<a>`＋`<style>` を `</body>` 直前に貼るだけ。22アプリがこれ）
+      ②アプリのデザインに合わせた自前のリンク（ugoki-no-kiroku のホームのカード、rekishi-battle の題字よこ、typing/vision-training/shinmatorikusu/marumarusaitekikai）。
+      浮きボタンは左下・タップ高さ44px・印刷では非表示。**下に自前のバーがあるアプリは位置をずらす**
+      （level-up-adventure=下ナビの上/taiikusakusennbo-do=チームボタンの上/taiiku-league=左上）。
 - [ ] `manifest.json` / `sw.js` / `icon.svg` を用意（PWA）
 - [ ] **出典・ライセンスクレジットを表記**し、以後絶対に消さない（例: KanjiVG © Ulrich Apel / CC BY-SA 3.0 は同一ライセンス継承必須。体育の級表は栃木県「みんなが使えるチャレンジカード集」出典）
 - [ ] iPad・スマホ両方の画面幅で表示確認

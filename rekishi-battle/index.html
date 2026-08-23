@@ -375,6 +375,12 @@
   #hs-chal .hc-bonus { margin-top: 3px; padding: 3px 7px; border-radius: 8px;
     background: #fff8e1; border: 2px solid #ffcc80; color: #e65100;
     font-size: 11px; font-weight: 800; line-height: 1.4; }
+  /* 🕊 の こつの 帯だけ 緑（ごほうびの ⏳＋🕊 のオレンジ帯と 見分けるため） */
+  #hs-chal .hc-nohis { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
+  /* 🕊 のこり回数（ひっさつゲージの 見出しの となり）。じゃまにならない 小ささで。
+     ★色は **見出しの色を そのまま つかう**（color: inherit）。帯は ふだん こげ茶・満タンで
+       金色に 光るので、色を きめうちすると **どちらかで 読めなくなる**（#his-label の★と同じ話）。 */
+  .hl-nohis { margin-left: 8px; font-size: 12px; font-weight: 800; color: inherit; opacity: 0.9; }
   /* 勝ったときに 新しくついた ⭐を 見せる帯 */
   .ov-star { font-size: 17px; font-weight: 800; color: #ffe082; margin: 4px 0 8px; line-height: 1.5; }
   /* 🏅 たたかいの ふりかえり（2026-08-10・ユーザー要望）。
@@ -1395,6 +1401,52 @@
   #rw-count { font-size: 15px; color: #5d4037; flex: none; }
   #v-reward .big-btn { max-width: 360px; }
 
+  /* ---------- 🎉 エンディング（2026-08-14） ----------
+     ★ホーム（body.home）と おなじ **墨紺＋金**。ここが いちばんの はれ舞台なので、
+       ふだんの クリーム色の画面と はっきり ちがう色にして「特別な画面」だと 分かるようにする。
+     ★字は 大きめ・行間ひろめ（教室の大型モニタに 映すこともある。CLAUDE.md §5）。 */
+  #v-ending .panel {
+    background: linear-gradient(180deg, #1b2440, #10182c);
+    border-color: #ffd76a; align-items: center; text-align: center;
+  }
+  #ed-body { width: 100%; max-width: 620px; margin: 0 auto; color: #fff6e0; }
+  .ed-big {
+    font-size: 34px; font-weight: 800; color: #ffd76a; line-height: 1.3; margin: 6px 0 2px;
+    text-shadow: 0 2px 0 #5d4037;
+    animation: edpop 0.6s;
+  }
+  @keyframes edpop { from { transform: scale(0.4) rotate(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .ed-sub { font-size: 18px; font-weight: 800; margin-top: 4px; line-height: 1.5; }
+  .ed-msg {
+    font-size: 15px; font-weight: 700; line-height: 1.8; margin: 10px auto; max-width: 560px;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,215,106,0.5);
+    border-radius: 14px; padding: 10px 14px; text-align: left;
+  }
+  .ed-parade { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin: 8px 0; }
+  .ed-gift {
+    font-size: 17px; font-weight: 800; color: #3e2723; margin: 12px auto 6px; max-width: 560px;
+    background: linear-gradient(180deg, #ffe082, #ffca28); border-radius: 14px; padding: 9px 12px;
+    line-height: 1.5;
+  }
+  /* ごほうびの 人えらび。へんせいの .pick-btn を そのまま つかう（同じ見た目＝まよわない） */
+  #ed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 4px; margin-top: 6px; }
+  #ed-grid .pick-btn.maxed { opacity: 0.55; }
+  /* ★時代の札は 札のはばに おさめる（「安土桃山時代」が いちばん長い。はみ出すと 切れて見える） */
+  #ed-grid .era-chip { max-width: 100%; font-size: 10px; padding: 1px 5px; box-sizing: border-box; }
+  #v-ending .big-btn { max-width: 360px; margin-left: auto; margin-right: auto; }
+  /* ホームの 👑完全制覇 と 🎁ごほうび（うけとっていないときだけ 出る） */
+  body.home #home-stats .hs-crown { color: #ffd76a; font-size: 16px; font-weight: 800; margin-top: 2px; }
+  #home-gift:empty { display: none; }
+  #home-gift {
+    margin: 6px auto 0; max-width: 420px; width: 100%;
+  }
+  #home-gift .gift-btn {
+    display: block; width: 100%; min-height: 48px; border: none; border-radius: 14px; cursor: pointer;
+    background: linear-gradient(180deg, #ffe082, #ffb300); color: #4e342e;
+    font-size: 16px; font-weight: 800; box-shadow: 0 3px 0 #e65100;
+  }
+  #home-gift .gift-btn:active { box-shadow: 0 1px 0 #e65100; transform: translateY(2px); }
+
   /* ---------- モーダル（人物ずかん） ---------- */
   #modal {
     position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 50; display: none;
@@ -1535,6 +1587,10 @@
     <!-- 🧑‍🤝‍🧑 人物の行列（2026-08-11）。中身は drawParade() が 入れる -->
     <div id="home-parade"></div>
     <div id="home-stats"></div>
+    <!-- 🎁 まだ もらっていない ごほうび（エンディングの「ひとりだけ Lv50」）への 入口。
+         ★ふだんは 何も出ない（goHome が 中身を 入れたときだけ 見える）。
+         これが 無いと、エンディングで「あとで」を えらんだ子が **二度と たどりつけない**。 -->
+    <div id="home-gift"></div>
     <!-- 音の 入／切。教室の大型モニタに映すときに 先生が すぐ消せるように ホームに出す。
          ★おと と おんがく を **べつべつ**にしてある。授業では「こうか音はいるけど
            曲はいらない」ことが あるため（2026-08-09） -->
@@ -1677,6 +1733,18 @@
       <div id="rw-trivia"></div>
       <button id="btn-retry" class="big-btn">⚔️ もういちど このステージ</button>
       <button id="btn-rhome" class="big-btn brown">🏠 ホームへ</button>
+    </div>
+  </section>
+
+  <!-- 🎉 エンディング（2026-08-14）。2つの エンディングで **同じ画面**をつかう。
+       ① 🎉 おめでとう … 「3」の さいごの ステージを クリアした人へ。
+                          ごほうびに **ひとりだけ・1回だけ** Lv50(MAX) にできる。
+       ② 👑 完全制覇   … ぜんぶの ステージで ⭐⭐⭐ を そろえた人へ。
+                          ごほうびは **42人 ぜんいん Lv50(MAX)**。
+       ★中身は ぜんぶ JS が 入れる（showEnding1 / showEnding2）。 -->
+  <section id="v-ending" class="view">
+    <div class="panel scroll" style="flex:1;">
+      <div id="ed-body"></div>
     </div>
   </section>
 </main>
@@ -2220,6 +2288,12 @@ function loadSave() {
   if (!s.mvp) s.mvp = {};
   if (!s.wins) s.wins = {};
   if (!s.tseen) s.tseen = [];
+  /* 🎉 エンディング（2026-08-14に追加）。★どれも **新しいキー**なので、古いセーブは 無傷。
+     はじめから 入れなくてよい（無い＝まだ 見ていない・もらっていない、で 正しく動く）。
+       ending1 … 🎉おめでとう（3の さいご クリア）の ごほうびを **うけとった**
+       gift    … その ごほうびを あげた人の id（1人だけ・記録用）
+       ending2 … 👑完全制覇（⭐ぜんぶ）を 見た＝42人 ぜんいん MAXに した
+     ★ここで 消したり 作りなおしたり しないこと（ごほうびの 二重どりに なる）。 */
   return s;
 }
 var save = loadSave();
@@ -2421,13 +2495,22 @@ function drawParade() {
 }
 function goHome() {
   B = null;
+  /* 🎉 エンディング（2026-08-14）。★**ホームを 出すより先に**見る。
+     ここ1か所に まとめてあるので、バトルから もどっても・ガチャから もどっても 同じように 出る。 */
+  if (checkEnding()) return;
   drawSoundBtn();
   var got = ownedIds().length, total = 0;
   CHARS.forEach(function (c) { var cc = cardCnt(c.id); total += cc.n + cc.r + cc.sr; });
   var stars = 0;
   STAGES.forEach(function (st) { stars += chalCount(st.id); });
   $("home-stats").innerHTML = rubi("🃏 カード " + total + "まい ／ 人物《じんぶつ》 " + got + "／" + CHARS.length + "人")
-    + '<div class="hs-star">' + rubi("⭐ " + stars + "／" + (STAGES.length * CHALS.length)) + '</div>';
+    + '<div class="hs-star">' + rubi("⭐ " + stars + "／" + (STAGES.length * CHALS.length)) + '</div>'
+    /* 👑 完全制覇した人の しるし。ホームに ずっと のこる＝やりきった きろく */
+    + (save.ending2 ? '<div class="hs-crown">' + rubi("👑 完全制覇《かんぜんせいは》！ 42人 ぜんいん Lv" + LV_MAX) + '</div>' : "");
+  /* 🎁 まだ ごほうび（ひとりだけ MAX）を うけとっていないときだけ 出す入口 */
+  $("home-gift").innerHTML = giftDue()
+    ? '<button class="gift-btn" onclick="showEnding1()">' + rubi("🎁 ごほうびを うけとる（ひとりだけ Lv" + LV_MAX + "）") + '</button>'
+    : "";
   drawParade();
   var el = $("stage-list");
   el.innerHTML = "";
@@ -2549,9 +2632,12 @@ function renderHensei() {
          見くらべようがなかった。**かならず めあての文そのもの**を書く。
          `chalName()` を通しているので、弥生の「卑弥呼を つかって かつ」にも ついてくる。 */
     /* ★ふりがなの《》は のこしたまま rubi() に わたすこと（plain() で消すと ふりがなが 出ない） */
-    /* ★★`his`の面は ⏳が「ひっさつを **つかって**」なので 🕊「**つかわずに**」とは
-         同時に できない。その面は **⏳ひとつで** ボーナス（winBattle の hardWin と 対）。
+    /* ★★`his`の面は ⏳が「ひっさつを **つかって**」なので、🕊（1回まで）とは
+         **ふつう 同時に できない**（2人以上の面は 2回いじょう 撃つことになるため）。
+         その面は **⏳ひとつで** ボーナス（winBattle の hardWin と 対）。
          `use`の面は 両立するので これまでどおり 2つそろえて。
+       ★2026-08-14に 🕊が「1回まで」に なったので、**ひとりだけの面（st1 卑弥呼）は
+         1回 撃てば ⏳も 🕊も 両方 つく**（＝1戦で ⭐3つ）。じゃまには ならないので そのまま。
          ここを 直しわすれると 画面の やくそくと 中身が くいちがう。 */
     + '<div class="hc-bonus">' + rubi(stageChalKind(st) === "his"
         ? "🎁 「" + chalName(CHALS[1], st) + "」が できたら、"
@@ -2570,7 +2656,13 @@ function renderHensei() {
               return plain(c.name) + "《" + c.yomi + "》";
             }).join("・") + " は まだ なかまに いないよ。ガチャで さがそう！") + '</div>'
           : "";
-      })();
+      })()
+    /* 🕊 の やりかたを **たたかう前に** 教える（2026-08-14）。
+       ★これを 書かないと、🕊は ただ「火力が 半分の しばりプレイ」にしか 見えない。
+         ほんとうは **おかねを ためて 人数で 押す**たたかい方に 変わる、という めあて。
+         シミュレーションでも、この やり方に かえただけで **17面中6面 → 12面**が 勝てるようになった。 */
+    + '<div class="hc-bonus hc-nohis">' + rubi("🕊 の こつ　ひっさつを がまんするぶん、<b>おかねを ためて 一気《いっき》に"
+        + " 何人《なんにん》も 出《だ》す</b>！ 🏹ゆみや ⚡かみなりなどの <b>しろの ちから</b>も どんどん つかおう。") + '</div>';
   var slots = $("deck-slots");
   slots.innerHTML = "";
   for (var i = 0; i < DECK_MAX; i++) {
@@ -2646,10 +2738,29 @@ $("btn-fight").onclick = function () { if (save.deck.length >= 1) startBattle();
      使っているので、形を変えると 進みぐあいが こわれる。CLAUDE.md §3）。
      新しい入れもの `save.chal` を べつに足してある＝**古いセーブは そのまま生きる**。
    ===================================================================== */
+/* 🕊「ひっさつは N回までで かつ」の N（2026-08-14）。★0に すると もとの「つかわずに」に もどる。 */
+var NOHIS_MAX = 1;
 var CHALS = [
   { id: "clear", icon: "⭐", name: "クリアする" },
   { id: "era",   icon: "⏳", name: "その時代《じだい》の人《ひと》だけで かつ" },
-  { id: "nohis", icon: "🕊", name: "ひっさつを つかわずに かつ" }
+  /* ★★★2026-08-14: 「つかわずに」→ **「1回までで」**（ユーザー指示で シミュレーションして決めた）
+     ---------------------------------------------------------------------------
+     ★わけ: ひっさつは この ゲームの **火力の半分**。3シリーズの たたかう型は
+       「1秒に わいてくる 敵のHP」が みかたの こうげきを 上まわるように 作ってあるので、
+       **0回では 数字のうえで 追いつけない**面が あった。
+       実測（ちから10こ＋ためて一気に出す 自動プレイ・Lv50・いちばん良い手を さがして）:
+         0回まで … 17面中 **12面** しか 勝てない（st4c・st7c・st9c・st10c が ×）
+         1回まで … **17面ぜんぶ ○**（st4c 48秒／st7c 59秒／st9c 60秒／st10c 65秒）
+     ★★1回に した わけ（2回・3回では ない）: ゲージは 22秒で 満タン＝ふつうに 遊ぶと
+       1戦で **3〜4回** 撃てる。3回にすると **しばりが 無いのと同じ**でめあてに ならない。
+       「ここぞ！ の 1回だけ」＝子どもにも 分かる ルールで、しかも ちゃんと むずかしい。
+     ★★★**おかねを ふやす形（がまんボーナス）は やめた**。試したら 勝ち方が
+       「おかね→ちから連打」になり、**レアLv5でも 3シリーズが 全部クリアできて**しまった
+       （しろの ちからの ダメージは ざこのHPを もとに 決まるので、レベルと 関係なくなる）。
+       1回までなら **レアLv5では 勝てない／Lv50なら 勝てる**＝**育てる意味が のこる**。
+     ★id は "nohis" のまま＝**もう ⭐を とってある子の きろくは そのまま 生きる**（CLAUDE.md §3）。
+       じょうけんは ゆるくなる がわなので、だれの ⭐も 消えない。 */
+  { id: "nohis", icon: "🕊", name: "ひっさつは 1回《かい》までで かつ" }
 ];
 
 /* ★★★⭐2つ目は **面ごとの 手書きミッション**（2026-08-11・ユーザー要望）
@@ -2680,7 +2791,8 @@ var CHALS = [
      面によって そろわなくなる。CHALS[1] の **id は "era" のまま**なので、
      もう ⭐をとってある子の きろくは そのまま 生きる（CLAUDE.md §3）。
    ★★`his` の面だけ 🎁レア率ボーナスの じょうけんが 変わる（下の hardWin の★）。
-     「ひっさつを つかって」と「ひっさつを つかわずに」は 同時に できないため。
+     「ひっさつを つかって」と「ひっさつは 1回まで」は ふつう 同時に できないため
+     （名ざしが 2人いじょうの面。ひとりだけの st1 は 1回で 両立する）。
      **`use` の面は これまでどおり ⏳＋🕊**（出して勝つのと ひっさつ無しは 両立する）。 */
 var STAGE_CHAL = {
   /* 弥生 — 卑弥呼ひとりしか いない。人数で むずかしくできないので ひっさつで */
@@ -2827,7 +2939,7 @@ function giveStars() {
      だれも出さなくても 時間で完成して 勝てるので、それで ⭐が2つ付くのは おかしい。
      （その判定は eraChalOk() の中にある） */
   if (eraChalOk()) put("era");
-  if (!B.usedHis) put("nohis");
+  if (B.hisCount <= NOHIS_MAX) put("nohis");   /* 🕊 1回までなら ⭐（0回でも もちろん つく） */
   persist();
   return got;
 }
@@ -3506,7 +3618,7 @@ function startBattle() {
            （人数の少ない時代の ゆるい ⏳で使う。eraChalOk）/ usedHis=ひっさつを使ったか /
            hisBy=**だれの** ひっさつを 撃ったか / depBy=**だれを** 出したか
            （どちらも 面ごとの めあて STAGE_CHAL で使う。2026-08-11） */
-        deployed: 0, allEra: true, eraAny: false, usedHis: false, hisBy: {}, depBy: {},
+        deployed: 0, allEra: true, eraAny: false, usedHis: false, hisCount: 0, hisBy: {}, depBy: {},
         /* 🏅 ふりかえり用（2026-08-10）。dmgBy=人物ごとの ダメージ合計 /
            dmgPw=城のちからで あたえた合計 /
            skillCnt=業績の技が 出た回数。★★**人物ごと**に分けて数える（skillCnt[人のid][技名]）。
@@ -3817,7 +3929,36 @@ function kataDef(st, which) {
   for (var k in src) d[k] = src[k];
   if (m.hp)    d.hp    = Math.round(src.hp  * m.hp);
   if (m.atk)   d.atk   = Math.round(src.atk * m.atk);
-  if (m.speed) d.speed = Math.round(src.speed * m.speed);
+  /* ★★★はやさの 上のせを **二重に かけない**（2026-08-14・ユーザー指示
+       「平安の貴族のものの怪3が無理なので、敵のスピードをほんの少し遅らせて。
+         それで必殺技使わずクリアできるギリギリのところをシミュレーションして」）
+     ---------------------------------------------------------------------------
+     💨はやて型は もともと ざこの speed が **1.8倍**。そこへ 3シリーズの
+     `HARD3.mspd`(1.44倍) が **もう一回** かかって **2.59倍**になっていた。
+     実測（st6c 平安3・つくる型）: ざこの あるく はやさ **95**。
+       盤のはば672pxを **7秒**で わたる＝出撃した みかたが 会う前に 城に つく。
+       つくる型は 城が なぐられると かんせい度が へる(BUILD_BREAK)ので、
+       **かんせい度が 0のまま 城が落ちる**（自動プレイ実測: 31秒で 0/2200 のまま まけ）。
+     ★シミュレーションで しきい値を さがした（ひっさつ無し・ゆみ/かみなり/さく/はた/あめ/
+       年貢/かみかぜ は つかう 自動プレイ・Lv50デッキ・st6c）:
+         ざこ95(いま) × ／ 86 × ／ 79 × ／ 74 × ／ **67 ○62秒** ／ 59 ○56秒
+       ＝**67あたりが「ひっさつ無しで やっと 勝てる」ギリギリ**。
+       そこは ちょうど「型の1.8倍だけ・シリーズの上のせなし」の数字なので、
+       **数字を 手で 決め打ちせず、二重がけを ほどく**形にしてある。
+     ★ほどくのは **speed が 1より 大きい型だけ**＝🪨かたまり(0.5倍＝おそい)は 1つも 変わらない。
+     ★1・2シリーズは **1バイトも 変わらない**（HARD3.mspd は 3シリーズにしか無い）。
+     ★かかるのは 💨はやての3面（st6c 貴族の世／st12c 江戸の文化／st16c 憲法と国会）だけ。
+     ★HARD3.mspd(1.44) は **さわっていない**＝2026-08-09/08-10 にユーザーが指示した
+       「3の敵の出る量・スピードを1.2倍ずつ」は、ほかの型では そのまま 生きている。 */
+  if (m.speed) {
+    var sp = m.speed;
+    /* ★★ほどくのは **ざこだけ**。`HARD3.mspd` は minion にしか かかっていないので、
+       ボスまで わると 二重がけを ほどくのではなく **ただの弱体化**になる
+       （実測でも st16c のボスが 20 → 14 に なってしまった。ここで 止めている）。 */
+    if (which === "minion" && sp > 1 && seriesOf(st) === 3
+        && typeof HARD3 !== "undefined" && HARD3.mspd) sp = sp / HARD3.mspd;
+    d.speed = Math.round(src.speed * sp);
+  }
   if (m.every) d.every = src.every * m.every;
   if (m.maxAdd) d.max  = Math.max(1, src.max + m.maxAdd);
   return d;
@@ -4319,7 +4460,12 @@ function renderHisBar() {
       B.hisOpen = false; B.hisWho = null;    /* 撃ったら えらび直しから（前のえらびを のこさない） */
       $("hisbar").className = ""; $("his-btns").innerHTML = "";
     }
-    $("his-label").textContent = "ひっさつゲージ";
+    /* 🕊「ひっさつは 1回までで かつ」の のこり回数を ここに 出す（2026-08-14）。
+       ★出さないと、子どもは **何回 撃ったか おぼえていられない**＝めあてが 運になる。
+       ★のこりが 無くなったら 何も出さない（せめる文は 書かない。CLAUDE.md §5）。 */
+    var left = NOHIS_MAX - B.hisCount;
+    $("his-label").innerHTML = "ひっさつゲージ"
+      + (left >= 0 ? '<span class="hl-nohis">' + rubi("🕊 あと" + left + "回《かい》まで") + '</span>' : "");
     return;
   }
   var ready = hisReady();
@@ -4340,8 +4486,12 @@ function renderHisBar() {
        わけ: 技の名前を「十七条の憲法（一げき）」のように **その人の業績名**で出すため。
        人が決まっていないと 業績名が決まらないので、人が先でないと この形にできない。 */
   if (!B.hisWho) {
+    /* ★★ここが 🕊の 決めどころ＝**撃つ しゅんかんに** のこり回数を 見せる。
+       あとで「しまった、撃ちすぎた」に ならないように、ボタンの すぐ上に 出す。 */
+    var left2 = NOHIS_MAX - B.hisCount;
     $("his-label").innerHTML = rubi(ready.length ? "⚡ ひっさつ！ だれで うつ？"
-                                                 : "⚡ ひっさつ！ だれか 出撃《しゅつげき》させよう");
+                                                 : "⚡ ひっさつ！ だれか 出撃《しゅつげき》させよう")
+      + (left2 >= 0 ? '<span class="hl-nohis">' + rubi("🕊 あと" + left2 + "回《かい》まで") + '</span>' : "");
     ready.forEach(function (r) {
       var ch = CHAR_BY_ID[r.id];
       var b = document.createElement("button");
@@ -4409,7 +4559,8 @@ function fireHissatsu(id, kindId) {
   hisReady().forEach(function (r) { if (r.id === id) pick2 = r; });
   if (!pick2) return;
   var u = pick2.u, ch = u.ch;
-  B.usedHis = true;          /* ⭐チャレンジ「ひっさつを つかわずに かつ」が 消える */
+  B.usedHis = true;          /* ひっさつを つかったか（⏳の 判定などで つかう） */
+  B.hisCount++;              /* ⭐チャレンジ 🕊「ひっさつは 1回までで かつ」の 数（NOHIS_MAX と くらべる） */
   B.hisBy[id] = true;        /* ⭐チャレンジ「○○の ひっさつを つかって かつ」に ○がつく（2026-08-11）。
                                 ★id は **えらんだ人物**（pick2.id）。技の種類（kindId）は 見ない＝
                                   なぎはらいでも いのりでも、その人で 撃てば ○。 */
@@ -5729,13 +5880,14 @@ function winBattle() {
      ⭐が すでに付いているかは 見ない＝**この たたかい**で むずかしい かちかたを したか、で見る
      （2回目からは 上がらない、では もどってくる理由にならないため）。 */
   /* ★★`his`の面（合戦など）は ⏳が「ひっさつを **つかって** かつ」なので、
-       🕊「ひっさつを **つかわずに** かつ」とは **同時に できない**。
+       🕊「ひっさつは **1回まで**で かつ」とは **ふつう 同時に できない**
+       （名ざしが 2人いじょうの面は 2回いじょう 撃つことになる）。
        そのままだと その面だけ 🎁ボーナスが 一生とれなくなるので、
        `his`の面は **⏳だけで** ボーナスにする（⏳自体が じゅうぶん むずかしい）。
        ★★`use`の面（○○を ぜんいん 出して かつ）は **両立する**ので これまでどおり ⏳＋🕊。
          ここを ひとまとめに すると、`use`の面の ボーナスが かんたんに なりすぎる。
        ★へんせい画面の 🎁の文（renderHensei）も 同じ分けかたで 書いてある。 */
-  var hardWin = eraChalOk() && (stageChalKind(state.stage) === "his" ? true : !B.usedHis);
+  var hardWin = eraChalOk() && (stageChalKind(state.stage) === "his" ? true : B.hisCount <= NOHIS_MAX);
   var got = giveStars();      /* ⭐チャレンジ。persist は giveStars の中でやっている */
   state.chalHard = hardWin;   /* ガチャ（rollCard / showGacha）が これを見る */
   persist();
@@ -5931,11 +6083,13 @@ function otherEras(era, n) {
 }
 /* まちがいの人物。同じ時代 → となりの時代 → それ以外 の順で n人。
    ★同じ時代の人が いないステージ（弥生の卑弥呼など）でも、となりの時代でうまる。 */
-function nearChars(id, n) {
+/* ★skip（id → 1 の みため）に 入っている人は 選択肢に しない（2026-08-14・sharedIds 用）。
+   わたさなければ 前と まったく同じ うごき。 */
+function nearChars(id, n, skip) {
   var me = CHAR_BY_ID[id], mine = eraNo(me.era);
   var band = [[], [], []];
   CHARS.forEach(function (c) {
-    if (c.id === id) return;
+    if (c.id === id || (skip && skip[c.id])) return;
     var d = Math.abs(eraNo(c.era) - mine);
     band[d === 0 ? 0 : (d <= 2 ? 1 : 2)].push(c);
   });
@@ -5954,14 +6108,67 @@ function farChars(id, n) {
   return out;
 }
 
-/* ① 業績 → だれ？ ★まちがいの選択肢は **同じ時代の人**から（2026-08-09） */
+/* ★★★同じ文が **何人にも 当てはまる**ことがある（2026-08-14・ユーザーが実機で発見）
+   =====================================================================
+   ユーザー:「『国風文化のころに活やくした』→ これは 清少納言も 紫式部も 活やくしたと思います。
+   正解が二つある？ もし二つとも正解なら 選択肢を修正してください」。
+   ★①「これは だれの こと？」は **その文が ひとりしか 指していない**のが 前ていだった。
+     ところが info には 2しゅるいの かぶりが あった:
+       ⑴ **まったく 同じ文**（紫式部と清少納言の「国風文化のころに活やくした」／
+          西郷と大久保の「薩摩藩の武士」）… 下の sharedIds が **自動で** 見つける
+       ⑵ 文は ちがうが **中身が 同じ**（源頼朝「平氏をほろぼした」は 源義経にも 当てはまる）
+          … 機械では 分からないので **下の表に 手で書く**
+   ★★直しかたは「**その文が 当てはまる人を 選択肢から 外す**」。
+     ＝ chars-data.js の 業績文は **1行も 書きかえない**（人物の業績文は 先生の原文が 正）。
+     ② ②'（人物→したこと）の **まちがい選択肢からも 外す**（infoPool）。
+   ★人物を足したときは、その人の info が **だれか他の人にも 当てはまらないか** を見て、
+     当てはまるなら ここに1行 足すこと（CLAUDE.md §8「配列に1行足すだけ」）。
+   ★★書きかたは **plain（ふりがな《》なし）**。sharedIds が plain どうしで くらべる。
+   ★who には **その文が 当てはまる人 ぜんいん**（もとの持ち主も ふくめて）を 書く。 */
+var SHARED_INFO = [
+  /* 源平の戦い — 平氏をほろぼしたのは 頼朝（大将）でもあり 義経（壇ノ浦で戦った人）でもある */
+  { line: "平氏をほろぼした", who: ["yoritomo", "yoshitsune"] },
+  /* 大化の改新 — 中大兄皇子と 中臣鎌足は **ふたりで** やった（教科書どおり） */
+  { line: "蘇我氏をたおした", who: ["nakanooe", "kamatari"] },
+  { line: "「大化の改新」を行った", who: ["nakanooe", "kamatari"] },
+  { line: "中大兄皇子とともに蘇我氏をたおし、大化の改新を行った", who: ["kamatari", "nakanooe"] },
+  /* お坊さん — 行基も 鑑真も 仏教を 広めた人 */
+  { line: "僧として仏教の教えを広めた", who: ["gyoki", "ganjin"] },
+  /* お医者さん — 杉田玄白（江戸）も 野口英世（大正）も 医者 */
+  { line: "医者", who: ["genpaku", "noguchi"] },
+  { line: "医学の発展につくした医師", who: ["noguchi", "genpaku"] },
+  /* 明治の人たち — 「政治家」「外務大臣」「倒幕運動」「藩の武士」は 何人にも 当てはまる */
+  { line: "明治時代の政治家",
+    who: ["itagaki", "hirobumi", "okuma", "okubo", "takayoshi", "mutsu", "komura", "meiji"] },
+  { line: "外務大臣", who: ["komura", "mutsu"] },
+  { line: "倒幕運動の中心の一人", who: ["takayoshi", "saigo", "okubo", "mutsu"] },
+  { line: "江戸幕府をたおし、明治政府に参加した", who: ["saigo", "okubo", "takayoshi"] },
+  { line: "長州藩の武士", who: ["takayoshi", "hirobumi"] },      /* 伊藤博文も 長州 */
+  { line: "岩倉使節団に参加した", who: ["okubo", "takayoshi", "hirobumi"] }
+];
+/* その文が 当てはまる人（id → 1）。⑴同じ文を持っている人は **自動**／⑵は 上の表から。 */
+function sharedIds(line) {
+  var k = plain(line), out = {};
+  CHARS.forEach(function (c) {
+    for (var i = 0; i < c.info.length; i++) if (plain(c.info[i]) === k) { out[c.id] = 1; break; }
+  });
+  for (var j = 0; j < SHARED_INFO.length; j++) {
+    if (plain(SHARED_INFO[j].line) !== k) continue;
+    SHARED_INFO[j].who.forEach(function (id) { if (CHAR_BY_ID[id]) out[id] = 1; });
+  }
+  return out;
+}
+
+/* ① 業績 → だれ？ ★まちがいの選択肢は **同じ時代の人**から（2026-08-09）
+   ★★ただし **その文が 当てはまる人は 入れない**（2026-08-14・上の★★★）。
+     入れると「正解が2つある問題」になる。 */
 function whoQ(id, line) {
   return {
     key: "who:" + id + ":" + line,
     ask: "これは だれの こと？", q: rubi(line),
     make: function () {
       return shuffle([{ html: nameRuby(CHAR_BY_ID[id]), ok: true }].concat(
-        nearChars(id, 2).map(function (c) { return { html: nameRuby(c), ok: false }; })));
+        nearChars(id, 2, sharedIds(line)).map(function (c) { return { html: nameRuby(c), ok: false }; })));
     }
   };
 }
@@ -6000,6 +6207,11 @@ function infoPool(id, line, deed) {
            人ではなく **文で** 見くらべること（別人でも 文が同じなら だめ）。 */
         var k = plain(l);
         if (seen[k]) return;
+        /* ★★**聞いている人にも 当てはまる文**は まちがいに できない（2026-08-14）。
+           例: 中臣鎌足に「したことは？」と 聞いて、中大兄皇子の「蘇我氏をたおした」を
+           まちがいの選択肢に すると、**それも 正しい**（ふたりで たおした）。
+           文が ちがっても 中身が 同じものは SHARED_INFO に 書いてある。 */
+        if (sharedIds(l)[id]) return;
         seen[k] = 1; pool.push(l);
       });
     });
@@ -6154,6 +6366,17 @@ function freshFirst(list, seen) {
    ★バトルで「🤝 大化の改新！」のカットインを見た子が、そのまま答えられる問題。
      **遊びで見たものが そのまま問題になる**＝ティッカーと同じ仕掛けを コンビにも かけている。
    ★まちがいの人は 同じ時代から（時代がバラバラだと 考えずに当たる。§選択肢の約束）。 */
+/* ★★⑧でも「その人でも 正しい」ことが ある（2026-08-14・①と同じ話）。
+   例:「西郷隆盛と いっしょに **明治維新**を したのは？」→ 大久保利通 が こたえだが、
+       **木戸孝允**（維新三傑）も 正しい。まちがいの選択肢に できない。
+   ★キーは コンビの名前（plain）。**その コンビでも 正しい人**を ならべる。
+   ★コンビを 足したときは「ほかに あてはまる人が いないか」を 見ること。 */
+var PAIR_ALSO = {
+  "明治維新": ["takayoshi"],            /* 維新三傑＝西郷・大久保・木戸 */
+  "新しい政府づくり": ["saigo"],        /* 上の うら返し */
+  "新しい学問": ["norinaga"],           /* 蘭学（玄白・忠敬）だけでなく 国学の 本居宣長も */
+  "天下統一へ": ["ieyasu"]              /* 三英傑＝信長・秀吉・家康 */
+};
 function pairQ(pr, askA) {
   var me = CHAR_BY_ID[askA ? pr.a : pr.b], mate = CHAR_BY_ID[askA ? pr.b : pr.a];
   return {
@@ -6163,9 +6386,13 @@ function pairQ(pr, askA) {
     make: function () {
       /* ★**多めに取ってから 相方をのぞく**こと。2人だけ取って のぞくと、
          相方が その2人に入っていたときに **選択肢が2つしかない問題**になる
-         （2026-08-09に実際に出た。34面×10回の点検で16件）。 */
+         （2026-08-09に実際に出た。34面×10回の点検で16件）。
+         ★2026-08-14: のぞく人が ふえた（相方＋PAIR_ALSO）ので **8人**取る。 */
+      var skip = {};
+      skip[mate.id] = 1;
+      (PAIR_ALSO[plain(pr.name)] || []).forEach(function (x) { skip[x] = 1; });
       return shuffle([{ html: nameRuby(me), ok: true }].concat(
-        nearChars(me.id, 5).filter(function (c) { return c.id !== mate.id; }).slice(0, 2)
+        nearChars(me.id, 8, skip).slice(0, 2)
           .map(function (c) { return { html: nameRuby(c), ok: false }; })));
     }
   };
@@ -6605,6 +6832,200 @@ $("btn-rhome").onclick = function () {
   if (state.starter) { starterNext(); return; }   /* はじめてのガチャの つづき */
   goHome();
 };
+
+/* =====================================================================
+   🎉 エンディング（2026-08-14・ユーザー要望
+     「ステージ3の最後までクリアできたらエンディングとして、おめでとうというものが出るように。
+       またご褒美で一人だけ一度だけレベルMaxにすることができるように。
+       あと星3つを全てクリアした人には完全制覇というエンディングを入れ、
+       さらに全てのキャラクターをレベルMaxにしてください」）
+   ---------------------------------------------------------------------
+   2つ ある。**①を 先に 出す**（②は ①の じょうけんを かならず ふくむため）。
+     ① 🎉 おめでとう  … 「3」シリーズの さいごの ステージを クリアした人へ。
+                        ごほうび＝**ひとりだけ・1回だけ** Lv50(MAX) にできる（自分でえらぶ）。
+     ② 👑 完全制覇    … ぜんぶの ステージで ⭐⭐⭐ を そろえた人へ。
+                        ごほうび＝**42人 ぜんいん** Lv50(MAX)。えらぶものが 無いので すぐ わたす。
+   ★★セーブは **新しいキー3つ**だけ（ending1 / gift / ending2）。cards・cleared・chal には
+     さわらない＝古いセーブは そのまま生きる（CLAUDE.md §3）。
+     すでに 3の さいごを クリアずみの人は、つぎに ホームへ もどった ときに ①が 出る。
+   ★★レベルは **保存していない**（cards の まい数から charLevel が 計算する）。だから
+     「MAXにする」＝**カードを たす**（maxOutChar）。フラグで レベルを 上ぬりすると、
+     ずかんの まい数・レア度・技の数と 食いちがう。ぜったいに 下がる値を 作らないこと。
+   ★出しどころは goHome() の あたま 1か所（checkEnding）。バトル→クイズ→ガチャの あと
+     「🏠ホームへ」を 押した ところで 出る＝**カードを もらう よろこびを じゃましない**。 */
+var LAST_STAGE_ID = STAGES[STAGES.length - 1].id;   /* 3シリーズの さいご（st17c） */
+function allClearDone() { return !!save.cleared[LAST_STAGE_ID]; }
+function allStarsDone() {
+  return STAGES.every(function (st) { return chalCount(st.id) === CHALS.length; });
+}
+function totalStars() {
+  var n = 0;
+  STAGES.forEach(function (st) { n += chalCount(st.id); });
+  return n;
+}
+/* まだ ごほうび（ひとりだけ MAX）を うけとっていない？ */
+function giftDue() { return allClearDone() && !save.ending1; }
+/* ★「あとで きめる」を おした回だけ ①を 出さない（アプリを ひらきなおすと また 出る）。
+   セーブしないのは わざと＝**ごほうびを 取りそこねない**ため。
+   ホームには 🎁ボタンが のこるので、いつでも うけとりに いける。 */
+var endSkip = false;
+function checkEnding() {
+  if (giftDue() && !endSkip) { showEnding1(); return true; }
+  if (allStarsDone() && !save.ending2) { showEnding2(); return true; }
+  return false;
+}
+/* その人を Lv50(MAX) にする。★カードを たして 上げる（上の★★）。
+   30ずつ(SR)→5ずつ(R)→1ずつ(N) と たすので、**ぴったり Lv50 で 止まる**。
+   すでに MAX 以上の人には 何も しない（＝まい数を むだに ふやさない）。 */
+function maxOutChar(id) {
+  if (charLevel(id) >= LV_MAX) return false;
+  if (!save.cards[id]) save.cards[id] = { n: 0, r: 0, sr: 0 };
+  var c = save.cards[id], guard = 0;
+  while (charLevel(id) < LV_MAX && guard++ < 500) {
+    var need = LV_MAX - charLevel(id);
+    if (need >= LV_SRARE) c.sr++;
+    else if (need >= LV_RARE) c.r++;
+    else c.n++;
+  }
+  return true;
+}
+/* エンディングの 人物の行列。ホームの drawParade と 同じ考え方（CHARS は時代順）。 */
+function endParadeHTML(n, size) {
+  var s = "";
+  for (var i = 0; i < n; i++) {
+    var ch = CHARS[Math.round(i * (CHARS.length - 1) / (n - 1))];
+    s += standHTML(ch, bestRarity(ch.id), size);
+  }
+  return s;
+}
+/* ---------- ① 🎉 おめでとう（「3」の さいごを クリア） ---------- */
+function showEnding1() {
+  sfx("win");
+  confettiBurst(120);
+  var first = CHARS[0], last = CHARS[CHARS.length - 1];
+  var stars = totalStars(), maxStars = STAGES.length * CHALS.length;
+  var owned = ownedIds();
+  var html = '<div class="ed-big">🎉 おめでとう！</div>'
+    + '<div class="ed-sub">' + rubi("「3」の さいごの ステージまで クリアした！") + '</div>'
+    + '<div class="ed-parade">' + endParadeHTML(13, 44) + '</div>'
+    + '<div class="ed-msg">'
+    +   rubi(plain(first.era) + "の " + plain(first.name) + "《" + first.yomi + "》から、"
+          + plain(last.era) + "の " + plain(last.name) + "《" + last.yomi + "》まで——<br>"
+          + "きみは 日本《にほん》の れきしを ぜんぶ たどりぬいた。<br>"
+          + "たたかった ステージは " + STAGES.length + "面《めん》。"
+          + "いっしょに 走《はし》った 人物《じんぶつ》は " + owned.length + "人。<br>"
+          + "その 一人《ひとり》ひとりに、ほんとうに あった 人生《じんせい》が あったんだよ。")
+    + '</div>'
+    /* ★ごほうびは **1回だけ**だと はっきり 書く（あとで「知らなかった」に しない） */
+    + '<div class="ed-gift">' + rubi("🎁 ごほうび　すきな なかまを <b>ひとりだけ</b>"
+        + " Lv" + LV_MAX + "（MAX）に できる！<br><b>1回《かい》だけ</b>だよ。よーく かんがえて えらぼう。") + '</div>';
+  if (owned.length) {
+    html += '<div id="ed-grid">'
+      + owned.map(function (id) {
+          var ch = CHAR_BY_ID[id], rar = bestRarity(id), mx = charLevel(id) >= LV_MAX;
+          return '<button class="pick-btn' + (mx ? " maxed" : "") + '" onclick="giftAsk(\'' + id + '\')">'
+            + eraChipHTML(ch.era)
+            + faceHTML(ch, rar, 38)
+            + '<span class="pk-nm">' + ch.name + '</span>'
+            + lvBadge(id)
+            + '<span class="lv-next">' + (mx ? "もう MAX！" : nextGoal(id)) + '</span>'
+            + '</button>';
+        }).join("")
+      + '</div>';
+  }
+  /* つぎの めあて（⭐が まだ そろっていない人へ）。ここで 完全制覇の 存在を 知らせる＝
+     クリアしたあとも もどってくる理由になる（⭐チャレンジと 同じ ねらい）。 */
+  html += allStarsDone() ? ""
+    : '<div class="ed-msg">' + rubi("つぎの めあて　⭐ " + stars + "／" + maxStars
+        + "　ぜんぶの ステージで ⭐⭐⭐ を そろえると <b>完全制覇《かんぜんせいは》</b>！"
+        + " そのときは 42人 ぜんいんが Lv" + LV_MAX + " に なるよ。") + '</div>';
+  html += '<button class="big-btn brown" onclick="endLater()">🏠 あとで きめる（ホームへ）</button>';
+  $("ed-body").innerHTML = html;
+  showView("v-ending", "おめでとう！", false);
+}
+function endLater() {
+  sfx("tap");
+  endSkip = true;      /* この回だけ ①を とばす。ホームの 🎁ボタンから いつでも もどれる */
+  goHome();
+}
+/* えらんだ人で ほんとうに いいか 聞く（1回だけなので かならず 聞く） */
+function giftAsk(id) {
+  var ch = CHAR_BY_ID[id];
+  sfx("tap");
+  if (charLevel(id) >= LV_MAX) {
+    $("modal-box").innerHTML = '<div style="text-align:center;">' + standHTML(ch, bestRarity(id), 110) + '</div>'
+      + '<h3 style="text-align:center;">' + nameRuby(ch) + '</h3>'
+      + '<div class="m-skill" style="text-align:center;">' + rubi(plain(ch.name) + " は もう Lv" + LV_MAX + " MAX だよ！<br>ほかの なかまを えらぼう。") + '</div>'
+      + '<button class="big-btn brown" onclick="closeModal()">もどる</button>';
+    $("modal").classList.add("show");
+    return;
+  }
+  var p = charPower(ch), lv = charLevel(id);
+  $("modal-box").innerHTML = '<div style="text-align:center;">' + standHTML(ch, bestRarity(id), 120) + '</div>'
+    + '<h3 style="text-align:center;">' + nameRuby(ch) + '</h3>'
+    + '<div class="m-era" style="text-align:center;">' + eraChipHTML(ch.era) + '</div>'
+    + '<div class="m-skill" style="text-align:center;">'
+    +   rubi("いま Lv" + lv + "　（" + (ch.type === "inori" ? "✨かいふく" : "⚔こうげき") + " " + p.atk + " ／ 🛡まもり " + p.hp + "）") + '</div>'
+    + '<div class="m-skill" style="text-align:center; color:#bf360c;">'
+    +   rubi("この人を <b>Lv" + LV_MAX + "（MAX）</b>に する？<br>ごほうびは <b>1回《かい》だけ</b>。ほかの人は えらべなく なるよ。") + '</div>'
+    + '<button class="big-btn" onclick="giftDo(\'' + id + '\')">🌟 この人に する！</button>'
+    + '<button class="big-btn brown" onclick="closeModal()">← やっぱり やめる</button>';
+  $("modal").classList.add("show");
+}
+/* ごほうびを わたす。★ここで はじめて save.ending1 を 立てる＝
+   えらぶ前に アプリを 閉じても、つぎに ホームへ もどれば また ①が 出る（取りそこねない）。 */
+function giftDo(id) {
+  closeModal();
+  var ch = CHAR_BY_ID[id];
+  maxOutChar(id);
+  save.gift = id;          /* だれに あげたか（記録。あとから 見かえせる） */
+  save.ending1 = true;
+  persist();
+  sfx("levelup");
+  confettiBurst(140);
+  var p = charPower(ch);
+  $("ed-body").innerHTML = '<div class="ed-big">🌟 Lv' + LV_MAX + ' MAX！</div>'
+    + '<div style="margin:8px 0;">' + standHTML(ch, bestRarity(id), 150) + '</div>'
+    + '<div class="ed-sub">' + nameRuby(ch) + rubi(" は さいきょうに なった！") + '</div>'
+    + '<div class="ed-msg" style="text-align:center;">'
+    +   rubi("⚡ わざは 3つ ぜんぶ つかえる<br>"
+          + (ch.type === "inori" ? "✨かいふく " : "⚔こうげき ") + p.atk + "　🛡まもり " + p.hp + "<br>"
+          + "この 力《ちから》で ⭐⭐⭐ を あつめに いこう！") + '</div>'
+    + '<button class="big-btn" onclick="goHome()">🏠 ホームへ</button>';
+  showView("v-ending", "ごほうび！", false);
+}
+/* ---------- ② 👑 完全制覇（ぜんぶの ステージで ⭐⭐⭐） ---------- */
+function showEnding2() {
+  /* ★えらぶものが 無いので、**出したしゅんかんに** ぜんいん MAX にして 保存する
+     （とちゅうで 閉じても もらえている）。 */
+  var upped = 0;
+  CHARS.forEach(function (ch) { if (maxOutChar(ch.id)) upped++; });
+  save.ending2 = true;
+  /* ★①の ごほうびを まだ うけとっていなくても、ここで ぜんいん MAX に なるので 用ずみ。
+     立てておかないと ホームに 🎁ボタンが のこって「押しても もう MAX」になる。 */
+  save.ending1 = true;
+  persist();
+  sfx("levelup");
+  confettiBurst(200);
+  setTimeout(function () { confettiBurst(140); }, 700);
+  var maxStars = STAGES.length * CHALS.length;
+  /* ★見出しは ルビを 付けずに 大きく（大きい字の上に 小さいルビが のると 行間が くずれる）。
+     よみは すぐ下の 行で「かんぜんせいは！」と 見せているので 読めなくならない。 */
+  $("ed-body").innerHTML = '<div class="ed-big">👑 完全制覇！</div>'
+    + '<div class="ed-sub">' + rubi("かんぜんせいは！ ⭐ " + maxStars + "／" + maxStars + "　ぜんぶの めあてを やりきった！") + '</div>'
+    + '<div class="ed-parade">' + endParadeHTML(21, 40) + '</div>'
+    + '<div class="ed-msg">'
+    +   rubi(STAGES.length + "面《めん》 ぜんぶで ⭐⭐⭐。<br>"
+          + "つよい てきに 勝つだけじゃなく、その時代《じだい》の 人物《じんぶつ》を そろえたり、"
+          + "ひっさつを 1回《かい》も つかわずに 勝ったり——<br>"
+          + "きみは 42人 ぜんいんの ことを 知《し》って、ぜんいんと いっしょに たたかった。<br>"
+          + "<b>これいじょうは ない、いちばんの きろく</b>だよ。ほんとうに おめでとう！") + '</div>'
+    + '<div class="ed-gift">' + rubi("🎁 ごほうび　<b>42人 ぜんいん Lv" + LV_MAX + "（MAX）</b>！"
+        + (upped ? "　この " + upped + "人が いま MAXに なったよ。" : "") + "<br>"
+        + "だれを つれていっても さいきょう。すきな 人物で あそぼう！") + '</div>'
+    + '<button class="big-btn" onclick="goHome()">🏠 ホームへ</button>';
+  showView("v-ending", "完全制覇《かんぜんせいは》！", false);
+}
 
 /* ---------- コンフェッティ（自前・外部ライブラリなし） ---------- */
 function confettiBurst(n) {

@@ -157,6 +157,10 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
 .em.ic{display:inline-flex;align-items:center;justify-content:center;}
 .em.ic svg{width:1em;height:1em;display:block;}
 .tl-item .em.ic svg,.dk-head .em.ic svg{width:1em;height:1em;}
+.tl-item .em.ic{width:34px;height:34px;overflow:hidden;}
+.tl-item .em.ic img{width:100%;height:100%;display:block;object-fit:contain;}
+.dk-head .em.ic{width:42px;height:42px;overflow:hidden;}
+.dk-head .em.ic img{width:100%;height:100%;display:block;object-fit:contain;}
 .page-title .em svg{width:1.05em;height:1.05em;display:block;}
 .dk-yet button svg{width:1.25em;height:1.25em;vertical-align:-0.25em;display:inline-block;}
 .sport-card .nm{font-weight:800;font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.18);}
@@ -187,6 +191,8 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
   background:var(--card);border-radius:16px;box-shadow:var(--shadow);
   padding:12px 14px;margin-bottom:10px;border-left:8px solid var(--line);
 }
+.skill-grid{display:grid;grid-template-columns:1fr;gap:12px;align-items:start;}
+.skill-grid .skill-card{margin-bottom:0;min-width:0;}
 .skill-card.done{border-left-color:var(--green-dark);background:linear-gradient(160deg,#F2FFF5,#fff);}
 .skill-head{display:flex;align-items:center;gap:8px;}
 .skill-name{font-weight:800;font-size:16px;flex:1;}
@@ -199,6 +205,24 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
   background:linear-gradient(180deg,#F7FCFF 0%,#E9F6FE 62%,#DFF2FC 100%);
   box-shadow:inset 0 2px 4px rgba(14,116,180,.10);overflow:hidden;}
 .skill-art svg{width:100%;height:auto;display:block;}
+.skill-art.tetsubo-art{aspect-ratio:1/1;min-height:0;background:#fff;}
+.skill-art.tetsubo-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.nawatobi-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.nawatobi-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.mat-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.mat-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.tobibako-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.tobibako-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.soccer-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.soccer-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.basket-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.basket-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.volley-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.volley-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.baseball-art,.skill-art.dodge-art,.skill-art.relay-art{width:100%;aspect-ratio:2/1;min-height:0;background:#fff;}
+.skill-art.baseball-art img,.skill-art.dodge-art img,.skill-art.relay-art img{width:100%;height:100%;display:block;object-fit:contain;}
+.skill-art.suiei-art{width:100%;aspect-ratio:3/2;min-height:0;background:#E8F8FF;}
+.skill-art.suiei-art img{width:100%;height:100%;display:block;object-fit:contain;object-position:center;}
 .done-badge{background:var(--green-dark);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;flex:none;}
 .best-chip{background:#E8F6FF;color:var(--sky-deep);font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;flex:none;}
 .kyu-mini{background:var(--orange);color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;flex:none;}
@@ -228,6 +252,7 @@ input,select,textarea{user-select:text; -webkit-user-select:text;}
 }
 .dan-btn.reached{background:linear-gradient(180deg,var(--pink),#DB2777);border-color:#DB2777;color:#fff;}
 .dan-btn.max{outline:3px solid var(--yellow);}
+.dan-btn.easy{min-width:112px;}
 
 /* ---------- forms ---------- */
 .form-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
@@ -406,11 +431,59 @@ input[type=date],input[type=text],select{
 .step-item .tx{flex:1;min-width:0;}
 .step-item .tx b{display:block;font-size:14.5px;font-weight:800;line-height:1.35;}
 .step-item .tx small{display:block;font-size:12px;color:var(--ink-soft);line-height:1.4;margin-top:2px;}
+.step-item.marathon-step{flex-wrap:wrap;padding:8px;}
+.step-item.marathon-step .step-image{
+  order:-1;width:100%;aspect-ratio:2/1;display:block;object-fit:cover;
+  border-radius:10px;border:1px solid #E9DDFE;background:#F8F5FF;
+}
 .step-chip{background:#FFF7E8;color:#B45309;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;
   display:inline-block;margin-top:6px;}
 
+/* ---------- まいにち筋トレ（競技とは別のデイリーメニュー） ---------- */
+.daily-training-card{
+  width:100%;border:0;border-radius:24px;padding:18px 20px;margin:0 0 18px;text-align:left;cursor:pointer;
+  color:#fff;font-family:inherit;background:linear-gradient(135deg,#7C3AED 0%,#DB2777 58%,#F97316 100%);
+  box-shadow:0 14px 30px rgba(124,58,237,.24);display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+}
+.daily-training-card:active{transform:translateY(2px)}
+.daily-training-card .dt-icon{width:66px;height:66px;border-radius:20px;background:rgba(255,255,255,.19);display:flex;align-items:center;justify-content:center;font-size:38px}
+.daily-training-card .dt-icon img{width:100%;height:100%;display:block;object-fit:cover;border-radius:20px}
+.daily-training-card .dt-copy{min-width:0}.daily-training-card .dt-kicker{display:block;font-size:10px;font-weight:900;letter-spacing:.13em;opacity:.8}
+.daily-training-card .dt-name{display:block;font-size:22px;font-weight:900;line-height:1.2;margin-top:3px}.daily-training-card .dt-sub{display:block;font-size:12px;font-weight:700;opacity:.9;margin-top:5px}
+.daily-training-card .dt-score{min-width:86px;text-align:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:18px;padding:10px}
+.daily-training-card .dt-score b{display:block;font-size:24px;line-height:1}.daily-training-card .dt-score small{display:block;font-size:10px;font-weight:800;margin-top:5px}
+.training-hero{background:linear-gradient(145deg,#F5F0FF,#FFF1F2 58%,#FFF7ED);border:2px solid #E9D5FF}
+.training-progress-row{display:flex;align-items:center;gap:14px;margin-top:10px}.training-progress-ring{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;flex:none;position:relative}
+.training-progress-ring:before{content:'';position:absolute;inset:8px;border-radius:50%;background:#fff}.training-progress-ring b{position:relative;font-size:20px;color:#7C3AED}.training-progress-copy{flex:1;min-width:0}.training-progress-copy strong{display:block;font-size:17px}.training-progress-copy small{color:var(--ink-soft);line-height:1.5}
+.training-group-title{font-size:14px;font-weight:900;color:#6D28D9;margin:18px 2px 8px;display:flex;align-items:center;gap:6px}
+.training-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.training-exercise{border:2px solid #E9DDFE;background:#fff;border-radius:16px;padding:11px;text-align:left;font-family:inherit;color:var(--ink);min-width:0;box-shadow:0 4px 12px rgba(76,29,149,.07)}
+.training-exercise .te-image{width:100%;aspect-ratio:2/1;display:block;object-fit:cover;border-radius:11px;margin-bottom:9px;background:#F5F9FF;border:1px solid #E0E7FF}
+.training-exercise.done{border-color:#22C55E;background:linear-gradient(150deg,#F0FDF4,#fff)}
+.training-exercise .te-top{display:flex;gap:9px;align-items:center}.training-exercise .te-icon{width:42px;height:42px;border-radius:13px;background:#F3E8FF;display:grid;place-items:center;font-size:24px;flex:none}
+.training-exercise.done .te-icon{background:#DCFCE7}.training-exercise .te-title{font-size:14px;font-weight:900;line-height:1.3;flex:1}.training-exercise .te-check{width:27px;height:27px;border:2px solid #C4B5FD;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:900;flex:none}
+.training-exercise.done .te-check{background:#22C55E;border-color:#22C55E}.training-exercise .te-target{display:inline-block;margin-top:7px;background:#FFF7ED;color:#C2410C;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900}
+.training-exercise .te-how{display:block;color:var(--ink-soft);font-size:11.5px;line-height:1.45;margin-top:6px}
+.training-best{display:inline-block;margin:7px 0 0 5px;background:#F3E8FF;color:#6D28D9;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900}
+.training-record-row{display:grid;grid-template-columns:38px minmax(62px,1fr) 38px auto;gap:6px;align-items:center;margin-top:10px}
+.training-record-row input{width:100%;height:40px;border:2px solid #DDD6FE;border-radius:11px;text-align:center;font:900 16px/1 inherit;color:var(--ink);background:#fff;min-width:0}
+.training-record-row .step-btn{width:38px;height:40px;border-radius:11px}
+.training-record-row .btn{height:40px;padding:0 12px;white-space:nowrap}
+.training-reset-best{display:block;margin:8px 0 0 auto;border:0;background:transparent;color:#7C3AED;text-decoration:underline;font:800 11px/1.4 inherit;cursor:pointer;padding:2px}
+.training-reset-all{margin-top:12px;border-color:#DDD6FE;color:#6D28D9;background:#FAF5FF}
+.training-note{font-size:12px;line-height:1.6;color:#7C2D12;background:#FFF7ED;border:1px solid #FED7AA;border-radius:13px;padding:10px 12px;margin-top:14px}
+@media(max-width:560px){.daily-training-card{grid-template-columns:auto 1fr;padding:15px}.daily-training-card .dt-icon{width:54px;height:54px;font-size:31px}.daily-training-card .dt-name{font-size:19px}.daily-training-card .dt-score{grid-column:1/-1;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px}.daily-training-card .dt-score b{font-size:20px}.daily-training-card .dt-score small{margin:0}.training-grid{grid-template-columns:1fr}.training-record-row{grid-template-columns:38px minmax(54px,1fr) 38px}.training-record-row .btn{grid-column:1/-1;width:100%}}
+
 @media (min-width:520px){
   .sport-grid{grid-template-columns:repeat(3,1fr);}
+}
+/* iPad・PCの種目詳細: わざカードを一覧しやすい2〜3列にする */
+@media (min-width:700px){
+  #app.sport-detail{max-width:1180px;padding-left:20px;padding-right:20px;}
+  .skill-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+}
+@media (min-width:1100px){
+  .skill-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
 /* スマホのせまい幅: キャラを少し小さくして、XPの字が おりかえさないように */
 @media (max-width:400px){
@@ -422,6 +495,120 @@ input[type=date],input[type=text],select{
   .xp-label{font-size:11px;}
   .xp-label span{white-space:nowrap;}
   .lv-chip{font-size:13px;padding:3px 11px;}
+}
+
+/* ---------- home: athletic dashboard ---------- */
+#app.home-page{max-width:1180px;padding:18px 22px 32px;}
+.home-topbar{display:flex;align-items:center;justify-content:space-between;margin:0 2px 16px;}
+.home-brand{display:flex;align-items:center;gap:11px;}
+.home-brand-mark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,#0EA5E9,#2563EB 58%,#7C3AED);box-shadow:0 8px 18px rgba(37,99,235,.28);}
+.home-brand-mark svg{width:25px;height:25px;}
+.home-brand-name{font-size:23px;font-weight:900;letter-spacing:.02em;color:#092A48;line-height:1;}
+.home-brand-name span{color:#F97316;}
+.home-brand-sub{font-size:9px;font-weight:900;letter-spacing:.18em;color:#6A87A0;margin-top:5px;}
+.home-date{font-size:12px;font-weight:800;color:#58758E;background:rgba(255,255,255,.82);border:1px solid #D8ECF8;
+  border-radius:999px;padding:7px 13px;box-shadow:0 5px 14px rgba(14,116,180,.08);}
+.home-hero{padding:0;margin-bottom:28px;border:0;border-radius:32px;color:#fff;overflow:hidden;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(56,189,248,.34),transparent 25%),
+    radial-gradient(circle at 12% 100%,rgba(124,58,237,.32),transparent 38%),
+    linear-gradient(135deg,#06152B 0%,#0B2B50 48%,#123E68 100%);
+  box-shadow:0 24px 55px rgba(4,31,58,.25),inset 0 1px 0 rgba(255,255,255,.12);}
+.home-hero:before{content:'';position:absolute;inset:0;z-index:0;opacity:.28;
+  background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);
+  background-size:34px 34px;mask-image:linear-gradient(90deg,#000,transparent 72%);}
+.home-hero .sun,.home-hero .cloud,.home-hero .hill{display:none;}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(210px,.55fr);min-height:340px;position:relative;z-index:1;}
+.hero-grid>*{min-width:0;}
+.hero-copy{padding:38px 12px 30px 40px;display:flex;flex-direction:column;justify-content:center;}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;width:max-content;font-size:10px;font-weight:900;letter-spacing:.2em;
+  color:#7DD3FC;background:rgba(14,165,233,.13);border:1px solid rgba(125,211,252,.25);padding:7px 11px;border-radius:999px;}
+.hero-kicker:before{content:'';width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 12px #34D399;}
+.hero-copy h1{font-size:clamp(30px,4.4vw,54px);line-height:1.12;letter-spacing:-.04em;margin:16px 0 12px;font-weight:950;}
+.hero-copy h1 strong{font-weight:950;background:linear-gradient(90deg,#38BDF8,#A5F3FC 48%,#FDE68A);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero-lead{margin:0;color:#B9D7EA;font-size:13.5px;font-weight:700;max-width:520px;}
+.hero-stats{display:flex;gap:10px;margin-top:21px;flex-wrap:wrap;}
+.hero-stat{min-width:92px;padding:9px 13px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);}
+.hero-stat b{display:block;font-size:20px;line-height:1.1;color:#fff;}.hero-stat small{font-size:9.5px;color:#9CC4DD;font-weight:800;letter-spacing:.06em;}
+.hero-xp{max-width:520px;margin-top:17px;}.home-hero .xpbar{height:12px;margin-top:7px;background:rgba(0,0,0,.28);box-shadow:inset 0 1px 3px rgba(0,0,0,.42);}
+.home-hero .xp-label{color:#AFCFE2;font-size:10.5px;}.home-hero .xpbar .fill{background:linear-gradient(90deg,#22D3EE,#38BDF8,#A78BFA);}
+.hero-character{position:relative;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;}
+.hero-character:before{content:'';position:absolute;width:240px;height:240px;border-radius:50%;border:1px solid rgba(125,211,252,.22);
+  box-shadow:0 0 0 24px rgba(56,189,248,.05),0 0 0 50px rgba(56,189,248,.025);}
+.hero-character .char-hold:before{width:190px;height:190px;margin:-95px 0 0 -95px;background:radial-gradient(circle,rgba(125,211,252,.23),transparent 68%);}
+.home-hero .char-svg{width:184px;height:184px;filter:drop-shadow(0 18px 20px rgba(0,0,0,.32));}
+.home-hero .athlete-img,.modal-box .athlete-img{object-fit:contain;display:block;margin:auto;}
+.athlete-img{object-fit:contain;display:block;margin:auto;}
+.hero-level-card{position:absolute;right:22px;bottom:24px;min-width:144px;border-radius:17px;padding:10px 13px;
+  background:rgba(4,21,43,.74);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(12px);box-shadow:0 12px 25px rgba(0,0,0,.18);}
+.hero-level-card b{display:block;font-size:16px}.hero-level-card small{color:#9BC4DC;font-size:9.5px;font-weight:800;}
+.home-quick{display:flex;gap:8px;flex-wrap:wrap;padding:0 40px 24px;position:relative;z-index:2;}
+.home-quick .streak-chip,.home-quick .kyu-chip{margin:0;background:rgba(255,255,255,.09);color:#DDF3FF;border:1px solid rgba(255,255,255,.12);
+  box-shadow:none;backdrop-filter:blur(8px);}
+.launch-section{margin-bottom:22px;}.launch-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:0 3px 14px;}
+.launch-kicker{font-size:10px;letter-spacing:.18em;font-weight:900;color:#0EA5E9;margin-bottom:3px;}.launch-title{margin:0;font-size:25px;line-height:1.2;font-weight:950;color:#092A48;}
+.launch-desc{font-size:11px;color:#67839A;font-weight:700;text-align:right;}
+.home-sport-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.home-sport-card{--sc1:#0EA5E9;--sc2:#1D4ED8;--glow:#38BDF8;min-height:222px;padding:14px 15px 15px;align-items:stretch;gap:0;border-radius:25px;
+  background:radial-gradient(circle at 80% 18%,color-mix(in srgb,var(--glow) 38%,transparent),transparent 34%),linear-gradient(145deg,var(--sc1),var(--sc2));
+  box-shadow:0 13px 28px color-mix(in srgb,var(--sc2) 24%,transparent),inset 0 1px 0 rgba(255,255,255,.28);}
+.home-sport-card:before{left:auto;right:-25px;top:-30px;width:130px;height:130px;border:1px solid rgba(255,255,255,.17);border-radius:50%;
+  background:transparent;box-shadow:0 0 0 18px rgba(255,255,255,.035),0 0 0 39px rgba(255,255,255,.02);}
+.home-sport-card:after{opacity:.08;background-size:19px 19px;}
+.sport-card-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2;}
+.sport-no{font-size:9px;letter-spacing:.16em;font-weight:900;color:rgba(255,255,255,.72);}.sport-go{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);font-size:15px;font-weight:900;}
+.sport-visual{height:100px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+.sport-visual .em.ic{font-size:88px;filter:drop-shadow(0 12px 13px rgba(0,0,0,.22));transition:transform .18s ease;}
+.home-sport-card:hover .sport-visual .em.ic{transform:translateY(-4px) scale(1.04);}
+.sport-visual .em.ic svg{width:1em;height:.78em;overflow:visible;}
+.sport-visual .em.ic img{width:1.75em;height:1.25em;display:block;object-fit:contain;filter:drop-shadow(0 12px 13px rgba(0,0,0,.20));}
+.sport-card-bottom{position:relative;z-index:2;margin-top:auto;}.home-sport-card .nm{display:block;font-size:18px;text-align:left;line-height:1.25;text-shadow:none;letter-spacing:-.02em;}
+.home-sport-card .sub{display:block;text-align:left;font-size:10.5px;color:rgba(255,255,255,.75);margin-top:4px;}
+.home-sport-card .prog{padding:0;margin-top:7px;}.home-sport-card .prog .bar{height:7px;background:rgba(2,20,39,.32);}.home-sport-card .prog .bar i{background:#fff;box-shadow:0 0 10px rgba(255,255,255,.55);}
+.home-sport-card .prog .num{font-size:10.5px;}.home-sport-card .kmchip{align-self:flex-start;margin-top:6px;background:rgba(255,255,255,.15);}
+.home-sport-card.sc-nawatobi{--sc1:#0EA5E9;--sc2:#1D4ED8;--glow:#67E8F9}.home-sport-card.sc-tetsubo{--sc1:#F97316;--sc2:#C2410C;--glow:#FDBA74}
+.home-sport-card.sc-mat{--sc1:#10B981;--sc2:#047857;--glow:#6EE7B7}.home-sport-card.sc-tobibako{--sc1:#EC4899;--sc2:#BE185D;--glow:#F9A8D4}
+.home-sport-card.sc-suiei{--sc1:#06B6D4;--sc2:#0E7490;--glow:#67E8F9}.home-sport-card.sc-marathon{--sc1:#8B5CF6;--sc2:#6D28D9;--glow:#C4B5FD}
+.home-sport-card.sc-soccer{--sc1:#22C55E;--sc2:#15803D;--glow:#86EFAC}.home-sport-card.sc-basket{--sc1:#F59E0B;--sc2:#B45309;--glow:#FCD34D}
+.home-sport-card.sc-volley{--sc1:#EAB308;--sc2:#A16207;--glow:#FDE047}.home-sport-card.sc-baseball{--sc1:#64748B;--sc2:#334155;--glow:#CBD5E1}
+.home-sport-card.sc-dodge{--sc1:#F43F5E;--sc2:#BE123C;--glow:#FDA4AF}.home-sport-card.sc-relay{--sc1:#14B8A6;--sc2:#0F766E;--glow:#5EEAD4}
+.home-secondary{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px;}.home-secondary .card{margin:0;border:1px solid rgba(14,116,180,.08);box-shadow:0 12px 30px rgba(14,116,180,.10);}
+.body-builder{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:18px;align-items:center;margin-bottom:18px;border:2px solid #C4B5FD;background:linear-gradient(145deg,#F5F3FF,#fff 55%,#ECFEFF);overflow:hidden}
+.body-preview{min-height:220px;border-radius:18px;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#DBEAFE 0,#EEF2FF 48%,transparent 70%)}
+.body-preview .char-svg{width:205px;height:205px;filter:drop-shadow(0 13px 12px rgba(30,64,175,.22))}
+.body-points{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border-radius:15px;background:#1E1B4B;color:#fff;margin-bottom:10px}
+.body-points b{font-size:22px;color:#FDE68A}.body-points small{display:block;color:#C4B5FD;font-size:10px;font-weight:800}
+.body-part-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.body-part{border:1px solid #E0E7FF;border-radius:14px;padding:10px;background:#fff}
+.body-part-top{display:flex;align-items:center;gap:7px;font-weight:900;font-size:13px}.body-part-top .lv{margin-left:auto;color:#6D28D9;font-size:11px}
+.body-level-dots{display:flex;gap:4px;margin:7px 0}.body-level-dots i{height:7px;flex:1;border-radius:999px;background:#EDE9FE}.body-level-dots i.on{background:linear-gradient(90deg,#8B5CF6,#EC4899)}
+.body-part button{width:100%;min-height:34px;border:0;border-radius:10px;background:#7C3AED;color:#fff;font:900 12px/1 inherit;cursor:pointer}.body-part button:disabled{background:#E2E8F0;color:#94A3B8;cursor:default}
+.body-reset{border:0;background:transparent;color:#6D28D9;text-decoration:underline;font:800 11px/1.4 inherit;cursor:pointer;margin-top:9px;padding:3px}
+.body-milestone{min-height:26px;margin:5px 0 7px;color:#6D28D9;font-size:10px;font-weight:900}.body-title-section{margin-top:16px;border:2px solid #FDE68A;background:linear-gradient(145deg,#FFFBEB,#fff 54%,#F5F3FF)}
+.hero-journey{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 16px}.hero-step{position:relative;display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #DDD6FE;border-radius:15px;background:#fff;color:#312E81;font:inherit;text-align:left;cursor:pointer}.hero-step:hover{transform:translateY(-2px);border-color:#A78BFA}.hero-step .hero-em{font-size:27px}.hero-step b{display:block;font-size:12px}.hero-step small{display:block;font-size:9px;color:#7C3AED;font-weight:800}.hero-step.current{border:2px solid #8B5CF6;background:#F5F3FF;box-shadow:0 6px 16px rgba(109,40,217,.12)}.hero-step.done{border-color:#86EFAC;background:#F0FDF4}.hero-step .hero-check{position:absolute;right:7px;top:5px;font-size:11px}
+.body-title-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.body-title-head h3{margin:0}.title-count{padding:5px 10px;border-radius:999px;background:#312E81;color:#fff;font-size:11px;font-weight:900}
+.current-title{display:flex;align-items:center;gap:12px;padding:13px 15px;margin-bottom:12px;border-radius:16px;background:linear-gradient(135deg,#1E1B4B,#6D28D9);color:#fff}.current-title .em{font-size:28px}.current-title small{display:block;color:#DDD6FE;font-weight:800}.current-title b{font-size:17px;color:#FDE68A}
+.title-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.body-title-card{min-height:72px;border:1px solid #E9D5FF;border-radius:13px;background:#fff;padding:8px;text-align:left;font:800 11px/1.35 inherit;color:#312E81;cursor:pointer}.body-title-card .title-em{font-size:18px;display:block}.body-title-card small{display:block;color:#8B5CF6;font-size:9px;margin-top:3px}.body-title-card.equipped{border:2px solid #F59E0B;background:#FFFBEB}.body-title-card.locked{filter:grayscale(1);opacity:.46;cursor:default}.nav button{position:relative}.nav-point{position:absolute;top:5px;left:calc(50% + 10px);min-width:18px;height:18px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:#F97316;color:#fff;border:2px solid #fff;font-size:9px;font-weight:900;line-height:1}
+.free-record-card{border:2px solid #BAE6FD;background:linear-gradient(145deg,#F0F9FF,#fff)}
+.free-record-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}.free-record-row textarea{width:100%;min-height:76px;resize:vertical;border:2px solid #BAE6FD;border-radius:14px;padding:10px 12px;font:700 14px/1.55 inherit;color:var(--ink);background:#fff}.free-record-row .btn{min-width:116px}
+.free-record-help{margin-top:7px;color:var(--ink-soft);font-size:11px;line-height:1.5}
+#app.grow-page{max-width:920px;padding:18px 20px 30px}.grow-intro{border:2px solid #C4B5FD;background:linear-gradient(135deg,#312E81,#6D28D9);color:#fff}.grow-intro h2{margin:0 0 5px;font-size:23px}.grow-intro p{margin:0;color:#DDD6FE;font-size:12px}.grow-intro .point-now{display:inline-flex;margin-top:10px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.13);font-weight:900;color:#FDE68A}
+#app.grow-page .body-preview{min-height:300px}#app.grow-page .body-preview .char-svg{width:270px;height:270px}
+@media (min-width:760px){.home-sport-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media (min-width:1050px){.home-sport-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@media (max-width:680px){
+  #app.home-page{padding:14px 14px 24px}.home-date{display:none}.hero-grid{grid-template-columns:minmax(0,1fr) 150px;min-height:300px}
+  .hero-copy{padding:28px 0 24px 24px}.hero-copy h1{font-size:31px}.hero-lead{font-size:11.5px}.hero-stats{gap:6px}.hero-stat{min-width:76px;padding:7px 9px}.hero-stat b{font-size:17px}
+  .hero-character{padding:8px}.home-hero .char-svg{width:132px;height:132px}.hero-character:before{width:150px;height:150px}.hero-level-card{right:10px;bottom:18px;min-width:126px;padding:8px 10px}
+  .home-quick{padding:0 24px 20px}.launch-title{font-size:21px}.launch-desc{display:none}.home-secondary{grid-template-columns:1fr}.body-builder{grid-template-columns:1fr}.body-preview{min-height:180px}.body-preview .char-svg{width:170px;height:170px}#app.grow-page .body-preview{min-height:260px}#app.grow-page .body-preview .char-svg{width:235px;height:235px}
+}
+@media (max-width:420px){
+  #app.home-page{padding-left:10px;padding-right:10px;overflow:hidden}.home-brand{gap:8px}.home-brand-name{font-size:20px}.home-brand-mark{width:36px;height:36px}.home-brand-sub{display:none}
+  .home-hero{border-radius:25px}.hero-grid{display:block;min-height:0}.hero-character{display:none}
+  .hero-copy{padding:24px 19px 22px}.hero-copy h1{font-size:29px;margin-top:13px}.hero-lead{display:block;font-size:11px}.hero-stats{margin-top:14px}.hero-stat{min-width:66px}.hero-stat:nth-child(3){display:block}
+  .home-quick{padding:0 18px 18px}.launch-head{margin-left:4px;margin-right:4px}
+  .home-sport-grid{grid-template-columns:1fr;gap:10px}.home-sport-card{min-height:164px;padding:11px 14px;border-radius:21px}.sport-visual{height:65px}.sport-visual .em.ic{font-size:67px}.home-sport-card .nm{font-size:17px}.body-part-list{grid-template-columns:1fr 1fr}.hero-journey{grid-template-columns:1fr 1fr;gap:5px}.hero-step{padding:7px 5px;gap:5px}.hero-step .hero-em{font-size:20px}.hero-step b{font-size:10px}.title-grid{grid-template-columns:1fr 1fr}.free-record-row{grid-template-columns:1fr}.free-record-row .btn{width:100%}
 }
 </style>
 </head>
@@ -468,9 +655,9 @@ const SPORTS = {
       <circle cx="18.9" cy="19.4" r="0.95" fill="#FB9BAF" opacity=".7"/>
       <circle cx="25.1" cy="19.4" r="0.95" fill="#FB9BAF" opacity=".7"/>
     </svg>` },
-  mat:{ name:'マットうんどう', em:'🤸', cls:'sc-mat', col:'#16A34A', bg:'#E5FAEC', sub:'わざ10こ' },
+  mat:{ name:'マットうんどう', em:'🤸', cls:'sc-mat', col:'#16A34A', bg:'#E5FAEC', sub:'わざ18こ' },
   tobibako:{ name:'とびばこ', em:'🦘', cls:'sc-tobibako', col:'#DB2777', bg:'#FFE9F3', sub:'わざ×なんだん？' },
-  suiei:{ name:'すいえい', em:'🏊', cls:'sc-suiei', col:'#0891B2', bg:'#E0F7FB', sub:'けんてい22だんかい' },
+  suiei:{ name:'すいえい', em:'🏊', cls:'sc-suiei', col:'#0891B2', bg:'#E0F7FB', sub:'けんてい27だんかい' },
   marathon:{ name:'マラソン', em:'🏃', cls:'sc-marathon', col:'#7C3AED', bg:'#F0E9FF', sub:'きょり・タイム' },
   soccer:{ name:'サッカー', em:'⚽', cls:'sc-soccer', col:'#059669', bg:'#E1F7F0', sub:'チャレンジ7こ' },
   basket:{ name:'バスケットボール', em:'🏀', cls:'sc-basket', col:'#B45309', bg:'#FDEFDB', sub:'チャレンジ7こ' },
@@ -478,6 +665,39 @@ const SPORTS = {
   baseball:{ name:'やきゅう', em:'⚾', cls:'sc-baseball', col:'#475569', bg:'#EDF1F6', sub:'チャレンジ7こ' },
   dodge:{ name:'ドッジボール', em:'🤾', cls:'sc-dodge', col:'#DC2626', bg:'#FFE9E9', sub:'チャレンジ7こ' },
   relay:{ name:'リレー・かけっこ', em:'🏁', cls:'sc-relay', col:'#0D9488', bg:'#DEF6F3', sub:'チャレンジ7こ' },
+};
+
+/* 競技とは別に、毎日少しずつ取り組む自重トレーニング。 */
+const TRAINING_EXERCISES = [
+  {id:'tr1', group:'じゅんび', em:'🙆', name:'せのび', target:'10びょう', how:'手を上にのばして、ゆっくり大きくのびよう。'},
+  {id:'tr2', group:'じゅんび', em:'🔄', name:'かた回し', target:'前うしろ 5かいずつ', how:'ひじで大きな円をかくように回そう。'},
+  {id:'tr3', group:'じゅんび', em:'🪽', name:'うでふり', target:'20かい', how:'むねの前で、うでをひらく・とじるをくり返そう。'},
+  {id:'tr4', group:'あし', em:'🪑', name:'いすスクワット', target:'10かい', how:'いすに軽くタッチして立つ。ひざとつま先を同じ向きに。'},
+  {id:'tr5', group:'あし', em:'🦵', name:'ハーフスクワット', target:'10かい', how:'おしりを少し後ろへ。むりに深くしゃがまなくてOK。'},
+  {id:'tr6', group:'あし', em:'⬆️', name:'かかと上げ', target:'15かい', how:'まっすぐ立ち、かかとを上げてゆっくり下ろそう。'},
+  {id:'tr7', group:'あし', em:'🏃', name:'その場もも上げ', target:'左右10かい', how:'せなかをまっすぐにして、ひざを交互に上げよう。'},
+  {id:'tr8', group:'あし', em:'↔️', name:'サイドステップ', target:'左右10かい', how:'小さく横へ一歩ずつ。足を交差させないように。'},
+  {id:'tr9', group:'あし', em:'⚖️', name:'かた足立ち', target:'左右15びょう', how:'かべの近くで。ぐらついたらすぐ足をついてOK。'},
+  {id:'tr10', group:'うで・むね', em:'🧱', name:'かべプッシュアップ', target:'10かい', how:'かべに手をつき、体をまっすぐにしたまま近づけよう。'},
+  {id:'tr11', group:'うで・むね', em:'💪', name:'ひざつきプッシュアップ', target:'5かい', how:'ひざを床につけ、おなかに力を入れてゆっくり曲げよう。'},
+  {id:'tr12', group:'うで・むね', em:'🐻', name:'くまさんキープ', target:'10びょう', how:'四つんばいから、ひざを少しだけ床から上げよう。'},
+  {id:'tr13', group:'おなか・せなか', em:'🐦', name:'バードドッグ', target:'左右5かい', how:'四つんばいで、反対の手と足をゆっくりのばそう。'},
+  {id:'tr14', group:'おなか・せなか', em:'🌉', name:'ヒップリフト', target:'10かい', how:'あお向けでひざを立て、おしりを上げてゆっくり下ろそう。'},
+  {id:'tr15', group:'おなか・せなか', em:'🐞', name:'デッドバグ', target:'左右5かい', how:'あお向けで、反対の手と足をゆっくり遠くへのばそう。'},
+  {id:'tr16', group:'おなか・せなか', em:'📏', name:'ひざつきプランク', target:'15びょう', how:'ひじとひざを床につけ、頭からひざまで一直線に。'},
+  {id:'tr17', group:'おなか・せなか', em:'🦸', name:'スーパーマン', target:'5かい', how:'うつぶせで、手と足を少しだけ上げてすぐ戻そう。'},
+  {id:'tr18', group:'ぜんしん', em:'🧍', name:'かべすわり', target:'15びょう', how:'かべにせなかをつけ、浅くこしを下ろしてキープ。'},
+  {id:'tr19', group:'ぜんしん', em:'⭐', name:'スタージャンプ', target:'10かい', how:'小さくジャンプして手足をひらく。音を立てずに着地しよう。'},
+  {id:'tr20', group:'しあげ', em:'🧘', name:'全身ゆったりストレッチ', target:'20びょう', how:'深呼吸しながら、手・足・せなかを気もちよくのばそう。'},
+];
+const TRAINING_IMAGES = {
+  tr1:'tr1-stretch.png', tr2:'tr2-shoulder-circles.png', tr3:'tr3-arm-swings.png',
+  tr4:'tr4-chair-squat.png', tr5:'tr5-half-squat.png', tr6:'tr6-calf-raise.png',
+  tr7:'tr7-high-knees.png', tr8:'tr8-side-step.png', tr9:'tr9-single-leg-balance.png',
+  tr10:'tr10-wall-pushup.png', tr11:'tr11-knee-pushup.png', tr12:'tr12-bear-hover.png',
+  tr13:'tr13-bird-dog.png', tr14:'tr14-hip-bridge.png', tr15:'tr15-dead-bug.png',
+  tr16:'tr16-knee-plank.png', tr17:'tr17-superman.png', tr18:'tr18-wall-sit.png',
+  tr19:'tr19-star-jump.png', tr20:'tr20-side-stretch.png',
 };
 
 /* なわとび: 級ひょう(かいすう→級) 0=特級 0.5=準特級 */
@@ -519,30 +739,41 @@ const TETSUBO_SKILLS = [
   { id:'t12', name:'さかあがり', st:2, kotsu:'おへそをぼうにちかづけて、けり足は「上」じゃなく「後ろの上」へ!' },
   { id:'t13', name:'だるままわり', st:3, kotsu:'ひざをかかえてまるくなって、くるんとまわるよ。' },
   { id:'t14', name:'プロペラまわり', st:3, kotsu:'体をよこにして、プロペラみたいにくるっと1かいてん!' },
-  { id:'t15', name:'うでたてこうてん', st:3, kotsu:'つばめのしせいから後ろへ大きくまわる。空中さかあがり!' },
-  { id:'t16', name:'ひこうきとび', st:2, kotsu:'ぼうの上にしゃがんで、うでを広げてジャンプ! 手はさいごまでぼうに。' },
+  { id:'t15', name:'こうほうしじかいてん', st:3, kotsu:'つばめのしせいから、おなかをぼうにつけたまま後ろへ大きくまわる!' },
+  { id:'t16', name:'ひこうきとび', st:2, kotsu:'両足をぼうにのせ、足の間でぼうをにぎる。そのまま体をぼうの下へ通して前へとぼう。' },
   { id:'t17', name:'じごくまわり', st:3, kotsu:'ひざのうらをかけて後ろへぐるん。名前はこわいけどかっこいい!' },
-  { id:'t18', name:'てんごくまわり', st:3, kotsu:'じごくまわりのぎゃく回り。ゆっくりていねいに。' },
-  { id:'t19', name:'うでたてぜんてん', st:3, kotsu:'つばめから前へ大きく1かいてん。空中前まわり!' },
+  { id:'t18', name:'てんごくまわり', st:3, kotsu:'ぼうをにぎり、ひざを胸に近づけて前へゆっくり回ろう。' },
+  { id:'t19', name:'ぜんぽうしじかいてん', st:3, kotsu:'つばめからおなかをぼうにつけたまま、前へ大きく1かいてん。' },
   { id:'t20', name:'けんすいさかあがり', st:3, kotsu:'ぶらさがったまま、うでの力だけでさかあがり! 最強のわざ。' },
 ];
 
 /* マットうんどう */
 const MAT_SKILLS = [
+  { id:'m11', name:'ゆりかご', st:1, kotsu:'ひざをむねにギュッと抱えて、せなかを丸くしたまま前後にゆらゆら。' },
   { id:'m1',  name:'ぜんてん(前転)', st:1, kotsu:'手をしっかりついて、あたまの後ろ→せなか→おしりのじゅんに丸く!' },
   { id:'m2',  name:'こうてん(後転)', st:1, kotsu:'耳のよこに手をかまえて、おへそを見ながらうしろへくるん。' },
+  { id:'m5',  name:'ブリッジ', st:1, kotsu:'あお向けから手と足でぐーんと体をもち上げる。おへそを天じょうへ!' },
   { id:'m3',  name:'かいきゃくぜんてん', st:2, kotsu:'まわりおわるちょくぜんに足をパッと開いて、手でマットをおす!' },
   { id:'m4',  name:'かいきゃくこうてん', st:2, kotsu:'後転しながら足を開く。手のおしがポイント!' },
-  { id:'m5',  name:'ブリッジ', st:1, kotsu:'あお向けから手と足でぐーんと体をもち上げる。おへそを天じょうへ!' },
-  { id:'m6',  name:'かべとうりつ', st:2, kotsu:'かべに足をかけてのぼっていくよ。うでをピンとのばして!' },
+  { id:'m6',  name:'かべとうりつ', st:2, kotsu:'手は壁の近く、目線は手の間、足を壁に「タッチ」するイメージでポンッと跳ね上げよう！' },
+  { id:'m15', name:'さんてんとうりつ(三点倒立)', st:2, kotsu:'頭と両手で三角形。まずひざをひじにのせて、ゆっくり足をのばそう。' },
   { id:'m7',  name:'そくてん(側転)', st:2, kotsu:'手→手→足→足のじゅんに。「く」の字じゃなく大きな「一」の字に!' },
+  { id:'m12', name:'しんしつぜんてん(伸膝前転)', st:2, kotsu:'ひざをのばしたまま、手→肩→せなかのじゅんで前へ回ろう。' },
+  { id:'m13', name:'しんしつこうてん(伸膝後転)', st:3, kotsu:'足をそろえて伸ばしたまま、耳のよこの手でマットを強くおそう。' },
   { id:'m8',  name:'とうりつ(倒立)', st:3, kotsu:'ゆびで地めんをつかむ! 目せんは手と手のあいだ。' },
+  { id:'m14', name:'とびこみぜんてん', st:3, kotsu:'低く前へとび、手をついてから肩・せなかへ。厚いマットで先生とやろう。' },
   { id:'m9',  name:'とうりつぜんてん', st:3, kotsu:'とうりつからあごをひいて、ゆっくり前転につなげるよ。' },
   { id:'m10', name:'ロンダート', st:3, kotsu:'そくてんの後はんで体をひねって、りょう足でピタッと着地!' },
+  { id:'m18', name:'かたてそくてん(片手側転)', st:3, kotsu:'ふつうの側転を大きくして、片手だけで体を支える。あいた手は横へ。' },
+  { id:'m16', name:'とうりつブリッジ', st:3, kotsu:'倒立から足をゆっくり後ろへ。手でマットをおして、胸を高く保とう。' },
+  { id:'m17', name:'ハンドスプリング', st:3, kotsu:'両手で強くマットをおし、肩を前へ運んで、両足でふわっと着地。先生の補助で。' },
 ];
 
 /* とびばこ: わざ × なん段 */
 const TOBIBAKO_SKILLS = [
+  { id:'be1', name:'ふみきりジャンプ', st:1, dan:false, kotsu:'ふみきり板を両足で「トン！」。近くのマットへ両足でふわっと着地しよう。' },
+  { id:'be2', name:'手をついて おしりアップ', st:1, dan:false, kotsu:'低い台に手をつき、両足で小さくジャンプ。おしりが少し上がれば大成功！' },
+  { id:'be3', name:'低い台へ とびのり・とびおり', st:1, dan:false, kotsu:'低い台に手をついてのり、止まってからマットへ安全におりよう。' },
   { id:'b1', name:'またぎのり・またぎおり', st:1, kotsu:'とびばこにまたがって、手のちからで前へすすんでおりるよ。' },
   { id:'b2', name:'かいきゃくとび', st:1, kotsu:'手はとびばこの「おく」につく! 足をパッとひらいて、目せんは前。' },
   { id:'b3', name:'かかえこみとび', st:2, kotsu:'ひざをむねにグッとかかえて、手のあいだを通りぬける!' },
@@ -550,9 +781,9 @@ const TOBIBAKO_SKILLS = [
   { id:'b5', name:'くびはねとび', st:3, kotsu:'台上前転のとちゅうで、体をそらせてはねる! タイミングがカギ。' },
   { id:'b6', name:'あたまはねとび', st:3, kotsu:'あたまをついてためて、足がおちてくるしゅんかんにバーン!とはねる。' },
 ];
-const DAN_LIST = [2,3,4,5,6,7,8];
+const DAN_LIST = [2,3,4,5,6];
 
-/* すいえい: 20きゅう→2だん(22だんかい)。はじめは小1でもクリアできるやさしさに */
+/* すいえい: 20きゅう→2だん(27だんかい)。クロールと平泳ぎは小級でスモールステップに */
 const SUIEI_KYU = [
   { id:'sw20', label:'20きゅう', name:'かおに水をパシャパシャかけられる' },
   { id:'sw19', label:'19きゅう', name:'口まで水につけられる' },
@@ -567,8 +798,13 @@ const SUIEI_KYU = [
   { id:'sw10', label:'10きゅう', name:'けのびが5mできる' },
   { id:'sw9',  label:'9きゅう',  name:'ビートばんのばた足・かえる足で13mすすめる' },
   { id:'sw8',  label:'8きゅう',  name:'めんかぶりばた足で13mおよげる' },
-  { id:'sw7',  label:'7きゅう',  name:'クロールかひらおよぎ、どちらかで13mおよげる' },
-  { id:'sw6',  label:'6きゅう',  name:'クロールとひらおよぎ、りょうほう13mおよげる' },
+  { id:'sw7a', label:'7きゅう①', name:'クロールのうでを左右こうごに回せる' },
+  { id:'sw7b', label:'7きゅう②', name:'クロールのよこ向き息つぎができる' },
+  { id:'sw7',  label:'7きゅう③', name:'クロールで13mおよげる' },
+  { id:'sw6a', label:'6きゅう①', name:'ビートばんでかえる足ができる' },
+  { id:'sw6b', label:'6きゅう②', name:'ひらおよぎの手のかきができる' },
+  { id:'sw6c', label:'6きゅう③', name:'「手・足・のび」のタイミングでおよげる' },
+  { id:'sw6',  label:'6きゅう④', name:'ひらおよぎで13mおよげる' },
   { id:'sw5',  label:'5きゅう',  name:'クロールかひらおよぎ、どちらかで25mおよげる' },
   { id:'sw4',  label:'4きゅう',  name:'クロールとひらおよぎ、りょうほう25mおよげる' },
   { id:'sw3',  label:'3きゅう',  name:'クロールとひらおよぎ、りょうほう50mおよげる' },
@@ -629,6 +865,30 @@ const STEPS = {
   m10:[{id:'m10s1', name:'そくてんがまっすぐ', kotsu:'まずは側転が線の上でできること。'},
        {id:'m10s2', name:'後はんで4ぶんの1ひねり', kotsu:'足がいちばん高いところで、体を少しひねる。'},
        {id:'m10s3', name:'りょう足でピタッ', kotsu:'両足そろえて着地→まっすぐ立つ。'} ],
+  m11:[{id:'m11s1', name:'だるまのしせい', kotsu:'ひざを胸に抱え、あごを引いて背中をまるくする。'},
+       {id:'m11s2', name:'うしろへゆれる', kotsu:'頭のてっぺんをつけず、肩と背中でやさしくゆれよう。'},
+       {id:'m11s3', name:'10かいリズムよく', kotsu:'足をついたら止まらず、前後に10かいゆれてみよう。'} ],
+  m12:[{id:'m12s1', name:'ひざをのばして手をつく', kotsu:'立ったまま前へ曲がり、ひざをのばして両手をマットへ。'},
+       {id:'m12s2', name:'足をそろえて回る', kotsu:'あごを引き、両足をそろえて頭の向こうへ運ぶ。'},
+       {id:'m12s3', name:'手でおして立つ', kotsu:'回り終わりに手でマットをおし、ひざをのばして立とう。'} ],
+  m13:[{id:'m13s1', name:'長ざでうしろへ', kotsu:'足をまっすぐそろえて座り、そのまま肩まで転がる。'},
+       {id:'m13s2', name:'耳のよこに手', kotsu:'手のひらを上にして耳の横へ。足は曲げずに頭の向こうへ。'},
+       {id:'m13s3', name:'手で強くおす', kotsu:'両手でマットをおし、頭をぬいてひざをのばしたまま立つ。'} ],
+  m14:[{id:'m14s1', name:'ぜんてんをれんぞく', kotsu:'まず普通の前転を2〜3回、まっすぐ続けられるようにする。'},
+       {id:'m14s2', name:'手を遠くにつく', kotsu:'小さくジャンプして、いつもより少し遠くへ両手をつく。'},
+       {id:'m14s3', name:'低くとびこむ', kotsu:'厚いマットで先生に補助してもらい、低く前へとんで肩から回る。'} ],
+  m15:[{id:'m15s1', name:'頭と手で三角形', kotsu:'頭の前に両手を置き、3点で大きな三角形をつくる。'},
+       {id:'m15s2', name:'ひざをひじにのせる', kotsu:'ひざを上腕にのせ、足を床から少しだけ上げて止まる。'},
+       {id:'m15s3', name:'足を上へそろえる', kotsu:'おなかに力を入れ、両足をゆっくり上へのばして3びょう。'} ],
+  m16:[{id:'m16s1', name:'ブリッジ5びょう', kotsu:'まずは手足で強くマットをおし、ブリッジを5びょう保つ。'},
+       {id:'m16s2', name:'倒立で足をもってもらう', kotsu:'先生に足を持ってもらい、少しずつ背中をそらす。'},
+       {id:'m16s3', name:'足をゆっくりおろす', kotsu:'手をおし続け、両足を頭の後ろへゆっくり下ろしてブリッジへ。'} ],
+  m17:[{id:'m17s1', name:'大きなふみこみ', kotsu:'両腕を耳の横に上げ、前足へ体重をのせて踏み込む。'},
+       {id:'m17s2', name:'倒立から足を前へ', kotsu:'倒立で肩を手より前へ運び、両足をそろえて前へ振り下ろす。'},
+       {id:'m17s3', name:'補助ありで通す', kotsu:'厚いマットで先生に腰を支えてもらい、両手でおして両足着地。'} ],
+  m18:[{id:'m18s1', name:'そくてんを大きく', kotsu:'両手の側転で、足が大きな一直線になるように回る。'},
+       {id:'m18s2', name:'手を線の上に1つ', kotsu:'補助を受けながら、最初の片手だけを線の上について回る。'},
+       {id:'m18s3', name:'あいた手を横へ', kotsu:'支えない手を横へ大きく開き、片手で最後まで回りきる。'} ],
 
   /* ===== てつぼう ===== */
   t1:[ {id:'t1s1', name:'ジャンプでとび上がる', kotsu:'うでをのばして、おなかがぼうの上にくるまでジャンプ。'},
@@ -790,10 +1050,20 @@ const STEPS = {
         {id:'sw9s2', name:'足のこうで水をける', kotsu:'水しぶきが小さいほど、じょうずなばた足。'} ],
   sw8:[ {id:'sw8s1', name:'けのび→ばた足5m', kotsu:'ビートばんなしにちょうせん。顔はつけたまま。'},
         {id:'sw8s2', name:'10mまでのばす', kotsu:'いきがつづくところまでで大丈夫。'} ],
-  sw7:[ {id:'sw7s1', name:'めんかぶりクロール10かき', kotsu:'まずは息つぎなしで。うでを大きく回そう。'},
-        {id:'sw7s2', name:'よこ向きで息つぎ', kotsu:'顔を上げずに「よこ」を向く。かた耳は水の中。'},
-        {id:'sw7s3', name:'かえる足を かべにつかまって', kotsu:'ひらおよぎは足がだいじ。かかとをおしりへ→けってとじる。'} ],
-  sw6:[ {id:'sw6s1', name:'にがてなほうを13m', kotsu:'とくいなほうはできている。もう1つにちょうせん！'} ],
+  sw7a:[{id:'sw7as1', name:'立って片うでずつ5かい', kotsu:'手を遠くへ入れて、太ももまで水をおそう。'},
+        {id:'sw7as2', name:'めんかぶりで左右5かき', kotsu:'前の手が水に入ってから、反対の手を回そう。'} ],
+  sw7b:[{id:'sw7bs1', name:'立ってよこ向き息つぎ', kotsu:'顔を上げずに「よこ」。かた耳は水の中にのこす。'},
+        {id:'sw7bs2', name:'ばた足で息つぎを3かい', kotsu:'前の手をのばしたまま、口だけ水から出そう。'} ],
+  sw7:[ {id:'sw7s1', name:'クロールで5m', kotsu:'うで・ばた足・息つぎをゆっくりつなげよう。'},
+        {id:'sw7s2', name:'5m→10m→13m', kotsu:'2〜3かきに1かいの息つぎで、同じリズムをつづけよう。'} ],
+  sw6a:[{id:'sw6as1', name:'かべでかえる足5かい', kotsu:'かかとをおしりへ→つま先を外へ→けってとじる。'},
+        {id:'sw6as2', name:'ビートばんでかえる足5m', kotsu:'けったあとは両足をぴたっとそろえてのびよう。'} ],
+  sw6b:[{id:'sw6bs1', name:'立って手のかきを5かい', kotsu:'手で小さなハートをかき、むねの前でそろえる。'},
+        {id:'sw6bs2', name:'けのびから手だけ5m', kotsu:'外へかく→むねへ集める→前へのばす。'} ],
+  sw6c:[{id:'sw6cs1', name:'「手・足・のび」を3かい', kotsu:'手をかいて息をすう→足をける→しっかりのびる。'},
+        {id:'sw6cs2', name:'手足を合わせて5m', kotsu:'手と足を同時に動かさず、じゅんばんを守ろう。'} ],
+  sw6:[ {id:'sw6s1', name:'ひらおよぎで5m', kotsu:'「手・足・のび」と声に出せる速さで。'},
+        {id:'sw6s2', name:'5m→10m→13m', kotsu:'のびる時間を長くすると、つかれにくいよ。'} ],
   sw5:[ {id:'sw5s1', name:'13m→20m', kotsu:'すこしずつのばそう。とちゅうで立たないのが目標。'} ],
   sw4:[ {id:'sw4s1', name:'にがてなほうを25m', kotsu:'ゆっくりでいい。とまらずに25m！'} ],
   sw3:[ {id:'sw3s1', name:'25m×2(休けいあり)', kotsu:'まずは分けて50m。'},
@@ -1053,6 +1323,147 @@ const TETSU_ART = {
   t20:()=>aLimb('52,30 56,45')+aLimb('68,30 64,45')+aTorso('60,58 60,70')
       +aLimb('60,70 55,84')+aLimb('60,70 65,84')+aHead(60,51)
       +aArr('M74,76 A34,34 0 0 0 90,32')+aTip(90,32,-70),
+};
+
+/* 画像生成版の鉄棒20技。ファイル名を固定し、1技ずつ差し替えられるようにする。 */
+const TETSUBO_IMAGES = {
+  t1:'t1-tsubame.png', t2:'t2-futonhoshi.png', t3:'t3-maemawari-ori.png',
+  t4:'t4-ashinuki-mawari.png', t5:'t5-komori.png', t6:'t6-komori-ori.png',
+  t7:'t7-chikyu-mawari.png', t8:'t8-fumikoshi-ori.png', t9:'t9-ashikake-agari.png',
+  t10:'t10-ashikake-zenten.png', t11:'t11-ashikake-koten.png', t12:'t12-sakaagari.png',
+  t13:'t13-daruma-mawari.png', t14:'t14-propeller-mawari.png', t15:'t15-koho-shiji-kaiten.png',
+  t16:'t16-hikoki-tobi.png', t17:'t17-jigoku-mawari.png', t18:'t18-tengoku-mawari.png',
+  t19:'t19-zenpo-shiji-kaiten.png', t20:'t20-kensui-sakaagari.png',
+};
+
+/* 画像生成版の縄跳び。完成・検査済みの技から順に追加する。 */
+const NAWATOBI_IMAGES = {
+  n1:'n1-1kaisen-2choyaku.png',
+  n2:'n2-maetobi.png', n3:'n3-ushirotobi.png', n4:'n4-kakeashi-tobi.png',
+  n5:'n5-gu-choki-tobi.png', n6:'n6-gu-pa-tobi.png', n7:'n7-yoko-step-tobi.png',
+  n8:'n8-maefuri-tobi.png', n9:'n9-aya-tobi.png', n10:'n10-kosa-tobi.png',
+  n11:'n11-ushiro-aya-tobi.png', n12:'n12-ushiro-kosa-tobi.png',
+  n13:'n13-nijutobi.png', n14:'n14-hayabusa.png', n15:'n15-kosa-nijutobi.png',
+  n16:'n16-ushiro-nijutobi.png', n17:'n17-ushiro-hayabusa.png',
+  n18:'n18-ushiro-kosa-nijutobi.png', n19:'n19-sanjutobi.png',
+};
+
+/* 画像生成版のマット運動18技。 */
+const MAT_IMAGES = {
+  m1:'m1-zenten.png', m2:'m2-koten.png',
+  m3:'m3-kaikyaku-zenten.png', m4:'m4-kaikyaku-koten.png',
+  m5:'m5-bridge.png', m6:'m6-kabe-toritsu.png',
+  m7:'m7-sokuten.png', m8:'m8-toritsu.png',
+  m9:'m9-toritsu-zenten.png', m10:'m10-rondato.png',
+  m11:'m11-yurikago.png', m12:'m12-shinshitsu-zenten.png',
+  m13:'m13-shinshitsu-koten.png', m14:'m14-tobikomi-zenten.png',
+  m15:'m15-santen-toritsu.png', m16:'m16-toritsu-bridge.png',
+  m17:'m17-handspring.png', m18:'m18-katate-sokuten.png',
+};
+
+/* 画像生成版のとびばこ9技（入門3＋段数チャレンジ6）。 */
+const TOBIBAKO_IMAGES = {
+  be1:'be1-fumikiri-jump.png', be2:'be2-oshiri-up.png',
+  be3:'be3-tobinori-tobiori.png',
+  b1:'b1-mataginori-matagiori.png', b2:'b2-kaikyaku-tobi-v3.png',
+  b3:'b3-kakaekomi-tobi.png', b4:'b4-daijo-zenten-v3.png',
+  b5:'b5-kubihane-tobi-v13.png', b6:'b6-atamahane-tobi.png',
+};
+
+/* 画像生成版のサッカー15チャレンジ。 */
+const SOCCER_IMAGES = {
+  sc1:'sc1-lifting.png', sc2:'sc2-ball-touch.png',
+  sc3:'sc3-cone-dribble.png', sc4:'sc4-target-shoot.png',
+  sc5:'sc5-trap.png', sc6:'sc6-pass-rally.png',
+  sc7:'sc7-heading.png', sc8:'sc8-inside-outside.png',
+  sc9:'sc9-wall-pass.png', sc10:'sc10-long-kick.png',
+  sc11:'sc11-throw-in.png', sc12:'sc12-five-cones.png',
+  sc13:'sc13-stop-turn.png', sc14:'sc14-head-juggling.png',
+  sc15:'sc15-keeper-catch.png',
+};
+
+/* 画像生成版のバスケットボール15チャレンジ。 */
+const BASKET_IMAGES = {
+  bk1:'bk1-stationary-dribble.png', bk2:'bk2-low-dribble.png',
+  bk3:'bk3-goal-shot.png', bk4:'bk4-layup.png',
+  bk5:'bk5-chest-pass.png', bk6:'bk6-around-body.png',
+  bk7:'bk7-running-dribble.png', bk8:'bk8-figure-eight.png',
+  bk9:'bk9-alternate-dribble.png', bk10:'bk10-bounce-pass.png',
+  bk11:'bk11-pivot.png', bk12:'bk12-free-throw.png',
+  bk13:'bk13-jump-stop.png', bk14:'bk14-wall-pass.png',
+  bk15:'bk15-under-goal-three.png',
+};
+
+/* 画像生成版のバレーボール15チャレンジ。 */
+const VOLLEY_IMAGES = {
+  vb1:'vb1-vertical-underpass.png', vb2:'vb2-vertical-overpass.png',
+  vb3:'vb3-underhand-serve.png', vb4:'vb4-pair-rally.png',
+  vb5:'vb5-catch-toss.png', vb6:'vb6-wall-pass.png',
+  vb7:'vb7-balloon-volley.png', vb8:'vb8-receive-forward.png',
+  vb9:'vb9-spike.png', vb10:'vb10-three-person-pass.png',
+  vb11:'vb11-rotation.png', vb12:'vb12-serve-target.png',
+  vb13:'vb13-one-bounce-rally.png', vb14:'vb14-net-rally.png',
+  vb15:'vb15-block.png',
+};
+
+/* 画像生成版の野球15チャレンジ。 */
+const BASEBALL_IMAGES = {
+  bb1:'bb1-partner-catch.png', bb2:'bb2-fly-catch.png',
+  bb3:'bb3-ground-catch.png', bb4:'bb4-toss-batting.png',
+  bb5:'bb5-far-throw.png', bb6:'bb6-hit-forward.png',
+  bb7:'bb7-self-catch.png', bb8:'bb8-one-bounce-catch.png',
+  bb9:'bb9-glove-catch.png', bb10:'bb10-run-bases.png',
+  bb11:'bb11-target-throw.png', bb12:'bb12-tee-batting.png',
+  bb13:'bb13-running-catch.png', bb14:'bb14-wall-grounder.png',
+  bb15:'bb15-two-player-out.png',
+};
+
+/* 画像生成版のドッジボール15チャレンジ。 */
+const DODGE_IMAGES = {
+  dg1:'dg1-wall-catch.png', dg2:'dg2-strong-catch.png',
+  dg3:'dg3-two-hand-catch.png', dg4:'dg4-dodge-master.png',
+  dg5:'dg5-last-inside.png', dg6:'dg6-nice-pass.png',
+  dg7:'dg7-far-throw.png', dg8:'dg8-timed-wall-catch.png',
+  dg9:'dg9-throw-feint.png', dg10:'dg10-outside-pass.png',
+  dg11:'dg11-hit-players.png', dg12:'dg12-duck-dodge.png',
+  dg13:'dg13-jump-catch.png', dg14:'dg14-rolling-dodge.png',
+  dg15:'dg15-no-bounce-catches.png',
+};
+
+/* 画像生成版のリレー・かけっこ15チャレンジ。 */
+const RELAY_IMAGES = {
+  rl1:'rl1-50m-sprint.png', rl2:'rl2-standing-long-jump.png',
+  rl3:'rl3-start-dash.png', rl4:'rl4-baton-pass.png',
+  rl5:'rl5-shuttle-run.png', rl6:'rl6-skip.png',
+  rl7:'rl7-run-through-finish.png', rl8:'rl8-30m-sprint.png',
+  rl9:'rl9-high-knees.png', rl10:'rl10-curve-run.png',
+  rl11:'rl11-running-long-jump.png', rl12:'rl12-running-baton-pass.png',
+  rl13:'rl13-five-round-trips.png', rl14:'rl14-one-foot-hop.png',
+  rl15:'rl15-100m-sprint.png',
+};
+
+/* 画像生成版のマラソン・スモールステップ。 */
+const MARATHON_IMAGES = {
+  maras1:'maras1-five-minute-walk.png',
+  maras2:'maras2-run-walk-intervals.png',
+  maras3:'maras3-one-kilometer-with-walk.png',
+  maras4:'maras4-one-kilometer-run.png',
+  maras5:'maras5-music-ten-minute-run.png',
+};
+
+/* 画像生成版の水泳27段階。同じ泳法で距離だけが違う段階はフォーム画像を共有する。 */
+const SUIEI_IMAGES = {
+  sw20:'sw20-face-splash.png',
+  sw19:'sw19-mouth-depth.png', sw18:'sw18-nose-depth.png', sw17:'sw19-17-submerge.png',
+  sw16:'sw16-eyes-closed.png', sw15:'sw16-15-eyes-bubbles.png',
+  sw14:'sw14-water-walk-run.png', sw13:'sw13-bottom-belly.png',
+  sw12:'sw12-daruma-float.png', sw11:'sw11-prone-float.png',
+  sw10:'sw10-streamline.png', sw9:'sw9-kickboard.png', sw8:'sw8-face-flutter-kick.png',
+  sw7a:'sw7a-crawl-arms.png', sw7b:'sw7b-crawl-breathing.png', sw7:'crawl.png',
+  sw6a:'sw6a-frog-kick-board.png', sw6b:'sw6b-breaststroke-arms.png',
+  sw6c:'sw6c-breaststroke-timing.png', sw6:'breaststroke.png', sw5:'crawl.png',
+  sw4:'crawl-breaststroke.png', sw3:'crawl-breaststroke.png', sw2:'backstroke.png',
+  sw1:'three-strokes.png', swS1:'three-strokes.png', swS2:'three-strokes.png',
 };
 
 /* 丸まって回るしせい(マット)。back=うしろ回り, open=かいきゃく */
@@ -1417,8 +1828,8 @@ const BALL_SPORTS = {
       art:()=>aGround()+`<rect x="14" y="34" width="92" height="52" rx="4" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5"/>`+aMini(60)+`<path d="M60,20 l2.5,6 6.5,0.5 -5,4.5 1.5,6.5 -5.5,-3.5 -5.5,3.5 1.5,-6.5 -5,-4.5 6.5,-0.5 Z" fill="#FACC15" stroke="#D97706" stroke-width="1.5"/>` },
     { id:'dg8', type:'count', unit:'かい', name:'30びょうかべあて', st:1, kotsu:'かべになげて、はねかえりをキャッチ。30びょうで なんかいできる?',
       art:()=>aGround()+aThrowFig()+aWallR()+aBall(88,36,'dodge')+aArr('M70,28 Q86,20 98,30')+aTip(98,30,50)+aArr('M98,48 Q84,56 72,52')+aTip(72,52,172)+aClock() },
-    { id:'dg10', type:'check', unit:'', name:'そとやへパス', st:1, kotsu:'あい手の うしろのなかまへ! たかいパスで こえていこう。',
-      art:()=>aGround()+aMini(24)+aMini(100,true)+aBall(62,30,'dodge')+aArr('M36,44 Q62,12 88,44')+aTip(88,44,62)+aLabel('そとや') },
+    { id:'dg10', type:'check', unit:'', name:'がいやへパス', st:1, kotsu:'あい手の うしろのなかまへ! たかいパスで こえていこう。',
+      art:()=>aGround()+aMini(24)+aMini(100,true)+aBall(62,30,'dodge')+aArr('M36,44 Q62,12 88,44')+aTip(88,44,62)+aLabel('がいや') },
     { id:'dg12', type:'check', unit:'', name:'しゃがんでよける', st:1, kotsu:'たかいボールは しゃがむだけでよけられる! 目はボールから はなさない。',
       art:()=>aGround()+aTorso('62,52 62,66')+aLimb('62,56 52,62')+aLimb('62,56 72,62')+aLimb('62,66 54,76 53,86')+aLimb('62,66 70,76 71,86')+aHead(62,46,-8)+aBall(28,36,'dodge')+aArr('M12,36 H60')+aTip(60,36,0) },
     { id:'dg14', type:'count', unit:'かい', name:'ころがしドッジでよける', st:1, kotsu:'ころがってくるボールをジャンプでよける! なんかいつづく?',
@@ -1504,6 +1915,39 @@ function nawaArt(o){
 }
 
 function skillArt(sport, id){
+  if(sport==='soccer' && SOCCER_IMAGES[id]){
+    return `<div class="skill-art soccer-art"><img src="./images/soccer/${SOCCER_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='basket' && BASKET_IMAGES[id]){
+    return `<div class="skill-art basket-art"><img src="./images/basket/${BASKET_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='volley' && VOLLEY_IMAGES[id]){
+    return `<div class="skill-art volley-art"><img src="./images/volley/${VOLLEY_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='baseball' && BASEBALL_IMAGES[id]){
+    return `<div class="skill-art baseball-art"><img src="./images/baseball/${BASEBALL_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='dodge' && DODGE_IMAGES[id]){
+    return `<div class="skill-art dodge-art"><img src="./images/dodge/${DODGE_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='relay' && RELAY_IMAGES[id]){
+    return `<div class="skill-art relay-art"><img src="./images/relay/${RELAY_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='suiei' && SUIEI_IMAGES[id]){
+    return `<div class="skill-art suiei-art"><img src="./images/suiei/${SUIEI_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='mat' && MAT_IMAGES[id]){
+    return `<div class="skill-art mat-art"><img src="./images/mat/${MAT_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='tobibako' && TOBIBAKO_IMAGES[id]){
+    return `<div class="skill-art tobibako-art"><img src="./images/tobibako/${TOBIBAKO_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='nawatobi' && NAWATOBI_IMAGES[id]){
+    return `<div class="skill-art nawatobi-art"><img src="./images/nawatobi/${NAWATOBI_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
+  if(sport==='tetsubo' && TETSUBO_IMAGES[id]){
+    return `<div class="skill-art tetsubo-art"><img src="./images/tetsubo/${TETSUBO_IMAGES[id]}" alt="" loading="lazy"></div>`;
+  }
   let inner = '';
   if(sport==='nawatobi') inner = nawaArt(NAWA_ART[id]);
   else if(sport==='tetsubo') inner = aBar()+(TETSU_ART[id]?TETSU_ART[id]():'');
@@ -1524,13 +1968,14 @@ function swimTotal(s){ return s.suiei.log.reduce((a,l)=>a+l.m,0); }
 function lvl(s){ return levelInfo(s.profile.totalXp).level; }
 function tridaySports(s){
   const m = {};
-  for(const r of s.records){ (m[r.date]||(m[r.date]=new Set())).add(r.sport); }
+  for(const r of s.records){ if(SPORTS[r.sport]) (m[r.date]||(m[r.date]=new Set())).add(r.sport); }
   for(const k in m){ if(m[k].size>=3) return true; }
   return false;
 }
 const nawaBest = (s,id,n)=>(s.nawatobi.best[id]||0)>=n;
 const nawaKyuLe = (s,k)=>{ const v=nawaKyu(s); return v!==null && v<=k; };
-const danMax = s=>Math.max(0,...Object.values(s.tobibako.dan));
+const tobibakoCleared = (sk,value)=>sk.dan===false ? value>=1 : value>=2;
+const danMax = s=>Math.max(0,...TOBIBAKO_SKILLS.filter(sk=>sk.dan!==false).map(sk=>Math.min(6,s.tobibako.dan[sk.id]||0)));
 
 const BADGES = [
   // きろく
@@ -1551,11 +1996,11 @@ const BADGES = [
   { cat:'れんぞく', id:'streak30',  em:'🌋', name:'1か月チャンピオン',      cond:'30日れんぞくできろく',  test:s=>s.streak.best>=30 },
   { cat:'れんぞく', id:'streak100', em:'☄️', name:'100日れんぞくでんせつ',  cond:'100日れんぞくできろく', test:s=>s.streak.best>=100 },
   // レベル
-  { cat:'レベル', id:'lv3',  em:'🐣', name:'ひよこたんじょう', cond:'レベル3(たまごがかえった!)', test:s=>lvl(s)>=3 },
-  { cat:'レベル', id:'lv6',  em:'🐦', name:'とりにせいちょう', cond:'レベル6',                    test:s=>lvl(s)>=6 },
-  { cat:'レベル', id:'lv11', em:'🕊️', name:'つばさをひろげて', cond:'レベル11',                   test:s=>lvl(s)>=11 },
-  { cat:'レベル', id:'lv21', em:'🦅', name:'でんせつのとり',   cond:'レベル21',                   test:s=>lvl(s)>=21 },
-  { cat:'レベル', id:'lv30', em:'✨', name:'かがやくたましい', cond:'レベル30',                   test:s=>lvl(s)>=30 },
+  { cat:'レベル', id:'lv3',  em:'🏃', name:'アクティブボディ', cond:'レベル3・動ける体になった',     test:s=>lvl(s)>=3 },
+  { cat:'レベル', id:'lv6',  em:'💪', name:'パワーアップ',     cond:'レベル6・筋力アップ',           test:s=>lvl(s)>=6 },
+  { cat:'レベル', id:'lv11', em:'🏋️', name:'アスリートボディ', cond:'レベル11・全身がたくましくなった', test:s=>lvl(s)>=11 },
+  { cat:'レベル', id:'lv21', em:'⚡', name:'レジェンドボディ', cond:'レベル21・最高のパワー',         test:s=>lvl(s)>=21 },
+  { cat:'レベル', id:'lv30', em:'✨', name:'かがやくアスリート', cond:'レベル30',                     test:s=>lvl(s)>=30 },
   // なわとび
   { cat:'なわとび', id:'mae10',        em:'🪢', name:'まえとびビギナー',     cond:'まえとび10かい',              test:s=>nawaBest(s,'n2',10) },
   { cat:'なわとび', id:'mae50',        em:'🎏', name:'まえとびマスター',     cond:'まえとび50かい',              test:s=>nawaBest(s,'n2',50) },
@@ -1590,7 +2035,7 @@ const BADGES = [
   { cat:'てつぼう', id:'tetsuK5',   em:'🎖️', name:'てつぼう5きゅう',      cond:'てつぼうのわざ10こ',          test:s=>s.tetsubo.done.length>=10 },
   { cat:'てつぼう', id:'tetsu15',   em:'🥋', name:'てつぼうのたつじん',   cond:'てつぼうのわざ15こ',          test:s=>s.tetsubo.done.length>=15 },
   { cat:'てつぼう', id:'tetsuTok',  em:'🌠', name:'てつぼうとっきゅう',   cond:'てつぼうのわざ20こぜんぶ!',   test:s=>s.tetsubo.done.length>=20 },
-  { cat:'てつぼう', id:'kuchu',     em:'🛰️', name:'くうちゅうさかあがり', cond:'うでたてこうてんたっせい',    test:s=>s.tetsubo.done.includes('t15') },
+  { cat:'てつぼう', id:'kuchu',     em:'🛰️', name:'くうちゅうさかあがり', cond:'こうほうしじかいてんたっせい', test:s=>s.tetsubo.done.includes('t15') },
   { cat:'てつぼう', id:'kensui',    em:'🦾', name:'さいきょうのうで',     cond:'けんすいさかあがりたっせい',  test:s=>s.tetsubo.done.includes('t20') },
   // マット
   { cat:'マット', id:'zenten',       em:'🤸', name:'ぜんてんマスター',   cond:'ぜんてんたっせい',            test:s=>s.mat.done.includes('m1') },
@@ -1602,6 +2047,8 @@ const BADGES = [
   { cat:'マット', id:'rondato',      em:'🎢', name:'ロンダートせいこう', cond:'ロンダートたっせい',          test:s=>s.mat.done.includes('m10') },
   { cat:'マット', id:'mat5',         em:'🎋', name:'マットのたつじん',   cond:'マットのわざ5こ',             test:s=>s.mat.done.length>=5 },
   { cat:'マット', id:'mat8',         em:'🎍', name:'マットめいじん',     cond:'マットのわざ8こ',             test:s=>s.mat.done.length>=8 },
+  { cat:'マット', id:'mat12',        em:'⭐', name:'マット上きゅうしゃ', cond:'マットのわざ12こ',            test:s=>s.mat.done.length>=12 },
+  { cat:'マット', id:'mat15',        em:'🌟', name:'マットの達人',       cond:'マットのわざ15こ',            test:s=>s.mat.done.length>=15 },
   { cat:'マット', id:'matAll',       em:'🌈', name:'マットはかせ',       cond:'マットのわざぜんぶ!',         test:s=>s.mat.done.length>=MAT_SKILLS.length },
   // とびばこ
   { cat:'とびばこ', id:'kaikyaku',  em:'🦘', name:'かいきゃくとびせいこう',   cond:'かいきゃくとびたっせい',      test:s=>(s.tobibako.dan.b2||0)>=2 },
@@ -1610,8 +2057,7 @@ const BADGES = [
   { cat:'とびばこ', id:'hane',      em:'🎆', name:'はねとびせいこう',         cond:'くびはねかあたまはねたっせい', test:s=>(s.tobibako.dan.b5||0)>=2||(s.tobibako.dan.b6||0)>=2 },
   { cat:'とびばこ', id:'dan4',      em:'🪜', name:'4だんクリア',              cond:'どれかのわざで4だん',         test:s=>danMax(s)>=4 },
   { cat:'とびばこ', id:'dan6',      em:'🗼', name:'6だんジャンパー',          cond:'どれかのわざで6だん',         test:s=>danMax(s)>=6 },
-  { cat:'とびばこ', id:'dan8',      em:'🏯', name:'8だんでんせつ',            cond:'どれかのわざで8だん',         test:s=>danMax(s)>=8 },
-  { cat:'とびばこ', id:'bakoAll',   em:'🎪', name:'とびばこはかせ',           cond:'とびばこのわざぜんぶ!',       test:s=>TOBIBAKO_SKILLS.every(k=>(s.tobibako.dan[k.id]||0)>=2) },
+  { cat:'とびばこ', id:'bakoAll',   em:'🎪', name:'とびばこはかせ',           cond:'とびばこのわざぜんぶ!',       test:s=>TOBIBAKO_SKILLS.every(k=>tobibakoCleared(k,s.tobibako.dan[k.id]||0)) },
   // すいえい
   { cat:'すいえい', id:'swFace',      em:'💦', name:'みずとなかよし',     cond:'かおに水をつけられた(20きゅう)', test:s=>s.suiei.kyu.includes('sw20') },
   { cat:'すいえい', id:'swMoguru',    em:'🤿', name:'もぐりめいじん',     cond:'あたままでもぐれた(17きゅう)',   test:s=>s.suiei.kyu.includes('sw17') },
@@ -1620,7 +2066,7 @@ const BADGES = [
   { cat:'すいえい', id:'kenobi',      em:'🐟', name:'けのびマスター',     cond:'けのび5m(10きゅう)',             test:s=>s.suiei.kyu.includes('sw10') },
   { cat:'すいえい', id:'swBeat',      em:'🛟', name:'バタあしエンジン',   cond:'ビートばんで13m(9きゅう)',       test:s=>s.suiei.kyu.includes('sw9') },
   { cat:'すいえい', id:'swMenkaburi', em:'🐠', name:'めんかぶりスイマー', cond:'めんかぶりばた足13m(8きゅう)',   test:s=>s.suiei.kyu.includes('sw8') },
-  { cat:'すいえい', id:'swimK5',      em:'🐬', name:'13mスイマー',        cond:'クロールかひらおよぎで13m(7きゅう)', test:s=>s.suiei.kyu.includes('sw7') },
+  { cat:'すいえい', id:'swimK5',      em:'🐬', name:'13mスイマー',        cond:'クロールで13m(7きゅう③)', test:s=>s.suiei.kyu.includes('sw7') },
   { cat:'すいえい', id:'sw25',        em:'🐳', name:'25mスイマー',        cond:'25mおよげた(5きゅう)',           test:s=>s.suiei.kyu.includes('sw5') },
   { cat:'すいえい', id:'swimK1',      em:'🦈', name:'50mスイマー',        cond:'りょうほう50m(3きゅう)',         test:s=>s.suiei.kyu.includes('sw3') },
   { cat:'すいえい', id:'swSeoyogi',   em:'🛶', name:'せおよぎスイスイ',   cond:'せおよぎ25m(2きゅう)',           test:s=>s.suiei.kyu.includes('sw2') },
@@ -1686,7 +2132,7 @@ const BADGES = [
   { cat:'ステップ', id:'step60',   em:'🏔️', name:'一歩一歩のたつじん', cond:'ステップを60こクリア',  test:s=>(s.steps||[]).length>=60 },
   { cat:'ステップ', id:'stepall1', em:'🌟', name:'わざへの道',         cond:'あるわざのステップをぜんぶクリア',
     test:s=>Object.keys(STEPS).some(id=>STEPS[id].length>0 && STEPS[id].every(st=>(s.steps||[]).indexOf(st.id)>=0)) },
-  { cat:'スペシャル', id:'allsports',   em:'🌍', name:'うんどうおう',           cond:'6しゅもくいじょうできろくした', test:s=>new Set(s.records.map(r=>r.sport)).size>=6 },
+  { cat:'スペシャル', id:'allsports',   em:'🌍', name:'うんどうおう',           cond:'6しゅもくいじょうできろくした', test:s=>new Set(s.records.filter(r=>SPORTS[r.sport]).map(r=>r.sport)).size>=6 },
   { cat:'スペシャル', id:'allsports12', em:'🌏', name:'スポーツマスター',       cond:'ぜん12しゅもくできろくした',    test:s=>Object.keys(SPORTS).every(sp=>s.records.some(r=>r.sport===sp)) },
   { cat:'スペシャル', id:'triday',      em:'🎭', name:'なんでもチャレンジャー', cond:'1日に3しゅもくきろくした',      test:s=>tridaySports(s) },
   { cat:'スペシャル', id:'badge10',     em:'🧿', name:'バッジコレクター',       cond:'バッジ10こあつめた',            test:s=>s.badges.length>=10 },
@@ -1708,7 +2154,7 @@ function ballAll(s, sport){
 }
 
 /* ---------------- XPルール ---------------- */
-const XP = { record:10, firstSkill:30, best:20, badge:50, streak7:100, step:15 };
+const XP = { record:10, training:3, firstSkill:30, best:20, badge:50, streak7:100, step:15 };
 
 /* ---------------- キャラクター ---------------- */
 const CHAR_STAGES = [
@@ -1718,14 +2164,14 @@ const CHAR_STAGES = [
   { min:11, name:'つばさ',        desc:'大きなつばさで、どこまでもとべそう!' },
   { min:21, name:'でんせつのとり', desc:'きみのどりょくが、でんせつをうんだ!' },
 ];
-function charStage(level){
+function legacyCharStage(level){
   let st = CHAR_STAGES[0];
   for(const c of CHAR_STAGES){ if(level>=c.min) st=c; }
   return st;
 }
 let _uid = 0;                                    // グラデーションidの重複よけ
-function charSvg(level, size){
-  const stage = charStage(level).name;
+function legacyPetSvg(level, size){
+  const stage = legacyCharStage(level).name;
   // サイズ指定なし(ホーム)のときはCSSにまかせる。指定あり(モーダル)はその大きさで固定
   const st = size ? ` style="width:${size}px;height:${size}px"` : '';
   const u = 'c'+(++_uid);
@@ -1890,18 +2336,121 @@ function charSvg(level, size){
     </svg>`;
 }
 
+/* ---------------- じぶんのトレーニングアバター ---------------- */
+const BODY_STAGES = [
+  { min:1,  name:'ルーキー',       desc:'ここから体づくりスタート!' },
+  { min:3,  name:'アクティブ',     desc:'動ける体になってきた!' },
+  { min:6,  name:'パワーアップ',   desc:'うでとあしに力がついてきた!' },
+  { min:11, name:'アスリート',     desc:'全身がぐっとたくましくなった!' },
+  { min:21, name:'レジェンドボディ', desc:'努力でつくった最高のパワー!' },
+];
+const BODY_PARTS = [
+  {key:'arms', em:'💪', name:'うで', desc:'腕が太くなり、力こぶが育つ'},
+  {key:'chest',em:'🛡️', name:'むね', desc:'肩幅と胸板がたくましくなる'},
+  {key:'core', em:'🔥', name:'おなか',desc:'体幹が育ち、腹筋が見えてくる'},
+  {key:'legs', em:'🦵', name:'あし', desc:'脚が太く、力強くなる'},
+];
+const BODY_MACHO_AT = 10;
+const BODY_HEROES = [
+  {key:'boy',em:'👦',name:'男の子'},
+  {key:'girl',em:'👧',name:'女の子'},
+  {key:'adult',em:'🏆',name:'大人の男性'},
+  {key:'woman',em:'🏋️‍♀️',name:'大人の女性'},
+];
+function blankHeroBody(){ return {arms:0,chest:0,core:0,legs:0}; }
+function normalizeHeroBody(h){
+  const out=blankHeroBody();
+  for(const key of Object.keys(out)) out[key]=Math.max(0,Math.min(BODY_MACHO_AT,Math.floor(Number(h&&h[key])||0)));
+  return out;
+}
+function heroBodyComplete(h){ return BODY_PARTS.every(p=>(Number(h&&h[p.key])||0)>=BODY_MACHO_AT); }
+const BODY_TITLES = [
+  {id:'total0',em:'🌱',name:'はじまりの挑戦者',need:0},{id:'total2',em:'👟',name:'からだづくり見習い',need:2},
+  {id:'total4',em:'✨',name:'コツコツトレーナー',need:4},{id:'total7',em:'⚡',name:'成長スイッチON',need:7},
+  {id:'total10',em:'🥚',name:'パワーのたまご',need:10},{id:'total14',em:'🥊',name:'鍛錬のルーキー',need:14},
+  {id:'total18',em:'⚖️',name:'バランスファイター',need:18},{id:'total24',em:'🚀',name:'全身パワーアップ',need:24},
+  {id:'total32',em:'🏆',name:'スーパーアスリート',need:32},{id:'total40',em:'👑',name:'伝説のマッチョヒーロー',need:40},
+  {id:'arms1',em:'💪',name:'うでトレ入門',part:'arms',need:1},{id:'arms3',em:'🌱',name:'力こぶの芽',part:'arms',need:3},
+  {id:'arms5',em:'🥊',name:'腕力チャレンジャー',part:'arms',need:5},{id:'arms8',em:'⚔️',name:'ごう腕ファイター',part:'arms',need:8},{id:'arms10',em:'🔥',name:'マッスルアーム',part:'arms',need:10},
+  {id:'chest1',em:'🛡️',name:'むねトレ入門',part:'chest',need:1},{id:'chest3',em:'🌱',name:'胸板の芽',part:'chest',need:3},
+  {id:'chest5',em:'🤸',name:'プッシュの達人',part:'chest',need:5},{id:'chest8',em:'🏰',name:'鉄壁チェスト',part:'chest',need:8},{id:'chest10',em:'🔥',name:'マッスルチェスト',part:'chest',need:10},
+  {id:'core1',em:'🔥',name:'体幹トレ入門',part:'core',need:1},{id:'core3',em:'🌱',name:'おなかパワーの芽',part:'core',need:3},
+  {id:'core5',em:'🎯',name:'ぶれない挑戦者',part:'core',need:5},{id:'core8',em:'🧘',name:'体幹マスター',part:'core',need:8},{id:'core10',em:'🔥',name:'シックスパックヒーロー',part:'core',need:10},
+  {id:'legs1',em:'🦵',name:'あしトレ入門',part:'legs',need:1},{id:'legs3',em:'🌱',name:'俊足の芽',part:'legs',need:3},
+  {id:'legs5',em:'🪽',name:'ジャンプチャレンジャー',part:'legs',need:5},{id:'legs8',em:'🏃',name:'剛脚ランナー',part:'legs',need:8},{id:'legs10',em:'🔥',name:'マッスルレッグ',part:'legs',need:10},
+];
+function charStage(level){
+  let st = BODY_STAGES[0];
+  for(const c of BODY_STAGES){ if(level>=c.min) st=c; }
+  return st;
+}
+function legacyAthleteSvg(level, size){
+  const stage = charStage(level);
+  const body = S.body || {};
+  const arms = Math.max(0,Math.min(5,Number(body.arms)||0));
+  const chest = Math.max(0,Math.min(5,Number(body.chest)||0));
+  const core = Math.max(0,Math.min(5,Number(body.core)||0));
+  const legs = Math.max(0,Math.min(5,Number(body.legs)||0));
+  const power = arms+chest+core+legs;
+  const st = size ? ` style="width:${size}px;height:${size}px"` : '';
+  const u = 'a'+(++_uid);
+  const armWidth = 6.2 + arms*1.15;
+  const shoulder = 4 + chest*1.65 + arms*.4;
+  const legWidth = 8 + legs*1.15;
+  const aura = power>=8 ? `<circle cx="60" cy="57" r="51" fill="none" stroke="${power>=18?'#FDE68A':'#7DD3FC'}" stroke-width="2" opacity=".42" stroke-dasharray="5 7"/>
+    <path d="M16 30l2.5 5 5.5 1-4 4 1 5.5-5-2.7-5 2.7 1-5.5-4-4 5.5-1zM101 22l2 4 4.5.7-3.3 3.2.8 4.5-4-2.2-4 2.2.8-4.5-3.3-3.2 4.5-.7z" fill="${power>=18?'#FDE68A':'#BAE6FD'}"/>` : '';
+  const armMuscles = arms>=2 ? `<path d="M${31-arms} 40q-7-5-11 1M${89+arms} 40q7-5 11 1" fill="none" stroke="#D98B58" stroke-width="1.6" opacity=".75" stroke-linecap="round"/>` : '';
+  const chestLines = chest>=2 ? `<path d="M46 53q7-5 14 0q7-5 14 0M60 47v11" fill="none" stroke="#D7E9FF" stroke-width="1.7" opacity=".85" stroke-linecap="round"/>` : '';
+  const absLines = core>=1 ? `<path d="M60 58v15M52 61h16M53 67h14${core>=4?'M54 72h12':''}" fill="none" stroke="#D7E9FF" stroke-width="${1.2+core*.12}" opacity=".9" stroke-linecap="round"/>` : '';
+  const legLines = legs>=3 ? `<path d="M43 92q5 3 9 0M68 92q5 3 9 0" fill="none" stroke="#D98B58" stroke-width="1.5" opacity=".7"/>` : '';
+  const medal = power>=20 ? `<circle cx="60" cy="60" r="6" fill="#FACC15" stroke="#F59E0B" stroke-width="1.5"/><path d="M56 50l4 7 4-7" fill="none" stroke="#FDE68A" stroke-width="3"/>` : '';
+  return `<svg class="char-svg athlete-svg"${st} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${u}shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#38BDF8"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient>
+      <linearGradient id="${u}shorts" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FB923C"/><stop offset="1" stop-color="#EA580C"/></linearGradient>
+      <radialGradient id="${u}skin" cx="36%" cy="25%" r="78%"><stop stop-color="#FFE1C5"/><stop offset="1" stop-color="#F3A86F"/></radialGradient>
+    </defs>
+    ${aura}<ellipse cx="60" cy="110" rx="29" ry="6" fill="#020617" opacity=".18"/>
+    <path d="M49 82l-3 22M71 82l3 22" stroke="url(#${u}skin)" stroke-width="${legWidth}" stroke-linecap="round"/>
+    <path d="M38 105h15M67 105h15" stroke="#EFF6FF" stroke-width="8" stroke-linecap="round"/><path d="M38 108h16M66 108h17" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+    <path d="M${42-legs*.35} 72q18 8 ${36+legs*.7} 0l${-3-legs*.25} 17H${45-legs*.25}z" fill="url(#${u}shorts)" stroke="#C2410C" stroke-width="2"/><path d="M60 76v12M48 74l-2 10M72 74l2 10" stroke="#FED7AA" stroke-width="2" opacity=".75"/>
+    <path d="M${42-shoulder} 45Q60 ${38-chest*.8} ${78+shoulder} 45L${75+core*.45} 75Q60 ${81+core*.35} ${45-core*.45} 75Z" fill="url(#${u}shirt)" stroke="#1E40AF" stroke-width="2.2"/>
+    <path d="M${43-shoulder} 47Q${30-arms*1.7} 45 ${25-arms*.8} 36Q${21-arms*.7} ${28-arms*.7} ${29-arms*.75} 25" fill="none" stroke="url(#${u}skin)" stroke-width="${armWidth}" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M${77+shoulder} 47Q${90+arms*1.7} 45 ${95+arms*.8} 36Q${99+arms*.7} ${28-arms*.7} ${91+arms*.75} 25" fill="none" stroke="url(#${u}skin)" stroke-width="${armWidth}" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${29-arms*.75}" cy="24" r="${5+arms*.32}" fill="url(#${u}skin)" stroke="#D98B58" stroke-width="1.4"/><circle cx="${91+arms*.75}" cy="24" r="${5+arms*.32}" fill="url(#${u}skin)" stroke="#D98B58" stroke-width="1.4"/>
+    ${armMuscles}${chestLines}${absLines}${legLines}${medal}
+    <circle cx="60" cy="28" r="18" fill="url(#${u}skin)" stroke="#D98B58" stroke-width="1.8"/>
+    <path d="M43 27q1-20 18-20 17 1 17 20-8-10-17-10-9 0-18 10z" fill="#2B211E"/><path d="M46 21q5-12 14-12M55 18q8-9 16-4" fill="none" stroke="#4A3830" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="53" cy="29" rx="2.6" ry="3.4" fill="#172033"/><ellipse cx="67" cy="29" rx="2.6" ry="3.4" fill="#172033"/><circle cx="52.2" cy="28" r=".8" fill="#fff"/><circle cx="66.2" cy="28" r=".8" fill="#fff"/>
+    <path d="M54 36q6 5 12 0" fill="none" stroke="#A54B37" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="47" cy="35" rx="4" ry="2" fill="#FB7185" opacity=".35"/><ellipse cx="73" cy="35" rx="4" ry="2" fill="#FB7185" opacity=".35"/>
+  </svg>`;
+}
+function charSvg(level, size){
+  const hero = BODY_HEROES[(S.body&&Number(S.body.active))||0] || BODY_HEROES[0];
+  const body = activeHeroBody();
+  const values = BODY_PARTS.map(p=>({key:p.key,value:Number(body[p.key])||0}));
+  const macho = values.filter(v=>v.value>=BODY_MACHO_AT);
+  const variant = macho.length===0 ? 'base' : macho.length===1 ? macho[0].key : 'all';
+  const labels = {base:'通常',arms:'腕を強化',chest:'胸を強化',core:'おなかを強化',legs:'脚を強化',all:'全身を強化'};
+  const st = size ? ` style="width:${size}px;height:${size}px"` : '';
+  const prefix=hero.key==='boy'?'body':hero.key;
+  return `<img class="char-svg athlete-img"${st} src="./images/avatar/body/${prefix}-${variant}-v1.png" alt="${labels[variant]}した${hero.name}">`;
+}
+
 /* ---------------- 状態管理 ---------------- */
 const LS_KEY = 'ugokiNoKiroku_v1';
 function defaultState(){
   return {
-    profile:{ name:'', grade:0, charName:'ぴよ', totalXp:0 },
+    profile:{ name:'', grade:0, totalXp:0 },
     records:[],                                  // {id, sport, date, label, xp}
+    body:{ system:3, points:0, active:0, heroes:BODY_HEROES.map(()=>blankHeroBody()), title:'', titles:[] },
     nawatobi:{ best:{}, speed:[] },              // best: skillId->回数 / speed: {date,mae,ushiro}
     tetsubo:{ done:[] },
     mat:{ done:[] },
     tobibako:{ dan:{} },                         // skillId -> さいこう段
     suiei:{ kyu:[], log:[] },                    // log: {date, stroke, m}
     marathon:{ log:[] },                         // {date, m, sec|null}
+    training:{ date:'', done:[], best:{}, log:[] }, // doneだけ毎日リセット。bestと実施ログは残す
     soccer:{ best:{}, done:[] },                 // ボールしゅもく: best=カウント自己ベスト / done=できたチェック
     basket:{ best:{}, done:[] },
     volley:{ best:{}, done:[] },
@@ -1921,12 +2470,45 @@ function load(){
     const d = defaultState(), s = JSON.parse(raw);
     // ふるいデータにあたらしいキーをおぎなう
     for(const k of Object.keys(d)) if(s[k]===undefined) s[k]=d[k];
+    if(!s.body || typeof s.body!=='object') s.body={arms:0,chest:0,core:0,legs:0};
+    if(s.body.system===3){
+      s.body.points=Math.max(0,Math.floor(Number(s.body.points)||0));
+      s.body.title=typeof s.body.title==='string'?s.body.title:'';
+      s.body.titles=Array.isArray(s.body.titles)?s.body.titles:[];
+      s.body.heroes=Array.isArray(s.body.heroes)?s.body.heroes.slice(0,BODY_HEROES.length).map(normalizeHeroBody):[];
+      while(s.body.heroes.length<BODY_HEROES.length) s.body.heroes.push(blankHeroBody());
+      s.body.active=Math.max(0,Math.min(BODY_HEROES.length-1,Math.floor(Number(s.body.active)||0)));
+    }else if(s.body.system===2){
+      const boy=normalizeHeroBody(s.body);
+      s.body={system:3,points:Math.max(0,Math.floor(Number(s.body.points)||0)),active:0,heroes:[boy,...BODY_HEROES.slice(1).map(()=>blankHeroBody())],title:typeof s.body.title==='string'?s.body.title:'',titles:Array.isArray(s.body.titles)?s.body.titles:[]};
+    }else{
+      const old = {};
+      for(const key of ['arms','chest','core','legs']) old[key]=Math.max(0,Math.min(5,Number(s.body[key])||0));
+      const oldSpent = Object.values(old).reduce((a,n)=>a+n,0);
+      const pastChallenges = Array.isArray(s.records) ? s.records.filter(r=>(Number(r.xp)||0)>0).length : 0;
+      const unusedLevelPoints = Math.max(0,levelInfo(Number(s.profile&&s.profile.totalXp)||0).level-1-oldSpent);
+      const boy=normalizeHeroBody({arms:old.arms*2,chest:old.chest*2,core:old.core*2,legs:old.legs*2});
+      s.body={system:3,points:pastChallenges+unusedLevelPoints,active:0,heroes:[boy,...BODY_HEROES.slice(1).map(()=>blankHeroBody())],title:'',titles:[]};
+    }
+    const migratedSpent=s.body.heroes.reduce((sum,h)=>sum+Object.values(h).reduce((a,n)=>a+(Number(n)||0),0),0);
+    for(const t of BODY_TITLES){
+      const open=t.part ? Math.max(...s.body.heroes.map(h=>Number(h[t.part])||0))>=t.need : migratedSpent>=t.need;
+      if(open && !s.body.titles.includes(t.id)) s.body.titles.push(t.id);
+    }
     // 旧すいえい12だんかい(s10〜sS2)のごうかくを、22だんかい版(sw〜)へひきつぐ
     const mig = { s10:['sw14'], s9:['sw16','sw15'], s8:['sw11','sw10'], s7:['sw9'], s6:['sw8'],
                   s5:['sw7'], s4:['sw6'], s3:['sw5'], s2:['sw4'], s1:['sw3'], sS1:['sw1'], sS2:['swS2'] };
     const remap = a=>{ const out=[]; (a||[]).forEach(id=>{ if(mig[id]) out.push(...mig[id]); else out.push(id); }); return [...new Set(out)]; };
     if(s.suiei && s.suiei.kyu.some(id=>mig[id])) s.suiei.kyu = remap(s.suiei.kyu);
     if(s.ever_suiei && s.ever_suiei.some(id=>mig[id])) s.ever_suiei = remap(s.ever_suiei);
+    // 小学生版は6段まで。以前の7・8段記録も表示・保存時に6段へそろえる。
+    if(s.tobibako && s.tobibako.dan){
+      for(const id of Object.keys(s.tobibako.dan)) s.tobibako.dan[id]=Math.min(6,Number(s.tobibako.dan[id])||0);
+    }
+    if(Array.isArray(s.records)){
+      s.records.forEach(r=>{ if(r.sport==='tobibako' && typeof r.label==='string') r.label=r.label.replace(/[78]だん/g,'6だん'); });
+    }
+    if(Array.isArray(s.badges)) s.badges=s.badges.filter(id=>id!=='dan8');
     return s;
   }catch(e){ return defaultState(); }
 }
@@ -1935,6 +2517,23 @@ function save(){ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
 function todayStr(){
   const d = new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function ensureTrainingToday(){
+  const today = todayStr();
+  let changed = false;
+  if(!S.training || typeof S.training!=='object'){ S.training={date:'',done:[],best:{},log:[]}; changed=true; }
+  if(!Array.isArray(S.training.done)){ S.training.done=[]; changed=true; }
+  if(!S.training.best || typeof S.training.best!=='object' || Array.isArray(S.training.best)){ S.training.best={}; changed=true; }
+  if(!Array.isArray(S.training.log)){ S.training.log=[]; changed=true; }
+  if(S.training.date!==today){ S.training.date=today; S.training.done=[]; changed=true; }
+  if(changed) save();
+  return S.training;
+}
+function trainingDoneToday(){ return ensureTrainingToday().done.length; }
+function trainingActiveDays(){
+  const dates = (S.training && Array.isArray(S.training.log)) ? S.training.log.map(r=>r.date) : [];
+  S.records.filter(r=>r.sport==='training').forEach(r=>dates.push(r.date));
+  return new Set(dates).size;
 }
 function fmtDate(iso){
   const [y,m,d] = iso.split('-');
@@ -1947,6 +2546,67 @@ function levelInfo(xp){
   let level=1, acc=0, need=100;
   while(xp >= acc+need){ acc+=need; level++; need = 100+(level-1)*25; }
   return { level, cur:xp-acc, need };
+}
+function activeHeroBody(){
+  if(!S.body||!Array.isArray(S.body.heroes)) return blankHeroBody();
+  return S.body.heroes[Math.max(0,Math.min(BODY_HEROES.length-1,Number(S.body.active)||0))] || S.body.heroes[0];
+}
+function activeHero(){ return BODY_HEROES[Math.max(0,Math.min(BODY_HEROES.length-1,Number(S.body&&S.body.active)||0))] || BODY_HEROES[0]; }
+function selectBodyHero(index){
+  const i=Math.max(0,Math.min(BODY_HEROES.length-1,Math.floor(Number(index)||0)));
+  S.body.active=i; save(); render(); showToast(BODY_HEROES[i].name+'を選んだよ！');
+}
+function bodySpent(index){
+  const h=index==null?activeHeroBody():(S.body&&S.body.heroes&&S.body.heroes[index]);
+  return BODY_PARTS.reduce((sum,p)=>sum+(Number(h&&h[p.key])||0),0);
+}
+function bodyTotalSpent(){ return BODY_HEROES.reduce((sum,_,i)=>sum+bodySpent(i),0); }
+function bodyPointsAvailable(){ return Math.max(0,Math.floor(Number(S.body&&S.body.points)||0)); }
+function bodyTitleUnlocked(t){
+  if(S.body&&Array.isArray(S.body.titles)&&S.body.titles.includes(t.id)) return true;
+  return t.part ? Math.max(...S.body.heroes.map(h=>Number(h[t.part])||0))>=t.need : bodyTotalSpent()>=t.need;
+}
+function unlockedBodyTitles(){ return BODY_TITLES.filter(bodyTitleUnlocked); }
+function currentBodyTitle(){
+  const chosen = BODY_TITLES.find(t=>t.id===(S.body&&S.body.title));
+  if(chosen && bodyTitleUnlocked(chosen)) return chosen;
+  const general = BODY_TITLES.filter(t=>!t.part && bodyTitleUnlocked(t));
+  return general[general.length-1] || BODY_TITLES[0];
+}
+function equipBodyTitle(id){
+  const title = BODY_TITLES.find(t=>t.id===id);
+  if(!title || !bodyTitleUnlocked(title)) return;
+  S.body.title=id; save(); render(); showToast('「'+title.name+'」をつけたよ！');
+}
+function upgradeBodyPart(key){
+  const part = BODY_PARTS.find(p=>p.key===key);
+  const body=activeHeroBody();
+  if(!part) return;
+  if(bodyPointsAvailable()<1){ showToast('つかえる からだポイントがないよ'); return; }
+  if((body[key]||0)>=BODY_MACHO_AT){ showToast(part.name+'はマッチョMAX！'); return; }
+  const before = new Set(unlockedBodyTitles().map(t=>t.id));
+  S.body.points=Math.max(0,bodyPointsAvailable()-1);
+  body[key]=(body[key]||0)+1;
+  const newTitles = unlockedBodyTitles().filter(t=>!before.has(t.id));
+  if(!Array.isArray(S.body.titles)) S.body.titles=[];
+  newTitles.forEach(title=>{ if(!S.body.titles.includes(title.id)) S.body.titles.push(title.id); });
+  newTitles.forEach(title=>celebrationQueue.push({type:'title',title}));
+  let heroAdvanced=false;
+  if(heroBodyComplete(body)){
+    const finished=activeHero();
+    celebrationQueue.push({type:S.body.heroes.every(heroBodyComplete)?'hero-final':'hero',finished});
+    heroAdvanced=true;
+  }
+  save(); render();
+  if(newTitles.length||heroAdvanced) playCelebrations();
+  else { showToast(part.name+'が '+body[key]+'/'+BODY_MACHO_AT+' にパワーアップ！'); confettiBurst(); }
+}
+function resetBodyParts(){
+  if(bodySpent()===0) return;
+  if(!confirm(activeHero().name+'のポイントをぜんぶ振り直す？\n使ったポイントはすべてもどるよ。')) return;
+  S.body.points=bodyPointsAvailable()+bodySpent();
+  S.body.heroes[S.body.active]=blankHeroBody();
+  save(); render(); showToast('からだポイントがもどったよ');
 }
 
 /* ---------------- 級の計算 ---------------- */
@@ -2024,18 +2684,31 @@ function touchStreak(date){
 function removeRecordXp(pred){
   for(let i=S.records.length-1; i>=0; i--){
     if(pred(S.records[i])){
-      S.profile.totalXp = Math.max(0, S.profile.totalXp - S.records[i].xp);
+      const removed = S.records[i];
+      S.profile.totalXp = Math.max(0, S.profile.totalXp - removed.xp);
+      if((Number(removed.xp)||0)>0){
+        if(bodyPointsAvailable()>0){
+          S.body.points=bodyPointsAvailable()-1;
+        }else{
+          for(let heroIndex=S.body.active;heroIndex>=0;heroIndex--){
+            const h=S.body.heroes[heroIndex];
+            const invested=BODY_PARTS.map(p=>({key:p.key,value:Number(h[p.key])||0})).sort((a,b)=>b.value-a.value)[0];
+            if(invested && invested.value>0){ h[invested.key]--; break; }
+          }
+        }
+      }
       S.records.splice(i,1);
       return true;
     }
   }
   return false;
 }
-/* きろく1件ついか(+10XP)。extraXp: わざ初達成やベスト更新のボーナス */
-function addRecord(sport, label, extraXp, date){
+/* きろく1件ついか。baseXp省略時は通常の+10XP。 */
+function addRecord(sport, label, extraXp, date, baseXp){
   const d = date || todayStr();
-  const xp = XP.record + (extraXp||0);
+  const xp = (baseXp==null?XP.record:baseXp) + (extraXp||0);
   S.records.push({ id:uid(), sport, date:d, label, xp });
+  if(xp>0) S.body.points=bodyPointsAvailable()+1;
   gainXp(xp);
   touchStreak(d);
   checkBadges();
@@ -2078,7 +2751,22 @@ function playCelebrations(){
     const stage = charStage(c.level);
     html = `${charSvg(c.level,110)}
       <h2>レベルアップ!</h2>
-      <p>${esc(S.profile.charName)}は <b>Lv.${c.level}</b> になった!<br><span class="small">${stage.desc}</span></p>`;
+      <p>${esc(S.profile.name)||'きみ'}は <b>Lv.${c.level}</b> になった!<br><span class="small">${stage.desc}</span></p>`;
+  }else if(c.type==='title'){
+    html = `<span class="big-em">${c.title.em}</span>
+      <h2>新しい称号!</h2>
+      <p>「<b>${c.title.name}</b>」が使えるようになった!</p>
+      <span class="getxp">称号コレクション ${unlockedBodyTitles().length}/30</span>`;
+  }else if(c.type==='hero'){
+    html = `${charSvg(1,145)}
+      <h2>${c.finished.name} クリア!</h2>
+      <p>${c.finished.em}を全身マッチョに育てた!<br>好きな主人公を選んで、さらに育てよう!</p>
+      <span class="getxp">HERO COMPLETE!</span>`;
+  }else if(c.type==='hero-final'){
+    html = `${charSvg(1,145)}
+      <h2>全主人公クリア!</h2>
+      <p><b>${c.finished.name}のゴリゴリマッチョ</b>が完成!<br>4人を育てた最高のトレーニングマスターだ!</p>
+      <span class="getxp">ULTIMATE MUSCLE!</span>`;
   }else if(c.type==='streak'){
     html = `<span class="big-em">🔥</span>
       <h2>${c.days}日れんぞく!</h2>
@@ -2143,27 +2831,30 @@ window.addEventListener('hashchange', ()=>{ render(); scrollTo(0,0); });
 
 const NAV_ITEMS = [
   { route:'home',     em:'🏠', label:'ホーム' },
-  { route:'sports',   em:'🏃', label:'きろく' },
+  { route:'grow',     em:'💪', label:'育てる' },
   { route:'progress', em:'👣', label:'あしあと' },
   { route:'badges',   em:'🏅', label:'バッジ' },
   { route:'settings', em:'⚙️', label:'せってい' },
 ];
 function renderNav(){
   const r = currentRoute();
-  const active = r.startsWith('sport/') ? 'sports' : r;
+  const active = r==='sports' || r.startsWith('sport/') || r==='training' ? 'home' : r;
   document.getElementById('nav').innerHTML = NAV_ITEMS.map(n=>
     `<button class="${active===n.route?'active':''}" onclick="go('${n.route}')">
-       <span class="em">${n.em}</span>${n.label}</button>`).join('');
+       <span class="em">${n.em}</span>${n.label}${n.route==='grow'&&bodyPointsAvailable()>0?`<span class="nav-point">${Math.min(99,bodyPointsAvailable())}</span>`:''}</button>`).join('');
 }
 
 function render(){
   const r = currentRoute();
+  app.classList.toggle('sport-detail', r.startsWith('sport/') || r==='training');
+  app.classList.toggle('home-page', r==='home');
+  app.classList.toggle('grow-page', r==='grow');
   if(r.startsWith('sport/')){
     const sp = r.slice(6);
     const fn = SPORT_VIEWS[sp];
     app.innerHTML = fn ? fn() : viewHome();
   }else{
-    const views = { home:viewHome, sports:viewSports, progress:viewProgress, badges:viewBadges, settings:viewSettings };
+    const views = { home:viewHome, grow:viewGrow, sports:viewSports, training:viewTraining, progress:viewProgress, badges:viewBadges, settings:viewSettings };
     app.innerHTML = (views[r]||viewHome)();
   }
   renderNav();
@@ -2177,12 +2868,101 @@ function headerHtml(title, em, backTo){
 }
 
 /* ---------------- ホーム ---------------- */
+function dailyTrainingCardHtml(){
+  const done = trainingDoneToday();
+  const msg = done===TRAINING_EXERCISES.length ? 'きょうは全種クリア！また明日ね' : done>=3 ? 'ミニゴール達成！まだできそうなら続けよう' : 'まずは好きな3こでOK';
+  return `<button class="daily-training-card" onclick="go('training')">
+    <span class="dt-icon"><img src="./images/training/${TRAINING_IMAGES.tr5}" alt="ハーフスクワットをする子ども"></span>
+    <span class="dt-copy"><span class="dt-kicker">DAILY BODY TRAINING</span><span class="dt-name">きょうの まいにち筋トレ</span><span class="dt-sub">${msg}・毎日0こからスタート</span></span>
+    <span class="dt-score"><b>${done}/${TRAINING_EXERCISES.length}</b><small>きょうできた</small></span>
+  </button>`;
+}
+function bodyBuilderHtml(level){
+  const points = bodyPointsAvailable();
+  const spent = bodySpent();
+  const body = activeHeroBody();
+  const hero = activeHero();
+  return `<section class="card body-builder">
+    <div class="body-preview">${charSvg(level)}</div>
+    <div>
+      <h3>⚡ ${hero.em} ${hero.name}の筋肉を育てよう</h3>
+      <div class="muted small" style="margin:-4px 0 10px">何かを1つチャレンジすると1ポイント。10ポイント育てると、その部位がマッチョな姿に進化するよ。</div>
+      <div class="body-points"><span><small>つかえる</small><b>${points}</b> からだポイント</span><span><small>つかった</small><b>${spent}</b> pt</span></div>
+      <div class="body-part-list">${BODY_PARTS.map(part=>{
+        const lv = Number(body[part.key])||0;
+        return `<div class="body-part">
+          <div class="body-part-top"><span>${part.em}</span><span>${part.name}</span><span class="lv">${lv}/${BODY_MACHO_AT}</span></div>
+          <div class="body-level-dots">${[2,4,6,8,10].map(n=>`<i class="${lv>=n?'on':''}"></i>`).join('')}</div>
+          <div class="body-milestone">${lv>=BODY_MACHO_AT?'✨ マッチョな姿に進化！':`あと${BODY_MACHO_AT-lv}ptでマッチョ`}</div>
+          <button onclick="upgradeBodyPart('${part.key}')" ${points<1||lv>=BODY_MACHO_AT?'disabled':''}>${lv>=BODY_MACHO_AT?'マッチョMAX！':'1ポイントで鍛える'}</button>
+        </div>`;
+      }).join('')}</div>
+      ${spent?'<button class="body-reset" onclick="resetBodyParts()">ポイントを振り直す</button>':''}
+    </div>
+  </section>`;
+}
+function heroJourneyHtml(){
+  return `<div class="hero-journey">${BODY_HEROES.map((hero,i)=>{
+    const done=heroBodyComplete(S.body.heroes[i]), current=i===S.body.active;
+    const status=current?`選択中・${bodySpent(i)}/40 pt`:done?'クリア・タップで選ぶ':`${bodySpent(i)}/40 pt・タップで選ぶ`;
+    return `<button type="button" onclick="selectBodyHero(${i})" class="hero-step ${done?'done':''} ${current?'current':''}"><span class="hero-em">${hero.em}</span><span><b>${hero.name}</b><small>${status}</small></span>${current?'<span class="hero-check">▶</span>':done?'<span class="hero-check">✅</span>':'<span class="hero-check">選べる</span>'}</button>`;
+  }).join('')}</div>`;
+}
+function bodyTitlesHtml(){
+  const current = currentBodyTitle();
+  const unlocked = unlockedBodyTitles();
+  return `<section class="card body-title-section">
+    <div class="body-title-head"><h3>🏅 称号コレクション</h3><span class="title-count">${unlocked.length}/30</span></div>
+    <div class="current-title"><span class="em">${current.em}</span><span><small>いまの称号</small><b>${current.name}</b></span></div>
+    <div class="title-grid">${BODY_TITLES.map(t=>{
+      const open=bodyTitleUnlocked(t), equipped=current.id===t.id;
+      const cond=t.part?`${BODY_PARTS.find(p=>p.key===t.part).name} ${t.need}pt`:`合計 ${t.need}pt`;
+      return `<button class="body-title-card ${open?'':'locked'} ${equipped?'equipped':''}" ${open?`onclick="equipBodyTitle('${t.id}')"`:'disabled'}><span class="title-em">${open?t.em:'🔒'}</span>${open?t.name:'？？？'}<small>${equipped?'✓ つけている':cond}</small></button>`;
+    }).join('')}</div>
+  </section>`;
+}
+function viewGrow(){
+  const li = levelInfo(S.profile.totalXp);
+  return headerHtml('主人公を育てる','💪')+`
+    <section class="card grow-intro">
+      <h2>1チャレンジが、1つのパワーに。</h2>
+      <p>男の子、女の子、大人の男性、大人の女性から、好きな主人公をいつでも選んで育てられるよ。</p>
+      <span class="point-now">⚡ つかえる ${bodyPointsAvailable()}ポイント</span>
+    </section>
+    ${heroJourneyHtml()}
+    ${bodyBuilderHtml(li.level)}
+    ${bodyTitlesHtml()}`;
+}
+function freeRecordCardHtml(){
+  const recent = S.records.filter(r=>r.sport==='free').slice(-2).reverse();
+  return `<section class="card free-record-card">
+    <h3>✍️ じぶんのがんばりを自由に記録</h3>
+    <div class="muted small" style="margin:-4px 0 9px">スポーツ以外でも大丈夫。「毎日ピアノを練習した」「お手伝いをがんばった」など、今日のがんばりを書こう。</div>
+    <div class="free-record-row">
+      <textarea id="free-record-text" maxlength="80" placeholder="きょう、がんばったことは？"></textarea>
+      <button class="btn orange" onclick="saveFreeRecord()">きろくする!</button>
+    </div>
+    <div class="free-record-help">80文字まで・「あしあと」に残ります。XPがもらえるのは1日最初の自由記録だけです。</div>
+    ${recent.length?`<div style="margin-top:9px">${recent.map(r=>`<div class="muted small" style="padding:5px 0;border-top:1px dashed #BAE6FD">${fmtDate(r.date)}　${esc(r.label.replace(/^自由きろく「|」$/g,''))}</div>`).join('')}</div>`:''}
+  </section>`;
+}
+function saveFreeRecord(){
+  const el = document.getElementById('free-record-text');
+  const note = el ? el.value.trim().replace(/\s+/g,' ') : '';
+  if(!note){ showToast('がんばったことを書いてね'); return; }
+  const firstToday = !S.records.some(r=>r.sport==='free' && r.date===todayStr());
+  addRecord('free','自由きろく「'+note.slice(0,80)+'」',0,todayStr(),firstToday?XP.record:0);
+  showToast(firstToday?'がんばりを記録したよ！ +'+XP.record+'XP':'がんばりを記録したよ！');
+  render(); playCelebrations();
+}
 function viewHome(){
   const li = levelInfo(S.profile.totalXp);
   const stage = charStage(li.level);
   const pct = Math.min(100, Math.round(li.cur/li.need*100));
   const recent = S.badges.slice(-3).reverse().map(id=>BADGES.find(b=>b.id===id)).filter(Boolean);
   const todayRecs = S.records.filter(r=>r.date===todayStr()).length;
+  const completed = Object.keys(SPORTS).reduce((sum,id)=>sum+dekitaOf(id).items.filter(i=>!i.ex).length,0);
+  const dateLabel = new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});
 
   // 級サマリー
   const chips = [];
@@ -2192,40 +2972,69 @@ function viewHome(){
   const sk = suieiKyuLabel(S);
   if(sk) chips.push('🏊 すいえい '+sk);
   if(marathonTotal(S)>0) chips.push('🏃 るいけい '+(marathonTotal(S)/1000).toFixed(1)+'km');
+  const trainingToday = trainingDoneToday();
+  if(trainingToday>0) chips.push('💪 今日の筋トレ '+trainingToday+'/20');
 
-  return headerHtml('')+`
-  <div class="hero">
-    <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="hill"></div>
-    <div class="char-wrap">
-      <div class="char-hold">${charSvg(li.level)}</div>
-      <div class="char-info">
-        <div class="char-name">${esc(S.profile.charName)||'ぴよ'}</div>
-        <div class="char-stage">${stage.name} — ${stage.desc}</div>
-        <span class="lv-chip">Lv.${li.level}</span><span class="muted small">つぎまで あと ${li.need-li.cur} XP</span>
-        <div class="xpbar"><div class="fill" style="width:${pct}%"></div></div>
-        <div class="xp-label"><span>XP ${li.cur} / ${li.need}</span><span>ごうけい ${S.profile.totalXp} XP</span></div>
+  return `
+  <div class="home-topbar">
+    <div class="home-brand">
+      <span class="home-brand-mark"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="6" r="3.5" fill="currentColor"/><path d="M18 11l-4 7 5 3 3 7M15 17l-7-2M19 13l7 4M13 28l5-7" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span><span class="home-brand-name">うごきの<span>きろく</span></span><span class="home-brand-sub">ATHLETIC GROWTH LOG</span></span>
+    </div>
+    <span class="home-date">${dateLabel}</span>
+  </div>
+
+  <section class="hero home-hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="hero-kicker">MOVE・GROW・RECORD</span>
+        <h1>きょうの一歩を<br><strong>最高の記録</strong>に。</h1>
+        <p class="hero-lead">できた動きを集めて、自分だけの成長ストーリーをつくろう。</p>
+        <div class="hero-stats">
+          <span class="hero-stat"><b>Lv.${li.level}</b><small>PLAYER LEVEL</small></span>
+          <span class="hero-stat"><b>${S.streak.count}日</b><small>STREAK</small></span>
+          <span class="hero-stat"><b>${completed}</b><small>SKILLS CLEARED</small></span>
+        </div>
+        <div class="hero-xp">
+          <div class="xpbar"><div class="fill" style="width:${pct}%"></div></div>
+          <div class="xp-label"><span>NEXT LEVEL ${li.cur} / ${li.need} XP</span><span>TOTAL ${S.profile.totalXp} XP</span></div>
+        </div>
+      </div>
+      <div class="hero-character">
+        <div class="char-hold">${charSvg(li.level)}</div>
+        <div class="hero-level-card"><b>${activeHero().em} ${activeHero().name}</b><small>${currentBodyTitle().name}・強化 ${bodySpent()}/40・残り ${bodyPointsAvailable()}pt</small></div>
       </div>
     </div>
-    ${S.streak.count>0?`<span class="streak-chip">🔥 ${S.streak.count}日 れんぞくきろくちゅう!</span>`:`<span class="streak-chip">きょうのきろくで れんぞくスタート!</span>`}
-    ${chips.length?`<div class="kyu-chips">${chips.map(c=>`<span class="kyu-chip">${c}</span>`).join('')}</div>`:''}
-  </div>
-
-  <div class="card">
-    <h3>📝 きょうは なにをした?${todayRecs?` <span class="done-badge">きょう ${todayRecs}けん</span>`:''}</h3>
-    <div class="sport-grid">${sportCardsHtml()}</div>
-  </div>
-
-  ${recent.length?`<div class="card">
-    <h3>🏅 さいきんゲットしたバッジ</h3>
-    <div class="badge-grid">
-      ${recent.map(b=>`<div class="badge-cell got"><span class="em">${b.em}</span><span class="nm">${b.name}</span></div>`).join('')}
+    <div class="home-quick">
+      ${S.streak.count>0?`<span class="streak-chip">🔥 ${S.streak.count}日 れんぞくきろく中</span>`:`<span class="streak-chip">⚡ きょうから連続記録スタート</span>`}
+      ${todayRecs?`<span class="kyu-chip">✓ TODAY ${todayRecs} RECORDS</span>`:''}
+      ${chips.map(c=>`<span class="kyu-chip">${c}</span>`).join('')}
     </div>
-    <div class="center" style="margin-top:10px"><button class="btn ghost smallbtn" onclick="go('badges')">バッジずかんを見る ▶</button></div>
-  </div>`:''}
+  </section>
 
-  <div class="card center">
-    <div class="muted small">「あしあと」で いままでにできたこと ぜんぶが見られるよ</div>
-    <button class="btn wide" style="margin-top:8px" onclick="go('progress')">👣 せいちょうのあしあと</button>
+  ${freeRecordCardHtml()}
+
+  ${dailyTrainingCardHtml()}
+
+  <section class="launch-section">
+    <div class="launch-head">
+      <div><div class="launch-kicker">CHOOSE YOUR CHALLENGE</div><h2 class="launch-title">きょうは、どれに挑戦する？</h2></div>
+      <div class="launch-desc">競技を選んで<br>「できた！」を記録しよう</div>
+    </div>
+    <div class="home-sport-grid">${sportCardsHtml('home')}</div>
+  </section>
+
+  <div class="home-secondary">
+    ${recent.length?`<div class="card">
+      <h3>🏅 さいきんのバッジ</h3>
+      <div class="badge-grid">${recent.map(b=>`<div class="badge-cell got"><span class="em">${b.em}</span><span class="nm">${b.name}</span></div>`).join('')}</div>
+      <div class="center" style="margin-top:10px"><button class="btn ghost smallbtn" onclick="go('badges')">バッジずかんを見る ▶</button></div>
+    </div>`:`<div class="card center"><h3>🏅 はじめのバッジを手に入れよう</h3><div class="muted small">どれか1つ記録すると、成長のコレクションが始まるよ。</div></div>`}
+    <div class="card center">
+      <h3>👣 成長のあしあと</h3>
+      <div class="muted small">いままでにできたことを、まとめて振り返ろう。</div>
+      <button class="btn wide" style="margin-top:10px" onclick="go('progress')">成長レポートを見る</button>
+    </div>
   </div>
 
   <a class="portal-card" href="../index.html">
@@ -2235,8 +3044,34 @@ function viewHome(){
   </a>`;
 }
 
-/* しゅもくのアイコン。icon(SVG)があればそれを、なければ絵文字を出す */
-function sportIcon(sp){ return sp.icon ? `<span class="em ic">${sp.icon}</span>` : `<span class="em">${sp.em}</span>`; }
+/* 競技がひと目で伝わるホーム用ベクターアイコン */
+function sportVisual(id){
+  const generated = {
+    nawatobi:'nawatobi-v3.png',tetsubo:'tetsubo-v3.png',mat:'mat-v3.png',tobibako:'tobibako-v3.png',
+    suiei:'suiei-v3.png',marathon:'marathon-v3.png',soccer:'soccer-v3.png',basket:'basket-v3.png',
+    volley:'volley-v3.png',baseball:'baseball-v3.png',dodge:'dodge-v3.png',relay:'relay-v3.png'
+  };
+  if(generated[id]) return `<img src="./images/home-icons/${generated[id]}" alt="${SPORTS[id].name}をする子ども">`;
+  const art = {
+    nawatobi:`<path d="M19 57C6 27 19 8 48 8s42 19 29 49" stroke="#FDE68A" stroke-width="4"/><circle cx="48" cy="20" r="5" fill="#FFF"/><path d="M48 27v17M47 31L27 38M49 31l20 7M48 44L38 62M48 44l11 18" stroke="#FFF" stroke-width="5"/><path d="M23 36l7 4M73 36l-7 4" stroke="#FDE68A" stroke-width="5"/>`,
+    tobibako:`<path d="M54 35h29v10H58zM49 45h38v10H51zM44 55h46v10H45z" fill="#FDE68A" stroke="#FFF" stroke-width="2"/><circle cx="30" cy="18" r="5" fill="#FFF"/><path d="M31 25l10 12M38 34l21 2M37 34L24 48M41 37l13 16" stroke="#FFF" stroke-width="5"/><path d="M12 61h24" stroke="#FFF" stroke-width="3"/>`,
+    suiei:`<path d="M5 55c9-8 18 8 27 0s18 8 27 0 18 8 32 0M7 65c9-8 18 8 27 0s18 8 27 0 18 8 29 0" stroke="#A5F3FC" stroke-width="4"/><circle cx="44" cy="35" r="5" fill="#FFF"/><path d="M48 38l17 8M42 40L25 50M60 43l16-14" stroke="#FFF" stroke-width="5"/>`,
+    marathon:`<path d="M7 63c21-13 45-11 82-5" stroke="#DDD6FE" stroke-width="4" stroke-dasharray="7 6"/><circle cx="48" cy="15" r="5" fill="#FFF"/><path d="M46 22l-7 18 15 8M42 28l-14 9M42 29l14 4M54 48L40 64M54 48l17 10" stroke="#FFF" stroke-width="5"/><path d="M14 20h14M9 29h14" stroke="#C4B5FD" stroke-width="3"/>`,
+    soccer:`<circle cx="70" cy="54" r="11" fill="#FFF"/><path d="M70 43l5 5-2 7-7 1-5-6 4-6zM62 61l5-5M78 62l-5-7" stroke="#166534" stroke-width="2"/><circle cx="31" cy="18" r="5" fill="#FFF"/><path d="M32 25l9 17M38 34l13 3M38 35L24 47M41 42L30 62M41 42l19 10" stroke="#FFF" stroke-width="5"/><path d="M58 52l6 2" stroke="#FDE68A" stroke-width="3"/>`,
+    basket:`<path d="M70 20h18v7H73M79 27v36" stroke="#FFF" stroke-width="4"/><path d="M70 27c2 13 14 13 16 0" stroke="#FDE68A" stroke-width="3"/><circle cx="58" cy="18" r="10" fill="#FB923C" stroke="#FFF" stroke-width="2"/><path d="M48 18h20M58 8c-6 6-6 14 0 20M58 8c6 6 6 14 0 20" stroke="#7C2D12" stroke-width="2"/><circle cx="27" cy="28" r="5" fill="#FFF"/><path d="M28 35l8 14M33 41l22-17M34 48L22 63M34 48l15 13" stroke="#FFF" stroke-width="5"/>`,
+    volley:`<path d="M48 23v44M8 34h80v33" stroke="#FFF" stroke-width="3"/><path d="M8 43h80M8 52h80M8 61h80M21 34v33M35 34v33M61 34v33M75 34v33" stroke="#FFF" stroke-width="1.2" opacity=".5"/><circle cx="64" cy="15" r="9" fill="#FFF"/><path d="M59 8c6 5 7 9 5 16M69 9c-6 4-9 9-10 14" stroke="#CA8A04" stroke-width="2"/>`,
+    baseball:`<path d="M28 61L67 13" stroke="#FDE68A" stroke-width="8"/><path d="M22 66l10-8" stroke="#FFF" stroke-width="6"/><circle cx="78" cy="25" r="9" fill="#FFF"/><path d="M73 18c2 5 7 8 12 9M71 28c5-1 9 2 12 5" stroke="#EF4444" stroke-width="1.8"/><path d="M54 24c8 7 13 15 15 24" stroke="#FFF" stroke-width="2" stroke-dasharray="4 5"/>`,
+    dodge:`<circle cx="69" cy="25" r="10" fill="#FFF"/><path d="M61 19l15 12M61 31l15-12" stroke="#FB7185" stroke-width="2"/><circle cx="31" cy="20" r="5" fill="#FFF"/><path d="M32 27l9 17M37 33l26-9M38 36L23 45M41 44L31 63M41 44l17 15" stroke="#FFF" stroke-width="5"/><path d="M75 42h13M77 50h9" stroke="#FDA4AF" stroke-width="3"/>`,
+    relay:`<circle cx="22" cy="19" r="5" fill="#FFF"/><circle cx="69" cy="27" r="5" fill="#FFF"/><path d="M23 26l10 17M29 34l14 3M31 42L17 61M31 42l16 14M68 34l-7 16M65 40l-13 2M61 50L49 64M61 50l15 12" stroke="#FFF" stroke-width="5"/><path d="M42 34l18 7" stroke="#FDE68A" stroke-width="6"/><path d="M8 15h8M5 24h10" stroke="#99F6E4" stroke-width="3"/>`
+  };
+  if(!art[id]) return '';
+  return `<svg viewBox="0 0 96 72" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">${art[id]}</svg>`;
+}
+function sportIcon(sp,idHint){
+  const id = idHint || Object.keys(SPORTS).find(k=>SPORTS[k]===sp);
+  const visual = sportVisual(id);
+  return visual ? `<span class="em ic">${visual}</span>` : sp.icon ? `<span class="em ic">${sp.icon}</span>` : `<span class="em">${sp.em}</span>`;
+}
 /* カードの下に出すせつめい。データから作るので、わざを増やしても数がズレない */
 function sportSub(id){
   const sp = SPORTS[id];
@@ -2248,8 +3083,8 @@ function sportSub(id){
   return sp.sub;
 }
 /* しゅもくカード。つかいはじめると「せつめい」→「しんちょくバー」にかわって、そだった感じが出る */
-function sportCardsHtml(){
-  return Object.entries(SPORTS).map(([id,sp])=>{
+function sportCardsHtml(mode='default'){
+  return Object.entries(SPORTS).map(([id,sp],index)=>{
     const d = dekitaOf(id);
     const done = d.items.filter(i=>!i.ex).length;
     let foot = `<span class="sub">${sportSub(id)}</span>`;
@@ -2260,8 +3095,13 @@ function sportCardsHtml(){
     }else if(!d.total && d.sub){
       foot = `<span class="kmchip">${d.sub}</span>`;
     }
+    if(mode==='home') return `<button class="sport-card home-sport-card ${sp.cls}" onclick="go('sport/${id}')">
+      <span class="sport-card-top"><span class="sport-no">SPORT ${String(index+1).padStart(2,'0')}</span><span class="sport-go">↗</span></span>
+      <span class="sport-visual">${sportIcon(sp,id)}</span>
+      <span class="sport-card-bottom"><span class="nm">${sp.name}</span>${foot}</span>
+    </button>`;
     return `<button class="sport-card ${sp.cls}" onclick="go('sport/${id}')">
-      ${sportIcon(sp)}<span class="nm">${sp.name}</span>${foot}
+      ${sportIcon(sp,id)}<span class="nm">${sp.name}</span>${foot}
     </button>`;
   }).join('');
 }
@@ -2278,6 +3118,107 @@ function viewSports(){
       7日れんぞく <b>+${XP.streak7}XP</b>
     </div>
   </div>`;
+}
+
+/* ---------------- まいにち筋トレ ---------------- */
+function trainingHistoryHtml(){
+  const log = (S.training && Array.isArray(S.training.log)) ? S.training.log : [];
+  const dates = [...new Set(log.map(r=>r.date).concat(S.records.filter(r=>r.sport==='training').map(r=>r.date)))].sort().reverse().slice(0,7);
+  if(!dates.length) return '';
+  return `<div class="card"><h3>📅 さいきんの筋トレ</h3>
+    ${dates.map(date=>{
+      const ids = new Set(log.filter(r=>r.date===date).map(r=>r.exerciseId).filter(Boolean));
+      const n = ids.size || Math.min(TRAINING_EXERCISES.length,S.records.filter(r=>r.sport==='training' && r.date===date).length);
+      return `<div style="display:flex;align-items:center;gap:10px;margin:8px 0">
+        <span style="font-size:12px;color:var(--ink-soft);min-width:72px">${fmtDate(date)}${date===todayStr()?' (きょう)':''}</span>
+        <div class="goalbar" style="flex:1;height:13px;margin:0"><div class="fill" style="width:${Math.min(100,n/TRAINING_EXERCISES.length*100)}%"></div></div>
+        <b style="font-size:13px;color:#7C3AED">${n}こ</b>
+      </div>`;
+    }).join('')}</div>`;
+}
+function viewTraining(){
+  const t = ensureTrainingToday();
+  const done = t.done.length;
+  const pct = Math.min(100,done/TRAINING_EXERCISES.length*100);
+  const groups = [...new Set(TRAINING_EXERCISES.map(ex=>ex.group))];
+  const groupIcons = {'じゅんび':'🌤️','あし':'🦵','うで・むね':'💪','おなか・せなか':'🧱','ぜんしん':'⚡','しあげ':'🌙'};
+  const goalText = done>=TRAINING_EXERCISES.length ? 'すごい！きょうは20こ全部できたよ。' : done>=3 ? '今日のミニゴール達成！ここで終わってもOK。' : `あと${3-done}こで、今日のミニゴール！`;
+  return headerHtml('まいにち筋トレ','💪','home')+`
+  <div class="card training-hero">
+    <div class="muted small">日が変わると「きょうできた」だけ0にもどるよ。ベストと過去のきろくは残ります。</div>
+    <div class="training-progress-row">
+      <div class="training-progress-ring" style="background:conic-gradient(#7C3AED ${pct}%,#E9D5FF 0)"><b>${done}/20</b></div>
+      <div class="training-progress-copy"><strong>${goalText}</strong><small>全部やらなくて大丈夫。体のちょうしに合わせて、好きなものを3こ選ぼう。<br>筋トレした日：${trainingActiveDays()}日</small></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>✅ きょうのメニュー</h3>
+    <div class="muted small">自分で回数や秒数を決めて「きろく！」をおそう。同じ種目は何度きろくしても、今日できた数とXPが増えるのは最初の1回だけです。</div>
+    ${groups.map(group=>`<div class="training-group-title">${groupIcons[group]||'●'} ${group}</div>
+      <div class="training-grid">${TRAINING_EXERCISES.filter(ex=>ex.group===group).map(ex=>{
+        const on = t.done.includes(ex.id);
+        const best = Number(t.best[ex.id])||0;
+        const unit = trainingUnit(ex);
+        return `<div class="training-exercise ${on?'done':''}">
+          <img class="te-image" src="./images/training/${TRAINING_IMAGES[ex.id]}" alt="${ex.name}のやり方" loading="lazy">
+          <span class="te-top"><span class="te-icon">${ex.em}</span><span class="te-title">${ex.name}</span><span class="te-check">${on?'✓':''}</span></span>
+          <span class="te-target">おすすめ ${ex.target}</span>${best?`<span class="training-best">🏆 ベスト ${best}${unit}</span>`:''}<span class="te-how">${ex.how}</span>
+          <div class="training-record-row">
+            <button class="step-btn" onclick="trainingAdjust('${ex.id}',-1)" aria-label="1${unit}へらす">−</button>
+            <input type="number" id="tr-cnt-${ex.id}" min="1" max="9999" inputmode="numeric" placeholder="${unit}">
+            <button class="step-btn" onclick="trainingAdjust('${ex.id}',1)" aria-label="1${unit}ふやす">＋</button>
+            <button class="btn green smallbtn" onclick="saveTraining('${ex.id}')">きろく!</button>
+          </div>
+          ${best?`<button class="training-reset-best" onclick="resetTrainingBest('${ex.id}')">このベストをリセット</button>`:''}
+        </div>`;
+      }).join('')}</div>`).join('')}
+    <div class="training-note">⚠️ いたいとき・気分がわるいときは、すぐにやめよう。いすやかべを使う運動は、動かないことをたしかめてね。ジャンプはすべらない場所で行おう。</div>
+    ${Object.keys(t.best).length?'<button class="btn wide training-reset-all" onclick="resetAllTrainingBests()">筋トレのベストをすべてリセット</button>':''}
+  </div>
+  ${trainingHistoryHtml()}`;
+}
+const TRAINING_SECONDS = new Set(['tr1','tr9','tr12','tr16','tr18','tr20']);
+function trainingUnit(ex){ return TRAINING_SECONDS.has(ex.id) ? 'びょう' : 'かい'; }
+function trainingAdjust(id, d){
+  const el = document.getElementById('tr-cnt-'+id);
+  if(el) el.value = Math.max(1,Math.min(9999,(parseInt(el.value)||0)+d));
+}
+function saveTraining(id){
+  const t = ensureTrainingToday();
+  const ex = TRAINING_EXERCISES.find(x=>x.id===id);
+  if(!ex) return;
+  const el = document.getElementById('tr-cnt-'+id);
+  const value = el ? parseInt(el.value) : 0;
+  if(!value || value<1){ showToast('回数か秒数を入れてね'); return; }
+  if(value>9999){ showToast('9999までで入れてね'); return; }
+  const unit = trainingUnit(ex);
+  const prev = Number(t.best[id])||0;
+  const firstToday = !t.done.includes(id);
+  if(firstToday) t.done.push(id);
+  t.log.push({id:uid(),date:todayStr(),exerciseId:id,value,unit});
+  if(value>prev) t.best[id]=value;
+  addRecord('training','まいにち筋トレ「'+ex.name+'」 '+value+unit,0,todayStr(),firstToday?XP.training:0);
+  const n = t.done.length;
+  const msg = value>prev ? (prev?'🏆 ベストこうしん！ '+prev+'→'+value+unit:'🏆 はじめてのベスト '+value+unit+'！') : ex.name+' '+value+unit+' きろく！';
+  showToast(n===20 && firstToday?'🏆 きょうは20こ全部クリア！':n===3 && firstToday?'🎉 今日のミニゴール3こ達成！':msg+(firstToday?' +'+XP.training+'XP':''));
+  render();
+  if(firstToday && (n===3 || n===20)) confettiBurst();
+  playCelebrations();
+}
+function resetTrainingBest(id){
+  const t = ensureTrainingToday();
+  const ex = TRAINING_EXERCISES.find(x=>x.id===id);
+  if(!ex || !t.best[id]) return;
+  if(!confirm('「'+ex.name+'」のベスト '+t.best[id]+trainingUnit(ex)+' をリセットする？\n過去の実施きろくは残るよ。')) return;
+  delete t.best[id];
+  save(); render(); showToast(ex.name+'のベストをリセットしたよ');
+}
+function resetAllTrainingBests(){
+  const t = ensureTrainingToday();
+  if(!Object.keys(t.best).length) return;
+  if(!confirm('筋トレ20種目のベストをすべてリセットする？\n過去の実施きろくは残るよ。')) return;
+  t.best={};
+  save(); render(); showToast('筋トレのベストをすべてリセットしたよ');
 }
 /* ---------------- SVG折れ線グラフ ---------------- */
 function lineChart(series, opts){
@@ -2310,7 +3251,7 @@ function lineChart(series, opts){
 /* ---------------- なわとび ---------------- */
 function viewNawatobi(){
   const kyu = nawaKyu(S);
-  return headerHtml('なわとび','🪢','sports')+`
+  return headerHtml('なわとび','🪢','home')+`
   <div class="card center" style="background:linear-gradient(160deg,#E7F6FF,#fff)">
     <div class="muted small">いまのきみは…</div>
     <div style="font-size:30px;font-weight:800;color:var(--sky-deep)">${kyu===null?'これから!':'なわとび '+rankLabel(kyu)}</div>
@@ -2326,7 +3267,7 @@ let nawaTab = 'waza';
 function setNawaTab(t){ nawaTab=t; render(); }
 
 function nawaWazaHtml(){
-  return NAWATOBI_SKILLS.map(sk=>{
+  return `<div class="skill-grid">${NAWATOBI_SKILLS.map(sk=>{
     const best = S.nawatobi.best[sk.id]||0;
     const k = nawaSkillKyu(sk, best);
     const next = sk.lv.find(([kyu,need])=>best<need);
@@ -2347,7 +3288,7 @@ function nawaWazaHtml(){
       </div>
       ${stepsHtml('nawatobi', sk.id)}
     </div>`;
-  }).join('');
+  }).join('')}</div>`;
 }
 function stepCount(id, d){
   const el = document.getElementById('cnt-'+id);
@@ -2436,7 +3377,11 @@ function stepsHtml(sport, skillId){
     ${open?`<div class="step-list">
       ${list.map((st,i)=>{
         const on = stepDone(st.id);
-        return `<div class="step-item ${on?'on':''}" onclick="toggleStep('${sport}','${skillId}','${st.id}')">
+        const marathonImage = sport==='marathon' && MARATHON_IMAGES[st.id]
+          ? `<img class="step-image" src="./images/marathon/${MARATHON_IMAGES[st.id]}" alt="${st.name}のイラスト" loading="lazy">`
+          : '';
+        return `<div class="step-item ${sport==='marathon'?'marathon-step ':''}${on?'on':''}" onclick="toggleStep('${sport}','${skillId}','${st.id}')">
+          ${marathonImage}
           <span class="bx">${on?'✓':(i+1)}</span>
           <span class="tx"><b>${st.name}</b><small>${st.kotsu}</small></span>
         </div>`;
@@ -2476,7 +3421,7 @@ function stepSummaryHtml(skills){
 /* ---------------- チェックカードしき (てつぼう・マット) ---------------- */
 function checkSkillsHtml(sport, skills){
   const done = S[sport].done;
-  return skills.map(sk=>{
+  return `<div class="skill-grid">${skills.map(sk=>{
     const on = done.includes(sk.id);
     return `<div class="skill-card ${on?'done':''}">
       <div class="skill-head">
@@ -2490,7 +3435,7 @@ function checkSkillsHtml(sport, skills){
       </div>
       ${stepsHtml(sport, sk.id)}
     </div>`;
-  }).join('');
+  }).join('')}</div>`;
 }
 function toggleSkill(sport, id){
   const arr = S[sport].done;
@@ -2520,7 +3465,7 @@ function toggleSkill(sport, id){
 function viewTetsubo(){
   const n = S.tetsubo.done.length;
   const half = halfSkills(TETSUBO_SKILLS, S.tetsubo.done);
-  return headerHtml('てつぼうけんてい',SPORTS.tetsubo.icon,'sports')+`
+  return headerHtml('てつぼうけんてい',SPORTS.tetsubo.icon,'home')+`
   <div class="card center" style="background:linear-gradient(160deg,#FFF3E4,#fff)">
     <div class="muted small">できたわざ <b>${n} / 20</b>${half?` ＋ステップだけ <b>${half}</b>わざ`:''}</div>
     <div style="font-size:30px;font-weight:800;color:var(--orange-dark)">${tetsuKyu(S)}</div>
@@ -2534,7 +3479,7 @@ function viewTetsubo(){
 function viewMat(){
   const n = S.mat.done.length;
   const half = halfSkills(MAT_SKILLS, S.mat.done);
-  return headerHtml('マットうんどう','🤸','sports')+`
+  return headerHtml('マットうんどう','🤸','home')+`
   <div class="card center" style="background:linear-gradient(160deg,#EFFFF4,#fff)">
     <div class="muted small">できたわざ${half?`（＋ステップだけ ${half}わざ）`:''}</div>
     <div style="font-size:30px;font-weight:800;color:var(--green-dark)">${n} / ${MAT_SKILLS.length}</div>
@@ -2546,39 +3491,49 @@ function viewMat(){
 
 /* ---------------- とびばこ ---------------- */
 function viewTobibako(){
-  const cleared = TOBIBAKO_SKILLS.filter(k=>(S.tobibako.dan[k.id]||0)>=2).length;
-  const maxDan = Math.max(0,...Object.values(S.tobibako.dan));
-  const doneIds = TOBIBAKO_SKILLS.filter(k=>(S.tobibako.dan[k.id]||0)>=2).map(k=>k.id);
+  const cleared = TOBIBAKO_SKILLS.filter(k=>tobibakoCleared(k,S.tobibako.dan[k.id]||0)).length;
+  const maxDan = danMax(S);
+  const doneIds = TOBIBAKO_SKILLS.filter(k=>tobibakoCleared(k,S.tobibako.dan[k.id]||0)).map(k=>k.id);
   const half = halfSkills(TOBIBAKO_SKILLS, doneIds);
-  return headerHtml('とびばこ','🦘','sports')+`
+  return headerHtml('とびばこ','🦘','home')+`
   <div class="card center" style="background:linear-gradient(160deg,#FFEDF5,#fff)">
     <div class="muted small">できたわざ <b>${cleared} / ${TOBIBAKO_SKILLS.length}</b>${half?` ＋ステップだけ <b>${half}</b>わざ`:''}</div>
-    <div style="font-size:30px;font-weight:800;color:#DB2777">${maxDan?('さいこう '+maxDan+'だん!'):'これから!'}</div>
-    <div class="muted small">とべた「だんすう」のボタンをおしてきろくしよう</div>
+    <div style="font-size:30px;font-weight:800;color:#DB2777">${maxDan?('さいこう '+maxDan+'だん!'):(cleared?'できたが ふえた!':'これから!')}</div>
+    <div class="muted small">入門は「できた！」、とびばこ技はとべた段数をおしてきろくしよう</div>
     ${stepSummaryHtml(TOBIBAKO_SKILLS)}
   </div>
-  ${TOBIBAKO_SKILLS.map(sk=>{
+  <div class="skill-grid">${TOBIBAKO_SKILLS.map(sk=>{
     const cur = S.tobibako.dan[sk.id]||0;
-    return `<div class="skill-card ${cur>0?'done':''}">
+    return `<div class="skill-card ${tobibakoCleared(sk,cur)?'done':''}">
       <div class="skill-head">
         <span class="skill-name">${sk.name}</span>
         <span class="skill-stars">${'★'.repeat(sk.st)}${'☆'.repeat(3-sk.st)}</span>
-        ${cur>0?`<span class="best-chip">さいこう ${cur}だん</span>`:''}
+        ${cur>0?`<span class="best-chip">${sk.dan===false?'できた!':'さいこう '+cur+'だん'}</span>`:''}
       </div>
       <div class="skill-body">${skillArt('tobibako',sk.id)}
         <div class="skill-kotsu"><b>コツ:</b> ${sk.kotsu}</div>
       </div>
       <div class="dan-row">
-        ${DAN_LIST.map(d=>`<button class="dan-btn ${cur>=d?'reached':''} ${cur===d?'max':''}"
-          onclick="saveDan('${sk.id}',${d})">${d}だん</button>`).join('')}
+        ${sk.dan===false
+          ? `<button class="dan-btn easy ${cur>=1?'reached max':''}" onclick="saveDan('${sk.id}',1)">できた!</button>`
+          : DAN_LIST.map(d=>`<button class="dan-btn ${cur>=d?'reached':''} ${cur===d?'max':''}"
+            onclick="saveDan('${sk.id}',${d})">${d}だん</button>`).join('')}
       </div>
       ${stepsHtml('tobibako', sk.id)}
     </div>`;
-  }).join('')}`;
+  }).join('')}</div>`;
 }
 function saveDan(id, dan){
   const sk = TOBIBAKO_SKILLS.find(s=>s.id===id);
   const prev = S.tobibako.dan[id]||0;
+  if(sk.dan===false){
+    const extra = prev===0 ? XP.firstSkill : 0;
+    if(prev===0) S.tobibako.dan[id]=1;
+    addRecord('tobibako', sk.name+' できた!', extra);
+    showToast((prev===0?'🎉 '+sk.name+' はじめてせいこう!':sk.name+' できた!')+' +'+(XP.record+extra)+'XP');
+    render(); playCelebrations();
+    return;
+  }
   let extra = 0, msg = sk.name+' '+dan+'だん きろく!';
   if(prev===0){ extra += XP.firstSkill; msg = '🎉 '+sk.name+' はじめてせいこう!'; }
   else if(dan>prev){ extra += XP.best; msg = '🏆 きろくこうしん! '+prev+'だん→'+dan+'だん'; }
@@ -2594,18 +3549,18 @@ function viewSuiei(){
   const totals = {};
   for(const l of S.suiei.log) totals[l.stroke]=(totals[l.stroke]||0)+l.m;
   const maxT = Math.max(100,...Object.values(totals));
-  return headerHtml('すいえい','🏊','sports')+`
+  return headerHtml('すいえい','🏊','home')+`
   <div class="card center" style="background:linear-gradient(160deg,#E4FAFF,#fff)">
     <div class="muted small">いまのきみは…</div>
     <div style="font-size:30px;font-weight:800;color:#0891B2">${label?('すいえい '+label):'これから!'}</div>
-    <div class="muted small">20きゅうから2だんまで、ぜんぶで22だんかい! かおに水をつけるところからスタート!</div>
+    <div class="muted small">20きゅうから2だんまで、ぜんぶで${SUIEI_KYU.length}だんかい! かおに水をつけるところからスタート!</div>
     ${stepSummaryHtml(SUIEI_KYU)}
   </div>
 
   <div class="card">
     <h3>🏆 けんていにちょうせん</h3>
     <div class="muted small" style="margin:-4px 0 8px">むずかしいときは「できるまでの ステップ」をひらいてね。もっと手前からはじめられるよ。</div>
-    ${SUIEI_KYU.map(k=>{
+    <div class="skill-grid">${SUIEI_KYU.map(k=>{
       const on = S.suiei.kyu.includes(k.id);
       return `<div class="skill-card ${on?'done':''}" style="margin-bottom:8px">
         <div class="skill-head">
@@ -2618,7 +3573,7 @@ function viewSuiei(){
         </div>
         ${stepsHtml('suiei', k.id)}
       </div>`;
-    }).join('')}
+    }).join('')}</div>
   </div>
 
   <div class="card">
@@ -2673,12 +3628,13 @@ function saveSwim(){
 
 /* ---------------- マラソン ---------------- */
 function viewMarathon(){
+  if(openSteps.mara===undefined) openSteps.mara=true;
   const total = marathonTotal(S);
   const goal = total<10000?10000:(total<42195?42195:100000);
   const goalName = goal===10000?'10km':(goal===42195?'フルマラソン 42.195km':'100km');
   const log = S.marathon.log.slice(-30).slice().reverse();
   const chartLog = S.marathon.log.slice(-8);
-  return headerHtml('マラソン・じきゅうそう','🏃','sports')+`
+  return headerHtml('マラソン・じきゅうそう','🏃','home')+`
   <div class="card center" style="background:linear-gradient(160deg,#F3EFFF,#fff)">
     <div class="muted small">いままでにはしったきょり</div>
     <div style="font-size:32px;font-weight:800;color:#7C3AED">${(total/1000).toFixed(2)} km</div>
@@ -2772,7 +3728,7 @@ function ballDoneCount(sportId){
 function viewBallSport(sportId){
   const cfg = BALL_SPORTS[sportId], sp = SPORTS[sportId];
   const total = cfg.skills.length, done = ballDoneCount(sportId), skills = ballSorted(sportId);
-  return headerHtml(sp.name, sp.em, 'sports')+`
+  return headerHtml(sp.name, sp.em, 'home')+`
   <div class="card center" style="background:linear-gradient(160deg,#F0FDF9,#fff)">
     <div class="muted small">できたチャレンジ</div>
     <div style="font-size:30px;font-weight:800;color:var(--sky-deep)">${done} / ${total}</div>
@@ -2780,7 +3736,7 @@ function viewBallSport(sportId){
     <div class="muted small" style="margin-top:6px">かんたんなチャレンジからじゅんばんに ${total}こ! むずかしいのは ★の数でわかるよ</div>
     ${stepSummaryHtml(cfg.skills)}
   </div>
-  ${skills.map(sk=>{
+  <div class="skill-grid">${skills.map(sk=>{
     if(sk.type==='check'){
       const on = S[sportId].done.includes(sk.id);
       return `<div class="skill-card ${on?'done':''}">
@@ -2814,7 +3770,7 @@ function viewBallSport(sportId){
       </div>
       ${stepsHtml(sportId, sk.id)}
     </div>`;
-  }).join('')}`;
+  }).join('')}</div>`;
 }
 function saveBallCount(sportId, id){
   const sk = BALL_SPORTS[sportId].skills.find(k=>k.id===id);
@@ -2871,7 +3827,7 @@ function dekitaOf(id){
     out.total = TOBIBAKO_SKILLS.length;
     TOBIBAKO_SKILLS.forEach(sk=>{
       const d = S.tobibako.dan[sk.id]||0;
-      if(d>=2) out.items.push({ nm:sk.name, val:d+'だん' });
+      if(tobibakoCleared(sk,d)) out.items.push({ nm:sk.name, val:sk.dan===false?'できた!':d+'だん' });
     });
     const mx = danMax(S);
     if(mx) out.sub = 'さいこう '+mx+'だん';
@@ -2953,7 +3909,7 @@ function dekitaHtml(){
     return `<div class="card center">
       <div style="font-size:44px">🌱</div>
       <p class="muted">まだ「できたこと」がないよ。<br>わざができたら ここにどんどんならんでいくよ!</p>
-      <button class="btn wide orange" onclick="go('sports')">きろくをはじめる!</button>
+      <button class="btn wide orange" onclick="go('home')">きろくをはじめる!</button>
     </div>`;
   }
   return `<div class="card center" style="background:linear-gradient(160deg,#FFFBEB,#fff)">
@@ -2981,13 +3937,13 @@ function viewProgress(){
     ? `<div class="card center">
         <div style="font-size:44px">🌱</div>
         <p class="muted">まだきろくがないよ。<br>きょうのうんどうをきろくして、あしあとをのこそう!</p>
-        <button class="btn wide orange" onclick="go('sports')">きろくをはじめる!</button>
+        <button class="btn wide orange" onclick="go('home')">きろくをはじめる!</button>
       </div>`
     : recent.map(d=>{
         const recs = S.records.filter(r=>r.date===d).slice().reverse();
         return `<div class="tl-date">📅 ${fmtDate(d)}${d===todayStr()?' (きょう)':''}</div>`+
           recs.map(r=>`<div class="tl-item">
-            ${SPORTS[r.sport]?sportIcon(SPORTS[r.sport]):'<span class="em">🏅</span>'}
+            ${r.sport==='training'?'<span class="em">💪</span>':r.sport==='free'?'<span class="em">✍️</span>':SPORTS[r.sport]?sportIcon(SPORTS[r.sport]):'<span class="em">🏅</span>'}
             <span>${esc(r.label)}</span>
             <span class="xp">+${r.xp}XP</span></div>`).join('');
       }).join('')
@@ -2997,7 +3953,7 @@ function viewProgress(){
   <div class="stat-grid" style="margin-bottom:14px">
     <div class="stat-box"><div class="val">${S.records.length}</div><div class="lbl">きろくしたかいすう</div></div>
     <div class="stat-box"><div class="val">${days.length}</div><div class="lbl">うんどうした日</div></div>
-    <div class="stat-box"><div class="val">Lv.${li.level}</div><div class="lbl">${esc(S.profile.charName)||'ぴよ'}のレベル</div></div>
+    <div class="stat-box"><div class="val">Lv.${li.level}</div><div class="lbl">${esc(S.profile.name)||'きみ'}のボディレベル</div></div>
     <div class="stat-box"><div class="val">${S.badges.length}<span style="font-size:13px;color:var(--ink-soft)">/${BADGES.length}</span></div><div class="lbl">あつめたバッジ</div></div>
     <div class="stat-box"><div class="val">🔥${S.streak.best}</div><div class="lbl">さいこうれんぞく日すう</div></div>
     <div class="stat-box"><div class="val">${(marathonTotal(S)/1000).toFixed(1)}<span style="font-size:13px;color:var(--ink-soft)">km</span></div><div class="lbl">はしったきょり</div></div>
@@ -3048,8 +4004,6 @@ function viewSettings(){
         <option value="0" ${!S.profile.grade?'selected':''}>えらぶ</option>
         ${[1,2,3,4,5,6].map(g=>`<option value="${g}" ${S.profile.grade===g?'selected':''}>${g}年生</option>`).join('')}
       </select></div>
-    <div class="form-row"><label>あいぼうのなまえ</label>
-      <input type="text" id="set-char" maxlength="10" value="${esc(S.profile.charName)}" placeholder="ぴよ" style="flex:1"></div>
     <button class="btn wide" onclick="saveProfile()">ほぞんする</button>
   </div>
   <div class="card">
@@ -3066,7 +4020,6 @@ function viewSettings(){
 function saveProfile(){
   S.profile.name = document.getElementById('set-name').value.trim();
   S.profile.grade = parseInt(document.getElementById('set-grade').value)||0;
-  S.profile.charName = document.getElementById('set-char').value.trim()||'ぴよ';
   save();
   showToast('ほぞんしたよ!');
   render();
@@ -3106,14 +4059,12 @@ function firstRunModal(){
   root.innerHTML = `<div class="modal-overlay form-modal"><div class="modal-box">
     ${charSvg(1,100)}
     <h2>うごきのきろくへようこそ!</h2>
-    <p>うんどうをきろくすると、たまごのあいぼうがそだつよ。<br>きみのなまえをおしえて!</p>
+    <p>うんどうをきろくすると、きみのアバターが<br>どんどん強く、たくましくなるよ!</p>
     <input type="text" id="fr-name" maxlength="12" placeholder="なまえ(あとでもOK)" style="width:100%;margin-bottom:8px">
-    <input type="text" id="fr-char" maxlength="10" placeholder="あいぼうのなまえ(れい: ぴよ)" style="width:100%;margin-bottom:14px">
     <button class="btn orange wide" id="fr-go">ぼうけんスタート!</button>
   </div></div>`;
   const start = ()=>{
     S.profile.name = document.getElementById('fr-name').value.trim();
-    S.profile.charName = document.getElementById('fr-char').value.trim()||'ぴよ';
     S.profile.createdAt = todayStr();
     save();
     root.innerHTML='';
@@ -3122,7 +4073,7 @@ function firstRunModal(){
   };
   document.getElementById('fr-go').onclick = start;
   // iPadのキーボードでボタンが隠れても、Enter(かんりょう)キーでスタートできるように
-  [ 'fr-name', 'fr-char' ].forEach(id=>{
+  [ 'fr-name' ].forEach(id=>{
     document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); start(); } });
   });
 }

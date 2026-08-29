@@ -540,6 +540,8 @@ input[type=date],input[type=text],select{
 .home-hero .char-svg{width:184px;height:184px;filter:drop-shadow(0 18px 20px rgba(0,0,0,.32));}
 .home-hero .athlete-img,.modal-box .athlete-img{object-fit:contain;display:block;margin:auto;}
 .athlete-img{object-fit:contain;display:block;margin:auto;}
+.athlete-img.base-portrait{border-radius:22px;box-shadow:0 12px 28px rgba(30,64,175,.16);}
+.home-hero .athlete-img.base-portrait{width:184px;height:276px;filter:drop-shadow(0 18px 20px rgba(0,0,0,.24));}
 .hero-level-card{position:absolute;right:22px;bottom:24px;min-width:144px;border-radius:17px;padding:10px 13px;
   background:rgba(4,21,43,.74);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(12px);box-shadow:0 12px 25px rgba(0,0,0,.18);}
 .hero-level-card b{display:block;font-size:16px}.hero-level-card small{color:#9BC4DC;font-size:9.5px;font-weight:800;}
@@ -2434,7 +2436,11 @@ function charSvg(level, size){
   const labels = {base:'通常',arms:'腕を強化',chest:'胸を強化',core:'おなかを強化',legs:'脚を強化',all:'全身を強化'};
   const st = size ? ` style="width:${size}px;height:${size}px"` : '';
   const prefix=hero.key==='boy'?'body':hero.key;
-  return `<img class="char-svg athlete-img"${st} src="./images/avatar/body/${prefix}-${variant}-v1.png" alt="${labels[variant]}した${hero.name}">`;
+  const portrait=variant==='base'||(hero.key==='woman'&&variant==='all');
+  const version=portrait?'v2':'v1';
+  const startClass=portrait?' base-portrait':'';
+  const alt=variant==='base'?`トレーニングを始める前の${hero.name}`:`${labels[variant]}した${hero.name}`;
+  return `<img class="char-svg athlete-img${startClass}"${st} src="./images/avatar/body/${prefix}-${variant}-${version}.png" alt="${alt}">`;
 }
 
 /* ---------------- 状態管理 ---------------- */

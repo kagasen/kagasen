@@ -84,6 +84,7 @@ GitHub Pages で公開する静的サイト。各アプリ＝「フォルダ + i
 - [ ] iPad・スマホ両方の画面幅で表示確認
 - [ ] オフライン（機内モード）で初回以降起動できるか確認
 - [ ] **`node build-seo.mjs` を走らせる**（タイトル・description・canonical・OGP・sitemap.xml がそろう）。
+      まだ公開したくないアプリは `apps.js` に `draft: true` を1行足す（カード・sitemap から同時に外れる）。
       りかの島を作りなおしたときは `node science-island/build-islands.mjs` → `node build-seo.mjs` の順。
       詳しくはルートの `HANDOFF.md`「検索（Google）に出るようにする」
 - [ ] `node release-check.mjs` で外部読み込み等の警告がないか確認

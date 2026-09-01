@@ -39,6 +39,12 @@ node release-check.mjs
 9. **CSS順序の hidden×display 衝突** — `tailwind.css` の `<link>` をインライン`<style>`より先に置くと、後のカスタムCSSの `display` が Tailwind の `.hidden` に勝ち、モーダル/オーバーレイが起動時から画面を覆って操作不能になる（taiiku-tournament/shukudai の前例）。該当したら❌。直しは`<link>`を`</style>`の後へ。
 10. **古いiPadで死ぬ新しめJS構文（ES2020+）** — `?.`（オプショナルチェーン）・`??`（Null合体）・`??=`等の論理代入・正規表現の後読み・クラスstaticブロックを、インラインJS（text/babel のJSX含む）とローカル外部.jsから検出。該当したら❌。**iPadOS 13.3以前のSafariは `?.`/`??` をパースできず、1箇所でもあるとスクリプト全体が構文エラーで死んでアプリが開けなくなる**（前例: 2026-07-10 うごきのきろく・レベルアップ・思考ツール等がiPadで開けない報告）。Node の構文チェック（項目7・8）は最新構文を通してしまうため、この項目で別途検出する。文字列・コメント内は無視し、テンプレートリテラルの `${式}` 内は検査する。vendor/ は対象外。ビルドが必要なアプリは古いターゲットでビルドする（sikou-tool-app は esbuild `--target=es2017`、typing も同様）。
 
+11. **`build-seo.mjs` の走らせ忘れ** — `node build-seo.mjs --check` を呼び、差分が出たら❌。
+    アプリを `apps.js` に足したのに build-seo.mjs を走らせないと、そのアプリには
+    `<title>`・description・canonical が入らず `sitemap.xml` にも載らない＝**検索に出ない**。
+    比較の中身をここに書き写すのではなく、生成する本人に聞いている（決まりごとを2か所に散らさない）。
+    `apps.js` で `draft: true` を付けたアプリは公開対象から外れるので、⚠️で件数だけ知らせる。
+
 4・5 の「変更」は **origin/main との差分**（＝まだ公開されていない変更。未コミット分も含む）。
 origin/main が無い環境では HEAD と比較する。
 
@@ -51,6 +57,13 @@ origin/main が無い環境では HEAD と比較する。
   新アプリは載せない＝外部読み込みがあれば❌になる、が正しい状態。
 - `CREDITS` … 出典・ライセンス表記が必要なアプリの一覧。クレジットが必要な
   素材を使うアプリを公開したら1行足す。
+
+### まだ公開したくないアプリ（draft）
+
+`apps.js` のそのアプリに `draft: true` を1行足す。ポータルのカード（`index.html` の
+`visibleApps`）・`sitemap.xml`・JSON-LD の3つから同時に外れるので、**作りかけのアプリを
+リポジトリに置いたまま公開だけ止められる**。出せるようになったら `draft` の行を消して
+`node build-seo.mjs` を走らせるだけ。中身が1つも無くなったカテゴリのボタンは自動で隠れる。
 
 検査対象は「index.html を持つフォルダ」＋「apps.js の link 先」（kannjibusyu-ta のような
 index.html 以外の名前のアプリも link 経由で拾う）。node_modules / images / .claude は対象外。

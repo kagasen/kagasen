@@ -1650,6 +1650,13 @@
     <script src="apps.js"></script>
 
     <script>
+        /* apps.js の 一覧から「まだ 公開しない アプリ」を のぞいた もの。
+           entry に draft: true を つけると、ポータルの カードにも sitemap にも 出なくなる
+           （build-seo.mjs の DRAFTS と 同じ しくみ。出せるように なったら draft を 消すだけ）。
+           画面の 描画は かならず この visibleApps を 見る（appsData を 直接 見ない）。 */
+        const visibleApps = (typeof appsData === 'undefined')
+            ? [] : appsData.filter(function (a) { return !a.draft; });
+
         // タイトルを1文字ずつ虹色に
         (function () {
             const el = document.getElementById('siteTitle');
@@ -1716,8 +1723,7 @@
         }
 
         function updateCountDisplay() {
-            if (typeof appsData === 'undefined') return;
-            appsData.forEach(app => {
+            visibleApps.forEach(app => {
                 document.querySelectorAll(`[data-count="${app.id}"]`).forEach(el => {
                     const count = appCounts[app.id] || 0;
                     el.textContent = `👁 ${count}回`;
@@ -1771,8 +1777,8 @@
         // いちばん新しいアプリを、入口で大きく紹介する
         let featuredApp = null;
         function renderSpotlight() {
-            if (typeof appsData === 'undefined' || appsData.length === 0) return;
-            featuredApp = appsData.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            if (visibleApps.length === 0) return;
+            featuredApp = visibleApps.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0];
             const colors = colorsOf(featuredApp);
             spotlight.href = featuredApp.link;
             spotlight.style.setProperty('--spot-main', colors.main);
@@ -1803,7 +1809,7 @@
         }
 
         /* ===== 棚（横スクロールの列）の定義 =====
-           list: appsData から並べる関数。空なら棚ごと出さない。 */
+           list: visibleApps から並べる関数。空なら棚ごと出さない。 */
         const SHELVES = [
             {
                 id: 'new', name: 'あたらしい アプリ', tag: 'NEW', color: '#E24E67',
@@ -1853,10 +1859,10 @@
             // カテゴリしぼりこみ中・検索中は棚を出さない（BGAと同じで「一覧」に集中）
             const showShelves = currentCategory === 'all' && searchQuery === '';
             shelvesBox.innerHTML = '';
-            if (!showShelves || typeof appsData === 'undefined') return;
+            if (!showShelves || visibleApps.length === 0) return;
 
             SHELVES.forEach(shelf => {
-                const items = shelf.list(appsData);
+                const items = shelf.list(visibleApps);
                 if (items.length === 0) return;
 
                 const sec = document.createElement('section');
@@ -1885,7 +1891,7 @@
 
                 // タイルのクリック＝カウント＋1してから移動（カードと同じ動き）
                 sec.querySelectorAll('.shelf-card').forEach(tile => {
-                    const app = appsData.filter(a => a.id === tile.dataset.app)[0];
+                    const app = visibleApps.filter(a => a.id === tile.dataset.app)[0];
                     if (!app) return;
                     tile.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -1909,8 +1915,7 @@
         }
 
         function renderApps() {
-            // appsData が存在しない場合のエラー回避
-            if (typeof appsData === 'undefined') return;
+            if (visibleApps.length === 0) return;
 
             const favs = getFavorites();
 
@@ -1919,7 +1924,7 @@
 
             renderShelves();
 
-            let filtered = appsData.filter(app => {
+            let filtered = visibleApps.filter(app => {
                 const matchCategory = currentCategory === 'all' ||
                     (currentCategory === 'favorites' && favs.includes(app.title)) ||
                     (currentCategory === 'others' && OTHERS_CATEGORIES.indexOf(app.category) !== -1) ||
@@ -2016,6 +2021,22 @@
         }
 
         // apps.js が読み込まれた後に実行
+        /* 中身が1つも無いカテゴリのボタンは出さない。
+           draft でアプリを未公開にすると、押しても「みつからなかった…」しか出ない
+           空のボタンが残ってしまうため（2026-09-01）。中身が増えれば自動で戻る。 */
+        (function hideEmptyCategories() {
+            filterBtns.forEach(function (btn) {
+                const c = btn.dataset.category;
+                if (c === 'all' || c === 'favorites') return;   /* この2つはいつでも出す */
+                const n = visibleApps.filter(function (a) {
+                    return c === 'others'
+                        ? OTHERS_CATEGORIES.indexOf(a.category) !== -1
+                        : a.category === c;
+                }).length;
+                if (n === 0) btn.style.display = 'none';
+            });
+        })();
+
         renderSpotlight();
         spotlight.addEventListener('click', (e) => {
             if (!featuredApp) return;

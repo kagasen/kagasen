@@ -95,6 +95,10 @@ function loadApps() {
     desc: a.description,
     dir: String(a.link).split('/')[0],
     date: String(a.date).replace(/\//g, '-'),
+    /* draft: true ＝ まだ 公開しない アプリ。apps.js には 載せた ままで、
+       ポータルの カード（index.html の visibleApps）と sitemap・JSON-LD から 外れる。
+       出せるように なったら apps.js の draft を 消して この スクリプトを 走らせるだけ。 */
+    draft: !!a.draft,
   }));
 }
 
@@ -168,7 +172,9 @@ function sitemap(apps) {
 }
 
 function main() {
-  const apps = loadApps();
+  const all = loadApps();
+  const apps = all.filter((a) => !a.draft);      /* 公開する ぶんだけ */
+  const drafts = all.filter((a) => a.draft);
 
   /* ルート */
   let root = readFile('index.html');
@@ -195,9 +201,13 @@ function main() {
 
   writeFile('sitemap.xml', sitemap(apps));
 
-  console.log(`アプリ ${apps.length}こ（うち 生成物 ${apps.filter((a) => GENERATED.has(a.dir)).length}こは build-islands.mjs 側）`);
-  if (!changed.length) console.log('変わった ファイル: なし');
-  else console.log((CHECK ? '変わる ファイル:\n  ' : '書きかえた ファイル:\n  ') + changed.join('\n  '));
+  console.log(`公開する アプリ ${apps.length}こ（うち 生成物 ${apps.filter((a) => GENERATED.has(a.dir)).length}こは build-islands.mjs 側）`);
+  if (drafts.length) console.log(`まだ 公開しない アプリ ${drafts.length}こ（apps.js の draft: true）: ` + drafts.map((a) => a.dir).join(', '));
+  if (!changed.length) { console.log('変わった ファイル: なし'); return; }
+  console.log((CHECK ? '変わる ファイル:\n  ' : '書きかえた ファイル:\n  ') + changed.join('\n  '));
+  /* --check で 差分が あったら 1 で おわる。release-check.mjs が この 終了コードを 見て
+     「build-seo.mjs の 走らせ忘れ」を つかまえる。 */
+  if (CHECK) process.exitCode = 1;
 }
 
 if (path.resolve(process.argv[1] || '') === path.resolve(fileURLToPath(import.meta.url))) main();

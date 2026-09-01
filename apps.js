@@ -1,5 +1,53 @@
 const appsData = [
     {
+        id: "energy-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
+        title: "エネルギーの島",
+        description: "でんき回路・てこ・ふりこ・発電など、エネルギーを たしかめる 6つのゲーム・全104もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/08/30",
+        colorClass: "subject-orange",
+        image: "images/energy-no-shima.svg",
+        link: "energy-no-shima/index.html"
+    },
+    {
+        id: "tsubutsubu-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
+        title: "つぶつぶの島",
+        description: "もののとけ方・水よう液・もえ方・重さを「つぶ」で考える 4つのゲーム・全13もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/08/30",
+        colorClass: "subject-purple",
+        image: "images/tsubutsubu-no-shima.svg",
+        link: "tsubutsubu-no-shima/index.html"
+    },
+    {
+        id: "inochi-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
+        title: "いのちの島",
+        description: "人のからだ・植物そだて・食物れんさ・花・メダカの 5つのゲーム・全15もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/08/30",
+        colorClass: "subject-green",
+        image: "images/inochi-no-shima.svg",
+        link: "inochi-no-shima/index.html"
+    },
+    {
+        id: "chikyu-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
+        title: "ちきゅうの島",
+        description: "月と太陽・天気の変化・流れる水・土地のつくりの 4つのゲーム・全12もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/08/30",
+        colorClass: "subject-blue",
+        image: "images/chikyu-no-shima.svg",
+        link: "chikyu-no-shima/index.html"
+    },
+    {
         id: "sekai-o-mawarou",
         title: "せかいをまわろう！",
         description: "カードをドラッグして12しゅうかんの世界一周の旅ていを組み立てるゲーム。ひこうき・フェリー・リニアで国をつなごう。旅した国は「国ずかん」にたまるよ。",

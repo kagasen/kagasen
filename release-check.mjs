@@ -16,6 +16,7 @@
      8. 外部JS（HTMLから読み込まれる .js）の構文チェック
      9. CSS順序の hidden×display 衝突
     10. 古いiPadで死ぬ新しめJS構文（?. ?? 等 ES2020+）の検出
+    11. build-seo.mjs の走らせ忘れ（検索用タグ・sitemap.xml が apps.js とずれている）
 
    エラー（❌ 公開を止めるべき）と 警告（⚠️ 既知の負債・要らない心配かも）を区別する。
    Node標準機能のみ・外部パッケージなし（このリポジトリのオフライン主義に合わせる）。
@@ -381,6 +382,30 @@ for (const [abs, referrer] of localScripts) {
   const rel = path.relative(ROOT, abs);
   const app = rel.includes(path.sep) ? rel.split(path.sep)[0] : '.';
   checkEsKillers(app, `${rel}（${referrer} から読込）`, fs.readFileSync(abs, 'utf8'));
+}
+
+/* ---------- 11. 検索用タグ・sitemap.xml の作りなおし忘れ ---------- */
+/* アプリを足したのに `node build-seo.mjs` を走らせないと、そのアプリは
+   <title>・description・canonical が入らず sitemap.xml にも載らない＝検索に出ない。
+   ここで比べるのではなく、生成する本人（build-seo.mjs --check）に聞く。
+   そうすれば「生成の決まりごと」が2か所に散らばらない（CLAUDE.md §8）。 */
+if (exists('build-seo.mjs')) {
+  let out = '';
+  let stale = false;
+  try {
+    out = execFileSync('node', ['build-seo.mjs', '--check'], { cwd: ROOT, encoding: 'utf8' });
+  } catch (e) {
+    /* --check は 差分が あると 終了コード1 で おわる */
+    out = (e.stdout || '') + (e.stderr || '');
+    stale = true;
+  }
+  if (stale) {
+    const files = out.split('\n').filter(l => /^\s{2,}\S/.test(l)).map(l => l.trim());
+    err('SEO', 'apps.js と 検索用タグ／sitemap.xml がずれている（`node build-seo.mjs` の走らせ忘れ）'
+      + (files.length ? `: ${files.join(', ')}` : ''));
+  }
+  const draft = out.match(/まだ 公開しない アプリ .*/);
+  if (draft) warn('SEO', draft[0] + '（意図どおりならOK）');
 }
 
 /* ---------- 結果表示 ---------- */

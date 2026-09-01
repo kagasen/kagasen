@@ -22,6 +22,15 @@
   sitemap は Search Console から直接出すのが正。独自ドメインに引っこしたらこのファイルが効きだす。
 - `release-check.mjs` の項目2を修正: `<link rel="canonical">` は「外部読み込み」ではない
   （検索エンジンへの印であって、ページを開くときに読みに行くものではない）。以前は全アプリが❌になった。
+- **未公開アプリの止め方（2026-09-01 追加）**: `apps.js` のそのアプリに `draft: true` を1行足す。
+  ポータルのカード（index.html の `visibleApps`）・`sitemap.xml`・JSON-LD から同時に外れる。
+  いま理科の4島がこれ（作りかけなので公開していない）。出せるようになったら `draft` の行を消して
+  `node build-seo.mjs` を走らせるだけ。中身が0こになったカテゴリのボタン（🔢算数・🧪理科）は自動で隠れる。
+- **走らせ忘れの検出（2026-09-01 追加）**: `release-check.mjs` の項目11が `node build-seo.mjs --check` を呼ぶ。
+  アプリを足して build-seo.mjs を忘れると❌で止まるので、検索に出ないまま公開する事故が起きない。
+- **Google Search Console 登録ずみ（2026-09-01）**: 所有権の確認ファイルは ルートの
+  `google8e4ffe5dee94152e.html`。**消すと確認が外れて Search Console が使えなくなる**ので絶対に消さない。
+  sitemap 送信・トップのインデックス登録リクエストまで完了。以後、既存アプリを直すだけなら Search Console 側の操作は不要。
 - **残りは人がやる作業**: Google Search Console にサイトを登録 → sitemap を送信 → インデックス登録をリクエスト。
   （登録用の確認ファイル `google*.html` はルートに置けばよい）
 

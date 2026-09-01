@@ -1,7 +1,8 @@
 // ひらがなれんしゅう — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'hiraganarensyu-cache-v2';
+const CACHE = 'hiraganarensyu-cache-v4';
+const KATAKANA_ASSETS = ['./kana/ァ.json','./kana/ア.json','./kana/ィ.json','./kana/イ.json','./kana/ゥ.json','./kana/ウ.json','./kana/ェ.json','./kana/エ.json','./kana/ォ.json','./kana/オ.json','./kana/カ.json','./kana/ガ.json','./kana/キ.json','./kana/ギ.json','./kana/ク.json','./kana/グ.json','./kana/ケ.json','./kana/ゲ.json','./kana/コ.json','./kana/ゴ.json','./kana/サ.json','./kana/ザ.json','./kana/シ.json','./kana/ジ.json','./kana/ス.json','./kana/ズ.json','./kana/セ.json','./kana/ゼ.json','./kana/ソ.json','./kana/ゾ.json','./kana/タ.json','./kana/ダ.json','./kana/チ.json','./kana/ヂ.json','./kana/ッ.json','./kana/ツ.json','./kana/ヅ.json','./kana/テ.json','./kana/デ.json','./kana/ト.json','./kana/ド.json','./kana/ナ.json','./kana/ニ.json','./kana/ヌ.json','./kana/ネ.json','./kana/ノ.json','./kana/ハ.json','./kana/バ.json','./kana/パ.json','./kana/ヒ.json','./kana/ビ.json','./kana/ピ.json','./kana/フ.json','./kana/ブ.json','./kana/プ.json','./kana/ヘ.json','./kana/ベ.json','./kana/ペ.json','./kana/ホ.json','./kana/ボ.json','./kana/ポ.json','./kana/マ.json','./kana/ミ.json','./kana/ム.json','./kana/メ.json','./kana/モ.json','./kana/ャ.json','./kana/ヤ.json','./kana/ュ.json','./kana/ユ.json','./kana/ョ.json','./kana/ヨ.json','./kana/ラ.json','./kana/リ.json','./kana/ル.json','./kana/レ.json','./kana/ロ.json','./kana/ヮ.json','./kana/ワ.json','./kana/ヰ.json','./kana/ヱ.json','./kana/ヲ.json','./kana/ン.json','./kana/ヴ.json','./kana/ヵ.json','./kana/ヶ.json','./kana/ヷ.json','./kana/ヸ.json','./kana/ヹ.json','./kana/ヺ.json'];
 const ASSETS = [
   './',
   './fonts.css',
@@ -11,6 +12,7 @@ const ASSETS = [
   './fonts/ZenMaruGothic-Medium.woff2',
   './fonts/ZenMaruGothic-Regular.woff2',
   './index.html',
+  './kana-data.js',
   './kana/ぁ.json',
   './kana/あ.json',
   './kana/ぃ.json',
@@ -99,6 +101,7 @@ const ASSETS = [
   './kana/ゖ.json',
   './manifest.json',
   './icon.svg',
+  ...KATAKANA_ASSETS,
 ];
 
 self.addEventListener('install', (e) => {

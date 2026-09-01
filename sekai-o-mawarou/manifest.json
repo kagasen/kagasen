@@ -1,0 +1,15 @@
+{
+  "name": "せかいをまわろう！",
+  "short_name": "せかいをまわろう",
+  "description": "3ヶ月＝12週間の世界一周を、国カードとのりものカードで組み立てるカードゲーム。となり国・ひこうき・フェリー・リニアでつなごう。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eaf6ff",
+  "theme_color": "#0f3350",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

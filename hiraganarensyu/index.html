@@ -4,19 +4,41 @@
     <link rel="stylesheet" href="fonts.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>ひらがなれんしゅう</title>
+<title>ひらがなカタカナれんしゅう｜かがせんのHAPPYアプリ集</title>
+<!-- SEO:auto build-seo.mjs が作る。手で直さない -->
+<meta name="description" content="ひらがなとカタカナを おてほんを見ながら なぞりがき！書きじゅんも たしかめられて、5もじのテストにも チャレンジできるよ。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<link rel="canonical" href="https://kagasen.github.io/kagasen/hiraganarensyu/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="かがせんのHAPPYアプリ集">
+<meta property="og:title" content="ひらがなカタカナれんしゅう｜かがせんのHAPPYアプリ集">
+<meta property="og:description" content="ひらがなとカタカナを おてほんを見ながら なぞりがき！書きじゅんも たしかめられて、5もじのテストにも チャレンジできるよ。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta property="og:url" content="https://kagasen.github.io/kagasen/hiraganarensyu/">
+<meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /SEO:auto -->
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-text-size-adjust:100%}
 .cw,.cw canvas{touch-action:none}
 button,.mbtn,.b,.cc,.score-close,.mclose{-webkit-touch-callout:none;touch-action:manipulation}
-body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,#FFF9E6,#FFE8CC 50%,#FFDDB0);display:flex;flex-direction:column;align-items:center;justify-content:center}
+body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,#FFF4D6,#E8F8FF 52%,#D8ECFF);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .35s}
+body[data-mode="hiragana"]{background:linear-gradient(135deg,#FFF9E6,#FFE8CC 50%,#FFDDB0)}
+body[data-mode="katakana"]{background:linear-gradient(135deg,#E8F4FF,#CCE5FF 50%,#B0D4FF)}
 .screen{display:none;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0}
 .screen.active{display:flex}
 .screen[hidden]{display:none!important}
 
-#titleScreen{justify-content:center;gap:24px}
-#titleScreen h1{font-size:clamp(28px,8vw,56px);color:#E8552E;text-shadow:3px 3px 0 #FFD166,5px 5px 0 rgba(0,0,0,.08);letter-spacing:.1em;animation:bob 2s ease-in-out infinite}
+#titleScreen,#modeScreen{justify-content:center;gap:22px;padding:24px}
+#titleScreen h1{max-width:92vw;font-size:clamp(27px,7vw,54px);line-height:1.25;color:#3949AB;text-align:center;text-shadow:3px 3px 0 #FFD166,5px 5px 0 rgba(0,0,0,.08);letter-spacing:.06em;animation:bob 2s ease-in-out infinite}
+#modeScreen h2{font-size:clamp(34px,9vw,62px);line-height:1.2;text-align:center;color:#E8552E;text-shadow:3px 3px 0 #FFD166,5px 5px 0 rgba(0,0,0,.08)}
+body[data-mode="katakana"] #modeScreen h2{color:#1565C0;text-shadow:3px 3px 0 #64B5F6,5px 5px 0 rgba(0,0,0,.08)}
+.mode-cards{display:flex;gap:clamp(14px,4vw,28px);justify-content:center;flex-wrap:wrap}
+.mode-card{width:clamp(145px,38vw,230px);min-height:clamp(170px,42vw,250px);border:0;border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:clamp(20px,5vw,30px);cursor:pointer;box-shadow:0 9px 0 rgba(0,0,0,.14),0 16px 30px rgba(37,55,95,.18);transition:transform .15s,box-shadow .15s}
+.mode-card:active{transform:translateY(5px);box-shadow:0 4px 0 rgba(0,0,0,.14),0 8px 18px rgba(37,55,95,.15)}
+.mode-hira{background:linear-gradient(145deg,#FF8A65,#EF5350)}
+.mode-kata{background:linear-gradient(145deg,#42A5F5,#5C6BC0)}
+.mode-letter{display:grid;place-items:center;width:clamp(86px,22vw,132px);aspect-ratio:1;border-radius:28px;background:rgba(255,255,255,.94);color:#263B58;font-size:clamp(58px,15vw,92px);line-height:1;box-shadow:inset 0 -5px 0 rgba(38,59,88,.09)}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .mbtn{width:clamp(180px,50vw,280px);padding:16px 0;border:none;border-radius:20px;font-family:'Zen Maru Gothic',sans-serif;font-size:clamp(20px,5vw,32px);font-weight:700;cursor:pointer;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.15),0 8px 20px rgba(0,0,0,.1);transition:transform .1s}
 .mbtn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.15)}
@@ -109,6 +131,11 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,
 }
 .cc:active{transform:scale(.93)}.cc:hover{background:#FFF3E0;border-color:#FF9800}
 .cc-blank{background:#fff;border:1px solid #e53935;pointer-events:none;cursor:default}
+body[data-mode="katakana"] #charSelect h2,body[data-mode="katakana"] .lbl,body[data-mode="katakana"] .tprompt em{color:#1565C0}
+body[data-mode="katakana"] .cgrid{background:#D0E4F7}
+body[data-mode="katakana"] .cc{border-color:#1565C0}
+body[data-mode="katakana"] .cc:hover{background:#E3F2FD;border-color:#42A5F5}
+body[data-mode="katakana"] .cc-blank{border-color:#1565C0}
 
 .top-bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:480px;padding:4px 10px}
 .lbl{font-size:clamp(20px,6vw,36px);font-weight:900;color:#E8552E}
@@ -181,17 +208,26 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,
 .tprompt{font-size:clamp(16px,4vw,26px);font-weight:700;color:#333}
 .tprompt em{color:#E8552E;font-style:normal;font-size:1.4em}
 </style>
-    <meta name="theme-color" content="#F472B6">
+    <meta name="theme-color" content="#5C6BC0">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 <body>
 
 <div id="titleScreen" class="screen active">
-  <h1>ひらがなれんしゅう</h1>
+  <h1>ひらがなカタカナ<br>れんしゅう</h1>
+  <div class="mode-cards">
+    <button class="mode-card mode-hira" onclick="selectMode('hiragana')"><span class="mode-letter">あ</span><span>ひらがな</span></button>
+    <button class="mode-card mode-kata" onclick="selectMode('katakana')"><span class="mode-letter">ア</span><span>カタカナ</span></button>
+  </div>
+  <p class="title-note">れんしゅうする もじを えらんでね</p>
+</div>
+
+<div id="modeScreen" class="screen" hidden>
+  <h2 id="modeTitle">ひらがな</h2>
   <button class="mbtn mbtn-p" onclick="goCharSelect()">れんしゅう</button>
   <button class="mbtn mbtn-t" onclick="goTest()">テスト</button>
-  <p class="title-note">ねっとせつぞくができるところでやってね</p>
+  <button class="b b1" onclick="goHome()">もじを かえる</button>
 </div>
 
 <div id="charSelect" class="screen" hidden>
@@ -199,7 +235,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,
   <div class="cgrid-outer">
     <div class="cgrid" id="cGrid"></div>
   </div>
-  <button class="b b1" onclick="goTitle()">もどる</button>
+  <button class="b b1" onclick="goModeMenu()">もどる</button>
 </div>
 
 <div id="practiceScreen" class="screen" hidden>
@@ -231,7 +267,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,
   <div class="nb">
     <button class="b b2" onclick="resetT()">けす</button>
     <button class="b b5" onclick="finishTestChar()">かんせい</button>
-    <button class="b b1" onclick="goTitle()">もどる</button>
+    <button class="b b1" onclick="goModeMenu()">もどる</button>
   </div>
 </div>
 
@@ -258,21 +294,46 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:linear-gradient(135deg,
   </div>
 </div>
 
+<script src="./kana-data.js"></script>
 <script>
-const CHARS='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split('');
-/** 50音表：左→右が「わ列…あ列」、各列は上→下が「あいうえお」。空文字は空マス（や・わ列のい・え） */
-const GOJUON_GRID=[
-  ['わ','ら','や','ま','は','な','た','さ','か','あ'],
-  ['','り','','み','ひ','に','ち','し','き','い'],
-  ['を','る','ゆ','む','ふ','ぬ','つ','す','く','う'],
-  ['','れ','','め','へ','ね','て','せ','け','え'],
-  ['ん','ろ','よ','も','ほ','の','と','そ','こ','お']
-];
+const KANA_MODES={
+  hiragana:{
+    title:'ひらがな',first:'あ',
+    chars:'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split(''),
+    grid:[
+      ['わ','ら','や','ま','は','な','た','さ','か','あ'],
+      ['','り','','み','ひ','に','ち','し','き','い'],
+      ['を','る','ゆ','む','ふ','ぬ','つ','す','く','う'],
+      ['','れ','','め','へ','ね','て','せ','け','え'],
+      ['ん','ろ','よ','も','ほ','の','と','そ','こ','お']
+    ]
+  },
+  katakana:{
+    title:'カタカナ',first:'ア',
+    chars:'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'.split(''),
+    grid:[
+      ['ワ','ラ','ヤ','マ','ハ','ナ','タ','サ','カ','ア'],
+      ['','リ','','ミ','ヒ','ニ','チ','シ','キ','イ'],
+      ['ヲ','ル','ユ','ム','フ','ヌ','ツ','ス','ク','ウ'],
+      ['','レ','','メ','ヘ','ネ','テ','セ','ケ','エ'],
+      ['ン','ロ','ヨ','モ','ホ','ノ','ト','ソ','コ','オ']
+    ]
+  }
+};
+let currentMode='hiragana';
+let CHARS=KANA_MODES.hiragana.chars;
+let GOJUON_GRID=KANA_MODES.hiragana.grid;
 const CDN='kana/';  // かなの筆順データは同梱（旧: cdn.jsdelivr.net の kana-svg-data）
 const cache={};
 async function loadCh(ch){
   if(cache[ch])return cache[ch];
-  try{const r=await fetch(CDN+encodeURIComponent(ch)+'.json');const d=await r.json();cache[ch]=d;return d;}
+  const embedded=window.KANA_DATA&&window.KANA_DATA[ch];
+  if(embedded){cache[ch]=embedded;return embedded;}
+  try{
+    const r=await fetch(CDN+encodeURIComponent(ch)+'.json');
+    if(!r.ok)throw new Error(`筆順データを読み込めませんでした: ${ch} (${r.status})`);
+    const d=await r.json();cache[ch]=d;return d;
+  }
   catch(e){console.error(e);return null;}
 }
 async function preload(){await Promise.all(CHARS.map(c=>loadCh(c)));}
@@ -334,7 +395,21 @@ function show(id){
   el.removeAttribute('hidden');
   el.classList.add('active');
 }
-function goTitle(){show('titleScreen');}
+function selectMode(mode){
+  const selected=KANA_MODES[mode]||KANA_MODES.hiragana;
+  currentMode=mode==='katakana'?'katakana':'hiragana';
+  CHARS=selected.chars;GOJUON_GRID=selected.grid;
+  curCh=selected.first;chIdx=0;
+  document.body.setAttribute('data-mode',currentMode);
+  document.getElementById('modeTitle').textContent=selected.title+'れんしゅう';
+  document.getElementById('pL').textContent=selected.first;
+  document.getElementById('tL').textContent=selected.first;
+  preload();
+  show('modeScreen');
+}
+function goHome(){document.body.removeAttribute('data-mode');show('titleScreen');}
+function goModeMenu(){show('modeScreen');}
+function goTitle(){goModeMenu();}
 function goCharSelect(){getAudioCtx();show('charSelect');buildGrid();}
 function buildGrid(){
   const g=document.getElementById('cGrid');
@@ -987,9 +1062,10 @@ function suppressIosZoomGestures(){
 }
 
 window.addEventListener('load',()=>{
-  preload();
   wireStylusUiClicks();
   suppressIosZoomGestures();
+  const requested=new URLSearchParams(location.search).get('mode');
+  if(requested==='hiragana'||requested==='katakana')selectMode(requested);
 });
 </script>
 <script>

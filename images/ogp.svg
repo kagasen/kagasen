@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- SNS・検索結果に出るカード画像（OGP）。images/ogp.png のもと。
+       作りなおすとき: node build-ogp.mjs -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFBF2"/>
+      <stop offset="1" stop-color="#F2DCB9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+
+  <!-- にじいろライン（サイトの目じるし） -->
+  <g>
+    <rect x="0" y="0"   width="200" height="14" fill="#FF7B8E"/>
+    <rect x="200" y="0" width="200" height="14" fill="#FF9256"/>
+    <rect x="400" y="0" width="200" height="14" fill="#F5B02A"/>
+    <rect x="600" y="0" width="200" height="14" fill="#4FC46A"/>
+    <rect x="800" y="0" width="200" height="14" fill="#35B4EC"/>
+    <rect x="1000" y="0" width="200" height="14" fill="#9B74F5"/>
+  </g>
+  <g>
+    <rect x="0" y="616"   width="200" height="14" fill="#9B74F5"/>
+    <rect x="200" y="616" width="200" height="14" fill="#35B4EC"/>
+    <rect x="400" y="616" width="200" height="14" fill="#4FC46A"/>
+    <rect x="600" y="616" width="200" height="14" fill="#F5B02A"/>
+    <rect x="800" y="616" width="200" height="14" fill="#FF9256"/>
+    <rect x="1000" y="616" width="200" height="14" fill="#FF7B8E"/>
+  </g>
+
+  <!-- ふうせん -->
+  <g transform="translate(940 300)">
+    <path d="M0 118 q-14 -26 6 -44" stroke="#6F6870" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M-14 74 h28 l-14 18 Z" fill="#E0566B"/>
+    <ellipse cx="0" cy="0" rx="86" ry="102" fill="#FF7B8E"/>
+    <ellipse cx="-28" cy="-34" rx="22" ry="32" fill="#FFB3BF" opacity="0.75"/>
+  </g>
+  <g transform="translate(1080 210) scale(0.6)">
+    <path d="M0 118 q-14 -26 6 -44" stroke="#6F6870" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M-14 74 h28 l-14 18 Z" fill="#2A8FBF"/>
+    <ellipse cx="0" cy="0" rx="86" ry="102" fill="#35B4EC"/>
+    <ellipse cx="-28" cy="-34" rx="22" ry="32" fill="#A8E2F8" opacity="0.75"/>
+  </g>
+  <g transform="translate(1062 452) scale(0.46)">
+    <path d="M0 118 q-14 -26 6 -44" stroke="#6F6870" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M-14 74 h28 l-14 18 Z" fill="#C79216"/>
+    <ellipse cx="0" cy="0" rx="86" ry="102" fill="#F5B02A"/>
+    <ellipse cx="-28" cy="-34" rx="22" ry="32" fill="#FFE1A3" opacity="0.75"/>
+  </g>
+
+  <g font-family="Hiragino Maru Gothic ProN, Hiragino Kaku Gothic ProN, sans-serif">
+    <text x="86" y="196" font-size="40" font-weight="700" fill="#6F6870">小学校の先生が作った</text>
+    <text x="86" y="304" font-size="86" font-weight="700" fill="#343548">かがせんの</text>
+    <text x="86" y="408" font-size="86" font-weight="700" fill="#343548">HAPPYアプリ集</text>
+    <text x="86" y="494" font-size="38" font-weight="700" fill="#6F6870">小学生と先生のための 無料の 教育・知育アプリ</text>
+
+    <g font-size="28" font-weight="700" fill="#343548">
+      <rect x="86"  y="524" width="176" height="52" rx="26" fill="#FFFEFB" stroke="#DDD0C0" stroke-width="3"/>
+      <text x="174" y="558" text-anchor="middle">広告なし</text>
+      <rect x="278" y="524" width="176" height="52" rx="26" fill="#FFFEFB" stroke="#DDD0C0" stroke-width="3"/>
+      <text x="366" y="558" text-anchor="middle">登録なし</text>
+      <rect x="470" y="524" width="200" height="52" rx="26" fill="#FFFEFB" stroke="#DDD0C0" stroke-width="3"/>
+      <text x="570" y="558" text-anchor="middle">iPad対応</text>
+    </g>
+  </g>
+</svg>

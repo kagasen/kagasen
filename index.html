@@ -4,8 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>かがせんのHAPPYアプリ集 | 小学生向けの安全な無料教育アプリ</title>
-    <meta name="description" content="かがせんのHAPPYアプリ集は、小学生・先生向けのシンプルで安全な教育・学習アプリ集です。学校の授業やご家庭で安心して使えるよう、広告なし・フィルタリング（i-フィルター等）対応済みの安全なサイトです。">
+    <meta name="theme-color" content="#0B1020">
+    <title>かがせんのHAPPYアプリ集｜小学校の先生が作った無料の教育・知育アプリ</title>
+    <!-- SEO:auto build-seo.mjs が作る。手で直さない -->
+    <meta name="description" content="小学校の先生「かがせん」が作った、小学生と先生のための無料の教育アプリ・知育アプリ集。国語・算数・理科・社会の学習ゲームから、席替え・グループ分けなどの授業ツールまで。広告なし・登録なし・インストール不要で、iPadでもすぐ使えます。">
+    <link rel="canonical" href="https://kagasen.github.io/kagasen/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="かがせんのHAPPYアプリ集">
+    <meta property="og:title" content="かがせんのHAPPYアプリ集｜小学校の先生が作った無料の教育・知育アプリ">
+    <meta property="og:description" content="小学校の先生「かがせん」が作った、小学生と先生のための無料の教育アプリ・知育アプリ集。国語・算数・理科・社会の学習ゲームから、席替え・グループ分けなどの授業ツールまで。広告なし・登録なし・インストール不要で、iPadでもすぐ使えます。">
+    <meta property="og:url" content="https://kagasen.github.io/kagasen/">
+    <meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary_large_image">
+    <!-- /SEO:auto -->
 
     <link rel="stylesheet" href="fonts.css">
 
@@ -15,33 +27,70 @@
 
 
     <style>
+        /* =========================================================
+           明るいテーマ ＋ 濃紺ヘッダー（Board Game Arena のゲーム一覧と同じ組み方）
+           ・レイアウト／配色はすべてこの <style> で完結させる。
+             tailwind.css は静的purgeビルドなので、新しいクラスを
+             書き足しても効かない（過去に事故った）。
+           ・JSは ES2017＋α 縛り（?. ?? は使わない）
+           ========================================================= */
         :root {
-            --c-red: #FF8FA3;
-            --c-blue: #5BC9F5;
-            --c-green: #6BCB77;
-            --c-yellow: #FFC94D;
-            --c-orange: #FF9F68;
-            --c-purple: #B28DFF;
-            --ink: #4A3B32;
+            --head:      #0B1020;   /* ヘッダー（ここだけ濃紺のまま） */
+            --head-2:    #1B2338;   /* ヘッダーの中のパーツ */
+            --bg:        #F2DCB9;   /* 明るい白木のベース */
+            --panel:     #FFFEFB;   /* カード・タイル */
+            --panel-2:   #FFFEFB;   /* ボタン・チップ */
+            --line:      #EDE4D8;
+            --line-2:    #DDD0C0;
+            --text:      #343548;
+            --text-2:    #6F6870;
+            --text-3:    #9D9294;
+            --gold:      #F5B02A;
+
+            --c-red: #FF7B8E;
+            --c-blue: #35B4EC;
+            --c-green: #4FC46A;
+            --c-yellow: #F5B02A;
+            --c-orange: #FF9256;
+            --c-purple: #9B74F5;
         }
 
+        html { background: var(--bg); }
+
         body {
-            background-color: #FFF9EE;
+            background-color: var(--bg);
             background-image:
-                radial-gradient(#FFE3C2 1.5px, transparent 1.5px),
-                radial-gradient(#FFE9F0 1.5px, transparent 1.5px);
-            background-size: 36px 36px;
-            background-position: 0 0, 18px 18px;
-            color: var(--ink);
+                linear-gradient(rgba(255, 250, 241, 0.06), rgba(255, 247, 235, 0.06)),
+                url('images/light-oak-bg.png');
+            /* 1254px画像を約1/2で表示し、Retinaでもほぼ等倍の解像感にする */
+            background-size: auto, 627px 627px;
+            background-position: center, left top;
+            background-repeat: no-repeat, repeat;
+            background-attachment: scroll;
+            color: var(--text);
             overflow-x: hidden;
         }
 
-        /* ===== にじいろライン ===== */
-        .rainbow-bar {
-            height: 6px;
+        /* 端にだけごく薄い光を置き、カードの中央を読みやすくする */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
             background: linear-gradient(90deg,
-                var(--c-red), var(--c-orange), var(--c-yellow),
-                var(--c-green), var(--c-blue), var(--c-purple), var(--c-red));
+                rgba(255, 248, 236, 0.12),
+                transparent 24%,
+                transparent 76%,
+                rgba(255, 248, 236, 0.12));
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== にじいろライン（アプリ集の目じるし） ===== */
+        .rainbow-bar {
+            height: 4px;
+            background: linear-gradient(90deg,
+                #FF7B8E, #FF9256, #F5B02A,
+                #4FC46A, #35B4EC, #9B74F5, #FF7B8E);
             background-size: 200% 100%;
             animation: rainbowSlide 8s linear infinite;
         }
@@ -50,157 +99,635 @@
             to { background-position: 200% 0; }
         }
 
-        /* ===== タイトル文字あそび ===== */
+        /* ===== ヘッダー（ここだけダーク。虹色ロゴが映える） ===== */
+        .site-head {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: rgba(11, 16, 32, 0.94);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px -20px rgba(11, 16, 32, 0.8);
+        }
+
+        .head-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: default;
+        }
+
+        .brand h1 {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 20px;
+            letter-spacing: 0.06em;
+            line-height: 1.3;
+        }
+
+        .brand .sub {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            color: #8A96B4;
+            margin-top: 3px;
+        }
+
+        /* タイトル文字あそび */
         .title-char {
             display: inline-block;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
             transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        h1:hover .title-char {
-            animation: charJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+        .brand:hover .title-char { animation: charJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
-        .title-char:nth-child(6n+1) { color: #FF6B81; }
-        .title-char:nth-child(6n+2) { color: #FF9F45; }
-        .title-char:nth-child(6n+3) { color: #F5B800; }
-        .title-char:nth-child(6n+4) { color: #4CAF6E; }
-        .title-char:nth-child(6n+5) { color: #38B6E3; }
-        .title-char:nth-child(6n+6) { color: #9C7BEB; }
+        .title-char:nth-child(6n+1) { color: #FF7B8E; }
+        .title-char:nth-child(6n+2) { color: #FFA94D; }
+        .title-char:nth-child(6n+3) { color: #FFD966; }
+        .title-char:nth-child(6n+4) { color: #63D882; }
+        .title-char:nth-child(6n+5) { color: #4CC3F5; }
+        .title-char:nth-child(6n+6) { color: #B28DFF; }
 
         @keyframes charJump {
             0% { transform: translateY(0); }
-            40% { transform: translateY(-10px) rotate(-6deg); }
+            40% { transform: translateY(-8px) rotate(-6deg); }
             70% { transform: translateY(2px) rotate(3deg); }
             100% { transform: translateY(0); }
         }
 
-        h1:hover .title-char:nth-child(2n) { animation-delay: 0.05s; }
-        h1:hover .title-char:nth-child(3n) { animation-delay: 0.1s; }
-        h1:hover .title-char:nth-child(5n) { animation-delay: 0.15s; }
+        .brand:hover .title-char:nth-child(2n) { animation-delay: 0.05s; }
+        .brand:hover .title-char:nth-child(3n) { animation-delay: 0.1s; }
+        .brand:hover .title-char:nth-child(5n) { animation-delay: 0.15s; }
 
-        /* ===== ふわふわ飾り ===== */
-        .floaty {
-            position: fixed;
-            pointer-events: none;
-            user-select: none;
-            opacity: 0.5;
-            z-index: 0;
-            animation: floaty 7s ease-in-out infinite;
-        }
-
-        @keyframes floaty {
-            0%, 100% { transform: translateY(0) rotate(-6deg); }
-            50% { transform: translateY(-18px) rotate(6deg); }
-        }
-
-        /* ===== 検索バー ===== */
+        /* ===== 検索バー（ヘッダーの中なのでダーク） ===== */
         .search-box {
-            border: 3px solid #FFE0B2;
-            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+            position: relative;
+            width: 100%;
+            max-width: 340px;
+            background: var(--head-2);
+            border: 2px solid rgba(255, 255, 255, 0.14);
+            border-radius: 9999px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .search-box:focus-within {
-            border-color: var(--c-yellow);
-            box-shadow: 0 0 0 5px rgba(255, 201, 77, 0.25);
-            transform: scale(1.02);
+            border-color: #FFD966;
+            box-shadow: 0 0 0 4px rgba(255, 217, 102, 0.18);
         }
 
-        /* ===== カテゴリボタン ===== */
-        .filter-btn {
+        .search-box .ico {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FFD966;
+            pointer-events: none;
+            display: flex;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: transparent;
+            border: 0;
+            outline: none;
+            color: #EEF2FF;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 16px 12px 44px;
+            min-height: 48px;
+            border-radius: 9999px;
+        }
+
+        .search-box input::placeholder { color: #8A96B4; }
+
+        /* ===== メイン ===== */
+        .wrap {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 今日のピックアップ ===== */
+        .hero { padding: 24px 0 18px; }
+
+        .hero-kicker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: var(--text-2);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        .hero-kicker::before,
+        .hero-kicker::after {
+            content: '';
+            width: 42px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--line-2));
+        }
+
+        .hero-kicker::after { transform: scaleX(-1); }
+
+        .hero-kicker-main {
+            font-family: 'Mochiy Pop One', sans-serif;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .hero-assurance {
+            color: var(--text-3);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .hero-assurance span + span::before {
+            content: '・';
+            margin: 0 7px;
+            color: #D2B9A3;
+        }
+
+        .spotlight {
+            --spot-main: #4FC46A;
+            --spot-deep: #2E9A4C;
+            display: grid;
+            grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+            min-height: 300px;
+            overflow: hidden;
+            position: relative;
+            background:
+                radial-gradient(circle at 18% 15%, rgba(255, 255, 255, 0.98), transparent 25%),
+                linear-gradient(145deg, #FFFEFB 0%, #FFFDF8 68%, #FFF4E5 100%);
+            border: 1px solid rgba(255, 255, 255, 0.86);
+            border-radius: 28px;
+            box-shadow: 0 24px 60px -38px rgba(43, 52, 70, 0.7), 0 0 0 1px rgba(211, 218, 234, 0.72);
+            color: var(--text);
+            isolation: isolate;
+        }
+
+        .spotlight::before {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            left: -90px;
+            bottom: -120px;
+            border-radius: 50%;
+            border: 34px solid var(--spot-main);
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .spotlight-copy {
+            padding: 34px 30px 30px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .spotlight-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 14px;
+            padding: 7px 12px;
+            border-radius: 9999px;
+            background: var(--spot-deep);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            box-shadow: 0 8px 20px -12px var(--spot-deep);
+        }
+
+        .spotlight-title {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 34px;
+            line-height: 1.35;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }
+
+        .spotlight-desc {
+            max-width: 540px;
+            color: var(--text-2);
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.8;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .spotlight-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .spotlight-play {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            padding: 9px 18px;
+            gap: 9px;
+            min-height: 50px;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--spot-main), var(--spot-deep));
+            box-shadow: 0 13px 24px -13px var(--spot-deep);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .spotlight:hover .spotlight-play {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px -14px var(--spot-deep);
+        }
+
+        .spotlight-note {
+            color: var(--text-3);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .spotlight-visual {
+            position: relative;
+            min-height: 300px;
+            overflow: hidden;
+            background: #e9edf5;
+        }
+
+        .spotlight-visual img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            display: block;
+            object-fit: cover;
+            transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .spotlight:hover .spotlight-visual img { transform: scale(1.035); }
+
+        .spotlight-visual::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.75), transparent 20%);
+            pointer-events: none;
+        }
+
+        /* ===== カテゴリチップ ===== */
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 2px 12px;
+            scrollbar-width: none;
+            justify-content: flex-start;
+        }
+
+        .filter-row::-webkit-scrollbar { display: none; }
+
+        @media (min-width: 900px) {
+            .filter-row { flex-wrap: wrap; justify-content: center; overflow: visible; }
+        }
+
+        .filter-btn {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 48px;
+            padding: 10px 18px;
             border-radius: 9999px;
             font-weight: 700;
             font-size: 13px;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.06em;
             background: #fff;
-            color: #9c8b80;
-            border: 2.5px solid #F3E5D8;
-            box-shadow: 0 3px 0 #F3E5D8;
+            color: var(--text-2);
+            border: 1.5px solid var(--line);
+            box-shadow: 0 2px 6px -3px rgba(43, 52, 70, 0.25);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s, color 0.18s, box-shadow 0.18s, border-color 0.18s;
         }
 
         .filter-btn:hover {
-            transform: translateY(-3px) rotate(-1.5deg) scale(1.05);
-            box-shadow: 0 6px 0 #F3E5D8;
+            color: var(--text);
+            border-color: var(--line-2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -10px rgba(43, 52, 70, 0.5);
         }
 
-        .filter-btn:active {
-            transform: translateY(1px);
-            box-shadow: 0 1px 0 #F3E5D8;
-        }
+        .filter-btn:active { transform: translateY(1px); }
 
         .filter-btn.active {
             color: #fff;
             border-color: transparent;
-            transform: scale(1.06);
+            transform: translateY(-2px);
         }
 
-        .filter-btn.active[data-category="all"]       { background: linear-gradient(135deg, #FF9F68, #FF6B81); box-shadow: 0 4px 0 #E0566B; }
-        .filter-btn.active[data-category="japanese"]  { background: linear-gradient(135deg, #FF8FA3, #FF6B81); box-shadow: 0 4px 0 #E0566B; }
-        .filter-btn.active[data-category="math"]      { background: linear-gradient(135deg, #5BC9F5, #38A8E0); box-shadow: 0 4px 0 #2D8BBE; }
-        .filter-btn.active[data-category="science"]   { background: linear-gradient(135deg, #6BCB77, #43A85B); box-shadow: 0 4px 0 #378A4B; }
-        .filter-btn.active[data-category="social"]    { background: linear-gradient(135deg, #FFC94D, #F5A623); box-shadow: 0 4px 0 #D18C14; }
-        .filter-btn.active[data-category="others"]    { background: linear-gradient(135deg, #B28DFF, #9165F0); box-shadow: 0 4px 0 #7A4FD6; }
-        .filter-btn.active[data-category="favorites"] { background: linear-gradient(135deg, #FFD54F, #FFB300); box-shadow: 0 4px 0 #DB9A00; }
-        .filter-btn.active[data-category="management"]{ background: linear-gradient(135deg, #4DD0C4, #26A99D); box-shadow: 0 4px 0 #1F8B81; }
-        .filter-btn.active[data-category="teacher"]   { background: linear-gradient(135deg, #90A4AE, #607D8B); box-shadow: 0 4px 0 #4D6570; }
+        .filter-btn.active[data-category="all"]        { background: linear-gradient(135deg, #FFA83A, #F0791E); box-shadow: 0 10px 20px -10px #F0791E; }
+        .filter-btn.active[data-category="japanese"]   { background: linear-gradient(135deg, #FF7B8E, #E24E67); box-shadow: 0 10px 20px -10px #E24E67; }
+        .filter-btn.active[data-category="math"]       { background: linear-gradient(135deg, #35B4EC, #1483C4); box-shadow: 0 10px 20px -10px #1483C4; }
+        .filter-btn.active[data-category="science"]    { background: linear-gradient(135deg, #4FC46A, #2E9A4C); box-shadow: 0 10px 20px -10px #2E9A4C; }
+        .filter-btn.active[data-category="social"]     { background: linear-gradient(135deg, #F5B02A, #D2870A); box-shadow: 0 10px 20px -10px #D2870A; }
+        .filter-btn.active[data-category="others"]     { background: linear-gradient(135deg, #9B74F5, #6F45C9); box-shadow: 0 10px 20px -10px #6F45C9; }
+        .filter-btn.active[data-category="favorites"]  { background: linear-gradient(135deg, #FFC93A, #E39A00); box-shadow: 0 10px 20px -10px #E39A00; }
+        .filter-btn.active[data-category="management"] { background: linear-gradient(135deg, #35C9BC, #16948A); box-shadow: 0 10px 20px -10px #16948A; }
+        .filter-btn.active[data-category="teacher"]    { background: linear-gradient(135deg, #8798AC, #5C6C7F); box-shadow: 0 10px 20px -10px #5C6C7F; }
 
-        /* ===== 並び替えボタン ===== */
+        /* ===== 棚（横スクロール） ===== */
+        .shelf {
+            margin: 0 0 26px;
+        }
+
+        .shelf-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .shelf-head h2 {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 19px;
+            letter-spacing: 0.04em;
+            color: var(--text);
+        }
+
+        .shelf-tag {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            color: #fff;
+        }
+
+        .shelf-count {
+            margin-left: auto;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-3);
+        }
+
+        .shelf-body { position: relative; }
+
+        .shelf-row {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 2px 12px;
+            scrollbar-width: none;
+        }
+
+        .shelf-row::-webkit-scrollbar { display: none; }
+
+        .shelf-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-60%);
+            width: 40px;
+            height: 56px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 5;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 22px -12px rgba(43, 52, 70, 0.7);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .shelf-arrow:hover { background: #fff; transform: translateY(-60%) scale(1.06); }
+        .shelf-arrow.left  { left: -6px; }
+        .shelf-arrow.right { right: -6px; }
+
+        @media (min-width: 1024px) and (pointer: fine) {
+            .shelf-body:hover .shelf-arrow { display: flex; }
+        }
+
+        /* 棚のタイル（画像でみせる小さいカード） */
+        .shelf-card {
+            --card-main: #FF7B8E;
+            --card-deep: #E24E67;
+            flex: 0 0 auto;
+            width: 228px;
+            scroll-snap-align: start;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            display: block;
+            box-shadow: 0 8px 20px -14px rgba(43, 52, 70, 0.6);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .shelf-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--card-main);
+            box-shadow: 0 20px 30px -18px var(--card-main);
+        }
+
+        .shelf-thumb {
+            position: relative;
+            height: 124px;
+            overflow: hidden;
+            background: #EDF1F8;
+        }
+
+        .shelf-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .shelf-thumb img.fit-contain,
+        .card-thumbnail img.fit-contain {
+            object-fit: contain;
+            background: linear-gradient(135deg, #EAF6FE, #FFFFFF 52%, #E8F5E9);
+        }
+
+        .shelf-card:hover .shelf-thumb img { transform: scale(1.07); }
+
+        /* 題名を読ませるための暗幕（画像の下だけ） */
+        .shelf-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(20, 26, 42, 0) 45%, rgba(20, 26, 42, 0.86) 100%);
+        }
+
+        .shelf-name {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 9px;
+            z-index: 2;
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 14px;
+            line-height: 1.35;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .shelf-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 12px 11px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-3);
+        }
+
+        /* ===== ぜんぶのアプリ（グリッド） ===== */
+        .grid-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 6px 0 16px;
+        }
+
+        .grid-head h2 {
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 19px;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+        }
+
+        .count-pill {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-2);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 9999px;
+            padding: 5px 14px;
+        }
+
+        .sort-wrap {
+            display: flex;
+            gap: 4px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 9999px;
+            padding: 4px;
+            box-shadow: 0 2px 6px -3px rgba(43, 52, 70, 0.25);
+        }
+
         .sort-btn {
-            padding: 6px 16px;
+            min-height: 36px;
+            padding: 7px 16px;
             border-radius: 9999px;
             font-size: 12px;
             font-weight: 700;
-            color: #b0a094;
-            transition: all 0.2s;
+            color: var(--text-3);
+            background: transparent;
+            border: 0;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
+        .sort-btn:hover { color: var(--text); }
+
         .sort-btn.active {
-            background: linear-gradient(135deg, #FF9F68, #FF6B81);
+            background: linear-gradient(135deg, #FFA83A, #F0791E);
             color: #fff;
-            box-shadow: 0 2px 6px rgba(255, 107, 129, 0.4);
+            box-shadow: 0 6px 14px -8px #F0791E;
         }
+
+        #appGrid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 700px)  { #appGrid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1080px) { #appGrid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1500px) { #appGrid { grid-template-columns: repeat(4, 1fr); } }
 
         /* ===== アプリカード ===== */
         .app-card {
-            --card-main: #FF8FA3;
-            --card-soft: #FFE3E8;
-            background: #fff;
-            border: 3px solid var(--card-soft);
-            border-radius: 24px;
+            --card-main: #FF7B8E;
+            --card-deep: #E24E67;
+            --card-tint: #FFECEF;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 20px;
             overflow: hidden;
             position: relative;
             display: flex;
             flex-direction: column;
             height: 100%;
-            box-shadow: 0 6px 0 var(--card-soft);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
-            animation: cardIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            box-shadow: 0 10px 26px -18px rgba(43, 52, 70, 0.55);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
+            animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
 
         .app-card:hover {
-            transform: translateY(-8px) rotate(-0.6deg);
+            transform: translateY(-6px);
             border-color: var(--card-main);
-            box-shadow: 0 12px 0 var(--card-soft), 0 18px 30px -12px rgba(93, 64, 55, 0.25);
+            box-shadow: 0 26px 40px -22px var(--card-main);
         }
 
         @keyframes cardIn {
-            from { opacity: 0; transform: translateY(24px) scale(0.96); }
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .card-thumbnail {
             width: 100%;
-            height: 160px;
+            height: 168px;
             overflow: hidden;
             position: relative;
-            background: var(--card-soft);
+            background: #EDF1F8;
+            border-bottom: 1px solid var(--line);
         }
 
         .card-thumbnail img {
@@ -212,9 +739,7 @@
             display: block;
         }
 
-        .app-card:hover .card-thumbnail img {
-            transform: scale(1.08) rotate(0.5deg);
-        }
+        .app-card:hover .card-thumbnail img { transform: scale(1.06); }
 
         /* キラッと光るエフェクト */
         .card-thumbnail::after {
@@ -224,52 +749,99 @@
             left: -80%;
             width: 50%;
             height: 100%;
-            background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+            z-index: 2;
+            background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.65), transparent);
             transform: skewX(-20deg);
             transition: left 0.6s ease;
         }
 
-        .app-card:hover .card-thumbnail::after {
-            left: 130%;
+        .app-card:hover .card-thumbnail::after { left: 130%; }
+
+        .card-body {
+            padding: 16px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            text-align: center;
         }
 
-        /* 教科タグ：ステッカー風 */
+        /* 教科タグ */
         .subject-sticker {
             display: inline-block;
-            background: var(--card-main);
-            color: #fff;
+            align-self: center;
+            background: var(--card-tint);
+            color: var(--card-deep);
             font-weight: 700;
             font-size: 11px;
-            letter-spacing: 0.15em;
-            padding: 3px 14px;
+            letter-spacing: 0.16em;
+            padding: 5px 14px;
             border-radius: 9999px;
-            transform: rotate(-2deg);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+            margin-bottom: 10px;
         }
 
         .card-title {
-            border-bottom: 3px dotted var(--card-soft);
+            font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 17px;
+            line-height: 1.4;
+            color: var(--text);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            position: relative;
         }
 
-        /* OPENボタン */
+        .card-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: 42px;
+            height: 3px;
+            border-radius: 3px;
+            background: var(--card-main);
+        }
+
+        .card-desc {
+            color: var(--text-2);
+            font-size: 12px;
+            line-height: 1.85;
+            flex-grow: 1;
+            margin-bottom: 14px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-3);
+            margin-bottom: 14px;
+            padding: 0 2px;
+        }
+
+        /* あそぶボタン */
         .open-btn {
             display: inline-flex;
+            align-self: center;
             align-items: center;
-            gap: 6px;
-            background: linear-gradient(135deg, var(--card-main), var(--card-main));
-            filter: saturate(1.05);
+            justify-content: center;
+            gap: 8px;
+            min-height: 48px;
+            background: linear-gradient(135deg, var(--card-main), var(--card-deep));
             color: #fff;
             font-weight: 700;
-            letter-spacing: 0.2em;
-            padding: 8px 28px;
+            letter-spacing: 0.18em;
+            padding: 12px 34px;
             border-radius: 9999px;
             font-size: 14px;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 20px -10px var(--card-deep);
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
         }
 
         .app-card:hover .open-btn {
-            transform: scale(1.08);
+            transform: scale(1.06);
+            box-shadow: 0 14px 24px -10px var(--card-deep);
         }
 
         .open-btn .arrow {
@@ -277,9 +849,7 @@
             transition: transform 0.25s;
         }
 
-        .app-card:hover .open-btn .arrow {
-            transform: translateX(4px);
-        }
+        .app-card:hover .open-btn .arrow { transform: translateX(4px); }
 
         /* NEWバッジ */
         .new-badge {
@@ -294,38 +864,81 @@
             letter-spacing: 0.2em;
             padding: 4px 12px;
             border-radius: 9999px;
-            box-shadow: 0 3px 8px rgba(255, 107, 129, 0.5);
+            box-shadow: 0 6px 14px -6px rgba(226, 78, 103, 0.8);
             animation: badgeBounce 2.2s ease-in-out infinite;
         }
 
         @keyframes badgeBounce {
-            0%, 100% { transform: rotate(6deg) scale(1); }
-            10% { transform: rotate(6deg) scale(1.15); }
-            20% { transform: rotate(6deg) scale(1); }
+            0%, 100% { transform: scale(1); }
+            10% { transform: scale(1.14); }
+            20% { transform: scale(1); }
         }
 
         /* お気に入り★ボタン */
         .fav-btn {
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 10;
+            width: 48px;   /* 指でおしやすい大きさ（48px以上） */
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.92);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            border-radius: 9999px;
+            box-shadow: 0 6px 14px -8px rgba(43, 52, 70, 0.6);
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
         }
 
         .fav-btn:hover {
-            transform: scale(1.25) rotate(15deg);
+            background: #fff;
+            transform: scale(1.12) rotate(10deg);
         }
 
-        .fav-btn:active {
-            transform: scale(0.9);
+        .fav-btn:active { transform: scale(0.92); }
+
+        .fav-on  { color: #F5B02A; fill: currentColor; }
+        .fav-off { color: #B4BECD; }
+
+        /* ===== みつからないとき ===== */
+        #noData {
+            display: none;
+            text-align: center;
+            padding: 70px 0;
+            color: var(--text);
         }
 
-        /* スクロールバー */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #FFF3E0; }
+        #noData.show { display: block; }
+
+        /* ===== フッター ===== */
+        .site-foot {
+            margin-top: 46px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .foot-inner {
+            background: #fff;
+            border-top: 1px solid var(--line);
+            padding: 26px 18px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        /* ===== スクロールバー ===== */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #E9EDF6; }
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--c-orange), var(--c-red));
+            background: linear-gradient(#9B74F5, #35B4EC);
             border-radius: 5px;
         }
 
-        /* 動きを減らす設定の人向け */
+        /* ===== 動きを減らす設定の人向け ===== */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -333,52 +946,655 @@
                 transition-duration: 0.01ms !important;
             }
         }
+
+        /* ===== せまい画面 ===== */
+        @media (max-width: 640px) {
+            .head-inner { padding: 10px 14px; gap: 10px; }
+            .brand h1 { font-size: 17px; }
+            .search-box { max-width: none; }
+            .wrap { padding: 0 14px; }
+            .hero { padding: 16px 0 12px; }
+            .hero-kicker { margin-bottom: 11px; flex-wrap: wrap; gap: 5px 8px; }
+            .hero-kicker::before, .hero-kicker::after { display: none; }
+            .hero-kicker-main { width: 100%; text-align: center; }
+            .hero-assurance { font-size: 9px; }
+            .hero-assurance span + span::before { margin: 0 4px; }
+            .spotlight { display: flex; flex-direction: column; border-radius: 22px; min-height: 0; }
+            .spotlight-copy { padding: 22px 20px 24px; }
+            .spotlight-title { font-size: 23px; }
+            .spotlight-desc { -webkit-line-clamp: 2; font-size: 12px; }
+            .spotlight-actions { margin-top: 16px; }
+            .spotlight-note { display: none; }
+            .spotlight-visual { min-height: 185px; order: -1; }
+            .spotlight-visual::after { background: linear-gradient(0deg, rgba(255,255,255,0.84), transparent 28%); }
+            .shelf-head h2, .grid-head h2 { font-size: 17px; }
+            .shelf-card { width: 210px; }
+        }
+
+        @media (min-width: 641px) and (max-width: 900px) {
+            .spotlight { grid-template-columns: minmax(0, 1fr) minmax(330px, 0.9fr); min-height: 270px; }
+            .spotlight-copy { padding: 28px 24px; }
+            .spotlight-visual { min-height: 270px; }
+        }
     </style>
+    <!-- LD:auto build-seo.mjs が作る。手で直さない -->
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://kagasen.github.io/kagasen/#website",
+      "url": "https://kagasen.github.io/kagasen/",
+      "name": "かがせんのHAPPYアプリ集",
+      "alternateName": [
+        "かがせんのハッピーアプリ集",
+        "かがせん アプリ集"
+      ],
+      "inLanguage": "ja",
+      "description": "小学校の先生「かがせん」が作った、小学生と先生のための無料の教育アプリ・知育アプリ集。国語・算数・理科・社会の学習ゲームから、席替え・グループ分けなどの授業ツールまで。広告なし・登録なし・インストール不要で、iPadでもすぐ使えます。",
+      "publisher": {
+        "@id": "https://kagasen.github.io/kagasen/#person"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://kagasen.github.io/kagasen/#person",
+      "name": "かがせん",
+      "jobTitle": "小学校教員",
+      "description": "小学生と先生のための教育アプリ・知育アプリを作っている小学校の先生。"
+    },
+    {
+      "@type": "ItemList",
+      "name": "かがせんのHAPPYアプリ集 アプリ一覧",
+      "numberOfItems": 28,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "WebApplication",
+            "name": "せかいをまわろう！",
+            "url": "https://kagasen.github.io/kagasen/sekai-o-mawarou/",
+            "description": "カードをドラッグして12しゅうかんの世界一周の旅ていを組み立てるゲーム。ひこうき・フェリー・リニアで国をつなごう。旅した国は「国ずかん」にたまるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "WebApplication",
+            "name": "レキシバトル",
+            "url": "https://kagasen.github.io/kagasen/rekishi-battle/",
+            "description": "歴史人物42人のカードで合戦！弥生から明治まで51ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "WebApplication",
+            "name": "都道府県の冒険",
+            "url": "https://kagasen.github.io/kagasen/todofuken-bouken/",
+            "description": "気球で日本一周！地図タップやシルエットクイズで都道府県の位置・形・県庁所在地・名物をマスター。合格するとご当地カードがもらえるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "WebApplication",
+            "name": "うごきのきろく",
+            "url": "https://kagasen.github.io/kagasen/ugoki-no-kiroku/",
+            "description": "なわとび・てつぼう・水泳・ボール運動など全12種目を記録して、たまごの相棒を育てよう！学校の検定カードと同じ「級」で自分ののびがわかるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "WebApplication",
+            "name": "自分レベルアップアドベンチャー",
+            "url": "https://kagasen.github.io/kagasen/level-up-adventure/",
+            "description": "毎日の習慣やToDoをこなしてEXPをため、アバターをレベルアップ！コインで家具やペットを買えて、続けるほど「鎖（れんぞく記録）」がのびるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "WebApplication",
+            "name": "漢字の冒険",
+            "url": "https://kagasen.github.io/kagasen/kanji-bouken/",
+            "description": "学年の島を冒険しながら漢字を手書きでマスター！漢字図鑑や、コインで家具を買えるマイルームもあるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "WebApplication",
+            "name": "はんたいの言葉",
+            "url": "https://kagasen.github.io/kagasen/hantai-no-kotoba/",
+            "description": "写真と言葉を見て、反対の意味を4択から選ぶ低学年向けの国語ゲームです。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "WebApplication",
+            "name": "ひらがなカタカナれんしゅう",
+            "url": "https://kagasen.github.io/kagasen/hiraganarensyu/",
+            "description": "ひらがなとカタカナを おてほんを見ながら なぞりがき！書きじゅんも たしかめられて、5もじのテストにも チャレンジできるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "WebApplication",
+            "name": "心マトリクス",
+            "url": "https://kagasen.github.io/kagasen/shinmatorikusu/",
+            "description": "今の心の状態をマトリクスで可視化して言葉にしよう。アクションの後の変化も記録できる、メタ認知をうながすアプリ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "WebApplication",
+            "name": "ビジョントレーニング",
+            "url": "https://kagasen.github.io/kagasen/vision-training/",
+            "description": "目を動かす練習をして、見つける力や集中力を高めよう！色々なトレーニングを選べるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "WebApplication",
+            "name": "〇〇な最適解",
+            "url": "https://kagasen.github.io/kagasen/marumarusaitekikai/",
+            "description": "みんなの答えを予想してお題に一番合う「最適解」を見つけるゲーム！",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "WebApplication",
+            "name": "宿題提出ポスト",
+            "url": "https://kagasen.github.io/kagasen/shukudai/",
+            "description": "先生の仕事を減らす!? QRコードで提出状況が一瞬でわかるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "WebApplication",
+            "name": "体育作戦ボード",
+            "url": "https://kagasen.github.io/kagasen/taiikusakusennbo-do/",
+            "description": "体育の試合や練習で使える！マグネットみたいに動かせるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "WebApplication",
+            "name": "体育チーム分け",
+            "url": "https://kagasen.github.io/kagasen/taiikuti-muwake/",
+            "description": "体育の授業などで使える！スムーズにチーム分けができるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "WebApplication",
+            "name": "しりとり魔神",
+            "url": "https://kagasen.github.io/kagasen/shiritori/",
+            "description": "最強しりとり魔神と何回ラリーできるかな？。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 16,
+          "item": {
+            "@type": "WebApplication",
+            "name": "給食おかわりくじ",
+            "url": "https://kagasen.github.io/kagasen/kyushoku-kuji/",
+            "description": "給食のおかわりを誰がするか、楽しくくじ引きで決めよう！",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 17,
+          "item": {
+            "@type": "WebApplication",
+            "name": "体育トーナメントメーカー",
+            "url": "https://kagasen.github.io/kagasen/taiiku-tournament/",
+            "description": "4〜41チームのトーナメント表を自動作成！試合タイマーつきで本番も万全。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 18,
+          "item": {
+            "@type": "WebApplication",
+            "name": "体育リーグ戦メーカー",
+            "url": "https://kagasen.github.io/kagasen/taiiku-league/",
+            "description": "総当たりのリーグ戦スケジュールを自動作成！コート数も指定できて順位表も自動計算。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 19,
+          "item": {
+            "@type": "WebApplication",
+            "name": "毎日問題",
+            "url": "https://kagasen.github.io/kagasen/mainitimondai/",
+            "description": "1年生から6年生まで、毎日チャレンジできる謎解き問題！学年を選んでスタート！",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 20,
+          "item": {
+            "@type": "WebApplication",
+            "name": "体育リレーチーム編成メーカー",
+            "url": "https://kagasen.github.io/kagasen/taiiku-relay/",
+            "description": "タイムを入力するだけで公平なリレーチームを自動作成！ドラッグ＆ドロップで手動調整も可能。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 21,
+          "item": {
+            "@type": "WebApplication",
+            "name": "スポーツグループ分け",
+            "url": "https://kagasen.github.io/kagasen/group-maker/",
+            "description": "スキルレベルを考慮してバランスの良いグループを自動作成！ドラッグ＆ドロップで微調整も可能。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 22,
+          "item": {
+            "@type": "WebApplication",
+            "name": "教室の席替えツール",
+            "url": "https://kagasen.github.io/kagasen/sekigae/",
+            "description": "教室のサイズや席の種類を設定し、ランダムに席替え！ドラッグ＆ドロップで微調整も可能。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 23,
+          "item": {
+            "@type": "WebApplication",
+            "name": "教室サポートボード",
+            "url": "https://kagasen.github.io/kagasen/classroom-board/",
+            "description": "タイマーや時間割、お絵かきツールなど、授業をサポートする機能が一つになった電子黒板アプリです。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 24,
+          "item": {
+            "@type": "WebApplication",
+            "name": "思考ツール",
+            "url": "https://kagasen.github.io/kagasen/sikou-tool-app/",
+            "description": "考えを整理しよう！ふせんや図解・テンプレートを自由に配置できるボードアプリです。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 25,
+          "item": {
+            "@type": "WebApplication",
+            "name": "作家の時間",
+            "url": "https://kagasen.github.io/kagasen/sakkanojikan/",
+            "description": "しつもんに答えるだけで、キミだけの本ができる！お話づくりサポートアプリです。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 26,
+          "item": {
+            "@type": "WebApplication",
+            "name": "漢字部首シューティング",
+            "url": "https://kagasen.github.io/kagasen/kannjibusyu-ta/",
+            "description": "部首とつくりを組み合わせて漢字を作ろう！シューティングゲームで楽しく漢字を覚えられるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 27,
+          "item": {
+            "@type": "WebApplication",
+            "name": "言葉さがし",
+            "url": "https://kagasen.github.io/kagasen/kotobasagashi/",
+            "description": "10×10の文字の中にかくれた言葉をドラッグで見つけよう！たて・よこ・ななめ・逆さ読みもOK！1分間で何語見つけられるかな？",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 28,
+          "item": {
+            "@type": "WebApplication",
+            "name": "キッズタイピング",
+            "url": "https://kagasen.github.io/kagasen/typing/",
+            "description": "学年を選んでローマ字タイピングを練習しよう！短文タイピングや70のとっくんもあるよ。",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ja",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+    </script>
+    <!-- /LD:auto -->
 </head>
 
-<body class="font-maru min-h-screen flex flex-col">
-
-    <!-- ふわふわ飾り -->
-    <span class="floaty text-3xl" style="top:18%; left:3%; animation-delay:0s;">✏️</span>
-    <span class="floaty text-2xl" style="top:40%; left:6%; animation-delay:1.2s;">🌈</span>
-    <span class="floaty text-3xl" style="top:70%; left:4%; animation-delay:2.4s;">📚</span>
-    <span class="floaty text-2xl" style="top:22%; right:4%; animation-delay:0.6s;">⭐</span>
-    <span class="floaty text-3xl" style="top:50%; right:3%; animation-delay:1.8s;">🚀</span>
-    <span class="floaty text-2xl" style="top:78%; right:6%; animation-delay:3s;">🎨</span>
+<body class="font-maru">
 
     <div class="rainbow-bar"></div>
 
-    <header class="w-full bg-white/85 backdrop-blur-md py-4 border-b-2 border-orange-100 sticky top-0 z-30 shadow-sm">
-        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-center md:text-left">
-                <h1 class="font-pop text-xl md:text-2xl tracking-wider flex items-center justify-center md:justify-start gap-2 cursor-default">
-                    <span class="text-2xl">🎈</span>
-                    <span id="siteTitle">かがせんのHAPPYアプリ集</span>
-                    <span class="text-2xl">🎈</span>
-                </h1>
-                <p class="text-amber-400 text-xs font-bold tracking-[0.3em] mt-1 ml-1">✦ 学校生活をもっと楽しく！ ✦</p>
-            </div>
-            <div class="search-box relative w-full md:w-80 bg-white rounded-full">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i data-lucide="search" class="text-amber-400 w-5 h-5"></i>
+    <header class="site-head">
+        <div class="head-inner">
+            <div class="brand">
+                <span style="font-size:24px">🎈</span>
+                <div>
+                    <h1><span id="siteTitle">かがせんのHAPPYアプリ集</span></h1>
+                    <span class="sub">✦ 学校生活をもっと楽しく！ ✦</span>
                 </div>
-                <input type="text" id="searchInput"
-                    class="block w-full pl-12 pr-4 py-2.5 rounded-full leading-5 bg-transparent placeholder-amber-300 focus:outline-none text-sm font-bold"
-                    placeholder="アプリをさがす...">
+            </div>
+            <div class="search-box">
+                <span class="ico"><i data-lucide="search" style="width:20px;height:20px"></i></span>
+                <input type="text" id="searchInput" placeholder="アプリをさがす...">
             </div>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8 relative z-10">
+    <main class="wrap">
 
-        <!-- ヒーローメッセージ -->
-        <div class="text-center mb-8">
-            <p class="font-pop text-base md:text-lg text-natural-brown">
-                きょうは どれであそぶ？ <span class="inline-block">🎮✨</span>
-            </p>
-        </div>
+        <section class="hero" id="heroArea" aria-label="今日のおすすめ">
+            <div class="hero-kicker">
+                <span class="hero-kicker-main">きょうは どれで あそぶ？</span>
+                <span class="hero-assurance" aria-label="広告なし、登録なし、iPad対応">
+                    <span>広告なし</span><span>登録なし</span><span>iPad対応</span>
+                </span>
+            </div>
+            <a class="spotlight" id="spotlight" href="#">
+                <div class="spotlight-copy">
+                    <span class="spotlight-label">✦ TODAY'S PICK</span>
+                    <h2 class="spotlight-title" id="spotlightTitle">おすすめを じゅんび中…</h2>
+                    <p class="spotlight-desc" id="spotlightDesc"></p>
+                    <div class="spotlight-actions">
+                        <span class="spotlight-play">あそんでみる <span>→</span></span>
+                        <span class="spotlight-note" id="spotlightMeta"></span>
+                    </div>
+                </div>
+                <div class="spotlight-visual">
+                    <img id="spotlightImage" src="" alt="" loading="eager">
+                </div>
+            </a>
+        </section>
 
-        <div class="flex flex-wrap gap-2.5 mb-10 justify-center" id="categoryContainer">
+        <div class="filter-row" id="categoryContainer">
             <button class="filter-btn active" data-category="all">🌟 すべて</button>
             <button class="filter-btn" data-category="japanese">📖 国語</button>
             <button class="filter-btn" data-category="math">🔢 算数</button>
@@ -390,31 +1606,39 @@
             <button class="filter-btn" data-category="teacher">👩‍🏫 先生用</button>
         </div>
 
-        <div class="flex justify-between items-center mb-6 px-1">
-            <p class="text-sm text-amber-500 font-bold bg-white border-2 border-orange-100 rounded-full px-4 py-1.5 shadow-sm">
-                <span id="countDisplay" class="font-pop text-natural-brown text-lg">0</span> 件 みつかったよ！
-            </p>
-            <div class="flex bg-white rounded-full p-1 border-2 border-orange-100 shadow-sm">
+        <!-- 棚（横スクロール）。カテゴリ「すべて」＆検索なしのときだけ出る -->
+        <div id="shelves"></div>
+
+        <div class="grid-head">
+            <h2><span id="gridTitle">ぜんぶの アプリ</span>
+                <span class="count-pill"><span id="countDisplay">0</span> こ みつかったよ！</span>
+            </h2>
+            <div class="sort-wrap">
                 <button id="sortNew" class="sort-btn active">🆕 新着順</button>
                 <button id="sortPopular" class="sort-btn">🔤 名前順</button>
             </div>
         </div>
 
-        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
-        <div id="noData" class="hidden text-center py-20">
-            <div class="text-6xl mb-4">🔍</div>
-            <p class="font-pop text-natural-brown">みつからなかった…</p>
-            <p class="text-amber-500 text-sm mt-2 font-bold">べつの ことばで さがしてみてね！</p>
+        <div id="appGrid"></div>
+
+        <div id="noData">
+            <div style="font-size:56px; margin-bottom:10px">🔍</div>
+            <p style="font-family:'Mochiy Pop One',sans-serif; font-size:18px">みつからなかった…</p>
+            <p style="color:var(--text-3); font-size:13px; font-weight:700; margin-top:8px">べつの ことばで さがしてみてね！</p>
         </div>
     </main>
 
-    <footer class="relative z-10 mt-12">
+    <footer class="site-foot">
         <div class="rainbow-bar"></div>
-        <div class="bg-white/80 py-8">
-            <div class="container mx-auto px-4 text-center">
-                <p class="font-pop text-sm text-natural-brown mb-1">🌈 あしたも あそびに きてね！ 🌈</p>
-                <p class="text-amber-400 text-xs font-bold">&copy; 2026 かがせんのHAPPYアプリ集</p>
-            </div>
+        <div class="foot-inner">
+            <p style="font-family:'Mochiy Pop One',sans-serif; font-size:14px; margin-bottom:6px">🌈 あしたも あそびに きてね！ 🌈</p>
+            <!-- 検索から来た大人（先生・保護者）向けの説明。ここに書いてある言葉で検索に出る -->
+            <p style="color:var(--text-2); font-size:12px; font-weight:700; line-height:1.9; max-width:720px; margin:0 auto 10px">
+                「かがせんのHAPPYアプリ集」は、小学校の先生「かがせん」が作った、小学生と先生のための無料の教育アプリ・知育アプリ集です。<br>
+                国語・算数・理科・社会の学習ゲームから、席替え・グループ分け・体育の作戦ボードなど授業で使う先生用ツールまでそろっています。<br>
+                広告なし・登録なし・インストール不要。ブラウザだけで動き、iPadでもスマホでも使えます。
+            </p>
+            <p style="color:var(--text-3); font-size:11px; font-weight:700">&copy; 2026 かがせんのHAPPYアプリ集</p>
         </div>
     </footer>
 
@@ -449,6 +1673,7 @@
 
         // クリックカウント管理
         let appCounts = {};
+        let countsLoaded = false;   // 「よく あそばれてる」棚を出してよいか
 
         function getTodayStr() {
             return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -480,6 +1705,10 @@
                 snapshot.forEach(doc => {
                     appCounts[doc.id] = doc.data().count || 0;
                 });
+                countsLoaded = true;
+                // 棚（「よく あそばれてる」）とカウント表示だけ描き直す。
+                // グリッドまで作り直すとカードの登場アニメがやり直しになるので触らない。
+                renderShelves();
                 updateCountDisplay();
             } catch (e) {
                 console.error('カウント読み込みエラー:', e);
@@ -489,11 +1718,10 @@
         function updateCountDisplay() {
             if (typeof appsData === 'undefined') return;
             appsData.forEach(app => {
-                const el = document.getElementById(`count-${app.id}`);
-                if (el) {
+                document.querySelectorAll(`[data-count="${app.id}"]`).forEach(el => {
                     const count = appCounts[app.id] || 0;
                     el.textContent = `👁 ${count}回`;
-                }
+                });
             });
         }
 
@@ -508,54 +1736,56 @@
         let searchQuery = '';
 
         const appGrid = document.getElementById('appGrid');
+        const shelvesBox = document.getElementById('shelves');
         const countDisplay = document.getElementById('countDisplay');
+        const gridTitle = document.getElementById('gridTitle');
         const noData = document.getElementById('noData');
         const filterBtns = document.querySelectorAll('.filter-btn');
         const searchInput = document.getElementById('searchInput');
         const sortNewBtn = document.getElementById('sortNew');
         const sortPopularBtn = document.getElementById('sortPopular');
+        const heroArea = document.getElementById('heroArea');
+        const spotlight = document.getElementById('spotlight');
+        const spotlightTitle = document.getElementById('spotlightTitle');
+        const spotlightDesc = document.getElementById('spotlightDesc');
+        const spotlightMeta = document.getElementById('spotlightMeta');
+        const spotlightImage = document.getElementById('spotlightImage');
 
         // 教科カラー（colorClass → カードの色）
+        //   main = 枠・下線・ボタンの明るいほう / deep = 文字とボタンの濃いほう（白文字が読める濃さ）
+        //   tint = 教科タグの背景（うすい色）
         const CARD_COLORS = {
-            'subject-red':    { main: '#FF8FA3', soft: '#FFE3E8' },
-            'subject-blue':   { main: '#5BC9F5', soft: '#DCF2FD' },
-            'subject-green':  { main: '#6BCB77', soft: '#DFF5E2' },
-            'subject-yellow': { main: '#FFC94D', soft: '#FFF3D6' },
-            'subject-orange': { main: '#FF9F68', soft: '#FFE8D9' },
-            'subject-purple': { main: '#B28DFF', soft: '#EDE4FF' },
-            'subject-gray':   { main: '#90A4AE', soft: '#ECEFF1' },
+            'subject-red':    { main: '#FF7B8E', deep: '#E24E67', tint: '#FFECEF' },
+            'subject-blue':   { main: '#35B4EC', deep: '#1483C4', tint: '#E4F4FD' },
+            'subject-green':  { main: '#4FC46A', deep: '#2E9A4C', tint: '#E6F7EA' },
+            'subject-yellow': { main: '#F5B02A', deep: '#C9820A', tint: '#FFF4DC' },
+            'subject-orange': { main: '#FF9256', deep: '#E06A2B', tint: '#FFEDE0' },
+            'subject-purple': { main: '#9B74F5', deep: '#6F45C9', tint: '#EFE8FF' },
+            'subject-gray':   { main: '#8798AC', deep: '#5C6C7F', tint: '#EDF1F5' },
         };
 
-        // apps.js が読み込まれた後に実行
-        renderApps();
+        function colorsOf(app) {
+            return CARD_COLORS[app.colorClass] || CARD_COLORS['subject-gray'];
+        }
 
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentCategory = btn.dataset.category;
-                renderApps();
-            });
-        });
+        // いちばん新しいアプリを、入口で大きく紹介する
+        let featuredApp = null;
+        function renderSpotlight() {
+            if (typeof appsData === 'undefined' || appsData.length === 0) return;
+            featuredApp = appsData.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            const colors = colorsOf(featuredApp);
+            spotlight.href = featuredApp.link;
+            spotlight.style.setProperty('--spot-main', colors.main);
+            spotlight.style.setProperty('--spot-deep', colors.deep);
+            spotlightTitle.textContent = featuredApp.title;
+            spotlightDesc.textContent = featuredApp.description;
+            spotlightMeta.textContent = featuredApp.tagName + ' ・ NEW';
+            spotlightImage.src = featuredApp.image;
+            spotlightImage.alt = featuredApp.title + 'の画面';
+        }
 
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
-            renderApps();
-        });
-
-        sortNewBtn.addEventListener('click', () => {
-            sortNewBtn.classList.add('active');
-            sortPopularBtn.classList.remove('active');
-            currentSort = 'new';
-            renderApps();
-        });
-
-        sortPopularBtn.addEventListener('click', () => {
-            sortPopularBtn.classList.add('active');
-            sortNewBtn.classList.remove('active');
-            currentSort = 'name';
-            renderApps();
-        });
+        // 体育（pe）はその他（others）に含める
+        const OTHERS_CATEGORIES = ['others', 'pe'];
 
         // お気に入りデータ管理
         function getFavorites() {
@@ -568,20 +1798,131 @@
             localStorage.setItem('kagasen_favorites', JSON.stringify(favs));
         }
 
+        function isNewApp(app) {
+            return new Date(app.date) > new Date('2026-02-01');
+        }
+
+        /* ===== 棚（横スクロールの列）の定義 =====
+           list: appsData から並べる関数。空なら棚ごと出さない。 */
+        const SHELVES = [
+            {
+                id: 'new', name: 'あたらしい アプリ', tag: 'NEW', color: '#E24E67',
+                list: (all) => all.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
+            },
+            {
+                id: 'fav', name: 'おきにいり', tag: '⭐', color: '#E39A00',
+                list: (all) => {
+                    const favs = getFavorites();
+                    return all.filter(a => favs.includes(a.title));
+                }
+            },
+            {
+                id: 'hot', name: 'よく あそばれてる', tag: 'にんき', color: '#1483C4',
+                list: (all) => {
+                    if (!countsLoaded) return [];
+                    return all.slice()
+                        .filter(a => (appCounts[a.id] || 0) > 0)
+                        .sort((a, b) => (appCounts[b.id] || 0) - (appCounts[a.id] || 0))
+                        .slice(0, 8);
+                }
+            },
+            {
+                id: 'teacher', name: 'せんせい用の どうぐ', tag: 'じゅぎょう', color: '#2E9A4C',
+                list: (all) => all.filter(a => a.category === 'teacher' || a.category === 'management')
+            }
+        ];
+
+        // 棚のタイルには NEWバッジを付けない（棚の名前で伝わるし、ほとんど全部にNEWが付いてうるさいため）
+        function shelfCardHTML(app) {
+            const c = colorsOf(app);
+            const fitClass = app.imageFit === 'contain' ? 'fit-contain' : '';
+            return `<a class="shelf-card" href="${app.link}" data-app="${app.id}"
+                       style="--card-main:${c.main}; --card-deep:${c.deep}">
+                        <div class="shelf-thumb">
+                            <img class="${fitClass}" src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
+                            <span class="shelf-name">${app.title}</span>
+                        </div>
+                        <div class="shelf-meta">
+                            <span style="color:${c.deep}">${app.tagName}</span>
+                            <span data-count="${app.id}">👁 ---</span>
+                        </div>
+                    </a>`;
+        }
+
+        function renderShelves() {
+            // カテゴリしぼりこみ中・検索中は棚を出さない（BGAと同じで「一覧」に集中）
+            const showShelves = currentCategory === 'all' && searchQuery === '';
+            shelvesBox.innerHTML = '';
+            if (!showShelves || typeof appsData === 'undefined') return;
+
+            SHELVES.forEach(shelf => {
+                const items = shelf.list(appsData);
+                if (items.length === 0) return;
+
+                const sec = document.createElement('section');
+                sec.className = 'shelf';
+                sec.innerHTML = `
+                    <div class="shelf-head">
+                        <h2>${shelf.name}</h2>
+                        <span class="shelf-tag" style="background:${shelf.color}">${shelf.tag}</span>
+                        <span class="shelf-count">${items.length}こ</span>
+                    </div>
+                    <div class="shelf-body">
+                        <button class="shelf-arrow left" aria-label="ひだりへ">‹</button>
+                        <div class="shelf-row">${items.map(shelfCardHTML).join('')}</div>
+                        <button class="shelf-arrow right" aria-label="みぎへ">›</button>
+                    </div>`;
+                shelvesBox.appendChild(sec);
+
+                const row = sec.querySelector('.shelf-row');
+                const scrollRow = (dir) => {
+                    const amount = Math.max(240, Math.round(row.clientWidth * 0.8)) * dir;
+                    try { row.scrollBy({ left: amount, behavior: 'smooth' }); }
+                    catch (e) { row.scrollLeft += amount; }   // 古いSafari用
+                };
+                sec.querySelector('.shelf-arrow.left').addEventListener('click', () => scrollRow(-1));
+                sec.querySelector('.shelf-arrow.right').addEventListener('click', () => scrollRow(1));
+
+                // タイルのクリック＝カウント＋1してから移動（カードと同じ動き）
+                sec.querySelectorAll('.shelf-card').forEach(tile => {
+                    const app = appsData.filter(a => a.id === tile.dataset.app)[0];
+                    if (!app) return;
+                    tile.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        goToApp(app);
+                    });
+                });
+            });
+        }
+
+        // カウントしてからアプリへ移動（おそいときは1.5秒で見切り）
+        async function goToApp(app) {
+            try {
+                await Promise.race([
+                    incrementCount(app.id),
+                    new Promise(resolve => setTimeout(resolve, 1500))
+                ]);
+            } catch (err) {
+                console.error(err);
+            }
+            window.location.href = app.link;
+        }
+
         function renderApps() {
             // appsData が存在しない場合のエラー回避
             if (typeof appsData === 'undefined') return;
 
             const favs = getFavorites();
 
-            // 体育（pe）はその他（others）に含める
-            const PE_CATEGORIES = ['pe'];
-            const othersCategories = ['others', ...PE_CATEGORIES];
+            // しぼりこみ中は一覧に集中できるよう、ピックアップをしまう
+            heroArea.style.display = currentCategory === 'all' && searchQuery === '' ? '' : 'none';
+
+            renderShelves();
 
             let filtered = appsData.filter(app => {
                 const matchCategory = currentCategory === 'all' ||
                     (currentCategory === 'favorites' && favs.includes(app.title)) ||
-                    (currentCategory === 'others' && othersCategories.includes(app.category)) ||
+                    (currentCategory === 'others' && OTHERS_CATEGORIES.indexOf(app.category) !== -1) ||
                     app.category === currentCategory;
                 const matchSearch = app.title.toLowerCase().includes(searchQuery) ||
                     app.description.toLowerCase().includes(searchQuery);
@@ -605,43 +1946,43 @@
             appGrid.innerHTML = '';
 
             if (filtered.length === 0) {
-                appGrid.classList.add('hidden');
-                noData.classList.remove('hidden');
+                appGrid.style.display = 'none';
+                noData.classList.add('show');
             } else {
-                appGrid.classList.remove('hidden');
-                noData.classList.add('hidden');
+                appGrid.style.display = '';
+                noData.classList.remove('show');
 
                 filtered.forEach((app, index) => {
                     const card = document.createElement('a');
                     card.href = app.link;
-                    card.className = 'app-card group';
+                    card.className = 'app-card';
 
-                    const colors = CARD_COLORS[app.colorClass] || CARD_COLORS['subject-gray'];
+                    const colors = colorsOf(app);
                     card.style.setProperty('--card-main', colors.main);
-                    card.style.setProperty('--card-soft', colors.soft);
+                    card.style.setProperty('--card-deep', colors.deep);
+                    card.style.setProperty('--card-tint', colors.tint);
                     // 登場アニメーションを順番にずらす（最初の12枚まで）
-                    card.style.animationDelay = `${Math.min(index, 11) * 0.05}s`;
+                    card.style.animationDelay = `${Math.min(index, 11) * 0.04}s`;
 
-                    const isNew = new Date(app.date) > new Date('2026-02-01');
-                    const newBadge = isNew ? `<span class="new-badge">NEW</span>` : '';
-
+                    const newBadge = isNewApp(app) ? `<span class="new-badge">NEW</span>` : '';
                     const isFav = favs.includes(app.title);
-                    const starColor = isFav ? "text-yellow-400 fill-current" : "text-gray-300";
+                    const starClass = isFav ? 'fav-on' : 'fav-off';
+                    const fitClass = app.imageFit === 'contain' ? 'fit-contain' : '';
 
                     card.innerHTML = `
                         ${newBadge}
-                        <button class="absolute top-2.5 left-2.5 z-10 p-1.5 bg-white/90 rounded-full shadow-md fav-btn" data-title="${app.title}" aria-label="お気に入り">
-                            <i data-lucide="star" class="w-5 h-5 ${starColor}"></i>
+                        <button class="fav-btn" data-title="${app.title}" aria-label="お気に入り">
+                            <i data-lucide="star" class="${starClass}" style="width:20px;height:20px"></i>
                         </button>
                         <div class="card-thumbnail">
-                            <img src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
+                            <img class="${fitClass}" src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
                         </div>
-                        <div class="p-5 flex-grow flex flex-col items-center text-center">
-                            <span class="subject-sticker mb-3">${app.tagName}</span>
-                            <h3 class="card-title text-lg text-natural-brown mb-2 pb-1.5 px-4 font-pop">${app.title}</h3>
-                            <p class="text-gray-500 mb-4 flex-grow text-xs leading-relaxed">${app.description}</p>
-                            <div class="w-full flex justify-between items-center text-[11px] text-amber-500 font-bold mt-2 mb-4 px-2">
-                                <span id="count-${app.id}">👁 ---</span>
+                        <div class="card-body">
+                            <span class="subject-sticker">${app.tagName}</span>
+                            <h3 class="card-title">${app.title}</h3>
+                            <p class="card-desc">${app.description}</p>
+                            <div class="card-meta">
+                                <span data-count="${app.id}">👁 ---</span>
                                 <span>📅 ${app.date}</span>
                             </div>
                             <span class="open-btn">あそぶ <span class="arrow">▶</span></span>
@@ -650,37 +1991,70 @@
                     appGrid.appendChild(card);
 
                     // カードクリック時にカウント+1して遷移
-                    card.addEventListener('click', async (e) => {
+                    card.addEventListener('click', (e) => {
                         if (e.target.closest('.fav-btn')) return;
                         e.preventDefault();
-                        try {
-                            await Promise.race([
-                                incrementCount(app.id),
-                                new Promise(resolve => setTimeout(resolve, 1500))
-                            ]);
-                        } catch (err) {
-                            console.error(err);
-                        }
-                        window.location.href = app.link;
+                        goToApp(app);
                     });
                 });
-
-                // ★ボタンのクリックイベント
-                document.querySelectorAll('.fav-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault(); // リンク遷移を防ぐ
-                        toggleFavorite(btn.dataset.title);
-                        renderApps();
-                    });
-                });
-
-                // lucide アイコンの再描画
-                lucide.createIcons();
-
-                // カウント表示を更新（キャッシュ済みデータで即時反映）
-                updateCountDisplay();
             }
+
+            // ★ボタンのクリックイベント
+            document.querySelectorAll('.fav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault(); // リンク遷移を防ぐ
+                    toggleFavorite(btn.dataset.title);
+                    renderApps();
+                });
+            });
+
+            // lucide アイコンの再描画
+            lucide.createIcons();
+
+            // カウント表示を更新（キャッシュ済みデータで即時反映）
+            updateCountDisplay();
         }
+
+        // apps.js が読み込まれた後に実行
+        renderSpotlight();
+        spotlight.addEventListener('click', (e) => {
+            if (!featuredApp) return;
+            e.preventDefault();
+            goToApp(featuredApp);
+        });
+        renderApps();
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                // 見出しを「ぜんぶの アプリ」→「国語の アプリ」のように切りかえる（絵文字は落とす）
+                gridTitle.textContent = currentCategory === 'all'
+                    ? 'ぜんぶの アプリ'
+                    : btn.textContent.trim().replace(/^\S+\s*/, '') + 'の アプリ';
+                renderApps();
+            });
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            renderApps();
+        });
+
+        sortNewBtn.addEventListener('click', () => {
+            sortNewBtn.classList.add('active');
+            sortPopularBtn.classList.remove('active');
+            currentSort = 'new';
+            renderApps();
+        });
+
+        sortPopularBtn.addEventListener('click', () => {
+            sortPopularBtn.classList.add('active');
+            sortNewBtn.classList.remove('active');
+            currentSort = 'name';
+            renderApps();
+        });
 
         // ヘッダーの検索アイコンを描画
         lucide.createIcons();

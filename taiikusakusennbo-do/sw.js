@@ -1,7 +1,7 @@
 // 体育作戦ボード — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'taiikusakusennbo-do-cache-v2';
+const CACHE = 'taiikusakusennbo-do-cache-v3';
 const ASSETS = [
   './',
   './index.html',

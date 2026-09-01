@@ -1,7 +1,7 @@
 // 体育リーグ戦メーカー — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'taiiku-league-cache-v2';
+const CACHE = 'taiiku-league-cache-v3';
 const ASSETS = [
   './',
   './index.html',

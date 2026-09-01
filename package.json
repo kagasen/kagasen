@@ -4,5 +4,8 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^2.1.181"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
   }
 }

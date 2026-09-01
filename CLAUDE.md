@@ -83,6 +83,9 @@ GitHub Pages で公開する静的サイト。各アプリ＝「フォルダ + i
 - [ ] **出典・ライセンスクレジットを表記**し、以後絶対に消さない（例: KanjiVG © Ulrich Apel / CC BY-SA 3.0 は同一ライセンス継承必須。体育の級表は栃木県「みんなが使えるチャレンジカード集」出典）
 - [ ] iPad・スマホ両方の画面幅で表示確認
 - [ ] オフライン（機内モード）で初回以降起動できるか確認
+- [ ] **`node build-seo.mjs` を走らせる**（タイトル・description・canonical・OGP・sitemap.xml がそろう）。
+      りかの島を作りなおしたときは `node science-island/build-islands.mjs` → `node build-seo.mjs` の順。
+      詳しくはルートの `HANDOFF.md`「検索（Google）に出るようにする」
 - [ ] `node release-check.mjs` で外部読み込み等の警告がないか確認
 - [ ] `HANDOFF.md` を最新化
 - [ ] コミットメッセージは既存流儀（`feat: 日本語で内容`）

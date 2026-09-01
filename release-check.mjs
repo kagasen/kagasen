@@ -108,12 +108,21 @@ function externalRefs(html) {
   const out = new Set();
   const res = [
     /<script[^>]*\ssrc=["'](https?:\/\/[^"']+)/gi,
-    /<link[^>]*\shref=["'](https?:\/\/[^"']+)/gi,
     /<iframe[^>]*\ssrc=["'](https?:\/\/[^"']+)/gi,
     /@import\s+url\(\s*["']?(https?:\/\/[^"')]+)/gi,
     /url\(\s*["']?(https?:\/\/[^"')]+)/gi,
   ];
   for (const re of res) for (const m of html.matchAll(re)) out.add(m[1]);
+  /* <link> だけは rel を 見る。canonical / alternate は 「このページの 正しいURLは これ」と
+     検索エンジンに 伝える 印で、ページを 開くときに 読みに 行く ものでは ない
+     （＝オフラインでも 動く）。ここを 外部読み込み扱いすると SEOタグが 全部 ❌に なる。 */
+  for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
+    const tag = m[0];
+    const rel = (tag.match(/\srel=["']([^"']*)["']/i) || [, ''])[1].toLowerCase();
+    if (rel === 'canonical' || rel === 'alternate') continue;
+    const href = tag.match(/\shref=["'](https?:\/\/[^"']+)/i);
+    if (href) out.add(href[1]);
+  }
   // タグ以外（JS内の fetch 等）から既知CDNホストへの参照も拾う
   // 前例: hiraganarensyu が かな筆順データを 実行時に cdn.jsdelivr.net から fetch していた
   const cdnHosts = /https?:\/\/(cdn\.jsdelivr\.net|fastly\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|cdn\.tailwindcss\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)[^"'`\s)\\]*/g;

@@ -7,7 +7,19 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icon.svg">
-<title>うごきのきろく</title>
+<title>うごきのきろく｜かがせんのHAPPYアプリ集</title>
+<!-- SEO:auto build-seo.mjs が作る。手で直さない -->
+<meta name="description" content="なわとび・てつぼう・水泳・ボール運動など全12種目を記録して、たまごの相棒を育てよう！学校の検定カードと同じ「級」で自分ののびがわかるよ。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<link rel="canonical" href="https://kagasen.github.io/kagasen/ugoki-no-kiroku/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="かがせんのHAPPYアプリ集">
+<meta property="og:title" content="うごきのきろく｜かがせんのHAPPYアプリ集">
+<meta property="og:description" content="なわとび・てつぼう・水泳・ボール運動など全12種目を記録して、たまごの相棒を育てよう！学校の検定カードと同じ「級」で自分ののびがわかるよ。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta property="og:url" content="https://kagasen.github.io/kagasen/ugoki-no-kiroku/">
+<meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /SEO:auto -->
 <style>
 :root{
   --sky:#38BDF8; --sky-dark:#0EA5E9; --sky-deep:#0284C7;
@@ -2356,8 +2368,8 @@ const BODY_MACHO_AT = 10;
 const BODY_HEROES = [
   {key:'boy',em:'👦',name:'男の子'},
   {key:'girl',em:'👧',name:'女の子'},
-  {key:'adult',em:'🏆',name:'大人の男性'},
-  {key:'woman',em:'🏋️‍♀️',name:'大人の女性'},
+  {key:'adult',em:'🏆',name:'男性'},
+  {key:'woman',em:'🏋️‍♀️',name:'女性'},
 ];
 function blankHeroBody(){ return {arms:0,chest:0,core:0,legs:0}; }
 function normalizeHeroBody(h){
@@ -2932,7 +2944,7 @@ function viewGrow(){
   return headerHtml('主人公を育てる','💪')+`
     <section class="card grow-intro">
       <h2>1チャレンジが、1つのパワーに。</h2>
-      <p>男の子、女の子、大人の男性、大人の女性から、好きな主人公をいつでも選んで育てられるよ。</p>
+      <p>男の子、女の子、男性、女性から、好きな主人公をいつでも選んで育てられるよ。</p>
       <span class="point-now">⚡ つかえる ${bodyPointsAvailable()}ポイント</span>
     </section>
     ${heroJourneyHtml()}

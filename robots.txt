@@ -1,0 +1,12 @@
+# かがせんのHAPPYアプリ集 — クローラ向けの あんない
+#
+# ※ GitHub Pages の プロジェクトページ（/kagasen/ の 下）に 置いて いるので、
+#    今の ところ この ファイルは 検索エンジンに 読まれない。
+#    robots.txt は かならず ドメインの 一番上（https://kagasen.github.io/robots.txt）が
+#    読まれる きまりで、そこは このリポジトリからは さわれない。
+#    ・sitemap は Google Search Console から 直接 出す（そちらが 正）
+#    ・独自ドメインや kagasen.github.io リポジトリに 引っこしたら この ファイルが 効きだす
+User-agent: *
+Allow: /
+
+Sitemap: https://kagasen.github.io/kagasen/sitemap.xml

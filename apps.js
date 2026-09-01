@@ -1,8 +1,19 @@
 const appsData = [
     {
+        id: "sekai-o-mawarou",
+        title: "せかいをまわろう！",
+        description: "カードをドラッグして12しゅうかんの世界一周の旅ていを組み立てるゲーム。ひこうき・フェリー・リニアで国をつなごう。旅した国は「国ずかん」にたまるよ。",
+        category: "social",
+        tagName: "社会",
+        date: "2026/08/16",
+        colorClass: "subject-green",
+        image: "images/sekai-o-mawarou.jpg",
+        link: "sekai-o-mawarou/index.html"
+    },
+    {
         id: "rekishi-battle",
         title: "レキシバトル",
-        description: "歴史人物42人がカードになって登場！おかねをためて仲間を出撃させるリアルタイム合戦で、弥生時代から明治時代まで51ステージを進もう。勝つとクイズ→カードがもらえて、同じ人物が重なるとレベルアップ＆レア進化。人物カードには時代の色帯がついていて、時代ごとの顔ぶれがひと目でわかるよ。年表ずかん・まめちしき200こ・⭐チャレンジ・組み合わせコンボもあって、遊びながら歴史の流れと人物の業績が身につく。オフラインでも使えるよ。",
+        description: "歴史人物42人のカードで合戦！弥生から明治まで51ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。",
         category: "social",
         tagName: "社会",
         date: "2026/08/11",
@@ -13,45 +24,46 @@ const appsData = [
     {
         id: "todofuken-bouken",
         title: "都道府県の冒険",
-        description: "気球に乗って日本一周！地図タップやシルエットクイズで都道府県の位置・形・県庁所在地・名物をマスター。合格するとご当地カードがもらえて、満点で金カードに進化！47県ぜんぶが読める「都道府県ずかん」つき（県名・名産品・有名な場所・おまつりで検索できるよ）。まちがえた県には🔖がつき、その県だけを出す「にがて こくふく」で苦手をつぶせる。地方マスターテスト・タイムアタック・ふたりでたいけつでやりこみもばっちり。オフラインでも使えるよ。",
+        description: "気球で日本一周！地図タップやシルエットクイズで都道府県の位置・形・県庁所在地・名物をマスター。合格するとご当地カードがもらえるよ。",
         category: "social",
         tagName: "社会",
         date: "2026/07/27",
         colorClass: "subject-green",
         image: "images/todofuken-bouken.svg",
+        imageFit: "contain",
         link: "todofuken-bouken/index.html"
     },
     {
         id: "ugoki-no-kiroku",
         title: "うごきのきろく",
-        description: "なわとび・てつぼう・マット・とびばこ・すいえい・マラソンにサッカー・バスケ・バレー・野球・ドッジ・リレーも加えた全12種目を記録して、たまごの相棒を「でんせつのとり」まで育てよう！学校の検定カードと同じ「級」システム（鉄棒検定20技・なわとび級表・水泳22段階）にボール運動のチャレンジカード、30秒はやまわしグラフ、全技イラスト付き、バッジ図鑑は132種。オフラインでも使えるよ。",
+        description: "なわとび・てつぼう・水泳・ボール運動など全12種目を記録して、たまごの相棒を育てよう！学校の検定カードと同じ「級」で自分ののびがわかるよ。",
         category: "others",        // 体育は「その他」に分類
         tagName: "体育",
         date: "2026/07/02",
         colorClass: "subject-purple",
-        image: "images/ugoki-no-kiroku.svg",
+        image: "images/ugoki-no-kiroku.jpg",
         link: "ugoki-no-kiroku/index.html"
     },
     {
         id: "level-up-adventure",
         title: "自分レベルアップアドベンチャー",
-        description: "毎日の習慣やToDoをこなしてEXPをため、自分のアバターをレベルアップ！コインで部屋の家具や相棒ペットを買えて、続けるほど「鎖（れんぞく記録）」がのびるよ。デイリーミッションや称号、活動の記録カレンダーも。友だちと8文字のコードを交換すれば、カッコいい演出つきの「たいせん」で勝負できる！",
+        description: "毎日の習慣やToDoをこなしてEXPをため、アバターをレベルアップ！コインで家具やペットを買えて、続けるほど「鎖（れんぞく記録）」がのびるよ。",
         category: "others",
         tagName: "その他",
         date: "2026/06/28",
         colorClass: "subject-purple",
-        image: "images/level-up-adventure.svg",
+        image: "images/thumbnails-v2/level-up-adventure.jpg",
         link: "level-up-adventure/index.html"
     },
     {
         id: "kanji-bouken",
         title: "漢字の冒険",
-        description: "学年の島を冒険しながら漢字を手書きでマスター！「れんしゅう」と10問の「テスト」、覚えた漢字がのる漢字図鑑、テストでためたコインで家具を買って自分だけのマイルームを作れるよ。",
+        description: "学年の島を冒険しながら漢字を手書きでマスター！漢字図鑑や、コインで家具を買えるマイルームもあるよ。",
         category: "japanese",
         tagName: "国語",
         date: "2026/06/06",
         colorClass: "subject-red",
-        image: "images/kanji-bouken.svg",
+        image: "images/kanji-bouken-thumbnail-v2.jpg",
         link: "kanji-bouken/index.html"
     },
     {
@@ -62,30 +74,19 @@ const appsData = [
         tagName: "国語",
         date: "2026/05/05",
         colorClass: "subject-red",
-        image: "images/hantainokotoba.jpg",
+        image: "images/thumbnails-v2/hantai-no-kotoba.jpg",
         link: "hantai-no-kotoba/index.html"
     },
     {
         id: "hiraganarensyu",
-        title: "ひらがなれんしゅう",
-        description: "ひらがなをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
+        title: "ひらがなカタカナれんしゅう",
+        description: "ひらがなとカタカナを おてほんを見ながら なぞりがき！書きじゅんも たしかめられて、5もじのテストにも チャレンジできるよ。",
         category: "japanese",
         tagName: "国語",
-        date: "2026/04/03",
+        date: "2026/08/30",
         colorClass: "subject-red",
-        image: "images/hiraganarensyu.jpg",
+        image: "images/thumbnails-v2/hiraganarensyu.jpg",
         link: "hiraganarensyu/index.html"
-    },
-    {
-        id: "katakanarensyu",
-        title: "カタカナれんしゅう",
-        description: "カタカナをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
-        category: "japanese",
-        tagName: "国語",
-        date: "2026/05/05",
-        colorClass: "subject-blue",
-        image: "images/katakanarensyu.jpg",
-        link: "katakanarensyu/index.html"
     },
     {
         id: "shinmatorikusu",
@@ -95,7 +96,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/03/13",
         colorClass: "subject-purple",
-        image: "shinmatorikusu/心マトリクス１.webp",
+        image: "images/thumbnails-v2/shinmatorikusu.jpg",
         link: "shinmatorikusu/index.html"
     },
     {
@@ -106,7 +107,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/03/02",
         colorClass: "subject-blue",
-        image: "images/vision-training.jpg",
+        image: "images/thumbnails-v2/vision-training.jpg",
         link: "vision-training/index.html"
     },
     {
@@ -117,7 +118,7 @@ const appsData = [
         tagName: "学級経営",
         date: "2026/02/26",
         colorClass: "subject-yellow",
-        image: "images/marumarunasaitekikai.jpg",
+        image: "images/thumbnails-v2/marumarusaitekikai.jpg",
         link: "marumarusaitekikai/index.html"
     },
     {
@@ -128,7 +129,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/19",
         colorClass: "subject-gray",
-        image: "images/shukudai.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/shukudai.jpg", // サムネイル画像
         link: "shukudai/index.html"
     },
     {
@@ -139,7 +140,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
-        image: "images/sakusen.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/taiikusakusennbo-do.jpg", // サムネイル画像
         link: "taiikusakusennbo-do/index.html"
     },
     {
@@ -150,7 +151,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
-        image: "images/team.jpg",    // サムネイル画像
+        image: "images/thumbnails-v2/taiikuti-muwake.jpg",    // サムネイル画像
         link: "taiikuti-muwake/index.html"
     },
     {
@@ -161,7 +162,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/02/22",
         colorClass: "subject-red",
-        image: "images/shiritori.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/shiritori.jpg", // サムネイル画像
         link: "shiritori/index.html"
     },
     {
@@ -172,7 +173,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/19",
         colorClass: "subject-gray",
-        image: "images/kyushoku.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/kyushoku-kuji.jpg", // サムネイル画像
         link: "kyushoku-kuji/index.html"
     },
     {
@@ -183,7 +184,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/22",
         colorClass: "subject-purple",
-        image: "images/tonament.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/taiiku-tournament.jpg", // サムネイル画像
         link: "taiiku-tournament/index.html"
     },
     {
@@ -194,7 +195,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/22",
         colorClass: "subject-purple",
-        image: "images/ri-gusen.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/taiiku-league.jpg", // サムネイル画像
         link: "taiiku-league/index.html"
     },
     {
@@ -205,7 +206,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/02/23",
         colorClass: "subject-purple",
-        image: "images/mainitimondai.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/mainitimondai.jpg", // サムネイル画像
         link: "mainitimondai/index.html"
     },
     {
@@ -216,7 +217,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/02/23",
         colorClass: "subject-purple",
-        image: "images/rire-.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/taiiku-relay.jpg", // サムネイル画像
         link: "taiiku-relay/index.html"
     },
     {
@@ -227,7 +228,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/23",
         colorClass: "subject-gray",
-        image: "images/guru-puwake.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/group-maker.jpg", // サムネイル画像
         link: "group-maker/index.html"
     },
     {
@@ -238,7 +239,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/23",
         colorClass: "subject-gray",
-        image: "images/sekigae.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/sekigae.jpg", // サムネイル画像
         link: "sekigae/index.html"
     },
     {
@@ -249,7 +250,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/25",
         colorClass: "subject-gray",
-        image: "images/classbo-do.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/classroom-board.jpg", // サムネイル画像
         link: "classroom-board/index.html"
     },
     {
@@ -260,7 +261,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/02/27",
         colorClass: "subject-purple",
-        image: "images/sikou-tool.jpg", // サムネイル画像
+        image: "images/thumbnails-v2/sikou-tool-app.jpg", // サムネイル画像
         link: "sikou-tool-app/index.html"
     },
     {
@@ -271,7 +272,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/03/12",
         colorClass: "subject-red",
-        image: "images/sakkanojikann.jpg",
+        image: "images/thumbnails-v2/sakkanojikan.jpg",
         link: "sakkanojikan/index.html"
     },
     {
@@ -282,7 +283,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/03/17",
         colorClass: "subject-red",
-        image: "images/kannjibusyu-ta.jpg",
+        image: "images/thumbnails-v2/kannjibusyu-ta.jpg",
         link: "kannjibusyu-ta/index.html"
     },
     {
@@ -293,7 +294,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/03/19",
         colorClass: "subject-red",
-        image: "images/kotobasagashi.jpg",
+        image: "images/thumbnails-v2/kotobasagashi.jpg",
         link: "kotobasagashi/index.html"
     },
     {
@@ -304,7 +305,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/03/27",
         colorClass: "subject-purple",
-        image: "images/typing.jpg",
+        image: "images/thumbnails-v2/typing.jpg",
         link: "typing/index.html"
     }
 ];

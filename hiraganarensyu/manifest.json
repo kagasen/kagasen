@@ -1,14 +1,14 @@
 {
-  "name": "ひらがなれんしゅう",
-  "short_name": "ひらがな",
-  "description": "ひらがなをなぞってかいてみよう！おてほんつきのれんしゅうと、5もじのテストでがんばれるよ。",
+  "name": "ひらがなカタカナれんしゅう",
+  "short_name": "かなれんしゅう",
+  "description": "ひらがなとカタカナをえらんで、なぞりがきと5もじテストにちょうせんできるよ。",
   "lang": "ja",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#FDF2F8",
-  "theme_color": "#F472B6",
+  "background_color": "#FFF4D6",
+  "theme_color": "#5C6BC0",
   "icons": [
     {
       "src": "./icon.svg",

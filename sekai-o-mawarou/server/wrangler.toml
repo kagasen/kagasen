@@ -1,0 +1,15 @@
+# せかいをまわろう！ へやサーバーの せってい（★2026-08-18）
+# つかい方は README.md を 読んでね。
+name = "sekai-o-mawarou"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[[durable_objects.bindings]]
+name = "HUB"
+class_name = "Hub"
+
+# ★無料プランで Durable Object を つかうには **SQLite backed**（new_sqlite_classes）に する。
+#   ここを new_classes にすると 有料プランを 求められて deploy に 失敗する。
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Hub"]

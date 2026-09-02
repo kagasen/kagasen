@@ -55,7 +55,7 @@ const appsData = [
         tagName: "社会",
         date: "2026/08/16",
         colorClass: "subject-green",
-        image: "images/sekai-o-mawarou.jpg",
+        image: "images/thumbnails-v2/sekai-o-mawarou.jpg",
         link: "sekai-o-mawarou/index.html"
     },
     {
@@ -66,7 +66,7 @@ const appsData = [
         tagName: "社会",
         date: "2026/08/11",
         colorClass: "subject-green",
-        image: "images/rekishi-battle.jpg",
+        image: "images/thumbnails-v2/rekishi-battle.jpg",
         link: "rekishi-battle/index.html"
     },
     {
@@ -77,7 +77,7 @@ const appsData = [
         tagName: "社会",
         date: "2026/07/27",
         colorClass: "subject-green",
-        image: "images/todofuken-bouken.svg",
+        image: "images/thumbnails-v2/todofuken-bouken.svg",
         imageFit: "contain",
         link: "todofuken-bouken/index.html"
     },
@@ -89,7 +89,7 @@ const appsData = [
         tagName: "体育",
         date: "2026/07/02",
         colorClass: "subject-purple",
-        image: "images/ugoki-no-kiroku.jpg",
+        image: "images/thumbnails-v2/ugoki-no-kiroku.jpg",
         link: "ugoki-no-kiroku/index.html"
     },
     {
@@ -111,7 +111,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/06/06",
         colorClass: "subject-red",
-        image: "images/kanji-bouken-thumbnail-v2.jpg",
+        image: "images/thumbnails-v2/kanji-bouken.jpg",
         link: "kanji-bouken/index.html"
     },
     {

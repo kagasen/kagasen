@@ -1,5 +1,20 @@
 # うごきのきろく — 引き継ぎメモ
 
+## 使っていない画像 121枚を片づけ（2026-09-02 / cache v73→v74）
+- `images/` が428MB もあったので、**index.html からも sw.js からも読まれていない画像だけ**を消した（→ 284MB）。
+  わざの画像・アバター・ホームアイコンで **実際に表示されるものは1枚も減っていない**（12種目ぜんぶブラウザで確認済み）。
+- 消したもの: ①AI生成の没・候補（`*-candidate-hq-v7.png` `*-candidate-illustration-v10.png` など。
+  採用版と中身が同じファイルも多かった）②世代交代した古い版（`b5-kubihane-tobi.png`〜`-v12` → 使用中は `-v13`、
+  `b2-kaikyaku-tobi(-v2)` → `-v3`、`b4-daijo-zenten(-v2)` → `-v3`、`t15-udetate-koten` `t19-udetate-zenten`）
+  ③アバターの `{adult,body,girl,woman}-base-v1.png` と `woman-all-v1.png`
+  → `render` 側が **`base` と `woman-all` のときは必ず `v2`** を見るので、この5枚には永久に到達しない。
+- **`images/home-mat-v2.png` `images/home-tetsubo-v2.png`**: ホームは `home-icons/*-v3.png` に置きかわっているのに
+  `sw.js` の ASSETS にだけ残っていた（＝子どもの端末が1.9MBよけいにダウンロードしていた）。
+  ファイルと ASSETS の2行を消し、**CACHE を `ugoki-cache-v73` → `v74`** に繰り上げた。
+- **`TECHNIQUE-SPECS.md` `ADVANCED-SPECS.md` `GENERATION-PLAN.md` `REVIEW-CHECKLIST.md` は残してある**
+  （画像を作りなおすときの仕様メモなので消さない）。
+- 検証: sw.js の precache 一覧に欠落なし／Chromium で12種目すべて開いて 404・JSエラー・画像切れ ゼロ。
+
 ## 種目詳細のレスポンシブ一覧（2026-08-24）
 - 各わざカードを `.skill-grid` で包み、スマホは1列、幅700px以上（iPadなど）は2列、幅1100px以上のPCは3列で表示する。
 - 詳細ルートでは `render()` が `#app` に `.sport-detail` を付け、最大幅を1180pxまで広げる。ホーム・設定など既存画面は640pxのまま。

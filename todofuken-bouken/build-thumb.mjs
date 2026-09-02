@@ -1,4 +1,4 @@
-// ポータル用サムネイル生成: map-data.js → ../images/todofuken-bouken.svg
+// ポータル用サムネイル生成: map-data.js → ../images/thumbnails-v2/todofuken-bouken.svg
 //   （node todofuken-bouken/build-thumb.mjs）
 // 生成物のSVGは手編集しない。直すときはこのスクリプトを直して再生成する（CLAUDE.md §4）。
 //
@@ -119,7 +119,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" vi
 </svg>
 `;
 
-const out = new URL('../images/todofuken-bouken.svg', import.meta.url);
+const out = new URL('../images/thumbnails-v2/todofuken-bouken.svg', import.meta.url);
 fs.writeFileSync(out, svg);
 console.log('サムネイルを生成した（' + svg.length + ' bytes / 47都道府県OK / ' +
   '秋田県の中心 y=' + akitaY.toFixed(1) + '・キャッチコピー y=' + BAND.y + '〜' + (BAND.y + BAND.h) +

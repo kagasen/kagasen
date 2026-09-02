@@ -1,5 +1,44 @@
 # ルート（ポータル） — 引き継ぎメモ
 
+## いらないファイルの片づけ・サムネイルの置き場そろえ（2026-09-02）
+
+作業ツリーが 570MB まで ふくらんでいたので、**どのアプリからも読まれていないファイル**を消した（→ 419MB）。
+消したのは「使われていないもの」だけで、**アプリの見た目・動きは1つも変えていない**。
+
+- **`ugoki-no-kiroku/images/` から 121枚（142MB）**。中身は2種類。
+  - AI画像を作ったときの**没・候補ファイル**（`*-candidate-hq-v7.png` `*-candidate-illustration-v10.png` など）。
+    採用した1枚（`m2-koten.png` など）と**中身がバイト単位で同じ**ものが多く、消しても採用版はのこる。
+  - **世代交代した古い版**（`b5-kubihane-tobi.png`〜`-v12.png` → いまは `-v13` を使用 / `t15-udetate-koten.png` /
+    アバターの `*-base-v1.png`・`woman-all-v1.png` → コードが `base` と `woman-all` は必ず v2 を見るため到達しない）。
+  - **`images/home-mat-v2.png`・`home-tetsubo-v2.png`** は `home-icons/*-v3.png` に置きかわり済みなのに
+    `sw.js` だけが precache していた（子どもの端末に1.9MB むだにダウンロードさせていた）。
+    → ファイルと `sw.js` の2行を消して **CACHE を v73→v74** に繰り上げた。
+  - ★**画像を作りなおすときの仕様メモ（`TECHNIQUE-SPECS.md` `GENERATION-PLAN.md` など）は消していない**。
+- **`images/` 直下の 旧サムネイル 26枚（約9MB）**。`images/thumbnails-v2/` の新しい版に置きかわり済みで、
+  `apps.js` はもう読んでいなかった（`hantainokotoba.jpg` `sakusen.jpg` `tonament.jpg` など）。
+- **サムネイルの置き場を `images/thumbnails-v2/` に統一**。ルート直下に散らばっていた5枚を移動し、
+  `apps.js` と `todofuken-bouken/build-thumb.mjs` の参照も直した。
+  → **`images/` 直下は `light-oak-bg.png` / `ogp.png` / `ogp.svg` / `thumbnails-v2/` だけ**になった。
+  漢字の冒険だけ2枚あったので、**apps.js が表示していたほう**を `thumbnails-v2/kanji-bouken.jpg` として残した
+  （見た目を変えないため。もう1枚は消した）。
+- **消していないもの（意図的）**: `sekai-o-mawarou/server/`（HANDOFF に「のこす」と明記）、
+  `kanji-bouken/poc.html`（HANDOFF に参考として記載）、`rekishi-battle/PROMPTS-*.md`・`HISTORY.md`、
+  各アプリの `vendor/`・`fonts/` の同じファイル（オフライン用に1アプリ1コピーが前提）。
+- **検証**: 全 `sw.js` の precache 一覧に欠落なし／リポジトリ全体の静的リンク893件に切れなし／
+  `node build-seo.mjs` で変化なし／`node release-check.mjs` のエラーは作業前と同じ8件（りかの4島が未作成）だけ／
+  Chromium でポータル・うごきのきろく（12競技すべて）・都道府県の冒険・漢字の冒険を開いて 404・JSエラー・画像切れ ゼロ。
+
+★のこっている宿題（今回は触っていない）:
+- `apps.js` の **りかの4島（`draft: true`）は フォルダも サムネイルも まだ無い**。
+  `release-check.mjs` が❌8件を出すのはこれが原因（作りかけなので想定内）。
+- `CLAUDE.md`・この HANDOFF が書いている **`science-island/build-islands.mjs` は 実在しない**。
+  島を作りなおすときに気づけるよう、ここに書いておく。
+- **同じライブラリ・フォントが複数アプリに重複**している（lucide×5・babel×2・react系×2・woff2で計15MB）。
+  ルートの1つを `../vendor/` `../fonts/` で共有すれば減らせるが、各アプリの `sw.js` の
+  precache もぜんぶ直すことになり **オフラインを壊すリスクがある**ので、今回は手を付けていない。
+- `.git` が497MBある。**過去のコミットに大きな画像が入っているため、今回の削除では小さくならない**
+  （小さくするには履歴の書きかえ＝force push が必要。ふだんの使用に支障はない）。
+
 ## 検索（Google）に出るようにする — SEOタグ・sitemap・OGP（2026-09-01）
 
 公開URLは **https://kagasen.github.io/kagasen/**（プロジェクトページなので `/kagasen/` が付く）。

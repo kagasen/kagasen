@@ -2,3 +2,14 @@
 node_modules/
 sekai-o-mawarou/.cache/
 sekai-o-mawarou/server/.wrangler/
+
+# 開発中の作業ファイル（アプリでは使わないので GitHub には上げない）
+# ★ルート直下だけを対象にする（先頭の / がその意味）。
+#   アプリのフォルダの中の画像は名前が似ていても無視されない。
+tmp/
+scratchpad/
+/*-preview.png
+/*-preview-*.png
+/*_view.png
+/*-view.png
+/ugoki-*.png

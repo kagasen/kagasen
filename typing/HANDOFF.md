@@ -3,6 +3,12 @@
 学年別タイピング練習。**複数ページ構成**（例外的にビルドあり: `npm run build:typing` が
 app.js(JSX) → app.compiled.js を esbuild で変換）。
 
+## 外観リニューアル（2026-09-02）
+- 出題内容・モード・採点などの機能は変えず、`polish.css` でトップ画面と2〜6年生の練習画面の背景・カード・配色・立体感だけを刷新。
+- 対象ページでは body に `typing-home` / `typing-play` を付けて適用範囲を限定。70のとっくん・流れる単語・ショップ固有のデザインには影響させない。
+- ペットショップの9種類は `images/pets/{species}-{egg|baby|teen|adult}.png` の生成画像へ刷新。全36点が別画像で、たまご→ヒナ→こども→大人の順に切り替わる。大人は体格・羽や尾／しっぽ・衣装・装飾を大幅に進化させ、こどもとの差が明確。ショップでは9種類すべて、購入前にたまご段階の画像を表示する。
+- SWキャッシュは `typing-cache-v8`。`polish.css` とペット画像36点もプリキャッシュ対象。
+
 - `index.html` … 学年えらびトップ
 - `2nen〜6nen/index.html` … 学年別練習（React 18 UMD + app.compiled.js）
 - `nagare2nen〜6nen.html` … 流れ（カリキュラム）ページ

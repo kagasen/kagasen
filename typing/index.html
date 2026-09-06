@@ -22,6 +22,7 @@
          Tailwind=使用クラスだけの静的ビルド(tailwind.css)。再生成手順は HANDOFF.md -->
     <link rel="stylesheet" href="fonts.css">
     <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="polish.css">
 
     <!-- CSS カスタマイズ -->
     <style>
@@ -118,15 +119,15 @@
     <link rel="apple-touch-icon" href="./icon.svg">
 </head>
 
-<body class="p-4 md:p-8 flex items-center justify-center">
+<body class="typing-home p-4 md:p-8 flex items-center justify-center">
     <script src="preflight.js"></script>
 
     <div
-        class="max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border-4 border-blue-200">
+        class="app-shell max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border-4 border-blue-200">
 
         <!-- ヘッダー -->
-        <header class="text-center mb-10">
-            <div class="text-5xl animate-float mb-4 inline-block">⌨️</div>
+        <header class="app-hero text-center mb-10">
+            <div class="hero-key text-5xl animate-float mb-4 inline-block">⌨️</div>
             <h1 class="title-font text-3xl md:text-5xl text-blue-600 drop-shadow-sm mb-4">
                 キッズタイピングマスター
             </h1>
@@ -135,13 +136,13 @@
 
         <!-- ポイント合計表示 -->
         <div class="text-center mb-6">
-            <div class="inline-block bg-amber-50 border-2 border-amber-400 rounded-2xl px-8 py-3 shadow-sm">
+            <div class="points-card inline-block bg-amber-50 border-2 border-amber-400 rounded-2xl px-8 py-3 shadow-sm">
                 <div class="text-amber-600 font-bold text-sm mb-1">⭐ これまでのポイント合計</div>
                 <div class="text-4xl font-black text-amber-500 title-font" id="total-pts-val">0</div>
                 <div class="text-amber-600 text-sm font-bold">pt</div>
             </div>
             <div class="mt-2">
-                <button onclick="BackupKit.open()" class="text-blue-400 hover:text-blue-600 text-sm font-bold underline">💾 きろくを まもる（バックアップ・ひきつぎ）</button>
+                <button onclick="BackupKit.open()" class="backup-link text-blue-400 hover:text-blue-600 text-sm font-bold underline">💾 きろくを まもる（バックアップ・ひきつぎ）</button>
             </div>
         </div>
         <script>
@@ -153,7 +154,7 @@
 
         <!-- 注意書き -->
         <div
-            class="bg-red-50 border-2 border-red-200 text-red-600 font-bold rounded-xl p-4 mb-10 text-center max-w-2xl mx-auto shadow-sm">
+            class="keyboard-notice bg-red-50 border-2 border-red-200 text-red-600 font-bold rounded-xl p-4 mb-10 text-center max-w-2xl mx-auto shadow-sm">
             <span class="text-xl mr-2">⚠️</span>
             あそぶときは、キーボードを「半角英数（はんかくえいすう）」にしてね！<br>
             <span class="text-sm">（日本語入力がオンだと、うまくあそべません）</span>
@@ -162,14 +163,14 @@
         <!-- 70のとっくん（2年枠の上） -->
         <div class="mb-8 max-w-xl mx-auto">
             <a href="./tokkun70/index.html"
-                class="grade-card block w-full text-center py-5 px-6 rounded-2xl font-bold text-xl md:text-2xl title-font text-white shadow-lg border-[3px] border-amber-400 bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 transition-all">
+                class="tokkun-feature grade-card block w-full text-center py-5 px-6 rounded-2xl font-bold text-xl md:text-2xl title-font text-white shadow-lg border-[3px] border-amber-400 bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 transition-all">
                 70のとっくん
             </a>
             <p class="text-center text-amber-900/80 text-sm mt-2 font-bold">タイピング 全70ステージ</p>
         </div>
 
         <!-- 学年グリッド -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grade-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <!-- 2年生 -->
             <div
@@ -254,7 +255,7 @@
         <!-- ショップボタン -->
         <div class="mt-8 text-center">
             <a href="./shop.html"
-                class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-xl title-font text-white shadow-lg transition-all hover:scale-[1.03]"
+                class="shop-button inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-xl title-font text-white shadow-lg transition-all hover:scale-[1.03]"
                 style="background:linear-gradient(135deg,#ff6b35,#f4b942); border: 3px solid #2d2a26; box-shadow: 4px 4px 0 #2d2a26;">
                 🛒 ポイントショップ
             </a>
@@ -264,7 +265,7 @@
         <!-- アプリのホームへ戻る -->
         <div class="mt-6 text-center">
             <a href="../index.html"
-                class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-full transition-colors">
+                class="home-button inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-full transition-colors">
                 <span>◀ ホームにもどる</span>
             </a>
         </div>

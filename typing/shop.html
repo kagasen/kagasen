@@ -143,6 +143,17 @@
   }
   .egg-card:hover { transform: translateY(-3px); border-color: var(--accent); }
   .egg-card .egg-svg { width: 80px; height: 90px; margin: 0 auto 8px; }
+  .egg-card .pet-image {
+    width: 124px;
+    height: 124px;
+    margin: -8px auto 6px;
+    filter: drop-shadow(0 10px 10px rgba(74, 55, 31, 0.18));
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .egg-card:hover .pet-image {
+    transform: translateY(-5px) rotate(-2deg) scale(1.05);
+    filter: drop-shadow(0 15px 13px rgba(74, 55, 31, 0.24));
+  }
   .egg-card .name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .egg-card .desc {
     font-size: 11px;
@@ -189,6 +200,17 @@
     text-align: center;
   }
   .pet-svg { width: 110px; height: 110px; margin: 0 auto 8px; }
+  .pet-image {
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    user-select: none;
+    -webkit-user-drag: none;
+    filter: drop-shadow(0 9px 8px rgba(74, 55, 31, 0.18));
+  }
+  .pet-image.stage-baby { transform: scale(0.84); }
+  .pet-image.stage-teen { transform: scale(0.94); }
+  .pet-image.stage-adult { transform: scale(1.05); }
   .pet-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
   .pet-stage {
     font-size: 12px;
@@ -560,6 +582,27 @@
     cursor: pointer;
     font-family: inherit;
   }
+
+  @media (max-width: 600px) {
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { padding: 10px 10px 74px; }
+    .app { width: calc(100vw - 20px); max-width: calc(100vw - 20px); min-width: 0; }
+    header { padding: 11px 12px; border-radius: 16px; }
+    header h1 { font-size: 17px; white-space: nowrap; }
+    .points { padding: 6px 10px; font-size: 14px; }
+    .tabs { gap: 5px; }
+    .tab { min-width: 0; padding: 9px 3px; font-size: 12px; }
+    .panel { padding: 14px; border-radius: 16px; }
+    .panel h2 { font-size: 18px; margin-bottom: 8px; }
+    .panel-sub { font-size: 12px; }
+    .eggs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .egg-card { min-width: 0; padding: 10px 7px; }
+    .egg-card .pet-image { width: 104px; height: 104px; }
+    .egg-card .name { font-size: 13px; }
+    .egg-card .desc { font-size: 10px; }
+    .buy-btn { padding: 7px 3px; font-size: 11px; }
+    .back-link { right: 10px; bottom: 10px; padding: 8px 12px; font-size: 11px; }
+  }
 </style>
 </head>
 <body>
@@ -736,7 +779,7 @@
   }
 
   // ============================================
-  // SVG（たまご・各種ペット）
+  // 生成画像ペット（たまご・ヒナ・こども・大人）
   // ============================================
   function svgEgg(eggType) {
     const c = eggType.color, s = eggType.spots;
@@ -761,12 +804,15 @@
   }
 
   function svgPet(species, stage) {
-    if (stage === 'egg') return svgEggLarge(EGG_TYPES[species]);
-    const fn = {
-      chick: svgChick, penguin: svgPenguin, bunny: svgBunny, fox: svgFox,
-      cat: svgCat, owl: svgOwl, dino: svgDino, dragon: svgDragon, angel: svgAngel
-    }[species];
-    return fn ? fn(stage) : '';
+    return petImage(species, stage);
+  }
+
+  function petImage(species, stage = 'adult') {
+    const egg = EGG_TYPES[species];
+    if (!egg) return '';
+    const safeStage = ['egg', 'baby', 'teen', 'adult'].includes(stage) ? stage : 'adult';
+    const stageAlt = { egg: 'たまご', baby: 'ヒナ', teen: 'こども', adult: '大人' }[safeStage];
+    return `<img class="pet-svg pet-image stage-${safeStage}" src="./images/pets/${species}-${safeStage}.png" alt="${egg.name}の${stageAlt}" loading="lazy" decoding="async">`;
   }
 
   // --- ヒヨコ ---
@@ -1259,7 +1305,7 @@
       div.className = 'egg-card';
       const canBuy = state.points >= egg.price;
       div.innerHTML = `
-        ${svgEgg(egg)}
+        ${petImage(egg.species, 'egg')}
         <div class="name">${egg.eggName}</div>
         <div class="desc">${egg.desc}</div>
         <div class="price">💰 ${egg.price.toLocaleString()} P</div>
@@ -1502,10 +1548,10 @@
     saveState();
     const card = document.querySelector(`[data-pet-id="${pet.id}"]`);
     if (card) {
-      const svg = card.querySelector('svg');
-      if (svg) {
-        svg.classList.add(evolved ? 'sparkle' : 'bounce');
-        setTimeout(() => svg.classList.remove('sparkle', 'bounce'), 800);
+      const petVisual = card.querySelector('.pet-svg');
+      if (petVisual) {
+        petVisual.classList.add(evolved ? 'sparkle' : 'bounce');
+        setTimeout(() => petVisual.classList.remove('sparkle', 'bounce'), 800);
       }
     }
     renderPets();
@@ -1527,7 +1573,7 @@
       div.className = 'dex-card' + (unlocked ? '' : ' locked');
       div.innerHTML = `
         <div class="dex-num">No.${String(i + 1).padStart(2, '0')}</div>
-        ${unlocked ? svgPet(egg.species, 'adult') : svgEggLarge(egg)}
+        ${unlocked ? svgPet(egg.species, 'adult') : petImage(egg.species, 'egg')}
         <div class="name">${unlocked ? egg.name : '？？？'}</div>
         ${unlocked ? '<div class="badge">⭐ コンプリート</div>' : '<div class="badge" style="color:#aaa;">未登録</div>'}
       `;

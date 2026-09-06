@@ -1,0 +1,276 @@
+/* キッズタイピング：内容や操作を変えず、外観だけを整える共通テーマ */
+:root {
+  --typing-navy: #0b1638;
+  --typing-indigo: #263b93;
+  --typing-cyan: #39d7e8;
+  --typing-violet: #7456ef;
+  --typing-ink: #17213f;
+}
+
+body.typing-home,
+body.typing-play {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  color: var(--typing-ink);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(57, 215, 232, .35), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgba(116, 86, 239, .38), transparent 34%),
+    radial-gradient(circle at 50% 105%, rgba(255, 185, 80, .22), transparent 34%),
+    linear-gradient(145deg, #07132d 0%, #14285d 52%, #17214d 100%) !important;
+  background-attachment: fixed !important;
+}
+
+body.typing-home::before,
+body.typing-play::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  opacity: .24;
+  background-image:
+    linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 86%);
+  mask-image: linear-gradient(to bottom, #000, transparent 86%);
+}
+
+body.typing-home::after,
+body.typing-play::after {
+  content: "";
+  position: fixed;
+  width: 420px;
+  height: 420px;
+  right: -160px;
+  bottom: -170px;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(49, 221, 210, .22);
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+/* トップ画面 */
+.typing-home .app-shell {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  border-radius: 38px !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(241,246,255,.95)) !important;
+  box-shadow: 0 34px 80px rgba(0,0,0,.38), 0 1px 0 rgba(255,255,255,.9) inset !important;
+}
+
+.typing-home .app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: linear-gradient(90deg, #39d7e8, #4d7cff 50%, #a855f7);
+}
+
+.typing-home .app-hero {
+  position: relative;
+  margin: -1rem -1rem 2rem;
+  padding: 2rem 1rem 1.8rem;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 14% 0, rgba(57,215,232,.23), transparent 27%),
+    linear-gradient(135deg, #0d1c47, #253a8d 62%, #49339b);
+  box-shadow: 0 18px 38px rgba(25,43,102,.25);
+}
+
+.typing-home .hero-key {
+  display: inline-grid !important;
+  place-items: center;
+  width: 76px;
+  height: 66px;
+  margin-bottom: 1rem !important;
+  border: 1px solid rgba(255,255,255,.65);
+  border-bottom: 7px solid rgba(7,15,43,.55);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #fff, #dfe9ff);
+  box-shadow: 0 13px 26px rgba(0,0,0,.28), inset 0 2px 2px #fff;
+  filter: none;
+}
+
+.typing-home .app-hero h1 {
+  color: #fff !important;
+  max-width: 100%;
+  font-size: clamp(1.45rem, 5vw, 3rem) !important;
+  line-height: 1.35 !important;
+  overflow-wrap: anywhere;
+  text-shadow: 0 3px 0 rgba(0,0,0,.18), 0 0 28px rgba(57,215,232,.3) !important;
+  letter-spacing: .035em;
+}
+
+.typing-home .app-hero p { color: #dcecff !important; }
+
+.typing-home .points-card {
+  min-width: 250px;
+  border: 1px solid rgba(245,158,11,.5) !important;
+  background: linear-gradient(145deg, #fffdf4, #fff4cc) !important;
+  box-shadow: 0 13px 28px rgba(183,119,16,.14), inset 0 1px 0 #fff !important;
+}
+
+.typing-home .backup-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  color: #425276 !important;
+  text-decoration: none !important;
+  border-radius: 999px;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  transition: color .18s, background .18s, transform .18s;
+}
+.typing-home .backup-link:hover { color: #263b93 !important; background: #edf2ff; transform: translateY(-1px); }
+
+.typing-home .keyboard-notice {
+  border: 1px solid #ffc8c8 !important;
+  border-left: 6px solid #ff6b6b !important;
+  background: linear-gradient(135deg, #fff8f8, #fff0f3) !important;
+  color: #b52c43 !important;
+  box-shadow: 0 10px 24px rgba(181,44,67,.08) !important;
+}
+
+.typing-home .tokkun-feature {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.5) !important;
+  background: linear-gradient(120deg, #101e4d, #4e36a8 58%, #f07a3f) !important;
+  box-shadow: 0 14px 30px rgba(35,40,104,.3), inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+.typing-home .tokkun-feature::after {
+  content: "";
+  position: absolute;
+  inset: -80% -15%;
+  background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.24) 50%, transparent 58%);
+  transform: translateX(-55%);
+  transition: transform .45s ease;
+}
+.typing-home .tokkun-feature:hover::after { transform: translateX(55%); }
+
+.typing-home .grade-grid { gap: 1.35rem !important; }
+.typing-home .grade-card {
+  --accent: #ff8a3d;
+  --accent-dark: #f15b2a;
+  position: relative;
+  overflow: hidden;
+  padding: 1.35rem !important;
+  border: 1px solid rgba(137,154,190,.28) !important;
+  background: rgba(255,255,255,.92) !important;
+  box-shadow: 0 14px 30px rgba(27,43,86,.12), inset 0 1px 0 #fff;
+}
+.typing-home .grade-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+}
+.typing-home .grade-card:nth-child(2) { --accent:#38c978; --accent-dark:#18884d; }
+.typing-home .grade-card:nth-child(3) { --accent:#45a8ff; --accent-dark:#2462d3; }
+.typing-home .grade-card:nth-child(4) { --accent:#a86bf1; --accent-dark:#6534bd; }
+.typing-home .grade-card:nth-child(5) { --accent:#f16ca6; --accent-dark:#c43175; }
+
+.typing-home .grade-card > .text-4xl {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: .35rem !important;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--accent) 16%, white));
+  box-shadow: 0 9px 20px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.typing-home .grade-card > a:first-of-type {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-dark) 30%, transparent) !important;
+}
+.typing-home .grade-card > a:last-of-type {
+  background: #172b58 !important;
+  box-shadow: 0 7px 16px rgba(11,22,56,.2) !important;
+}
+.typing-home .grade-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 22px 42px rgba(27,43,86,.19), inset 0 1px 0 #fff;
+}
+
+.typing-home .tokkun-feature.grade-card {
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.5) !important;
+  background: linear-gradient(120deg, #101e4d, #4e36a8 58%, #f07a3f) !important;
+  box-shadow: 0 14px 30px rgba(35,40,104,.3), inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+.typing-home .tokkun-feature.grade-card::before { display: none; }
+
+.typing-home .shop-button {
+  border: 1px solid rgba(255,255,255,.7) !important;
+  background: linear-gradient(135deg, #ff5f6d, #ff8a3d 48%, #f6bf3f) !important;
+  box-shadow: 0 12px 25px rgba(225,79,55,.26) !important;
+}
+.typing-home .home-button { border: 1px solid #dce4f3; box-shadow: 0 7px 18px rgba(31,45,84,.09); }
+
+/* 学年別の練習画面。問題・入力・採点ロジックには触れない */
+.typing-play { font-family: 'Zen Maru Gothic', 'Mochiy Pop One', sans-serif !important; }
+.typing-play #root > div {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(57,215,232,.27), transparent 27%),
+    radial-gradient(circle at 88% 12%, rgba(116,86,239,.3), transparent 30%),
+    linear-gradient(145deg, #08142f, #172c64 56%, #202159) !important;
+}
+.typing-play #root > div > div {
+  border: 1px solid rgba(255,255,255,.7) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(241,246,255,.96)) !important;
+  box-shadow: 0 30px 70px rgba(0,0,0,.36) !important;
+}
+.typing-play #root .bg-blue-100 {
+  border-color: #b9d7ff !important;
+  background: linear-gradient(135deg, #edf6ff, #dfe9ff) !important;
+  box-shadow: inset 0 1px 0 #fff;
+}
+.typing-play #root .bg-gray-50 {
+  border-color: #d8e1f1 !important;
+  background: linear-gradient(145deg, #fff, #f3f7ff) !important;
+  box-shadow: inset 0 2px 8px rgba(31,49,91,.07) !important;
+}
+.typing-play > .fixed a {
+  border-color: rgba(255,255,255,.65) !important;
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,.25) !important;
+}
+
+@media (max-width: 767px) {
+  body.typing-home { padding: .75rem !important; }
+  .typing-home .app-shell {
+    width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    padding: 1rem !important;
+    border-radius: 28px !important;
+  }
+  .typing-home .app-shell * { min-width: 0; }
+  .typing-home .app-hero { margin: -.35rem -.35rem 1.5rem; padding: 1.6rem .75rem 1.35rem; }
+  .typing-home .app-hero h1 { font-size: 1.25rem !important; letter-spacing: 0; overflow-wrap: anywhere; }
+  .typing-home .app-hero p { font-size: .96rem !important; }
+  .typing-home .hero-key { width: 62px; height: 54px; border-radius: 15px; }
+  .typing-home .points-card { min-width: min(250px, 92vw); }
+  .typing-home .backup-link,
+  .typing-home .keyboard-notice { overflow-wrap: anywhere; word-break: normal; }
+  .typing-home .keyboard-notice { width: 100%; padding: .9rem .75rem !important; font-size: .86rem; }
+  .typing-home .tokkun-feature,
+  .typing-home .grade-grid { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-home .animate-float { animation: none !important; }
+  .typing-home .grade-card,
+  .typing-home .tokkun-feature::after { transition: none !important; }
+}

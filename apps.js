@@ -55,7 +55,7 @@ const appsData = [
         tagName: "社会",
         date: "2026/08/16",
         colorClass: "subject-green",
-        image: "images/sekai-o-mawarou.jpg",
+        image: "images/thumbnails-v3/sekai-o-mawarou.jpg",
         link: "sekai-o-mawarou/index.html"
     },
     {
@@ -66,7 +66,7 @@ const appsData = [
         tagName: "社会",
         date: "2026/08/11",
         colorClass: "subject-green",
-        image: "images/rekishi-battle.jpg",
+        image: "images/thumbnails-v3/rekishi-battle.jpg",
         link: "rekishi-battle/index.html"
     },
     {
@@ -77,19 +77,18 @@ const appsData = [
         tagName: "社会",
         date: "2026/07/27",
         colorClass: "subject-green",
-        image: "images/todofuken-bouken.svg",
-        imageFit: "contain",
+        image: "images/thumbnails-v3/todofuken-bouken.jpg",
         link: "todofuken-bouken/index.html"
     },
     {
         id: "ugoki-no-kiroku",
         title: "うごきのきろく",
         description: "なわとび・てつぼう・水泳・ボール運動など全12種目を記録して、たまごの相棒を育てよう！学校の検定カードと同じ「級」で自分ののびがわかるよ。",
-        category: "others",        // 体育は「その他」に分類
+        category: "pe",            // 体育カテゴリ
         tagName: "体育",
         date: "2026/07/02",
         colorClass: "subject-purple",
-        image: "images/ugoki-no-kiroku.jpg",
+        image: "images/thumbnails-v3/ugoki-no-kiroku.jpg",
         link: "ugoki-no-kiroku/index.html"
     },
     {
@@ -111,7 +110,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/06/06",
         colorClass: "subject-red",
-        image: "images/kanji-bouken-thumbnail-v2.jpg",
+        image: "images/thumbnails-v3/kanji-bouken.jpg",
         link: "kanji-bouken/index.html"
     },
     {
@@ -144,7 +143,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/03/13",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/shinmatorikusu.jpg",
+        image: "images/thumbnails-v3/shinmatorikusu.jpg",
         link: "shinmatorikusu/index.html"
     },
     {
@@ -155,7 +154,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/03/02",
         colorClass: "subject-blue",
-        image: "images/thumbnails-v2/vision-training.jpg",
+        image: "images/thumbnails-v4/vision-training.jpg",
         link: "vision-training/index.html"
     },
     {
@@ -166,7 +165,7 @@ const appsData = [
         tagName: "学級経営",
         date: "2026/02/26",
         colorClass: "subject-yellow",
-        image: "images/thumbnails-v2/marumarusaitekikai.jpg",
+        image: "images/thumbnails-v3/marumarusaitekikai.jpg",
         link: "marumarusaitekikai/index.html"
     },
     {
@@ -177,29 +176,29 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/19",
         colorClass: "subject-gray",
-        image: "images/thumbnails-v2/shukudai.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/shukudai.jpg", // サムネイル画像
         link: "shukudai/index.html"
     },
     {
         id: "taiikusakusennbo-do",
         title: "体育作戦ボード",
         description: "体育の試合や練習で使える！マグネットみたいに動かせるよ。",
-        category: "others",        // 体育は「その他」に分類
+        category: "pe",            // 体育カテゴリ
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/taiikusakusennbo-do.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/taiikusakusennbo-do.jpg", // サムネイル画像
         link: "taiikusakusennbo-do/index.html"
     },
     {
         id: "taiikuti-muwake",
         title: "体育チーム分け",
         description: "体育の授業などで使える！スムーズにチーム分けができるよ。",
-        category: "others",        // 体育は「その他」に分類
+        category: "pe",            // 体育カテゴリ
         tagName: "体育",
         date: "2026/02/19",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/taiikuti-muwake.jpg",    // サムネイル画像
+        image: "images/thumbnails-v3/taiikuti-muwake.jpg",    // サムネイル画像
         link: "taiikuti-muwake/index.html"
     },
     {
@@ -210,7 +209,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/02/22",
         colorClass: "subject-red",
-        image: "images/thumbnails-v2/shiritori.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/shiritori.jpg", // サムネイル画像
         link: "shiritori/index.html"
     },
     {
@@ -221,29 +220,29 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/19",
         colorClass: "subject-gray",
-        image: "images/thumbnails-v2/kyushoku-kuji.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/kyushoku-kuji.jpg", // サムネイル画像
         link: "kyushoku-kuji/index.html"
     },
     {
         id: "taiiku-tournament",
         title: "体育トーナメントメーカー",
         description: "4〜41チームのトーナメント表を自動作成！試合タイマーつきで本番も万全。",
-        category: "others",        // 体育は「その他」に分類
+        category: "pe",            // 体育カテゴリ
         tagName: "体育",
         date: "2026/02/22",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/taiiku-tournament.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/taiiku-tournament.jpg", // サムネイル画像
         link: "taiiku-tournament/index.html"
     },
     {
         id: "taiiku-league",
         title: "体育リーグ戦メーカー",
         description: "総当たりのリーグ戦スケジュールを自動作成！コート数も指定できて順位表も自動計算。",
-        category: "others",        // 体育は「その他」に分類
+        category: "pe",            // 体育カテゴリ
         tagName: "体育",
         date: "2026/02/22",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/taiiku-league.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/taiiku-league.jpg", // サムネイル画像
         link: "taiiku-league/index.html"
     },
     {
@@ -254,29 +253,29 @@ const appsData = [
         tagName: "その他",
         date: "2026/02/23",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/mainitimondai.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/mainitimondai.jpg", // サムネイル画像
         link: "mainitimondai/index.html"
     },
     {
         id: "taiiku-relay",
         title: "体育リレーチーム編成メーカー",
         description: "タイムを入力するだけで公平なリレーチームを自動作成！ドラッグ＆ドロップで手動調整も可能。",
-        category: "others",        // 体育は「その他」に分類
+        category: "pe",            // 体育カテゴリ
         tagName: "体育",
         date: "2026/02/23",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/taiiku-relay.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/taiiku-relay.jpg", // サムネイル画像
         link: "taiiku-relay/index.html"
     },
     {
         id: "group-maker",
         title: "スポーツグループ分け",
         description: "スキルレベルを考慮してバランスの良いグループを自動作成！ドラッグ＆ドロップで微調整も可能。",
-        category: "teacher",       // 先生用
-        tagName: "先生用",
+        category: "pe",            // 体育カテゴリ
+        tagName: "体育",
         date: "2026/02/23",
-        colorClass: "subject-gray",
-        image: "images/thumbnails-v2/group-maker.jpg", // サムネイル画像
+        colorClass: "subject-purple",
+        image: "images/thumbnails-v3/group-maker.jpg", // サムネイル画像
         link: "group-maker/index.html"
     },
     {
@@ -287,7 +286,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/23",
         colorClass: "subject-gray",
-        image: "images/thumbnails-v2/sekigae.jpg", // サムネイル画像
+        image: "images/thumbnails-v3/sekigae.jpg", // サムネイル画像
         link: "sekigae/index.html"
     },
     {
@@ -298,7 +297,7 @@ const appsData = [
         tagName: "先生用",
         date: "2026/02/25",
         colorClass: "subject-gray",
-        image: "images/thumbnails-v2/classroom-board.jpg", // サムネイル画像
+        image: "images/thumbnails-v5/classroom-board.jpg", // サムネイル画像
         link: "classroom-board/index.html"
     },
     {
@@ -309,7 +308,7 @@ const appsData = [
         tagName: "その他",
         date: "2026/02/27",
         colorClass: "subject-purple",
-        image: "images/thumbnails-v2/sikou-tool-app.jpg", // サムネイル画像
+        image: "images/thumbnails-v5/sikou-tool-app.jpg", // サムネイル画像
         link: "sikou-tool-app/index.html"
     },
     {
@@ -320,7 +319,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/03/12",
         colorClass: "subject-red",
-        image: "images/thumbnails-v2/sakkanojikan.jpg",
+        image: "images/thumbnails-v3/sakkanojikan.jpg",
         link: "sakkanojikan/index.html"
     },
     {
@@ -331,7 +330,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/03/17",
         colorClass: "subject-red",
-        image: "images/thumbnails-v2/kannjibusyu-ta.jpg",
+        image: "images/thumbnails-v3/kannjibusyu-ta.jpg",
         link: "kannjibusyu-ta/index.html"
     },
     {
@@ -342,7 +341,7 @@ const appsData = [
         tagName: "国語",
         date: "2026/03/19",
         colorClass: "subject-red",
-        image: "images/thumbnails-v2/kotobasagashi.jpg",
+        image: "images/thumbnails-v3/kotobasagashi.jpg",
         link: "kotobasagashi/index.html"
     },
     {

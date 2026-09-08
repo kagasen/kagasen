@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0B1020">
+    <meta name="theme-color" content="#202d32">
     <title>かがせんのHAPPYアプリ集｜小学校の先生が作った無料の教育・知育アプリ</title>
     <!-- SEO:auto build-seo.mjs が作る。手で直さない -->
     <meta name="description" content="小学校の先生「かがせん」が作った、小学生と先生のための無料の教育アプリ・知育アプリ集。国語・算数・理科・社会の学習ゲームから、席替え・グループ分けなどの授業ツールまで。広告なし・登録なし・インストール不要で、iPadでもすぐ使えます。">
@@ -27,954 +27,197 @@
 
 
     <style>
-        /* =========================================================
-           明るいテーマ ＋ 濃紺ヘッダー（Board Game Arena のゲーム一覧と同じ組み方）
-           ・レイアウト／配色はすべてこの <style> で完結させる。
-             tailwind.css は静的purgeビルドなので、新しいクラスを
-             書き足しても効かない（過去に事故った）。
-           ・JSは ES2017＋α 縛り（?. ?? は使わない）
-           ========================================================= */
+        /* ホーム専用。既存の静的 Tailwind ビルドに依存しない。 */
         :root {
-            --head:      #0B1020;   /* ヘッダー（ここだけ濃紺のまま） */
-            --head-2:    #1B2338;   /* ヘッダーの中のパーツ */
-            --bg:        #F2DCB9;   /* 明るい白木のベース */
-            --panel:     #FFFEFB;   /* カード・タイル */
-            --panel-2:   #FFFEFB;   /* ボタン・チップ */
-            --line:      #EDE4D8;
-            --line-2:    #DDD0C0;
-            --text:      #343548;
-            --text-2:    #6F6870;
-            --text-3:    #9D9294;
-            --gold:      #F5B02A;
-
-            --c-red: #FF7B8E;
-            --c-blue: #35B4EC;
-            --c-green: #4FC46A;
-            --c-yellow: #F5B02A;
-            --c-orange: #FF9256;
-            --c-purple: #9B74F5;
+            --head: #202d32; --head-2: #2f3e43;
+            --bg: #f2dcb9; --panel: #fffdf8; --line: #ded2be; --line-2: #b5a285;
+            --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif CJK JP", serif;
+            --maru: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN", sans-serif;
+            --pop: "Mochiy Pop One", var(--maru);
+            --text: #2e3937; --text-2: #626253; --text-3: #766e5e;
         }
-
-        html { background: var(--bg); }
-
-        body {
-            background-color: var(--bg);
-            background-image:
-                linear-gradient(rgba(255, 250, 241, 0.06), rgba(255, 247, 235, 0.06)),
-                url('images/light-oak-bg.png');
-            /* 1254px画像を約1/2で表示し、Retinaでもほぼ等倍の解像感にする */
-            background-size: auto, 627px 627px;
-            background-position: center, left top;
-            background-repeat: no-repeat, repeat;
-            background-attachment: scroll;
-            color: var(--text);
-            overflow-x: hidden;
-        }
-
-        /* 端にだけごく薄い光を置き、カードの中央を読みやすくする */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(90deg,
-                rgba(255, 248, 236, 0.12),
-                transparent 24%,
-                transparent 76%,
-                rgba(255, 248, 236, 0.12));
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* ===== にじいろライン（アプリ集の目じるし） ===== */
-        .rainbow-bar {
-            height: 4px;
-            background: linear-gradient(90deg,
-                #FF7B8E, #FF9256, #F5B02A,
-                #4FC46A, #35B4EC, #9B74F5, #FF7B8E);
-            background-size: 200% 100%;
-            animation: rainbowSlide 8s linear infinite;
-        }
-
-        @keyframes rainbowSlide {
-            to { background-position: 200% 0; }
-        }
-
-        /* ===== ヘッダー（ここだけダーク。虹色ロゴが映える） ===== */
-        .site-head {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: rgba(11, 16, 32, 0.94);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px -20px rgba(11, 16, 32, 0.8);
-        }
-
-        .head-inner {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 12px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: default;
-        }
-
-        .brand h1 {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 20px;
-            letter-spacing: 0.06em;
-            line-height: 1.3;
-        }
-
-        .brand .sub {
-            display: block;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.25em;
-            color: #8A96B4;
-            margin-top: 3px;
-        }
-
-        /* タイトル文字あそび */
-        .title-char {
-            display: inline-block;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .brand:hover .title-char { animation: charJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-        .title-char:nth-child(6n+1) { color: #FF7B8E; }
-        .title-char:nth-child(6n+2) { color: #FFA94D; }
-        .title-char:nth-child(6n+3) { color: #FFD966; }
-        .title-char:nth-child(6n+4) { color: #63D882; }
-        .title-char:nth-child(6n+5) { color: #4CC3F5; }
-        .title-char:nth-child(6n+6) { color: #B28DFF; }
-
-        @keyframes charJump {
-            0% { transform: translateY(0); }
-            40% { transform: translateY(-8px) rotate(-6deg); }
-            70% { transform: translateY(2px) rotate(3deg); }
-            100% { transform: translateY(0); }
-        }
-
-        .brand:hover .title-char:nth-child(2n) { animation-delay: 0.05s; }
-        .brand:hover .title-char:nth-child(3n) { animation-delay: 0.1s; }
-        .brand:hover .title-char:nth-child(5n) { animation-delay: 0.15s; }
-
-        /* ===== 検索バー（ヘッダーの中なのでダーク） ===== */
-        .search-box {
-            position: relative;
-            width: 100%;
-            max-width: 340px;
-            background: var(--head-2);
-            border: 2px solid rgba(255, 255, 255, 0.14);
-            border-radius: 9999px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .search-box:focus-within {
-            border-color: #FFD966;
-            box-shadow: 0 0 0 4px rgba(255, 217, 102, 0.18);
-        }
-
-        .search-box .ico {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #FFD966;
-            pointer-events: none;
-            display: flex;
-        }
-
-        .search-box input {
-            width: 100%;
-            background: transparent;
-            border: 0;
-            outline: none;
-            color: #EEF2FF;
-            font-weight: 700;
-            font-size: 14px;
-            padding: 12px 16px 12px 44px;
-            min-height: 48px;
-            border-radius: 9999px;
-        }
-
-        .search-box input::placeholder { color: #8A96B4; }
-
-        /* ===== メイン ===== */
-        .wrap {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 0 18px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ===== 今日のピックアップ ===== */
-        .hero { padding: 24px 0 18px; }
-
-        .hero-kicker {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: var(--text-2);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-        }
-
-        .hero-kicker::before,
-        .hero-kicker::after {
-            content: '';
-            width: 42px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--line-2));
-        }
-
-        .hero-kicker::after { transform: scaleX(-1); }
-
-        .hero-kicker-main {
-            font-family: 'Mochiy Pop One', sans-serif;
-            color: var(--text);
-            font-size: 13px;
-        }
-
-        .hero-assurance {
-            color: var(--text-3);
-            letter-spacing: 0.04em;
-            white-space: nowrap;
-        }
-
-        .hero-assurance span + span::before {
-            content: '・';
-            margin: 0 7px;
-            color: #D2B9A3;
-        }
-
-        .spotlight {
-            --spot-main: #4FC46A;
-            --spot-deep: #2E9A4C;
-            display: grid;
-            grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
-            min-height: 300px;
-            overflow: hidden;
-            position: relative;
-            background:
-                radial-gradient(circle at 18% 15%, rgba(255, 255, 255, 0.98), transparent 25%),
-                linear-gradient(145deg, #FFFEFB 0%, #FFFDF8 68%, #FFF4E5 100%);
-            border: 1px solid rgba(255, 255, 255, 0.86);
-            border-radius: 28px;
-            box-shadow: 0 24px 60px -38px rgba(43, 52, 70, 0.7), 0 0 0 1px rgba(211, 218, 234, 0.72);
-            color: var(--text);
-            isolation: isolate;
-        }
-
-        .spotlight::before {
-            content: '';
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            left: -90px;
-            bottom: -120px;
-            border-radius: 50%;
-            border: 34px solid var(--spot-main);
-            opacity: 0.1;
-            z-index: -1;
-        }
-
-        .spotlight-copy {
-            padding: 34px 30px 30px 36px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .spotlight-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            margin-bottom: 14px;
-            padding: 7px 12px;
-            border-radius: 9999px;
-            background: var(--spot-deep);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.14em;
-            box-shadow: 0 8px 20px -12px var(--spot-deep);
-        }
-
-        .spotlight-title {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 34px;
-            line-height: 1.35;
-            letter-spacing: 0.04em;
-            margin-bottom: 10px;
-        }
-
-        .spotlight-desc {
-            max-width: 540px;
-            color: var(--text-2);
-            font-size: 13px;
-            font-weight: 700;
-            line-height: 1.8;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .spotlight-actions {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-top: 20px;
-        }
-
-        .spotlight-play {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-            min-height: 50px;
-            padding: 12px 24px;
-            border-radius: 9999px;
-            color: #fff;
-            background: linear-gradient(135deg, var(--spot-main), var(--spot-deep));
-            box-shadow: 0 13px 24px -13px var(--spot-deep);
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .spotlight:hover .spotlight-play {
-            transform: translateY(-2px);
-            box-shadow: 0 18px 30px -14px var(--spot-deep);
-        }
-
-        .spotlight-note {
-            color: var(--text-3);
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .spotlight-visual {
-            position: relative;
-            min-height: 300px;
-            overflow: hidden;
-            background: #e9edf5;
-        }
-
-        .spotlight-visual img {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            inset: 0;
-            display: block;
-            object-fit: cover;
-            transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .spotlight:hover .spotlight-visual img { transform: scale(1.035); }
-
-        .spotlight-visual::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(255,255,255,0.75), transparent 20%);
-            pointer-events: none;
-        }
-
-        /* ===== カテゴリチップ ===== */
-        .filter-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 4px 2px 12px;
-            scrollbar-width: none;
-            justify-content: flex-start;
-        }
-
-        .filter-row::-webkit-scrollbar { display: none; }
-
-        @media (min-width: 900px) {
-            .filter-row { flex-wrap: wrap; justify-content: center; overflow: visible; }
-        }
-
-        .filter-btn {
-            flex: 0 0 auto;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-height: 48px;
-            padding: 10px 18px;
-            border-radius: 9999px;
-            font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 0.06em;
-            background: #fff;
-            color: var(--text-2);
-            border: 1.5px solid var(--line);
-            box-shadow: 0 2px 6px -3px rgba(43, 52, 70, 0.25);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s, color 0.18s, box-shadow 0.18s, border-color 0.18s;
-        }
-
-        .filter-btn:hover {
-            color: var(--text);
-            border-color: var(--line-2);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px -10px rgba(43, 52, 70, 0.5);
-        }
-
-        .filter-btn:active { transform: translateY(1px); }
-
-        .filter-btn.active {
-            color: #fff;
-            border-color: transparent;
-            transform: translateY(-2px);
-        }
-
-        .filter-btn.active[data-category="all"]        { background: linear-gradient(135deg, #FFA83A, #F0791E); box-shadow: 0 10px 20px -10px #F0791E; }
-        .filter-btn.active[data-category="japanese"]   { background: linear-gradient(135deg, #FF7B8E, #E24E67); box-shadow: 0 10px 20px -10px #E24E67; }
-        .filter-btn.active[data-category="math"]       { background: linear-gradient(135deg, #35B4EC, #1483C4); box-shadow: 0 10px 20px -10px #1483C4; }
-        .filter-btn.active[data-category="science"]    { background: linear-gradient(135deg, #4FC46A, #2E9A4C); box-shadow: 0 10px 20px -10px #2E9A4C; }
-        .filter-btn.active[data-category="social"]     { background: linear-gradient(135deg, #F5B02A, #D2870A); box-shadow: 0 10px 20px -10px #D2870A; }
-        .filter-btn.active[data-category="others"]     { background: linear-gradient(135deg, #9B74F5, #6F45C9); box-shadow: 0 10px 20px -10px #6F45C9; }
-        .filter-btn.active[data-category="favorites"]  { background: linear-gradient(135deg, #FFC93A, #E39A00); box-shadow: 0 10px 20px -10px #E39A00; }
-        .filter-btn.active[data-category="management"] { background: linear-gradient(135deg, #35C9BC, #16948A); box-shadow: 0 10px 20px -10px #16948A; }
-        .filter-btn.active[data-category="teacher"]    { background: linear-gradient(135deg, #8798AC, #5C6C7F); box-shadow: 0 10px 20px -10px #5C6C7F; }
-
-        /* ===== 棚（横スクロール） ===== */
-        .shelf {
-            margin: 0 0 26px;
-        }
-
-        .shelf-head {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .shelf-head h2 {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 19px;
-            letter-spacing: 0.04em;
-            color: var(--text);
-        }
-
-        .shelf-tag {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.14em;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            color: #fff;
-        }
-
-        .shelf-count {
-            margin-left: auto;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-3);
-        }
-
+        * { box-sizing: border-box; }
+        html { background: var(--bg); scroll-padding-top: 112px; }
+        body { margin: 0; color: var(--text); background-color: var(--bg);
+            background-image: linear-gradient(rgba(255,250,241,.06),rgba(255,247,235,.06)), url('images/light-oak-bg.png');
+            background-size: auto, 627px 627px; background-repeat: no-repeat, repeat; background-position: center, left top; }
+        button, input { font: inherit; }
+        button, a { -webkit-tap-highlight-color: transparent; }
+        a { color: inherit; text-decoration: none; }
+        button { cursor: pointer; }
+        [hidden] { display: none !important; }
+        :focus-visible { outline: 3px solid #2276c9; outline-offset: 4px; }
+        .skip-link { position: fixed; left: 16px; top: -100px; z-index: 100; padding: 12px 20px; background: white; border-radius: 10px; }
+        .skip-link:focus { top: 12px; }
+        .rainbow-bar { height: 3px; background: #ae8d50; }
+        .site-head { position: sticky; top: 0; z-index: 40; background: var(--head); box-shadow: 0 3px 14px #19283d12; }
+        .head-inner { max-width: 1440px; margin: auto; padding: 17px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand h1 { font-family: var(--maru); font-weight: 900; font-size: 22px; line-height: 1.45; letter-spacing: .01em; }
+        .brand .sub { display: block; color: #c7c5b9; font-size: 12px; margin-top: 3px; letter-spacing: .12em; }
+        /* タイトルは1文字ずつ色ちがい（色は下の TITLE_COLORS で 付ける）。
+           暗い ヘッダーの 上でも 読めるように 明るめの 色だけを つかう。 */
+        .title-char { display: inline-block; }
+        .brand-mark { display: grid; place-items: center; width: 38px; height: 44px; color: #e7d5ae; border: 1px solid #af9564; font-family: var(--mincho); font-size: 25px; }
+        .search-box { position: relative; width: 360px; max-width: 100%; border: 1px solid #7e8377; border-radius: 5px; background: var(--head-2); }
+        .search-box:focus-within { outline: 2px solid #d7bd7c; outline-offset: 2px; }
+        .search-box .ico { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #d7bd7c; display: flex; pointer-events: none; }
+        .search-box input { width: 100%; min-height: 48px; padding: 12px 45px; background: transparent; border: 0; outline: 0; border-radius: 5px; color: white; font-size: 16px; }
+        .search-box input::-webkit-search-cancel-button { display: none; }
+        .search-box input::placeholder { color: #c7c7ba; }
+        .search-clear { position: absolute; right: 4px; top: 4px; width: 40px; height: 40px; color: white; border: 0; border-radius: 10px; background: transparent; font-size: 24px; }
+        .wrap { max-width: 1440px; padding: 0 32px; margin: auto; }
+        .hero { display: grid; grid-template-columns: 1fr 1.5fr; align-items: center; gap: 32px; padding: 30px 0 28px; }
+        .hero-kicker { padding: 0; }
+        .hero-eyebrow { font-size: 12px; color: #716345; letter-spacing: .17em; font-weight: 700; margin-bottom: 8px; }
+        /* キャッチコピーは このページの 主役。丸ポップ体で ドーンと 大きく、行間は つめる。
+           木目の 背景に 負けないよう うすい クリームの 影を 回して 字を うかせる。 */
+        /* 字の大きさは 左カラムの はばに あわせて 決める。
+           左カラム = (min(1440,画面幅) - 96) / 2.5 、1行目「あそんでるだけ。」は 8文字ぶん。
+           だから 1文字 ≒ (0.4vw - 38.4px)/8 → すこし 余裕を みて 4.8vw - 4.6px。
+           これで PCでも カードとの あいだが 空きすぎない（コピーを 変えたら この数字も 見直す）。 */
+        .hero-kicker-main { display: block; font-family: var(--pop); font-weight: 400; font-size: clamp(32px, calc(4.8vw - 4.6px), 64px); letter-spacing: .005em; line-height: 1.22; margin: 0 0 14px; color: #33291c; text-shadow: 0 2px 0 #fffdf8, 0 0 20px #fff6e6; }
+        /* 2行目は オレンジ＋マーカー線（行ごとに 線が つく） */
+        .hero-kicker-main em { font-style: normal; color: #b8551b; background: linear-gradient(transparent 72%, #ffd65cad 72%); }
+        .hero-intro { font-size: 16px; color: var(--text-2); line-height: 1.75; margin-bottom: 16px; }
+        .hero-assurance { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #5b614f; font-weight: 700; }
+        .hero-assurance span { padding: 5px 9px; background: #fffaf0b8; border: 1px solid #c8bda3; border-radius: 3px; }
+        .spotlight { display: grid; grid-template-columns: 1fr 1.12fr; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; gap: 20px; box-shadow: 0 8px 30px #213c5a08; }
+        .spotlight-copy { padding: 8px; min-width: 0; }
+        .spotlight-label { display: inline-block; font-weight: 700; font-size: 12px; color: #8a692d; letter-spacing: .06em; margin-bottom: 12px; }
+        .spotlight-title { font-family: var(--mincho); font-weight: 600; font-size: 21px; line-height: 1.7; margin-bottom: 10px; }
+        .spotlight-desc { color: var(--text-2); font-size: 14px; line-height: 1.8; }
+        .spotlight-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+        .spotlight-play { display: inline-flex; align-items: center; gap: 18px; font-size: 14px; font-weight: 700; color: #756032; }
+        .spotlight-note { color: var(--text-3); font-size: 12px; }
+        .spotlight-visual { width: 100%; border-radius: 4px; background: #f0eadf; }
+        .spotlight-visual img { display: block; width: 100%; height: auto; object-fit: contain; border-radius: 4px; }
+        .spotlight:hover { border-color: #ab946c; box-shadow: 0 12px 32px #213c5a12; }
+        .catalogue { scroll-margin-top: 110px; }
+        .catalogue-label { font-weight: 700; font-size: 14px; margin-bottom: 12px; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 20px; }
+        .filter-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 9px 15px; border: 1px solid var(--line); border-radius: 4px; font-weight: 700; font-size: 14px; color: var(--text-2); background: var(--panel); transition: background .15s, border-color .15s; }
+        .filter-btn:hover { border-color: #9a8156; color: var(--text); }
+        .filter-btn.active { background: var(--head); border-color: var(--head); color: #f7eedb; box-shadow: inset 0 -3px #b1975c; }
+        .discovery { margin: 0 0 24px; border-bottom: 1px solid var(--line); }
+        .discovery summary { cursor: pointer; color: var(--text-2); font-size: 14px; font-weight: 700; padding: 0 0 18px; }
+        .discovery[open] summary { margin-bottom: 8px; }
+        .shelf { margin-bottom: 24px; }
+        .shelf-head { padding-right: 98px; min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .shelf-head h2 { font-family: var(--mincho); font-weight: 600; font-size: 17px; }
+        .shelf-tag { font-size: 12px; color: white; padding: 3px 9px; border-radius: 6px; }
+        .shelf-count { font-size: 12px; color: var(--text-3); }
         .shelf-body { position: relative; }
-
-        .shelf-row {
-            display: flex;
-            gap: 14px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            padding: 4px 2px 12px;
-            scrollbar-width: none;
-        }
-
-        .shelf-row::-webkit-scrollbar { display: none; }
-
-        .shelf-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-60%);
-            width: 40px;
-            height: 56px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid var(--line);
-            color: var(--text);
-            font-size: 20px;
-            font-weight: 700;
-            cursor: pointer;
-            z-index: 5;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 22px -12px rgba(43, 52, 70, 0.7);
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .shelf-arrow:hover { background: #fff; transform: translateY(-60%) scale(1.06); }
-        .shelf-arrow.left  { left: -6px; }
-        .shelf-arrow.right { right: -6px; }
-
-        @media (min-width: 1024px) and (pointer: fine) {
-            .shelf-body:hover .shelf-arrow { display: flex; }
-        }
-
-        /* 棚のタイル（画像でみせる小さいカード） */
-        .shelf-card {
-            --card-main: #FF7B8E;
-            --card-deep: #E24E67;
-            flex: 0 0 auto;
-            width: 228px;
-            scroll-snap-align: start;
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-            display: block;
-            box-shadow: 0 8px 20px -14px rgba(43, 52, 70, 0.6);
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s, box-shadow 0.25s;
-        }
-
-        .shelf-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--card-main);
-            box-shadow: 0 20px 30px -18px var(--card-main);
-        }
-
-        .shelf-thumb {
-            position: relative;
-            height: 124px;
-            overflow: hidden;
-            background: #EDF1F8;
-        }
-
-        .shelf-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .shelf-thumb img.fit-contain,
-        .card-thumbnail img.fit-contain {
-            object-fit: contain;
-            background: linear-gradient(135deg, #EAF6FE, #FFFFFF 52%, #E8F5E9);
-        }
-
-        .shelf-card:hover .shelf-thumb img { transform: scale(1.07); }
-
-        /* 題名を読ませるための暗幕（画像の下だけ） */
-        .shelf-thumb::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(20, 26, 42, 0) 45%, rgba(20, 26, 42, 0.86) 100%);
-        }
-
-        .shelf-name {
-            position: absolute;
-            left: 12px;
-            right: 12px;
-            bottom: 9px;
-            z-index: 2;
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 14px;
-            line-height: 1.35;
-            color: #fff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .shelf-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 9px 12px 11px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-3);
-        }
-
-        /* ===== ぜんぶのアプリ（グリッド） ===== */
-        .grid-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin: 6px 0 16px;
-        }
-
-        .grid-head h2 {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 19px;
-            letter-spacing: 0.04em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text);
-        }
-
-        .count-pill {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-2);
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 9999px;
-            padding: 5px 14px;
-        }
-
-        .sort-wrap {
-            display: flex;
-            gap: 4px;
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 9999px;
-            padding: 4px;
-            box-shadow: 0 2px 6px -3px rgba(43, 52, 70, 0.25);
-        }
-
-        .sort-btn {
-            min-height: 36px;
-            padding: 7px 16px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-3);
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .sort-btn:hover { color: var(--text); }
-
-        .sort-btn.active {
-            background: linear-gradient(135deg, #FFA83A, #F0791E);
-            color: #fff;
-            box-shadow: 0 6px 14px -8px #F0791E;
-        }
-
-        #appGrid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        @media (min-width: 700px)  { #appGrid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1080px) { #appGrid { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 1500px) { #appGrid { grid-template-columns: repeat(4, 1fr); } }
-
-        /* ===== アプリカード ===== */
-        .app-card {
-            --card-main: #FF7B8E;
-            --card-deep: #E24E67;
-            --card-tint: #FFECEF;
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            box-shadow: 0 10px 26px -18px rgba(43, 52, 70, 0.55);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
-            animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
-        }
-
-        .app-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--card-main);
-            box-shadow: 0 26px 40px -22px var(--card-main);
-        }
-
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(18px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .card-thumbnail {
-            width: 100%;
-            height: 168px;
-            overflow: hidden;
-            position: relative;
-            background: #EDF1F8;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .card-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: block;
-        }
-
-        .app-card:hover .card-thumbnail img { transform: scale(1.06); }
-
-        /* キラッと光るエフェクト */
-        .card-thumbnail::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -80%;
-            width: 50%;
-            height: 100%;
-            z-index: 2;
-            background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.65), transparent);
-            transform: skewX(-20deg);
-            transition: left 0.6s ease;
-        }
-
-        .app-card:hover .card-thumbnail::after { left: 130%; }
-
-        .card-body {
-            padding: 16px 18px 18px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            text-align: center;
-        }
-
-        /* 教科タグ */
-        .subject-sticker {
-            display: inline-block;
-            align-self: center;
-            background: var(--card-tint);
-            color: var(--card-deep);
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 0.16em;
-            padding: 5px 14px;
-            border-radius: 9999px;
-            margin-bottom: 10px;
-        }
-
-        .card-title {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 17px;
-            line-height: 1.4;
-            color: var(--text);
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .card-title::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            transform: translateX(-50%);
-            width: 42px;
-            height: 3px;
-            border-radius: 3px;
-            background: var(--card-main);
-        }
-
-        .card-desc {
-            color: var(--text-2);
-            font-size: 12px;
-            line-height: 1.85;
-            flex-grow: 1;
-            margin-bottom: 14px;
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-3);
-            margin-bottom: 14px;
-            padding: 0 2px;
-        }
-
-        /* あそぶボタン */
-        .open-btn {
-            display: inline-flex;
-            align-self: center;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 48px;
-            background: linear-gradient(135deg, var(--card-main), var(--card-deep));
-            color: #fff;
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            padding: 12px 34px;
-            border-radius: 9999px;
-            font-size: 14px;
-            box-shadow: 0 10px 20px -10px var(--card-deep);
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
-        }
-
-        .app-card:hover .open-btn {
-            transform: scale(1.06);
-            box-shadow: 0 14px 24px -10px var(--card-deep);
-        }
-
-        .open-btn .arrow {
-            display: inline-block;
-            transition: transform 0.25s;
-        }
-
-        .app-card:hover .open-btn .arrow { transform: translateX(4px); }
-
-        /* NEWバッジ */
-        .new-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 10;
-            background: linear-gradient(135deg, #FF6B81, #FF9F45);
-            color: #fff;
-            font-weight: 700;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            box-shadow: 0 6px 14px -6px rgba(226, 78, 103, 0.8);
-            animation: badgeBounce 2.2s ease-in-out infinite;
-        }
-
-        @keyframes badgeBounce {
-            0%, 100% { transform: scale(1); }
-            10% { transform: scale(1.14); }
-            20% { transform: scale(1); }
-        }
-
-        /* お気に入り★ボタン */
-        .fav-btn {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            z-index: 10;
-            width: 48px;   /* 指でおしやすい大きさ（48px以上） */
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.92);
-            -webkit-backdrop-filter: blur(4px);
-            backdrop-filter: blur(4px);
-            border-radius: 9999px;
-            box-shadow: 0 6px 14px -8px rgba(43, 52, 70, 0.6);
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
-        }
-
-        .fav-btn:hover {
-            background: #fff;
-            transform: scale(1.12) rotate(10deg);
-        }
-
-        .fav-btn:active { transform: scale(0.92); }
-
-        .fav-on  { color: #F5B02A; fill: currentColor; }
-        .fav-off { color: #B4BECD; }
-
-        /* ===== みつからないとき ===== */
-        #noData {
-            display: none;
-            text-align: center;
-            padding: 70px 0;
-            color: var(--text);
-        }
-
+        .shelf-row { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 14px; }
+        .shelf-arrow { position: absolute; top: -56px; z-index: 3; width: 40px; height: 44px; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--text); box-shadow: 0 3px 12px #213c5a20; font-size: 26px; }
+        .shelf-arrow.left { right: 48px; }
+        .shelf-arrow.right { right: 0; }
+        .shelf-card { flex: 0 0 256px; scroll-snap-align: start; background: white; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+        .shelf-card:hover { border-color: var(--card-deep); }
+        /* 3:2 の枠内に画像全体を収める。古い iPad でも動く比率指定。 */
+        .shelf-thumb, .card-thumbnail { position: relative; width: 100%; padding-top: 66.666667%; background: #f1ece3; }
+        .shelf-thumb img, .card-thumbnail img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+        .shelf-name { display: block; padding: 12px 14px 0; font-size: 14px; font-weight: 700; line-height: 1.7; }
+        .shelf-meta { display: flex; justify-content: space-between; padding: 10px 14px 14px; font-size: 12px; color: var(--text-3); }
+        .grid-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; }
+        .grid-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-family: var(--mincho); font-weight: 600; font-size: 22px; }
+        .count-pill { font-family: 'Zen Maru Gothic',sans-serif; font-size: 13px; font-weight: 700; color: var(--text-2); }
+        .sort-wrap { display: flex; gap: 3px; border: 1px solid var(--line); background: #e8dfcf; border-radius: 5px; padding: 4px; }
+        .sort-btn { border: 0; padding: 8px 13px; min-height: 40px; border-radius: 3px; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-2); }
+        .sort-btn.active { background: white; color: var(--text); box-shadow: 0 2px 5px #19283d10; }
+        #appGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 26px; }
+        .app-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; transition: box-shadow .2s, border-color .2s; }
+        .app-card:hover, .app-card:focus-within { border-color: #9c8a65; box-shadow: 0 10px 26px #213c5a12; }
+        .card-thumbnail { flex-shrink: 0; border-radius: 3px; overflow: hidden; }
+        .card-body { display: flex; flex-direction: column; flex: 1; padding: 12px 12px 10px; }
+        .card-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; min-height: 44px; }
+        .subject-sticker { display: inline-flex; align-items: center; background: var(--card-tint); color: var(--card-deep); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 5px 10px; }
+        .new-badge { background: #fff3df; color: #9a590b; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: .03em; }
+        .fav-btn { position: relative; z-index: 2; margin-left: auto; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #faf6ec; border: 1px solid var(--line); border-radius: 50%; }
+        .fav-btn:hover { background: #fff4d7; border-color: #dba541; }
+        .fav-on { color: #a96800; fill: #ffcf58; }
+        .fav-off { color: #7b7766; }
+        .card-title { font-family: var(--mincho); font-weight: 600; font-size: 18px; line-height: 1.65; margin-bottom: 10px; }
+        .card-link::after { content: ''; position: absolute; inset: 0; border-radius: 8px; }
+        .card-link:focus-visible { outline: 0; }
+        .card-link:focus-visible::after { outline: 3px solid #2276c9; outline-offset: 3px; }
+        .card-desc { flex-grow: 1; font-size: 16px; line-height: 1.85; color: var(--text-2); margin-bottom: 20px; }
+        .card-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-3); margin-bottom: 14px; }
+        .open-btn { display: flex; justify-content: space-between; align-items: center; background: #f0ebdf; color: #544c36; font-size: 14px; font-weight: 700; padding: 13px 16px; min-height: 48px; border-radius: 4px; }
+        .arrow { font-size: 20px; line-height: 1; }
+        #noData { display: none; text-align: center; padding: 55px 16px; }
         #noData.show { display: block; }
-
-        /* ===== フッター ===== */
-        .site-foot {
-            margin-top: 46px;
-            position: relative;
-            z-index: 1;
+        .reset-btn { margin-top: 20px; min-height: 44px; padding: 10px 20px; border: 1px solid var(--line-2); border-radius: 10px; background: white; font-weight: 700; }
+        .site-foot { margin-top: 56px; background: #fffdf3ed; }
+        .foot-inner { max-width: 900px; padding: 32px 24px; margin: auto; text-align: center; line-height: 1.9; }
+        @media (max-width: 1100px) {
+            .hero { grid-template-columns: 1fr 1.3fr; gap: 24px; }
+            .spotlight { grid-template-columns: 1fr 1fr; padding: 14px; gap: 10px; }
+            .spotlight-desc { display: none; }
+            .spotlight-title { font-size: 18px; }
+            #appGrid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; }
         }
-
-        .foot-inner {
-            background: #fff;
-            border-top: 1px solid var(--line);
-            padding: 26px 18px;
-            text-align: center;
-            color: var(--text);
-        }
-
-        /* ===== スクロールバー ===== */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: #E9EDF6; }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(#9B74F5, #35B4EC);
-            border-radius: 5px;
-        }
-
-        /* ===== 動きを減らす設定の人向け ===== */
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        /* ===== せまい画面 ===== */
-        @media (max-width: 640px) {
-            .head-inner { padding: 10px 14px; gap: 10px; }
-            .brand h1 { font-size: 17px; }
-            .search-box { max-width: none; }
-            .wrap { padding: 0 14px; }
-            .hero { padding: 16px 0 12px; }
-            .hero-kicker { margin-bottom: 11px; flex-wrap: wrap; gap: 5px 8px; }
-            .hero-kicker::before, .hero-kicker::after { display: none; }
-            .hero-kicker-main { width: 100%; text-align: center; }
-            .hero-assurance { font-size: 9px; }
-            .hero-assurance span + span::before { margin: 0 4px; }
-            .spotlight { display: flex; flex-direction: column; border-radius: 22px; min-height: 0; }
-            .spotlight-copy { padding: 22px 20px 24px; }
-            .spotlight-title { font-size: 23px; }
-            .spotlight-desc { -webkit-line-clamp: 2; font-size: 12px; }
-            .spotlight-actions { margin-top: 16px; }
+        @media (max-width: 760px) {
+            html { scroll-padding-top: 160px; }
+            .head-inner { padding: 12px 18px; flex-wrap: wrap; gap: 12px; }
+            .brand h1 { font-size: 18px; }
+            .brand .sub { font-size: 12px; letter-spacing: .04em; }
+            .search-box { width: 100%; }
+            .wrap { padding: 0 18px; }
+            .hero { display: block; padding: 24px 0; }
+            .hero-eyebrow { margin-bottom: 8px; }
+            .hero-kicker-main { font-size: clamp(30px, calc(12vw - 4.4px), 52px); line-height: 1.22; margin-bottom: 12px; }
+            .hero-intro { margin-bottom: 12px; }
+            .hero-kicker { margin-bottom: 18px; }
+            .spotlight { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+            .spotlight-copy { padding: 4px; }
+            .spotlight-visual { order: -1; }
+            .spotlight-label { margin-bottom: 4px; }
+            .spotlight-title { font-size: 16px; margin-bottom: 0; }
+            .spotlight-actions { margin-top: 8px; }
             .spotlight-note { display: none; }
-            .spotlight-visual { min-height: 185px; order: -1; }
-            .spotlight-visual::after { background: linear-gradient(0deg, rgba(255,255,255,0.84), transparent 28%); }
-            .shelf-head h2, .grid-head h2 { font-size: 17px; }
-            .shelf-card { width: 210px; }
+            .catalogue { scroll-margin-top: 160px; }
+            .filter-row { gap: 7px; }
+            .filter-btn { padding: 8px 12px; }
+            .grid-head h2 { font-size: 19px; }
+            .shelf-arrow { display: none; }
+            .shelf-head { padding-right: 0; }
+            .shelf-card { flex-basis: 240px; }
+            .card-body { padding: 10px 8px 8px; }
         }
-
-        @media (min-width: 641px) and (max-width: 900px) {
-            .spotlight { grid-template-columns: minmax(0, 1fr) minmax(330px, 0.9fr); min-height: 270px; }
-            .spotlight-copy { padding: 28px 24px; }
-            .spotlight-visual { min-height: 270px; }
+        @media (max-width: 620px) {
+            #appGrid { grid-template-columns: minmax(0,1fr); gap: 20px; }
+            .card-desc { font-size: 16px; }
+            .grid-head { align-items: flex-start; }
+        }
+        /* 木目と余白を活かした、旅館の案内のようなランキング。順位は画像の外に置く。 */
+        .ranking { margin: 0 0 34px; padding: 24px; border: 1px solid #c7b895; background: #fffaf1e8; border-radius: 5px; }
+        .ranking-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+        .section-kicker { color: #786440; font-size: 12px; letter-spacing: .1em; margin-bottom: 7px; }
+        .ranking h2 { font-family: var(--mincho); font-size: 24px; font-weight: 600; letter-spacing: .06em; }
+        .ranking-note, .ranking-status { color: var(--text-2); font-size: 13px; }
+        .ranking-status { line-height: 1.8; }
+        .ranking-list { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; }
+        .ranking-item { min-width: 0; }
+        .ranking-link { display: block; height: 100%; }
+        .ranking-position { display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px; font-size: 12px; color: #695d47; }
+        .ranking-position strong { font-family: Georgia,serif; font-weight: 400; font-size: 28px; line-height: 1; color: #8b6927; }
+        .ranking-link .shelf-thumb { border: 1px solid #d8ccb7; }
+        .ranking-link .shelf-name { padding: 10px 0 4px; }
+        .ranking-plays { font-size: 12px; color: #77674a; }
+        .ranking-link:hover .shelf-name { text-decoration: underline; text-underline-offset: 4px; }
+        .ranking-list:empty { display: none; }
+        @media (max-width: 1000px) {
+            .ranking-list { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 10px; }
+            .ranking-item { flex: 0 0 220px; scroll-snap-align: start; }
+        }
+        @media (max-width: 760px) {
+            .ranking { padding: 18px; }
+            .ranking h2 { font-size: 22px; }
+            .ranking-item { flex-basis: 210px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
         }
     </style>
     <!-- LD:auto build-seo.mjs が作る。手で直さない -->
@@ -1550,37 +793,41 @@
 </head>
 
 <body class="font-maru">
+    <a class="skip-link" href="#catalogue">アプリ一覧へ</a>
 
     <div class="rainbow-bar"></div>
 
     <header class="site-head">
         <div class="head-inner">
-            <div class="brand">
-                <span style="font-size:24px">🎈</span>
+            <a class="brand" href="./index.html" aria-label="かがせんのHAPPYアプリ集 ホーム">
+                <span class="brand-mark" aria-hidden="true">か</span>
                 <div>
                     <h1><span id="siteTitle">かがせんのHAPPYアプリ集</span></h1>
-                    <span class="sub">✦ 学校生活をもっと楽しく！ ✦</span>
+                    <span class="sub">あそびから、学びがひらく。</span>
                 </div>
-            </div>
-            <div class="search-box">
+            </a>
+            <div class="search-box" role="search">
                 <span class="ico"><i data-lucide="search" style="width:20px;height:20px"></i></span>
-                <input type="text" id="searchInput" placeholder="アプリをさがす...">
+                <input type="search" id="searchInput" aria-label="アプリを検索" placeholder="アプリ名・やりたいことを検索" autocomplete="off">
+                <button class="search-clear" id="clearSearch" aria-label="検索をクリア" hidden>×</button>
             </div>
         </div>
     </header>
 
     <main class="wrap">
 
-        <section class="hero" id="heroArea" aria-label="今日のおすすめ">
+        <section class="hero" id="heroArea" aria-label="新しいアプリのご案内">
             <div class="hero-kicker">
-                <span class="hero-kicker-main">きょうは どれで あそぶ？</span>
+                <p class="hero-eyebrow">あそびと、まなびの、ひろば。</p>
+                <h2 class="hero-kicker-main">あそんでるだけ。<br><em>いつのまにか<br>かしこくなる。</em></h2>
+                <p class="hero-intro">きょうは、どれであそぶ？<br>先生がつくった、毎日を楽しくするアプリ集。</p>
                 <span class="hero-assurance" aria-label="広告なし、登録なし、iPad対応">
-                    <span>広告なし</span><span>登録なし</span><span>iPad対応</span>
+                    <span>✓ 広告なし</span><span>✓ 登録なし</span><span>✓ iPad対応</span>
                 </span>
             </div>
             <a class="spotlight" id="spotlight" href="#">
                 <div class="spotlight-copy">
-                    <span class="spotlight-label">✦ TODAY'S PICK</span>
+                    <span class="spotlight-label">✦ 新しく仲間入り</span>
                     <h2 class="spotlight-title" id="spotlightTitle">おすすめを じゅんび中…</h2>
                     <p class="spotlight-desc" id="spotlightDesc"></p>
                     <div class="spotlight-actions">
@@ -1594,24 +841,38 @@
             </a>
         </section>
 
-        <div class="filter-row" id="categoryContainer">
+        <section class="catalogue" id="catalogue" aria-label="アプリをさがす">
+        <p class="catalogue-label">好きなことから、えらぼう。</p>
+        <div class="filter-row" id="categoryContainer" role="group" aria-label="教科や目的で絞り込む">
             <button class="filter-btn active" data-category="all">🌟 すべて</button>
             <button class="filter-btn" data-category="japanese">📖 国語</button>
             <button class="filter-btn" data-category="math">🔢 算数</button>
             <button class="filter-btn" data-category="science">🧪 理科</button>
             <button class="filter-btn" data-category="social">🌏 社会</button>
+            <button class="filter-btn" data-category="pe">🏃 体育</button>
             <button class="filter-btn" data-category="others">🎲 その他</button>
             <button class="filter-btn" data-category="favorites">⭐ お気に入り</button>
             <button class="filter-btn" data-category="management">🏫 学級経営</button>
             <button class="filter-btn" data-category="teacher">👩‍🏫 先生用</button>
         </div>
 
-        <!-- 棚（横スクロール）。カテゴリ「すべて」＆検索なしのときだけ出る -->
-        <div id="shelves"></div>
+        <details class="discovery" id="discovery">
+            <summary>おすすめ・お気に入り・先生のどうぐから探す</summary>
+            <div id="shelves"></div>
+        </details>
+
+        <section class="ranking" id="ranking" aria-labelledby="rankingTitle">
+            <div class="ranking-head">
+                <div><p class="section-kicker">みんなのお気に入りを、あなたにも。</p><h2 id="rankingTitle">よく遊ばれているアプリ</h2></div>
+                <span class="ranking-note">累計の利用回数ランキング</span>
+            </div>
+            <p id="rankingStatus" class="ranking-status" role="status">ランキングを読み込んでいます…</p>
+            <ol class="ranking-list" id="rankingList"></ol>
+        </section>
 
         <div class="grid-head">
             <h2><span id="gridTitle">ぜんぶの アプリ</span>
-                <span class="count-pill"><span id="countDisplay">0</span> こ みつかったよ！</span>
+                <span class="count-pill" role="status" aria-live="polite"><span id="countDisplay">0</span> こ</span>
             </h2>
             <div class="sort-wrap">
                 <button id="sortNew" class="sort-btn active">🆕 新着順</button>
@@ -1623,9 +884,11 @@
 
         <div id="noData">
             <div style="font-size:56px; margin-bottom:10px">🔍</div>
-            <p style="font-family:'Mochiy Pop One',sans-serif; font-size:18px">みつからなかった…</p>
-            <p style="color:var(--text-3); font-size:13px; font-weight:700; margin-top:8px">べつの ことばで さがしてみてね！</p>
+            <p id="emptyTitle" style="font-family:'Mochiy Pop One',sans-serif; font-size:18px">みつからなかった…</p>
+            <p id="emptyHint" style="color:var(--text-2); font-size:16px; margin-top:8px">べつのことばや教科で、さがしてみてね。</p>
+            <button class="reset-btn" id="resetFilters">すべてのアプリを見る</button>
         </div>
+        </section>
     </main>
 
     <footer class="site-foot">
@@ -1657,10 +920,13 @@
         const visibleApps = (typeof appsData === 'undefined')
             ? [] : appsData.filter(function (a) { return !a.draft; });
 
-        // タイトルを1文字ずつ虹色に
+        // タイトルを1文字ずつ虹色に（暗いヘッダーの上で読める明るい色だけ／となり同士は必ず別の色）
+        const TITLE_COLORS = ['#ff8fb1', '#ffd65c', '#6fd0f2', '#8fe0a8', '#c3a6f2', '#ffa45c'];
         (function () {
             const el = document.getElementById('siteTitle');
-            el.innerHTML = [...el.textContent].map(c => `<span class="title-char">${c}</span>`).join('');
+            el.innerHTML = [...el.textContent].map(function (c, i) {
+                return '<span class="title-char" style="color:' + TITLE_COLORS[i % TITLE_COLORS.length] + '">' + c + '</span>';
+            }).join('');
         })();
 
         // Firebase 初期化
@@ -1680,7 +946,8 @@
 
         // クリックカウント管理
         let appCounts = {};
-        let countsLoaded = false;   // 「よく あそばれてる」棚を出してよいか
+        let countsLoaded = false;
+        let countsState = db ? 'loading' : 'offline';
 
         function getTodayStr() {
             return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -1710,14 +977,19 @@
             try {
                 const snapshot = await db.collection('appClicks').get();
                 snapshot.forEach(doc => {
-                    appCounts[doc.id] = doc.data().count || 0;
+                    const count = Number(doc.data().count);
+                    appCounts[doc.id] = Number.isFinite(count) && count > 0 ? count : 0;
                 });
                 countsLoaded = true;
+                countsState = 'loaded';
+                renderRanking();
                 // 棚（「よく あそばれてる」）とカウント表示だけ描き直す。
-                // グリッドまで作り直すとカードの登場アニメがやり直しになるので触らない。
+                // 一覧のフォーカスや読み進めた位置は保つ。
                 renderShelves();
                 updateCountDisplay();
             } catch (e) {
+                countsState = 'unavailable';
+                renderRanking();
                 console.error('カウント読み込みエラー:', e);
             }
         }
@@ -1726,7 +998,7 @@
             visibleApps.forEach(app => {
                 document.querySelectorAll(`[data-count="${app.id}"]`).forEach(el => {
                     const count = appCounts[app.id] || 0;
-                    el.textContent = `👁 ${count}回`;
+                    el.textContent = countsLoaded ? `あそばれた回数 ${count}回` : 'あそんでみよう';
                 });
             });
         }
@@ -1734,7 +1006,17 @@
         // 匿名認証してカウントを読み込む（オフライン時はスキップ）
         if (auth) auth.signInAnonymously()
             .then(() => loadCounts())
-            .catch(e => console.error('認証エラー:', e));
+            .catch(e => {
+                countsState = 'unavailable';
+                renderRanking();
+                console.error('認証エラー:', e);
+            });
+        if (db) setTimeout(() => {
+            if (countsState === 'loading') {
+                countsState = 'unavailable';
+                renderRanking();
+            }
+        }, 10000);
 
         // 状態管理
         let currentCategory = 'all';
@@ -1761,12 +1043,12 @@
         //   main = 枠・下線・ボタンの明るいほう / deep = 文字とボタンの濃いほう（白文字が読める濃さ）
         //   tint = 教科タグの背景（うすい色）
         const CARD_COLORS = {
-            'subject-red':    { main: '#FF7B8E', deep: '#E24E67', tint: '#FFECEF' },
-            'subject-blue':   { main: '#35B4EC', deep: '#1483C4', tint: '#E4F4FD' },
-            'subject-green':  { main: '#4FC46A', deep: '#2E9A4C', tint: '#E6F7EA' },
-            'subject-yellow': { main: '#F5B02A', deep: '#C9820A', tint: '#FFF4DC' },
-            'subject-orange': { main: '#FF9256', deep: '#E06A2B', tint: '#FFEDE0' },
-            'subject-purple': { main: '#9B74F5', deep: '#6F45C9', tint: '#EFE8FF' },
+            'subject-red':    { main: '#FF7B8E', deep: '#b52e49', tint: '#FFECEF' },
+            'subject-blue':   { main: '#35B4EC', deep: '#126798', tint: '#E4F4FD' },
+            'subject-green':  { main: '#4FC46A', deep: '#22753a', tint: '#E6F7EA' },
+            'subject-yellow': { main: '#F5B02A', deep: '#875c08', tint: '#FFF4DC' },
+            'subject-orange': { main: '#FF9256', deep: '#a44819', tint: '#FFEDE0' },
+            'subject-purple': { main: '#9B74F5', deep: '#6841b7', tint: '#EFE8FF' },
             'subject-gray':   { main: '#8798AC', deep: '#5C6C7F', tint: '#EDF1F5' },
         };
 
@@ -1785,17 +1067,20 @@
             spotlight.style.setProperty('--spot-deep', colors.deep);
             spotlightTitle.textContent = featuredApp.title;
             spotlightDesc.textContent = featuredApp.description;
-            spotlightMeta.textContent = featuredApp.tagName + ' ・ NEW';
+            spotlightMeta.textContent = featuredApp.tagName;
             spotlightImage.src = featuredApp.image;
             spotlightImage.alt = featuredApp.title + 'の画面';
         }
 
-        // 体育（pe）はその他（others）に含める
-        const OTHERS_CATEGORIES = ['others', 'pe'];
+        // 体育は独立したカテゴリ。その他には混ぜない。
+        const OTHERS_CATEGORIES = ['others'];
 
         // お気に入りデータ管理
         function getFavorites() {
-            try { return JSON.parse(localStorage.getItem('kagasen_favorites')) || []; } catch (e) { return []; }
+            try {
+                const saved = JSON.parse(localStorage.getItem('kagasen_favorites'));
+                return Array.isArray(saved) ? saved : [];
+            } catch (e) { return []; }
         }
         function toggleFavorite(title) {
             let favs = getFavorites();
@@ -1805,14 +1090,15 @@
         }
 
         function isNewApp(app) {
-            return new Date(app.date) > new Date('2026-02-01');
+            const age = Date.now() - new Date(app.date).getTime();
+            return age >= 0 && age < 30 * 24 * 60 * 60 * 1000;
         }
 
         /* ===== 棚（横スクロールの列）の定義 =====
            list: visibleApps から並べる関数。空なら棚ごと出さない。 */
         const SHELVES = [
             {
-                id: 'new', name: 'あたらしい アプリ', tag: 'NEW', color: '#E24E67',
+                id: 'new', name: 'あたらしい アプリ', tag: 'NEW', color: '#b52e49',
                 list: (all) => all.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
             },
             {
@@ -1823,18 +1109,8 @@
                 }
             },
             {
-                id: 'hot', name: 'よく あそばれてる', tag: 'にんき', color: '#1483C4',
-                list: (all) => {
-                    if (!countsLoaded) return [];
-                    return all.slice()
-                        .filter(a => (appCounts[a.id] || 0) > 0)
-                        .sort((a, b) => (appCounts[b.id] || 0) - (appCounts[a.id] || 0))
-                        .slice(0, 8);
-                }
-            },
-            {
-                id: 'teacher', name: 'せんせい用の どうぐ', tag: 'じゅぎょう', color: '#2E9A4C',
-                list: (all) => all.filter(a => a.category === 'teacher' || a.category === 'management')
+                id: 'teacher', name: 'せんせい用の どうぐ', tag: 'じゅぎょう', color: '#22753a',
+                list: (all) => all.filter(a => a.category === 'teacher' || a.category === 'management' || (a.category === 'pe' && a.id !== 'ugoki-no-kiroku'))
             }
         ];
 
@@ -1846,8 +1122,8 @@
                        style="--card-main:${c.main}; --card-deep:${c.deep}">
                         <div class="shelf-thumb">
                             <img class="${fitClass}" src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
-                            <span class="shelf-name">${app.title}</span>
                         </div>
+                        <span class="shelf-name">${app.title}</span>
                         <div class="shelf-meta">
                             <span style="color:${c.deep}">${app.tagName}</span>
                             <span data-count="${app.id}">👁 ---</span>
@@ -1858,6 +1134,7 @@
         function renderShelves() {
             // カテゴリしぼりこみ中・検索中は棚を出さない（BGAと同じで「一覧」に集中）
             const showShelves = currentCategory === 'all' && searchQuery === '';
+            document.getElementById('discovery').hidden = !showShelves;
             shelvesBox.innerHTML = '';
             if (!showShelves || visibleApps.length === 0) return;
 
@@ -1894,6 +1171,7 @@
                     const app = visibleApps.filter(a => a.id === tile.dataset.app)[0];
                     if (!app) return;
                     tile.addEventListener('click', (e) => {
+                        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
                         e.preventDefault();
                         goToApp(app);
                     });
@@ -1914,32 +1192,74 @@
             window.location.href = app.link;
         }
 
+        function renderRanking() {
+            const section = document.getElementById('ranking');
+            section.hidden = currentCategory !== 'all' || searchQuery !== '';
+            const list = document.getElementById('rankingList');
+            const status = document.getElementById('rankingStatus');
+            list.innerHTML = '';
+            status.hidden = false;
+            if (!countsLoaded) {
+                status.textContent = countsState === 'loading'
+                    ? 'ランキングを読み込んでいます…'
+                    : 'ランキングは現在読み込めません。下の一覧から、好きなアプリを選んでね。';
+                return;
+            }
+            const ranked = visibleApps.filter(app => (appCounts[app.id] || 0) > 0)
+                .sort((a, b) => (appCounts[b.id] - appCounts[a.id]) || a.title.localeCompare(b.title, 'ja'))
+                .slice(0, 5);
+            status.hidden = ranked.length > 0;
+            status.textContent = 'みんなの「あそんだよ」が集まると、ランキングが始まります。';
+            let rank = 0;
+            ranked.forEach((app, index) => {
+                if (index === 0 || appCounts[app.id] !== appCounts[ranked[index - 1].id]) rank = index + 1;
+                const item = document.createElement('li');
+                item.className = 'ranking-item';
+                item.innerHTML = `<a class="ranking-link" href="${app.link}" data-app="${app.id}">
+                    <span class="ranking-position">第 <strong>${rank}</strong> 位</span>
+                    <div class="shelf-thumb"><img src="${app.image}" alt="${app.title}のサムネイル" loading="lazy" decoding="async"></div>
+                    <span class="shelf-name">${app.title}</span>
+                    <span class="ranking-plays">${appCounts[app.id].toLocaleString('ja-JP')} 回 あそばれました</span>
+                </a>`;
+                item.querySelector('a').addEventListener('click', e => {
+                    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+                    e.preventDefault();
+                    goToApp(app);
+                });
+                list.appendChild(item);
+            });
+        }
+
         function renderApps() {
             if (visibleApps.length === 0) return;
 
             const favs = getFavorites();
+            filterBtns.forEach(btn => {
+                const selected = btn.dataset.category === currentCategory;
+                btn.classList.toggle('active', selected);
+                btn.setAttribute('aria-pressed', String(selected));
+            });
+            sortNewBtn.setAttribute('aria-pressed', String(currentSort === 'new'));
+            sortPopularBtn.setAttribute('aria-pressed', String(currentSort === 'name'));
+            document.getElementById('clearSearch').hidden = searchInput.value.length === 0;
 
             // しぼりこみ中は一覧に集中できるよう、ピックアップをしまう
             heroArea.style.display = currentCategory === 'all' && searchQuery === '' ? '' : 'none';
 
             renderShelves();
+            renderRanking();
 
             let filtered = visibleApps.filter(app => {
                 const matchCategory = currentCategory === 'all' ||
                     (currentCategory === 'favorites' && favs.includes(app.title)) ||
                     (currentCategory === 'others' && OTHERS_CATEGORIES.indexOf(app.category) !== -1) ||
                     app.category === currentCategory;
-                const matchSearch = app.title.toLowerCase().includes(searchQuery) ||
-                    app.description.toLowerCase().includes(searchQuery);
+                const haystack = normalizeSearch(app.title + ' ' + app.description + ' ' + app.tagName);
+                const matchSearch = searchQuery.split(/\s+/).every(term => haystack.includes(term));
                 return matchCategory && matchSearch;
             });
 
             filtered.sort((a, b) => {
-                const isFavA = favs.includes(a.title);
-                const isFavB = favs.includes(b.title);
-                if (isFavA && !isFavB) return -1;
-                if (!isFavA && isFavB) return 1;
-
                 if (currentSort === 'new') {
                     return new Date(b.date) - new Date(a.date);
                 } else {
@@ -1953,21 +1273,21 @@
             if (filtered.length === 0) {
                 appGrid.style.display = 'none';
                 noData.classList.add('show');
+                const emptyFavorites = currentCategory === 'favorites' && favs.length === 0;
+                document.getElementById('emptyTitle').textContent = emptyFavorites ? '好きなアプリを、集めよう。' : 'みつからなかった…';
+                document.getElementById('emptyHint').textContent = emptyFavorites ? 'アプリの ☆ を押すと、ここからすぐに開けるよ。' : 'べつのことばや教科で、さがしてみてね。';
             } else {
                 appGrid.style.display = '';
                 noData.classList.remove('show');
 
-                filtered.forEach((app, index) => {
-                    const card = document.createElement('a');
-                    card.href = app.link;
+                filtered.forEach(app => {
+                    const card = document.createElement('article');
                     card.className = 'app-card';
 
                     const colors = colorsOf(app);
                     card.style.setProperty('--card-main', colors.main);
                     card.style.setProperty('--card-deep', colors.deep);
                     card.style.setProperty('--card-tint', colors.tint);
-                    // 登場アニメーションを順番にずらす（最初の12枚まで）
-                    card.style.animationDelay = `${Math.min(index, 11) * 0.04}s`;
 
                     const newBadge = isNewApp(app) ? `<span class="new-badge">NEW</span>` : '';
                     const isFav = favs.includes(app.title);
@@ -1975,29 +1295,31 @@
                     const fitClass = app.imageFit === 'contain' ? 'fit-contain' : '';
 
                     card.innerHTML = `
-                        ${newBadge}
-                        <button class="fav-btn" data-title="${app.title}" aria-label="お気に入り">
-                            <i data-lucide="star" class="${starClass}" style="width:20px;height:20px"></i>
-                        </button>
                         <div class="card-thumbnail">
-                            <img class="${fitClass}" src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
+                            <img class="${fitClass}" src="${app.image}" alt="${app.title}のサムネイル" loading="lazy" decoding="async">
                         </div>
                         <div class="card-body">
-                            <span class="subject-sticker">${app.tagName}</span>
-                            <h3 class="card-title">${app.title}</h3>
+                            <div class="card-toolbar">
+                                <span class="subject-sticker">${app.tagName}</span>
+                                ${newBadge}
+                                <button class="fav-btn" data-title="${app.title}" aria-label="${app.title}をお気に入り${isFav ? 'から外す' : 'に追加'}" aria-pressed="${isFav}">
+                                    <i data-lucide="star" class="${starClass}" style="width:20px;height:20px" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <h3 class="card-title"><a class="card-link" href="${app.link}">${app.title}</a></h3>
                             <p class="card-desc">${app.description}</p>
                             <div class="card-meta">
-                                <span data-count="${app.id}">👁 ---</span>
-                                <span>📅 ${app.date}</span>
+                                <span data-count="${app.id}">あそんでみよう</span>
+                                <span>更新 ${app.date}</span>
                             </div>
-                            <span class="open-btn">あそぶ <span class="arrow">▶</span></span>
+                            <span class="open-btn" aria-hidden="true">${app.category === 'teacher' || app.category === 'management' || app.category === 'pe' ? 'つかってみる' : 'あそんでみる'} <span class="arrow">→</span></span>
                         </div>
                     `;
                     appGrid.appendChild(card);
 
                     // カードクリック時にカウント+1して遷移
-                    card.addEventListener('click', (e) => {
-                        if (e.target.closest('.fav-btn')) return;
+                    card.querySelector('.card-link').addEventListener('click', (e) => {
+                        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
                         e.preventDefault();
                         goToApp(app);
                     });
@@ -2008,8 +1330,12 @@
             document.querySelectorAll('.fav-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault(); // リンク遷移を防ぐ
-                    toggleFavorite(btn.dataset.title);
+                    const title = btn.dataset.title;
+                    toggleFavorite(title);
                     renderApps();
+                    const replacement = Array.from(document.querySelectorAll('.fav-btn')).find(el => el.dataset.title === title);
+                    if (replacement) replacement.focus({ preventScroll: true });
+                    else document.querySelector('[data-category="favorites"]').focus({ preventScroll: true });
                 });
             });
 
@@ -2039,7 +1365,7 @@
 
         renderSpotlight();
         spotlight.addEventListener('click', (e) => {
-            if (!featuredApp) return;
+            if (!featuredApp || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
             e.preventDefault();
             goToApp(featuredApp);
         });
@@ -2058,9 +1384,28 @@
             });
         });
 
+        function normalizeSearch(value) {
+            return value.normalize('NFKC').toLowerCase().trim().replace(/[ァ-ヶ]/g, char => String.fromCharCode(char.charCodeAt(0) - 0x60));
+        }
+
         searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
+            searchQuery = normalizeSearch(e.target.value);
             renderApps();
+        });
+
+        document.getElementById('clearSearch').addEventListener('click', () => {
+            searchInput.value = '';
+            searchQuery = '';
+            renderApps();
+            searchInput.focus();
+        });
+        document.getElementById('resetFilters').addEventListener('click', () => {
+            searchInput.value = '';
+            searchQuery = '';
+            currentCategory = 'all';
+            gridTitle.textContent = 'ぜんぶの アプリ';
+            renderApps();
+            document.querySelector('[data-category="all"]').focus();
         });
 
         sortNewBtn.addEventListener('click', () => {

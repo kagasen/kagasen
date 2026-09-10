@@ -1,23 +1,23 @@
 // 思考ツール — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'sikou-tool-app-cache-v6';
+const CACHE = 'sikou-tool-app-cache-v7';
 const ASSETS = [
   './',
   './backup-kit.js?v=3',
-  './app.bundle.js?v=2',
-  './images/bennzu.png',
-  './images/fissyubo-nnzu.png',
-  './images/ime-jimappu.png',
-  './images/kuragetya-to.png',
-  './images/kwltya-to.png',
-  './images/kyandhitya-to.png',
-  './images/piramiddotya-to.png',
-  './images/pmitya-to.png',
-  './images/sutepputya-to.png',
-  './images/xtya-to.png',
-  './images/ytya-to.png',
-  './images/zahyoujiku.png',
+  './app.bundle.js?v=3',
+  './images/bennzu.webp',
+  './images/fissyubo-nnzu.webp',
+  './images/ime-jimappu.webp',
+  './images/kuragetya-to.webp',
+  './images/kwltya-to.webp',
+  './images/kyandhitya-to.webp',
+  './images/piramiddotya-to.webp',
+  './images/pmitya-to.webp',
+  './images/sutepputya-to.webp',
+  './images/xtya-to.webp',
+  './images/ytya-to.webp',
+  './images/zahyoujiku.webp',
   './index.html',
   './tailwind.css',
   './topicsData.js',

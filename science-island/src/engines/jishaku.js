@@ -800,7 +800,7 @@ function renderJishaku(){
        '<linearGradient id="mg-brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD39B"/><stop offset=".45" stop-color="#CE762F"/><stop offset="1" stop-color="#8A451B"/></linearGradient>' +
        '<linearGradient id="mg-die" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DDE9EF"/></linearGradient>' +
        '<linearGradient id="mg-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE5A6"/><stop offset=".28" stop-color="#B86E2C"/><stop offset=".55" stop-color="#F6C476"/><stop offset="1" stop-color="#7C451D"/></linearGradient>' +
-       '<pattern id="mg-board-texture" width="600" height="600" patternUnits="userSpaceOnUse"><image href="./images/magnet-arena-texture.png" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid slice"/></pattern>' +
+       '<pattern id="mg-board-texture" width="600" height="600" patternUnits="userSpaceOnUse"><image href="./images/magnet-arena-texture.webp" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid slice"/></pattern>' +
        '<filter id="mg-soft-shadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>' +
        '<filter id="mg-board-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#09283C" flood-opacity=".28"/></filter></defs>';
   /* 深い実験台の上に、真鍮で縁取ったアリーナを載せる */

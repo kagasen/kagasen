@@ -946,7 +946,7 @@
     if (!egg) return '';
     const safeStage = ['egg', 'baby', 'teen', 'adult'].includes(stage) ? stage : 'adult';
     const stageAlt = { egg: 'たまご', baby: 'ヒナ', teen: 'こども', adult: '大人' }[safeStage];
-    return `<img class="pet-svg pet-image stage-${safeStage}" src="./images/pets/${species}-${safeStage}.png" alt="${egg.name}の${stageAlt}" loading="lazy" decoding="async">`;
+    return `<img class="pet-svg pet-image stage-${safeStage}" src="./images/pets/${species}-${safeStage}.webp" alt="${egg.name}の${stageAlt}" loading="lazy" decoding="async">`;
   }
 
   // --- ヒヨコ ---

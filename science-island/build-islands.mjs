@@ -247,8 +247,8 @@ function readStages(isl, t) {
 
 /* え（png）は それを つかう エンジンが 入って いる アプリだけに おく */
 const ENGINE_IMAGES = {
-  factory: 'recycle-transform-machine-v1.png',   /* リサイクル工場の 加工機 */
-  jishaku: 'magnet-arena-texture.png',           /* でんじしゃくバトルの ばん */
+  factory: 'recycle-transform-machine-v1.webp',   /* リサイクル工場の 加工機 */
+  jishaku: 'magnet-arena-texture.webp',           /* でんじしゃくバトルの ばん */
 };
 function imagesFor(engines) {
   return Object.keys(ENGINE_IMAGES).filter((e) => engines.has(e)).map((e) => ENGINE_IMAGES[e]);

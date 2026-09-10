@@ -4236,7 +4236,7 @@ function fcSpecialArt(){
     '<circle cx="300" cy="358" r="'+(ring+24).toFixed(1)+'" fill="none" stroke="'+tp.col+'" stroke-width="5" opacity=".35"/>'+
     '<g transform="translate(300,358) scale('+pop.toFixed(2)+')" filter="url(#fc-card-shadow)">'+
     '<rect x="-218" y="-125" width="436" height="250" rx="34" fill="#092D42" stroke="#FFF176" stroke-width="7"/>'+
-    '<image href="images/recycle-transform-machine-v1.png" x="-211" y="-118" width="422" height="236" preserveAspectRatio="xMidYMid slice" opacity=".42" clip-path="url(#fc-special-clip)"/><rect x="-211" y="-118" width="422" height="236" rx="28" fill="#05283C" opacity=".5"/>'+
+    '<image href="images/recycle-transform-machine-v1.webp" x="-211" y="-118" width="422" height="236" preserveAspectRatio="xMidYMid slice" opacity=".42" clip-path="url(#fc-special-clip)"/><rect x="-211" y="-118" width="422" height="236" rx="28" fill="#05283C" opacity=".5"/>'+
     '<path d="M-190-91H190" stroke="'+tp.col+'" stroke-width="10" stroke-linecap="round"/>'+
     '<text x="0" y="-61" font-size="35" font-weight="1000" fill="#FFF176" text-anchor="middle">'+tr.title+'！</text>'+
     '<text x="0" y="-30" font-size="17" font-weight="900" fill="#fff" text-anchor="middle">'+tp.short+' '+sp.count+'連鎖</text>'+
@@ -4252,7 +4252,7 @@ function fcRescueArt(){
   var r=cur.rescue,info=r.info,age=1.35-r.t,pop=Math.min(1,age*6),fade=Math.min(1,r.t*4);
   return '<g pointer-events="none" opacity="'+fade.toFixed(2)+'"><g transform="translate(300,358) scale('+pop.toFixed(2)+')" filter="url(#fc-card-shadow)">'+
     '<rect x="-202" y="-105" width="404" height="210" rx="32" fill="#251B48" stroke="#FFF176" stroke-width="7"/>'+
-    '<image href="images/recycle-transform-machine-v1.png" x="-195" y="-98" width="390" height="196" preserveAspectRatio="xMidYMid slice" opacity=".2" clip-path="url(#fc-rescue-clip)"/>'+
+    '<image href="images/recycle-transform-machine-v1.webp" x="-195" y="-98" width="390" height="196" preserveAspectRatio="xMidYMid slice" opacity=".2" clip-path="url(#fc-rescue-clip)"/>'+
     '<text x="0" y="-67" font-size="31" font-weight="1000" fill="#FFF176" text-anchor="middle">すてちゃダメ！</text>'+
     '<text x="0" y="-40" font-size="15" font-weight="900" fill="#fff" text-anchor="middle">'+info.name+'</text>'+
     '<circle cx="-88" cy="15" r="42" fill="#fff"/><text x="-88" y="29" font-size="48" text-anchor="middle">'+info.icon+'</text>'+
@@ -5481,7 +5481,7 @@ function renderJishaku(){
        '<linearGradient id="mg-brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD39B"/><stop offset=".45" stop-color="#CE762F"/><stop offset="1" stop-color="#8A451B"/></linearGradient>' +
        '<linearGradient id="mg-die" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DDE9EF"/></linearGradient>' +
        '<linearGradient id="mg-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE5A6"/><stop offset=".28" stop-color="#B86E2C"/><stop offset=".55" stop-color="#F6C476"/><stop offset="1" stop-color="#7C451D"/></linearGradient>' +
-       '<pattern id="mg-board-texture" width="600" height="600" patternUnits="userSpaceOnUse"><image href="./images/magnet-arena-texture.png" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid slice"/></pattern>' +
+       '<pattern id="mg-board-texture" width="600" height="600" patternUnits="userSpaceOnUse"><image href="./images/magnet-arena-texture.webp" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid slice"/></pattern>' +
        '<filter id="mg-soft-shadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>' +
        '<filter id="mg-board-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#09283C" flood-opacity=".28"/></filter></defs>';
   /* 深い実験台の上に、真鍮で縁取ったアリーナを載せる */

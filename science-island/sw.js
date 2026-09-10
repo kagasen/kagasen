@@ -1,13 +1,13 @@
 // サイエンスアイランド — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'science-island-cache-4339b964';
+const CACHE = 'science-island-cache-3699290c';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
-  './images/recycle-transform-machine-v1.png',
-  './images/magnet-arena-texture.png',
+  './images/recycle-transform-machine-v1.webp',
+  './images/magnet-arena-texture.webp',
 ];
 
 self.addEventListener('install', (e) => {

@@ -135,3 +135,16 @@
 - キャッシュ: index.html 変更のため `sw.js` の CACHE を v10→v11 に繰り上げ。
 
 ■ サムネイル刷新（2026-07-12）: images/ugoki-no-kiroku.svg をアプリ画面の再現（実画面スクショ風のSVG）に差し替え。ユーザー要望「サムネがダサい」対応。旧版は git 履歴にあり。
+
+## 画像を WebP にした（2026-09-10）
+このアプリが 容量の いちばん重い アプリだった（images 366枚・427MB、sw.js の precache だけで291MB）。
+`node build-images.mjs ugoki-no-kiroku --apply`（ルートのスクリプト）で **427MB → 33MB** にした。
+絵は変えていない。品質90・長辺1600pxで、iPad(dpr2)の最大表示幅より十分大きい。
+
+- `index.html` の技名マップ（`MAT_IMAGES` など）は `.webp` に書きかわっている。
+- アバターだけは `` `./images/avatar/body/${prefix}-${variant}-${version}.webp` `` と
+  **名前を組み立てて**いるので、スクリプトでは直らない。手で直した。ここを触るときは注意。
+- 元のPNGは `~/kagasen_projects/画像の元データ/ugoki-no-kiroku/` と git の履歴にある。
+- SWキャッシュは `ugoki-cache-v74`。
+- 検証: 12種目（マット/なわとび/とびばこ/すいえい/サッカー/バスケ/バレー/やきゅう/ドッジ/リレー/てつぼう/マラソン）と
+  ホーム・育てる（アバター）で、読みこめない画像 0件。

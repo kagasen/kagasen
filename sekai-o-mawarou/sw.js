@@ -2,7 +2,7 @@
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセット（データ.js・index.html等）を更新したら CACHE のバージョン番号を上げる(v1->v2...)。
 // 注意: データ.jsの ?v= は index.html の読み込みと一致させること。
-const CACHE = 'sekai-o-mawarou-cache-v13';
+const CACHE = 'sekai-o-mawarou-cache-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ const ASSETS = [
   './country-info.js?v=1',
   './manifest.json',
   './icon.svg',
-  './gacha.png?v=1',
+  './gacha.webp?v=1',
 ];
 
 self.addEventListener('install', (e) => {

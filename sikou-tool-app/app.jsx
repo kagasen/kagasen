@@ -1594,40 +1594,40 @@ function App() {
                             <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-6 text-center">思考ツールの使い方・具体例</h2>
                             <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <button onClick={() => setTutorialImage('images/xtya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/xtya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">Xチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/ytya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/ytya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">Yチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/zahyoujiku.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/zahyoujiku.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">座標軸</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/bennzu.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/bennzu.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">ベン図</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/pmitya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/pmitya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">PMIチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/kwltya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/kwltya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">KWLチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/kuragetya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/kuragetya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">クラゲチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/fissyubo-nnzu.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/fissyubo-nnzu.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">フィッシュボーン図</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/kyandhitya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/kyandhitya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">キャンディーチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/piramiddotya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/piramiddotya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">ピラミッドチャート</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/ime-jimappu.png?v=2')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/ime-jimappu.webp?v=2')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">イメージマップ</div>
                                     </button>
-                                    <button onClick={() => setTutorialImage('images/sutepputya-to.png')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
+                                    <button onClick={() => setTutorialImage('images/sutepputya-to.webp')} className="border-2 border-indigo-100 rounded-xl p-4 hover:bg-indigo-50 text-left transition-colors">
                                         <div className="font-extrabold text-indigo-800">ステップチャート</div>
                                     </button>
                                 </div>

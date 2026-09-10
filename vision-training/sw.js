@@ -1,7 +1,7 @@
 // ビジョントレーニング — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'vision-training-cache-v4';
+const CACHE = 'vision-training-cache-v5';
 const ASSETS = [
   './',
   './count-items/index.html',
@@ -13,11 +13,11 @@ const ASSETS = [
   './fonts/ZenMaruGothic-Bold.woff2',
   './fonts/ZenMaruGothic-Medium.woff2',
   './fonts/ZenMaruGothic-Regular.woff2',
-  './images/count-items.png',
-  './images/find-same.png',
-  './images/nannba-tatti.png',
-  './images/sennwotadorou.png',
-  './images/tigatteirumonowosagase.png',
+  './images/count-items.webp',
+  './images/find-same.webp',
+  './images/nannba-tatti.webp',
+  './images/sennwotadorou.webp',
+  './images/tigatteirumonowosagase.webp',
   './index.html',
   './number-touch/index.html',
   './tailwind.css',

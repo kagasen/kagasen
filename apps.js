@@ -12,6 +12,7 @@ const appsData = [
     },
     {
         id: "teko-no-hataraki",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "てこのはたらき",
         description: "おもりを つるして てこを つり合わせる 全35もん。「おもさ×きょり」の きまりを じぶんで 見つけよう。",
         category: "science",
@@ -23,6 +24,7 @@ const appsData = [
     },
     {
         id: "furiko-goal",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "ふりこゴール",
         description: "ふりこを ゆらして ゴールに とめる 全30もん。長さ・おもさ・ふれはばを かえて 1おうふくの 時間を たしかめよう。",
         category: "science",
@@ -34,6 +36,7 @@ const appsData = [
     },
     {
         id: "recycle-koujou",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "リサイクル工場",
         description: "同じ ごみを つないで けして 加工品を つくる パズル。もえる・もえない・きけんの 分けかたを あそびながら おぼえよう。",
         category: "science",
@@ -45,6 +48,7 @@ const appsData = [
     },
     {
         id: "guruguru-hatsuden",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "ぐるぐる発電",
         description: "手回し発電機を 10びょう まわして 電気を ためる アクション。豆電球と LED、どっちが 長く もつ？",
         category: "science",
@@ -56,6 +60,7 @@ const appsData = [
     },
     {
         id: "denjishaku-battle",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "でんじしゃくバトル",
         description: "N極・S極の しりぞけ合う 力で こまを はじく 対戦ゲーム。近いほど 力が 強い ことを 手で たしかめよう。",
         category: "science",
@@ -67,6 +72,7 @@ const appsData = [
     },
     {
         id: "tsubutsubu-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "つぶつぶの島",
         description: "もののとけ方・水よう液・もえ方・重さを「つぶ」で考える 4つのゲーム・全13もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
         category: "science",
@@ -78,6 +84,7 @@ const appsData = [
     },
     {
         id: "inochi-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "いのちの島",
         description: "人のからだ・植物そだて・食物れんさ・花・メダカの 5つのゲーム・全15もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
         category: "science",
@@ -89,6 +96,7 @@ const appsData = [
     },
     {
         id: "chikyu-no-shima",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "ちきゅうの島",
         description: "月と太陽・天気の変化・流れる水・土地のつくりの 4つのゲーム・全12もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
         category: "science",

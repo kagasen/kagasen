@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F2A33C">
+<title>でんじしゃくバトル｜かがせんのHAPPYアプリ集</title>
+<!-- SEO:auto build-seo.mjs が作る。手で直さない -->
+<meta name="description" content="N極・S極の しりぞけ合う 力で こまを はじく 対戦ゲーム。近いほど 力が 強い ことを 手で たしかめる 小学校理科。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<link rel="canonical" href="https://kagasen.github.io/kagasen/denjishaku-battle/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="かがせんのHAPPYアプリ集">
+<meta property="og:title" content="でんじしゃくバトル｜かがせんのHAPPYアプリ集">
+<meta property="og:description" content="N極・S極の しりぞけ合う 力で こまを はじく 対戦ゲーム。近いほど 力が 強い ことを 手で たしかめる 小学校理科。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta property="og:url" content="https://kagasen.github.io/kagasen/denjishaku-battle/">
+<meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /SEO:auto -->
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<style>
+/* =====================================================================
+   サイエンスアイランド — 小学校理科を5つの島でめぐる学習ゲーム
+   設計と経緯は HANDOFF.md を読むこと。
+   ES2017+α縛り（?. ?? は書かない＝古いiPadで全滅する）。
+   ===================================================================== */
+:root{
+  --sea:#1B7FA8; --sea-d:#0E5B7C; --sea-l:#5FC6E8;
+  --ink:#0F3350; --paper:#FFFDF6; --line:rgba(15,51,80,.12);
+  --gold:#F5B324; --ok:#2E9A4C; --ng:#E05A4A;
+  --fam:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0; height:100%;}
+body{
+  font-family:var(--fam); color:var(--ink); background:var(--sea);
+  overflow-x:hidden; -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+.screen{display:none; min-height:100%;}
+.screen.on{display:block;}
+
+/* ---------- ホーム（海の地図） ---------- */
+#screen-home{
+  background:
+    radial-gradient(ellipse at 50% 8%, #8FE0F5 0%, rgba(143,224,245,0) 60%),
+    linear-gradient(180deg,#4FB6DC 0%, var(--sea) 45%, var(--sea-d) 100%);
+  padding:0 0 86px;
+}
+.home-head{padding:26px 16px 10px; text-align:center;}
+.home-title{
+  margin:0; font-size:clamp(28px,7vw,46px); font-weight:900; color:#fff; letter-spacing:.04em;
+  text-shadow:0 3px 0 rgba(14,91,124,.45), 0 8px 20px rgba(0,0,0,.22);
+}
+.home-sub{margin:8px 0 0; color:#EAF9FF; font-size:clamp(13px,3.3vw,16px); font-weight:700; opacity:.95;}
+.progress-bar{
+  max-width:420px; margin:16px auto 0; background:rgba(255,255,255,.25);
+  border-radius:999px; height:16px; overflow:hidden; box-shadow:inset 0 2px 5px rgba(0,0,0,.15);
+}
+.progress-bar>i{display:block; height:100%; background:linear-gradient(90deg,#FFE082,var(--gold)); border-radius:999px; transition:width .5s;}
+.progress-note{text-align:center; color:#fff; font-weight:800; font-size:13px; margin-top:6px;}
+
+.map-wrap{position:relative; max-width:900px; margin:14px auto 0; padding:0 12px;}
+.map-inner{position:relative; width:100%; padding-top:80%;}
+.island{
+  position:absolute; left:var(--x); top:var(--y); transform:translate(-50%,-50%);
+  width:31%; max-width:230px; min-width:132px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:0; text-align:center; transition:transform .18s;
+}
+.island:active{transform:translate(-50%,-50%) scale(.95);}
+.island .isl-art{width:100%; filter:drop-shadow(0 10px 16px rgba(0,0,0,.28));}
+.island .isl-name{
+  margin-top:-6px; font-size:clamp(13px,3.2vw,17px); font-weight:900; color:#fff;
+  text-shadow:0 2px 0 rgba(14,91,124,.6), 0 4px 10px rgba(0,0,0,.3);
+}
+.island .isl-count{
+  font-size:11px; font-weight:800; color:#0F3350; background:rgba(255,255,255,.9);
+  border-radius:999px; padding:2px 10px; margin-top:3px;
+}
+.island.locked{opacity:.72;}
+.island.locked .isl-count{background:rgba(255,255,255,.75);}
+/* スマホ（せまい画面）では 島が かさなるので、たてに ながい ジグザグの 地図にする */
+@media (max-width:560px){
+  .map-inner{padding-top:235%;}
+  .island{left:var(--nx); top:var(--ny); width:42%; min-width:120px; max-width:180px;}
+}
+
+/* ---------- 共通のヘッダ ---------- */
+.bar{
+  position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:10px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px; background:rgba(255,255,255,.94);
+  box-shadow:0 2px 10px rgba(15,51,80,.14); backdrop-filter:blur(6px);
+}
+.bar .back{
+  min-height:44px; min-width:44px; padding:0 14px; border-radius:999px; background:#EAF3F8;
+  font-weight:900; font-size:15px; color:var(--ink); display:inline-flex; align-items:center; gap:4px;
+}
+.bar .back:active{transform:translateY(1px);}
+.bar .ttl{font-weight:900; font-size:clamp(16px,4.2vw,21px); flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ---------- 島の画面 ---------- */
+#screen-island{background:var(--paper);}
+.isl-hero{padding:18px 16px 20px; color:#fff; text-align:center;}
+.isl-hero .emoji{font-size:44px; line-height:1;}
+.isl-hero h2{margin:6px 0 4px; font-size:clamp(20px,5.4vw,28px); font-weight:900;
+  text-shadow:0 2px 6px rgba(0,0,0,.2);}
+.isl-hero p{margin:0; font-size:14px; font-weight:700; opacity:.95;}
+/* 島が 1つだけの アプリで、ゲームの 下に つづけて 出す 🔬かんがえかたの島 */
+.method-head{margin:18px 4px 10px; font-size:15px; font-weight:900; color:#0F3350;
+  border-top:2px dashed rgba(15,51,80,.18); padding-top:16px;}
+.method-head span{font-size:13px; font-weight:700; opacity:.7;}
+.method-lock{margin:18px 4px 4px; padding:16px 14px; border-radius:16px;
+  border:2px dashed rgba(15,51,80,.20); background:rgba(255,255,255,.55);
+  display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;}
+.method-lock .ml-ico{font-size:30px; line-height:1;}
+.method-lock b{font-size:15px; color:#0F3350;}
+.method-lock span{font-size:13px; font-weight:700; color:#0F3350; opacity:.8; line-height:1.6;}
+.game-list{max-width:720px; margin:0 auto; padding:16px 12px 130px; display:grid; gap:12px;}
+.game-card{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  background:#fff; border:2px solid var(--line); border-radius:18px; padding:14px 14px;
+  box-shadow:0 4px 12px rgba(15,51,80,.07); min-height:76px; transition:transform .15s;
+}
+.game-card:active{transform:translateY(2px);}
+.game-card .gc-ico{
+  flex:0 0 54px; height:54px; border-radius:16px; display:grid; place-items:center;
+  font-size:26px; background:#EAF3F8;
+}
+.game-card .gc-body{flex:1; min-width:0;}
+.game-card .gc-name{font-size:17px; font-weight:900; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.game-card .gc-sub{font-size:13px; font-weight:700; color:#4A6C85; margin-top:2px;}
+.game-card .gc-meter{margin-top:7px; height:9px; border-radius:999px; background:#E7EEF3; overflow:hidden;}
+.game-card .gc-meter>i{display:block; height:100%; background:linear-gradient(90deg,#7BD98F,var(--ok)); border-radius:999px;}
+.game-card.soon{opacity:.55;}
+.tag{font-size:10px; font-weight:900; border-radius:999px; padding:2px 8px; white-space:nowrap;}
+.tag.grade{background:#EAF3F8; color:#33637F;}
+.tag.jhs{background:#FFF0CF; color:#8A5B00;}
+.tag.soon{background:#EEE; color:#777;}
+
+/* ---------- ゲーム画面 ---------- */
+#screen-game{background:var(--paper); padding-bottom:130px;}
+.stage-strip{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; padding:10px 12px 0;}
+.stage-dot{
+  width:34px; height:34px; border-radius:12px; display:grid; place-items:center;
+  font-size:14px; font-weight:900; background:#E7EEF3; color:#7791A5;
+}
+.stage-dot.done{background:#CBEFD4; color:#1E6E37;}
+.stage-dot.gold{background:linear-gradient(135deg,#FFE9A8,#F5B324); color:#7A5200;}
+.stage-dot.now{outline:3px solid var(--sea); outline-offset:2px; background:#fff; color:var(--ink);}
+.quest{
+  max-width:640px; margin:12px auto 0; padding:12px 16px; background:#fff;
+  border:2px solid var(--line); border-radius:16px; text-align:center;
+}
+.quest .q-n{font-size:12px; font-weight:900; color:#7791A5;}
+.quest .q-t{font-size:clamp(16px,4.4vw,20px); font-weight:900; margin-top:2px;}
+.quest .q-h{font-size:14px; font-weight:700; color:#4A6C85; margin-top:8px; display:none; line-height:1.75; text-align:left;}
+.quest .q-h.on{display:block;}
+.quest .q-h .ans{margin-top:10px; border-top:1px dashed #C7D6E0; padding-top:6px;}
+.quest .q-h summary{cursor:pointer; color:#1B7FA8; font-weight:900; padding:11px 0; min-height:26px;}  /* 指で 押せる 48px */
+.quest .q-h .ans-in{background:#F2F8FC; border-radius:12px; padding:8px 12px 10px; margin-top:4px;}
+.quest .q-h ol{margin:6px 0 0 22px; padding:0;}
+.quest .q-h li{margin:4px 0;}
+.quest .q-h .ans-note{color:#6B8398; margin-top:8px;}
+.sw-pick{display:none; margin:8px auto 0; max-width:520px;}
+.sw-pick.on{display:block;}
+.sw-pick .sw-note{font-size:13px; font-weight:900; color:#8A5B00; text-align:center; margin-bottom:6px;}
+.sw-pick .sw-box{border-radius:16px; padding:8px 10px;}
+.sw-pick .sw-box.first{background:#FFF6DE; border:3px solid #F5B324;}
+.sw-pick .sw-row{display:flex; align-items:center; gap:6px; margin:4px 0;}
+.sw-pick .sw-lab{font-size:13px; font-weight:900; color:#8FA3B8; width:48px; flex:none; text-align:right;}
+.sw-pick .sw-b{flex:1; min-height:48px; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-family:inherit; font-size:14px; font-weight:900; color:#4A6C85; background:#F2F6F9;
+  border:3px solid #C3D0DA; border-radius:14px; cursor:pointer; padding:0 6px;}
+.sw-pick .sw-b .dot{border-radius:50%; display:inline-block; border:2px solid rgba(0,0,0,.25);}
+.sw-pick .sw-b.on{color:#fff;}
+.sw-pick .sw-b:disabled{opacity:.45; cursor:default;}
+.quest .q-h button.mini{font-family:inherit; font-size:14px; font-weight:900; color:#fff; background:#1B7FA8;
+  border:none; border-radius:12px; padding:11px 18px; min-height:44px; cursor:pointer;}
+.board-wrap{max-width:640px; margin:12px auto 0; padding:0 10px; position:relative;}
+.fc-controls{position:absolute; inset:0 10px; pointer-events:none; z-index:8;}
+.fc-controls.on{pointer-events:auto;}
+.fc-controls button{font:900 15px/1.2 inherit; min-height:54px; border:0; border-radius:17px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:0 3px 0 rgba(15,51,80,.18);}
+.fc-controls button:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(15,51,80,.18);}
+.fc-answer-buttons{position:absolute; left:17%; right:17%; top:41.2%; display:grid; gap:10px; pointer-events:auto;}
+.fc-answer-buttons button{background:#EEF4F7; color:#173F55; border:2px solid #7CA6B7;}
+.fc-answer-buttons button:nth-child(2){background:#EAF6F1;}
+.fc-result-buttons{position:absolute; left:17.2%; right:17.2%; top:65.3%; display:grid; grid-template-columns:1fr 1fr; gap:18px; pointer-events:auto;}
+.fc-result-buttons .back-result{background:#EEF4F7; color:#315A70; border:2px solid #AFC8D3;}
+.fc-result-buttons .again-result{background:#1B7FA8; color:#fff;}
+.board{
+  width:100%; background:#FFFFFF; border:2px solid var(--line); border-radius:20px;
+  box-shadow:0 6px 18px rgba(15,51,80,.08); display:block; touch-action:manipulation;
+}
+.tools{max-width:640px; margin:12px auto 0; padding:0 10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+.tool{
+  min-height:48px; padding:0 18px; border-radius:999px; background:#EAF3F8; color:var(--ink);
+  font-weight:900; font-size:15px; display:inline-flex; align-items:center; gap:6px;
+  border:2px solid transparent;
+}
+.tool:active{transform:translateY(1px);}
+.tool.primary{background:var(--sea); color:#fff;}
+.status{
+  max-width:640px; margin:10px auto 0; padding:0 12px; text-align:center;
+  font-size:15px; font-weight:900; min-height:24px; color:#4A6C85;
+}
+.status.short{color:var(--ng);}
+
+/* ---------- できた ときの おび ----------
+   せいかいでも クリアの まどを すぐには 出さない。この おびを おすまで、
+   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見なおせる。
+   2026-09-10 ユーザーの きぼう:「まだ 頭の せいりが できて いないのに クリアが 出る」 */
+.clear-bar{
+  max-width:640px; margin:12px auto 0; padding:12px 14px; display:none;
+  align-items:center; justify-content:center; gap:10px 14px; flex-wrap:wrap;
+  background:#E9F9EE; border:3px solid var(--ok); border-radius:20px;
+  animation:pop .3s cubic-bezier(.2,1.3,.5,1);
+}
+.clear-bar.on{display:flex;}
+.clear-bar .cb-msg{font-size:16px; font-weight:900; color:#1E7A3C;}
+.clear-bar .cb-go{
+  min-height:48px; padding:0 22px; border-radius:999px; border:none;
+  background:var(--ok); color:#fff; font-family:var(--fam); font-weight:900; font-size:16px;
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+}
+.clear-bar .cb-go:active{transform:translateY(1px);}
+
+/* ---------- クリアのモーダル ---------- */
+.modal{
+  position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
+  background:rgba(6,40,60,.6); padding:20px; backdrop-filter:blur(3px);
+}
+.modal.on{display:flex;}
+.modal-box{
+  background:var(--paper); border-radius:26px; padding:24px 20px; max-width:380px; width:100%;
+  text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.35); animation:pop .35s cubic-bezier(.2,1.3,.5,1);
+}
+@keyframes pop{from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;}}
+.modal-box h3{margin:0 0 6px; font-size:26px; font-weight:900; color:var(--ok);}
+.modal-box .learn{
+  background:#FFF8E4; border:2px dashed var(--gold); border-radius:16px; padding:12px 14px;
+  margin:14px 0; font-size:14px; font-weight:700; text-align:left; line-height:1.7;
+}
+.modal-box .learn b{color:#8A5B00;}
+.jhs-note{
+  display:inline-flex; align-items:center; gap:6px; background:#FFF0CF; color:#8A5B00;
+  border-radius:999px; padding:6px 12px; font-size:12px; font-weight:900; margin-bottom:10px;
+}
+.modal-btns{display:flex; gap:10px; margin-top:6px;}
+.modal-btns .tool{flex:1; justify-content:center;}
+.card-get{margin:10px auto 0; width:150px;}
+#confetti{position:fixed; inset:0; pointer-events:none; z-index:300; display:none;}
+</style>
+</head>
+<body>
+
+
+
+<!-- ========== ゲーム ========== -->
+<div id="screen-game" class="screen on">
+  <div class="bar">
+    <div class="ttl" id="game-bar-title">ゲーム</div>
+  </div>
+  <div class="stage-strip" id="stage-strip"></div>
+  <div class="quest">
+    <div class="q-n" id="q-n">だい1もん</div>
+    <div class="q-t" id="q-t"></div>
+    <div class="q-h" id="q-h"></div>
+  </div>
+  <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
+  <div class="sw-pick" id="sw-pick"></div>
+  <div class="status" id="status"></div>
+  <!-- せいかいの とき ここが 出る。おすまで クリアの まどは 出ない。 -->
+  <div class="clear-bar" id="clear-bar">
+    <span class="cb-msg">🎉 できた！ じぶんの こたえを 見て みよう</span>
+    <button type="button" class="cb-go" id="cb-go">▶ つぎへ すすむ</button>
+  </div>
+  <div class="tools">
+    <button class="tool" id="btn-hint">💡 ヒント</button>
+    <button class="tool" id="btn-reset">↺ はじめから</button>
+  </div>
+</div>
+
+<!-- ========== クリア ========== -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modal-jhs"></div>
+    <h3 id="modal-title">クリア！</h3>
+    <div id="modal-card"></div>
+    <div class="learn" id="modal-learn"></div>
+    <div class="modal-btns">
+      <button class="tool" id="modal-again">↺ もういちど</button>
+      <button class="tool primary" id="modal-next">つぎへ ▶</button>
+    </div>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* =====================================================================
+   サイエンスアイランド — 本体
+   ここでの約束（CLAUDE.md より）
+     ・?. ?? は書かない（古いiPadで全滅する）
+     ・ミニゲームは「型（エンジン）」＋「データ」。データを1行足せば増える
+     ・子どもの記録は絶対に捨てない。load() で旧データを移行する
+   ===================================================================== */
+'use strict';
+
+/* ------------------------------------------------------------------ *
+ * 1. データ：島
+ * ------------------------------------------------------------------ */
+var ISLANDS = [
+  { id:'energy',   name:'エネルギーの島',   emoji:'⚡', color:'#F2A33C', sand:'#F7D9A0',
+    desc:'でんき・じしゃく・てこ・ふりこ', mx:20, my:26, nx:26, ny:9 },
+  { id:'particle', name:'つぶつぶの島',     emoji:'🧪', color:'#8B7BE8', sand:'#D8D2F7',
+    desc:'とけ方・水よう液・もえ方・重さ', mx:78, my:22, nx:74, ny:27 },
+  { id:'life',     name:'いのちの島',       emoji:'🌱', color:'#4FC46A', sand:'#CDEFD3',
+    desc:'からだ・しょくぶつ・生きもの',   mx:22, my:72, nx:26, ny:47 },
+  { id:'earth',    name:'ちきゅうの島',     emoji:'🌏', color:'#3EA7D8', sand:'#C7E7F5',
+    desc:'月と太陽・天気・大地',           mx:80, my:74, nx:74, ny:66 },
+  { id:'method',   name:'かんがえかたの島', emoji:'🔬', color:'#E8618C', sand:'#F9CFDD',
+    desc:'りかの こころ',                  mx:50, my:48, nx:50, ny:86, needAll:true }
+];
+
+
+/* ---- ここは build-islands.mjs が 書きこむ。手で 直さない ---- */
+var ALL_GAMES = [['energy-denki','energy'],['energy-teko','energy'],['energy-swing','energy'],['energy-jishaku','energy'],['energy-hatsuden','energy'],['energy-cluster','energy'],['particle-tokekata','particle'],['particle-suiyoueki','particle'],['particle-moe','particle'],['particle-omosa','particle'],['life-karada','life'],['life-kougousei','life'],['life-shokumotsu','life'],['life-jufun','life'],['life-medaka','life'],['earth-tsuki','earth'],['earth-tenki','earth'],['earth-mizu','earth'],['earth-chiso','earth'],['method-jouken','method'],['method-taisho','method'],['method-tejun','method'],['method-graph','method'],['method-ieru','method']];
+var HOME_ISLAND = 'energy';
+var HOME_GAME = 'energy-cluster';
+/* この アプリに 出す 島。島えらびは ポータル（かがせんのHAPPYアプリ集）が するので、
+   ここでは じぶんの 島と、4島 クリアで ひらく かんがえかたの島だけを 出す。 */
+var ONLY_ISLANDS = ["energy"];
+ISLANDS = ISLANDS.filter(function(i){ return ONLY_ISLANDS.indexOf(i.id) >= 0; });
+/* 島が 2つの ときの 地図の おきどころ（5つの ときの ざひょうだと はしに よって しまう） */
+if (ISLANDS.length === 2){
+  ISLANDS[0].mx = 32; ISLANDS[0].my = 38; ISLANDS[0].nx = 32; ISLANDS[0].ny = 14;
+  ISLANDS[1].mx = 68; ISLANDS[1].my = 66; ISLANDS[1].nx = 68; ISLANDS[1].ny = 89;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. データ：ミニゲーム
+ *    kind …… どの「型（エンジン）」で動かすか。第1段は tsunagu だけ実装ずみ。
+ *    jhs  …… 🎓「中学でも つかうよ」の印
+ *    soon …… まだ中身が入っていない（じゅんびちゅう表示）
+ * ------------------------------------------------------------------ */
+var LAMP_R = 1, BATT_V = 1.5, REF_I = BATT_V / LAMP_R;
+/* モーターは まめでんきゅうと おなじ とおりにくさ（明るさと 回る はやさを くらべやすい ように）。
+   けんりゅうけいは でんきの みちの じゃまを ほとんど しない ＝ とても 小さい ていこう。
+   MAX_I …… これいじょう ながれる つなぎ方は あぶない あつかい（けんりゅうけいだけを でんちに
+   つなぐ／でんきゅうの りょうはしを けんりゅうけいで つなぐ、など ほんものなら こわれる つなぎ方）。 */
+var MOTOR_R = 1, GALV_R = 0.05, MAX_I = 10;
+
+/* ながれた でんりゅうを「でんち1こ＋でんきゅう1こ」を 1.0 と した ときの ばいりつに して
+   5だんかいに わける。off いがいは そのまま 明るさ／回る はやさ／はりの ふれ に つかう。
+   ・faint  とても くらい（でんきゅう3こ 直列 ＝ 0.33）
+   ・dim    くらい      （でんきゅう2こ 直列 ＝ 0.50）
+   ・full   ふつう      （でんち1こ・でんきゅう1こ ＝ 1.00）
+   ・bright とても 明るい（でんち2こ 直列 ＝ 2.00） */
+function iCat(ratio){
+  return ratio < 0.06 ? 'off'
+       : ratio < 0.42 ? 'faint'
+       : ratio < 0.78 ? 'dim'
+       : ratio < 1.35 ? 'full' : 'bright';
+}
+
+/* でんじしゃく の じょうけん。3もん 共通。つよさ ∝ まきかず × でんりゅう（しんが 鉄の とき）。 */
+var JISHAKU_VARS = [
+  { id:'maki',   label:'コイルの まきかず',       values:[{ label:'100かい', v:100 }, { label:'200かい', v:200 }] },
+  { id:'denchi', label:'かんでんちの 数（直列）', values:[{ label:'1こ',    v:1   }, { label:'2こ',    v:2   }] },
+  { id:'shin',   label:'しんの ざいりょう',       values:[{ label:'鉄',     v:'tetsu' }, { label:'アルミ', v:'alumi' }] }
+];
+/* もののとけ方 の じょうけん。per50 は 水50mL に とける りょう（g）。じっさいの ようかい度を まるめた 数ち。
+   えらびようが 1つしか ない 行は「この じっけんは 食塩で やる」の 意味（loadJikken が 先に 入れる）。 */
+var TOKE_MONO = {
+  shio:   { name:'食塩',     per50:{ 20:18, 60:19 }, water:'#D7E9F5', grain:'#FFFFFF', line:'#9FB4C4' },
+  myoban: { name:'ミョウバン', per50:{ 20:6,  60:29 }, water:'#E3DCF6', grain:'#F6F2FF', line:'#A99AD6' }
+};
+var TOKE_MIZU = { id:'mizu', label:'水の りょう', values:[{ label:'50mL', v:50 }, { label:'100mL', v:100 }] };
+var TOKE_ONDO = { id:'ondo', label:'水の おん度', values:[{ label:'20ど', v:20 }, { label:'60ど', v:60 }] };
+var TOKE_VARS = [
+  { id:'mono', label:'とかす もの', values:[{ label:'食塩', v:'shio' }, { label:'ミョウバン', v:'myoban' }] },
+  TOKE_MIZU, TOKE_ONDO
+];
+/* えらびようが 1つしか ない 行は、はじめから 入って いる（＝「この じっけんは 食塩で やる」の 意味） */
+var TOKE_VARS_SHIO   = [ { id:'mono', label:'とかす もの', values:[{ label:'食塩', v:'shio' }] }, TOKE_MIZU, TOKE_ONDO ];
+var TOKE_VARS_MYOBAN = [ { id:'mono', label:'とかす もの', values:[{ label:'ミョウバン', v:'myoban' }] }, TOKE_MIZU, TOKE_ONDO ];
+/* たねの 発芽の じょうけん。🔬かんがえかたの島（条件制御）で つかう。
+   発芽に いるのは 水・空気・てきとうな温度 の 3つだけ。日光と 肥料は いらない。
+   （書いて いない じょうけんは「あり」あつかい。だから 表に 出す 行を 問題ごとに えらべる） */
+var HG = {
+  mizu:   { id:'mizu',   label:'水',     values:[{ label:'あり', v:1 }, { label:'なし', v:0 }] },
+  kuki:   { id:'kuki',   label:'空気',   values:[{ label:'あり', v:1 }, { label:'水に しずめる', v:0 }] },
+  ondo:   { id:'ondo',   label:'温度',   values:[{ label:'20ど', v:20 }, { label:'5ど', v:5 }] },
+  hikari: { id:'hikari', label:'日光',   values:[{ label:'あてる', v:1 }, { label:'あてない', v:0 }] },
+  hiryo:  { id:'hiryo',  label:'肥料',   values:[{ label:'あり', v:1 }, { label:'なし', v:0 }] }
+};
+var HATSUGA_A = [HG.mizu, HG.ondo, HG.hikari, HG.hiryo];
+var HATSUGA_B = [HG.mizu, HG.kuki, HG.ondo, HG.hiryo];
+
+/* 水よう液の せいしつ表。**道具の けっかは ぜんぶ ここから 計算する**（正かいの 手じゅんは 用意しない）。
+   さんせい＝炭酸水・うすい塩酸／中せい＝食塩水・さとう水／アルカリせい＝石灰水・アンモニア水。
+   awa（見た目で 分かる あわ）だけは 道具を つかわなくても 見える。 */
+var SUI_EKI = [
+  { id:'shio',    name:'食塩水',       sei:'中',      ato:'白い つぶ',    nioi:false, tetsu:false, sekkai:false, awa:false },
+  { id:'sato',    name:'さとう水',     sei:'中',      ato:'黒く こげる',  nioi:false, tetsu:false, sekkai:false, awa:false },
+  { id:'tansan',  name:'炭酸水',       sei:'さん',    ato:'なし',        nioi:false, tetsu:false, sekkai:true,  awa:true  },
+  { id:'ensan',   name:'うすい塩酸',   sei:'さん',    ato:'なし',        nioi:true,  tetsu:true,  sekkai:false, awa:false },
+  { id:'sekkai',  name:'石灰水',       sei:'アルカリ', ato:'白い つぶ',   nioi:false, tetsu:false, sekkai:false, awa:false },
+  { id:'anmonia', name:'アンモニア水', sei:'アルカリ', ato:'なし',        nioi:true,  tetsu:false, sekkai:false, awa:false }
+];
+/* 道具。read＝メモに のこす みじかい けっか、full＝したに 出す ことば。 */
+var SUI_TOOLS = [
+  { id:'litmus', name:'リトマス紙', hint:'リトマス紙を つける びんを えらぼう',
+    read:function(e){
+      return e.sei === 'さん'      ? { t:'さんせい',    c:'#E05A4A' }
+           : e.sei === 'アルカリ'  ? { t:'アルカリせい', c:'#1B7FA8' }
+                                   : { t:'中せい',      c:'#5A7C93' };
+    },
+    full:function(e){
+      return e.sei === 'さん'      ? '青い リトマス紙が 赤に なった ＝ さんせい'
+           : e.sei === 'アルカリ'  ? '赤い リトマス紙が 青に なった ＝ アルカリせい'
+                                   : 'どちらの 色も かわらない ＝ 中せい';
+    } },
+  { id:'evap', name:'じょうはつ', hint:'蒸発皿で 水を とばす びんを えらぼう',
+    read:function(e){ return { t:e.ato, c:(e.ato === 'なし' ? '#5A7C93' : '#8A5B00') }; },
+    full:function(e){
+      return e.ato === 'なし' ? '水が とんだ あと、何も のこらなかった（気体が とけて いる）'
+                             : 'あとに ' + e.ato + '（固体が とけて いる）';
+    } },
+  { id:'nioi', name:'におい', hint:'手で あおいで におう びんを えらぼう（ぜったいに なめない）',
+    read:function(e){ return e.nioi ? { t:'つんと する', c:'#8A5B00' } : { t:'におい なし', c:'#5A7C93' }; },
+    full:function(e){ return e.nioi ? 'つんと した においが した' : 'においは しなかった'; } },
+  { id:'tetsu', name:'鉄くぎ', hint:'鉄くぎを 入れる びんを えらぼう',
+    read:function(e){ return e.tetsu ? { t:'鉄が とけた', c:'#E05A4A' } : { t:'かわらない', c:'#5A7C93' }; },
+    full:function(e){ return e.tetsu ? '鉄くぎが あわを 出して とけた' : '鉄くぎは かわらなかった'; } },
+  { id:'sekkai', name:'石灰水', hint:'石灰水を 入れる びんを えらぼう',
+    read:function(e){ return e.sekkai ? { t:'白く にごる', c:'#8A5B00' } : { t:'かわらない', c:'#5A7C93' }; },
+    full:function(e){ return e.sekkai ? '石灰水が 白く にごった（二酸化炭素が とけて いる）' : '石灰水は かわらなかった'; } }
+];
+
+/* 花の つくりの「あたり」。3もん 共通 */
+var HANA_TARGETS = [
+  { id:'meshibe',  label:'めしべ',  hits:[[300,186,26]] },
+  { id:'oshibe',   label:'おしべ',  hits:[[238,204,26],[362,204,26]] },
+  { id:'hanabira', label:'花びら',  hits:[[196,146,34],[404,146,34]] },
+  { id:'gaku',     label:'がく',    hits:[[230,306,26],[370,306,26]] },
+  { id:'shibou',   label:'子ぼう',  hits:[[300,288,26]] }
+];
+/* 川の 図の「あたり」。曲がりの 外がわ／内がわ が この単元の キモ */
+var KAWA_TARGETS = [
+  { id:'jouryu', label:'上流',                 hits:[[66,150,30]] },
+  { id:'soto1',  label:'上の 曲がりの 外がわ', hits:[[240,40,30]] },
+  { id:'uchi1',  label:'上の 曲がりの 内がわ', hits:[[240,146,30]] },
+  { id:'uchi2',  label:'下の 曲がりの 内がわ', hits:[[440,244,30]] },
+  { id:'soto2',  label:'下の 曲がりの 外がわ', hits:[[440,352,30]] },
+  { id:'karyu',  label:'下流',                 hits:[[556,340,30]] }
+];
+/* グラフの「あたり」 */
+var GRAPH_TARGETS = [
+  { id:'jiku_x', label:'よこじく',             hits:[[316,387,30]] },
+  { id:'jiku_y', label:'たてじく',             hits:[[48,208,30]] },
+  { id:'ten1',   label:'25cmの 点',            hits:[[110,234,28]] },
+  { id:'ten2',   label:'50cmの 点',            hits:[[247,194,28]] },
+  { id:'ten4',   label:'100cmの 点',           hits:[[520,137,28]] },
+  { id:'nazo',   label:'しらべて いない ところ', hits:[[566,200,28]] }
+];
+
+/* 人のからだ の「あたり」。3もん 共通なので ここに 1つだけ おく。
+   hits は [x, y, はんけい]。lx/ly は みつけた ときの 名ふだの ばしょ。 */
+var TAI_TARGETS = [
+  { id:'kuchi',  label:'口',     hits:[[300,116,26]],              lx:392, ly:108 },
+  { id:'hai',    label:'肺',     hits:[[250,192,28],[350,192,28]], lx:196, ly:170 },
+  { id:'shinzo', label:'心臓',   hits:[[300,228,22]],              lx:424, ly:214 },
+  { id:'kanzo',  label:'かん臓', hits:[[258,266,28]],              lx:186, ly:258 },
+  { id:'i',      label:'胃',     hits:[[346,274,28]],              lx:424, ly:282 },
+  { id:'shocho', label:'小腸',   hits:[[300,338,26]],              lx:424, ly:348 },
+  { id:'daicho', label:'大腸',   hits:[[246,340,20],[354,340,20]], lx:186, ly:378 }
+];
+
+/* 「どの でんきゅうでも いい」タイプの goal を つくる ヘルパー。
+   もんだいが 「3このうち 1こだけ 消せるように」と 言って いるのに、消すのを l3 に 決めうちに
+   すると、l1 で 作った 子が ×に なる。おなじ 勉強なので ぜんぶ 通す（goal.anyOf に わたす）。 */
+function goalOnly1Off(ids){                        /* 並列。スイッチを 切ると どれか 1こだけ 消える */
+  return ids.map(function(x){
+    var rest = ids.filter(function(y){ return y !== x; });
+    var all = {}; ids.forEach(function(y){ all[y] = 'full'; });
+    return [ { sw:{s1:true},  on:ids.slice(), bright:all },
+             { sw:{s1:false}, on:rest, off:[x] } ];
+  });
+}
+function goalTrunkSplit(ids){                      /* 1こ とおった あと 2本に わかれる。みきは どれでも いい */
+  return ids.map(function(t){
+    var br = {};
+    ids.forEach(function(y){ br[y] = (y === t ? 'dim' : 'faint'); });
+    return [ { on:ids.slice(), bright:br } ];
+  });
+}
+
+var GAMES = [
+  { id:'energy-cluster', island:'energy', kind:'jishaku', icon:'🧭',
+    name:'でんじしゃくバトル', sub:'でんじしゃくを 先に 置ききれ！', grade:'3・5年', jhs:true,
+    card:'しりぞけ合う 力',
+    stages:[
+      { t:'じぶんで きめて たいせん',
+        h:'はじめる 前に <b>あいての つよさ・でんじしゃくの 数・わくの 大きさ・ステージ</b>を 自分で えらべるよ。<br>' +
+          '①サイコロで <b>N か S</b>が きまる（えらべない！）②<b>ボタンを おしっぱなし</b>で コイルを 巻く ③わくの 中を タップして 置く。<br>' +
+          'たくさん 巻くほど こまが 大きく なって <b>遠くまで 力が とどく</b>ように なるよ（ちがう極なら すいよせて くっつく・同じ極なら 勢いよく はじき飛ばす）。' +
+          '<b>くっついた こまと、わくから おちた こまは 手もとに もどって くる</b>ので、そのぶん おわらない。<b>先に ぜんぶ 置ききった 人の 勝ち！</b>',
+        goal:'でんじしゃくを 先に ぜんぶ 置いた 人の 勝ち！', cpu:1.0,
+        learn:'コイルを <b>巻いた ぶんだけ 磁力が 強く</b> なり、こまも 大きく なる。じしゃくの 力が とどくのは <b>近くだけ</b>で、' +
+          'はなれた こまは びくとも しない。近いほど 力は 強く（きょりが 半分に なると 力は <b>4ばい</b>）、' +
+          '少し はなすだけで 一気に 弱く なるからだよ。<br>' +
+          'そして <b>同じ極は しりぞけ合い、ちがう極は 引き合う</b>。でんじしゃくの N・S は <b>電流の むきで きまって いる</b>ので、' +
+          '同じ極どうしは どんなに 近づけても ぜったいに くっつかない ―― かわりに 強い どうしを ぶつけると 勢いよく はじき飛ぶ。<br>' +
+          'この「同じ極／ちがう極」と「近いほど 強い」は、中学の 電気・磁気で ずっと つかう 考え方だよ。' }
+    ] },
+
+];
+
+function gameById(id){ for(var i=0;i<GAMES.length;i++){ if(GAMES[i].id===id) return GAMES[i]; } return null; }
+function islandById(id){ for(var i=0;i<ISLANDS.length;i++){ if(ISLANDS[i].id===id) return ISLANDS[i]; } return null; }
+function gamesOf(islandId){ return GAMES.filter(function(g){ return g.island===islandId; }); }
+function playableOf(islandId){ return gamesOf(islandId).filter(function(g){ return !g.soon; }); }
+
+/* ------------------------------------------------------------------ *
+ * 3. セーブ（CLAUDE.md §3：記録を絶対に壊さない）
+ * ------------------------------------------------------------------ */
+var SAVE_KEY = 'science-island-save-v1';
+var save = { v:1, stages:{}, cards:{}, opt:{} };
+
+function load(){
+  var raw = null;
+  try { raw = localStorage.getItem(SAVE_KEY); } catch(e){ raw = null; }
+  if (!raw) return;
+  var d = null;
+  try { d = JSON.parse(raw); } catch(e){ return; }
+  if (!d || typeof d !== 'object') return;
+  /* --- スキーマ移行のフック。形をかえても 古いデータを すてない --- *
+     いまは v1 だけ。v2 に するときは ここで d.v===1 のデータを つめかえる。 */
+  if (d.stages) save.stages = d.stages;
+  if (d.cards)  save.cards  = d.cards;
+  if (d.opt)    save.opt    = d.opt;            /* 自分で えらんだ せってい（でんじしゃくバトル など） */
+  save.v = 1;
+}
+function store(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){}
+}
+function stageKey(gameId, i){ return gameId + '-' + (i+1); }
+function stageRec(gameId, i){
+  var r = save.stages[stageKey(gameId,i)];
+  return r ? r : null;
+}
+function clearedCount(gameId){
+  var g = gameById(gameId);
+  if (!g || !g.stages) return 0;
+  var n = 0;
+  for (var i=0;i<g.stages.length;i++){ if (stageRec(gameId,i)) n++; }
+  return n;
+}
+function gameDone(gameId){
+  var g = gameById(gameId);
+  if (!g || !g.stages) return false;
+  return clearedCount(gameId) >= g.stages.length;
+}
+function gameGold(gameId){
+  var g = gameById(gameId);
+  if (!g || !g.stages) return false;
+  for (var i=0;i<g.stages.length;i++){
+    var r = stageRec(gameId,i);
+    if (!r || !r.p) return false;
+  }
+  return true;
+}
+function islandDone(islandId){
+  var all  = ALL_GAMES.filter(function(g){ return g[1] === islandId; });
+  var list = playableOf(islandId);
+  /* その島の ゲームを ぜんぶ 持って いる アプリの ときだけ、じぶんで 数える。
+     1ゲームだけの アプリ（でんき回路 など）で これを やると、その 1つを クリアしただけで
+     「エネルギーの島 クリア」に なって しまう。 */
+  if (list.length && list.length >= all.length){
+    for (var i=0;i<list.length;i++){ if(!gameDone(list[i].id)) return false; }
+    return true;
+  }
+  /* この アプリには そろって いない 島（島ごと・ゲームごとに アプリを 分けた ため）。
+     セーブは 4アプリで 同じ もの（同一オリジンの localStorage）を 見て いるので、
+     その島の ゲームが ぜんぶ 図かんに のって いれば クリアずみと 分かる。
+     こうしないと「4島 クリアで かんがえかたの島が ひらく」が どの アプリでも
+     ひらかなく なる（じぶんの 島の ゲームしか 数えられない ため）。 */
+  if (!all.length) return false;
+  for (var j=0;j<all.length;j++){ if(!save.cards[all[j][0]]) return false; }
+  return true;
+}
+function methodOpen(){
+  return islandDone('energy') && islandDone('particle') && islandDone('life') && islandDone('earth');
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. ゲームの じょうたい と 型（エンジン）の わりふり
+ *
+ *    型は ENGINES に { load(stage), render(), tap(event) } の かたちで とうろくする。
+ *    ミニゲームの kind が きほんの型。stage.kind を 書けば その1もんだけ
+ *    べつの型に できる（例：月と太陽は「ならべる」と「むすぶ」を まぜている）。
+ *    あたらしい型を ふやすときは ENGINES に 1つ 足すだけで すむように すること。
+ * ------------------------------------------------------------------ */
+var ENGINES = {};
+var cur = {
+  gameId:null, si:0, kind:null, hint:false, done:false,
+  parts:[], wires:[], sel:null,      /* つなぐ型（回路・むすぶ）で つかう */
+  slots:[], tray:[]                  /* ならべる型で つかう */
+};
+
+function curStage(){ var g = gameById(cur.gameId); return g ? g.stages[cur.si] : null; }
+function engine(){ return ENGINES[cur.kind]; }
+function setBoardBox(w, h){ document.getElementById('board').setAttribute('viewBox', '0 0 ' + w + ' ' + h); }
+function setStatus(msg, bad){
+  document.getElementById('status').className = bad ? 'status short' : 'status';
+  document.getElementById('status').textContent = msg || '';
+}
+function closeModal(){ document.getElementById('modal').className = 'modal'; }
+/* せいかいした ときの ながれ（2026-09-10 に かえた）
+     せいかい → 480ms あと に「できた！」の おびを 出す → **子が おして はじめて** クリアの まど
+   むかしは まどが かってに 出て いた。回路や つり合いを 作りおえた ばかりで
+   まだ 見て いたい のに まどが かぶさって しまう、という ユーザーの 指てき。
+   おびが 出て いる あいだ、ばんめんは そのまま のこる（見なおせる）。
+   タイマーは おぼえて おいて loadStage で 取り消す（はじめから・もんだい きりかえ の ため）。 */
+function tryClear(ok){
+  if (!cur.done && ok){ cur.done = true; cur.clearTimer = setTimeout(showClearBar, 480); }
+}
+function showClearBar(){
+  /* ★ を とる か どうかは **この しゅんかん** で きめて おく。
+     おびが 出た あとに ヒントを ひらいても、もう とれた ★を 下げない（§6 単調増加）。 */
+  cur.gotStar = (cur.hint || cur.noStar) ? 0 : 1;
+  var bar = document.getElementById('clear-bar');
+  bar.className = 'clear-bar on';
+  if (bar.scrollIntoView) bar.scrollIntoView({ block:'nearest' });
+}
+function hideClearBar(){ document.getElementById('clear-bar').className = 'clear-bar'; }
+document.getElementById('cb-go').onclick = function(){ hideClearBar(); onClear(); };
+function renderBoard(){ var e = engine(); if (e) e.render(); }
+
+/* タップされた ところから 親を たどって data-○○ を さがす。
+   ぜんぶの 型（エンジン）と ホームの 地図が つかう ので、ここ（共通）に 置く。 */
+function attrUp(el, name){
+  while (el && el !== document){
+    if (el.getAttribute){ var v = el.getAttribute(name); if (v !== null) return v; }
+    el = el.parentNode;
+  }
+  return null;
+}
+
+function startGame(gameId, si){
+  var g = gameById(gameId);
+  if (!g || g.soon) return;
+  cur.gameId = gameId; cur.si = si; cur.sel = null; cur.done = false;
+  cur.hint = false;                           /* 1もん目は そうさの せつめいを 出すが ヒントあつかいには しない */
+  loadStage();
+  document.getElementById('game-bar-title').textContent = g.name;
+  /* ゲームが 1つだけの アプリには「◀ もどる」が ない（ビルドが とりのぞく）。
+     出口は 左下の「アプリ集」ボタン。 */
+  var backBtn = document.getElementById('game-back');
+  if (backBtn) backBtn.onclick = function(){ openIsland(g.island); };
+  go('game');
+}
+function loadStage(){
+  var g = gameById(cur.gameId), st = g.stages[cur.si];
+  if (cur.clearTimer){ clearTimeout(cur.clearTimer); cur.clearTimer = null; }
+  closeModal();
+  hideClearBar();
+  cur.kind = st.kind || g.kind;
+  cur.sel = null; cur.done = false; cur.noStar = false; cur.gotStar = null;
+  document.getElementById('q-n').textContent =
+    (g.stages.length > 1) ? ('だい' + (cur.si + 1) + 'もん / ' + g.stages.length + 'もん') : g.sub;
+  document.getElementById('q-t').textContent = st.t;
+  document.getElementById('q-h').innerHTML = st.h + hintAnswer(st, cur.kind);   /* ヒントも learn と 同じく <b> を つかえる */
+  /* ヒントの 中に ボタンを 出す 型は、その ボタンを じぶんで つなぐ（hintBind）。
+     ここに 型ごとの しょりを 書かない こと。 */
+  var hintEng = ENGINES[cur.kind];
+  if (hintEng && hintEng.hintBind) hintEng.hintBind();
+  document.getElementById('q-h').className = 'q-h' + (cur.si === 0 ? ' on' : '');
+  renderStrip();
+  var pk = document.getElementById('sw-pick');
+  pk.className = 'sw-pick'; pk.innerHTML = '';   /* ふりこ以外の 型では かくす */
+  var fcCtl = document.getElementById('fc-controls');
+  fcCtl.innerHTML = '';                          /* リサイクル工場いがいでは かくす */
+  engine().load(st);
+  renderBoard();
+}
+function renderStrip(){
+  var g = gameById(cur.gameId), h = '';
+  if (g.stages.length <= 1){ document.getElementById('stage-strip').innerHTML = ''; return; }
+  for (var i=0;i<g.stages.length;i++){
+    var r = stageRec(g.id, i);
+    var cls = 'stage-dot' + (r ? (r.p ? ' gold' : ' done') : '') + (i === cur.si ? ' now' : '');
+    h += '<button class="' + cls + '" data-go="' + i + '">' + (i + 1) + '</button>';
+  }
+  document.getElementById('stage-strip').innerHTML = h;
+}
+
+function sameWire(w, a, b){ return (w[0] === a && w[1] === b) || (w[0] === b && w[1] === a); }
+function hasWire(a, b){
+  for (var i=0;i<cur.wires.length;i++){ if (sameWire(cur.wires[i], a, b)) return true; }
+  return false;
+}
+
+/* ヒントの 中に 入れる「こたえの れい」。中身は それぞれの 型（エンジン）が
+   ENGINES.○○.hintAnswer に 書く。書かない 型は ヒントだけ 出て こたえの れいは 出ない。
+   ここに 型の 名まえを ならべない こと（型を 足すたびに ここを 直す ことに なる）。 */
+function hintAnswer(st, kind){
+  var e = ENGINES[kind];
+  return (e && e.hintAnswer) ? e.hintAnswer(st) : '';
+}
+
+/* ------------------------------------------------------------------ *
+ * がめんの そうさを 型（エンジン）に わたす ところ。
+ *
+ * ★ここは 共通。2026-09-10 まで engines/swing.js（ふりこ）の 中に あった。
+ *   ゲーム 1つずつの アプリに 分けた とき、ふりこの 入って いない アプリで
+ *   **ばんめんの タップも もんだいえらびも ヒントも ぜんぶ 効かなく なった**。
+ *   エラーは 1つも 出ない（おしても 何も おきないだけ）ので、気づくのが むずかしい。
+ *   型に かんけいない そうさは かならず ここに 書く こと。
+ * ------------------------------------------------------------------ */
+/* ばんめんの タップは、いまの 型に わたすだけ */
+document.getElementById('board').addEventListener('click', function(e){
+  if (cur.done) return;
+  var eng = engine();
+  if (eng) eng.tap(e);
+});
+/* おしっぱなしを つかう 型（でんじしゃくバトルの コイル巻き）のための down/up。
+   Pointer Events は 古い iPad に ない ので mouse と touch の 両方を 見る。 */
+['mousedown', 'touchstart'].forEach(function(ev){
+  document.getElementById('board').addEventListener(ev, function(e){
+    if (cur.done) return;
+    var eng = engine();
+    if (eng && eng.down) eng.down(e);
+  });
+});
+/* なぞって つなぐ型（リサイクル工場）。指が こまの間へ動いても 追えるよう document で見る。 */
+document.addEventListener('mousemove', function(e){
+  var eng=engine(); if(eng&&eng.move)eng.move(e);
+});
+document.addEventListener('touchmove', function(e){
+  var eng=engine(); if(eng&&eng.move)eng.move(e);
+}, {passive:false});
+['mouseup', 'touchend', 'touchcancel'].forEach(function(ev){
+  document.addEventListener(ev, function(e){
+    var eng = engine();
+    if (eng && eng.up) eng.up(e);
+  });
+});
+document.getElementById('stage-strip').addEventListener('click', function(e){
+  var i = attrUp(e.target, 'data-go');
+  if (i === null) return;
+  i = parseInt(i, 10);
+  /* どのもんだいにも いつでも とべる（2026-08-28 ユーザーの きぼうで じゅんばんの
+     ロックを 外した）。むずかしくて つまった とき、先に すすんで あとで もどれる ように。
+     クリアの きろくは もんだいごとに もつので、とばしても 記ろくは こわれない。 */
+  cur.si = i; cur.hint = false; loadStage();
+});
+document.getElementById('btn-hint').onclick = function(){
+  var h = document.getElementById('q-h');
+  h.className = (h.className.indexOf('on') >= 0) ? 'q-h' : 'q-h on';
+  if (cur.si !== 0) cur.hint = true;
+};
+document.getElementById('btn-reset').onclick = function(){ loadStage(); };
+
+
+/* ================================================================== *
+ * でんじしゃくバトル型 — わくの 中に 交ごに 置いて いく（クラスター系）
+ *
+ *   ★1ターンの ながれ（ユーザー合意 2026-08-25）
+ *     ①サイコロ … **N極か S極かは 運**。えらべない（えらべると N ばかりに なって
+ *                  「しりぞけ合う だけ」の たんちょうな ゲームに なる ―― 一度 やらかした）
+ *     ②コイルを 巻く … ボタンを **おしっぱなし**に すると ぐるぐる 巻かれ、
+ *                  まきかずが ふえるほど 磁力が 強く なる。**巻いて いる あいだ
+ *                  ばんの「あぶない 輪」が リアルタイムで 大きく なる**ので、
+ *                  盤面を 見ながら どこで 止めるかを きめる
+ *     ③置く … わくの 中を タップ
+ *
+ *   ・同じ極は しりぞけ合い、ちがう極は 引き合う。くっついたら その こまは
+ *     **だれの ものでも ぜんぶ 置いた 人の 手もとに もどる**
+ *   ・**わく（茶いろの ふち）から おし出された こまも 落ちて 手もとに もどる**
+ *     （2026-08-25 ユーザー指てき。ふちぎわは あぶない ＝ どこに 置くかが もっと きんちょうする）
+ *   ・もどる ところは ぜんぶ **アニメーションで 見せる**。きゅうに 消えると
+ *     何が おきたのか 分からない。くっつく／落ちる → 手もとへ とんで いく → **手もとの 数が ふえる**
+ *   ・手もとの 数 ＝ のこりの 線 ÷ 100かい（＝ でんじしゃく 1こ ぶん）。
+ *     「あと 何こ 置けるか」が トレイの チップで ひと目で 分かる
+ *   ・エナメル線を 先に つかい切った 人の 勝ち
+ *
+ *   あそんで いる うちに 手が おぼえる こと（文では 教えない）:
+ *     ・**まきかずが 多いほど 磁力が 強い**（巻きながら 輪が ふくらむので 体で わかる）
+ *     ・**同じ極は しりぞけ、ちがう極は 引き合う**（サイコロの 目で 輪の 大きさが 変わる）
+ *     ・**近いほど 力が 強い**（きょりの 2じょうに 反比例）
+ * ================================================================== */
+var MG = {
+  cx:300, cy:210, R:160, H:562,
+  K:2800, damp:0.80, steps:110,
+  pull:1.45,                                    /* ちがう極が くっつく きょり（こま2つの 半けい×） */
+  push:15,                                      /* 同じ極を これより 近づけると はじき飛ばされる めやす（じりょくで のびる） */
+  care:0.55,                                    /* CPU の 用心ぶかさ。1.0 だと とどく きょりを ぴったり 読みきる ＝
+                                                   人には ぜったい できない 打ち方に なる（あぶない はんいは 見えない）。
+                                                   0.72 ＝「強い こまは 遠くから 引き寄せる」と 分かって いる 人 くらい */
+  minMaki:100, maxMaki:400, windSpeed:230,      /* 1びょうに 230かい 巻ける（100→400で やく1.3びょう） */
+  rMin:8, rMax:20,                              /* こまの 大きさ（まきかず さいしょう〜さいだい） */
+  reach:24,                                     /* じりょくが とどく きょり（これより 遠い こまは びくとも しない）。
+                                                    こまの 大きさ ＋ reach×√(じりょくの かけざん)。
+                                                    「くっつく きょり」と ほぼ 同じに なる ように えらんだ 数 */
+  unit:200,                                     /* 手もとの かぞえ方 ＝ 200かい（ふつうの 巻きかた）で でんじしゃく 1こ ぶん */
+  wall:0.8,                                     /* かべの ばしょ（ふちの すぐ 外）。ここで 速さを ころして 遠くへ 飛ばない ように する */
+  fall:0.35,                                    /* 中心が ふちに この ぶん（半けい×）まで 近づいたら たおれて 落ちる */
+  playMs:1.9,
+  fieldMs:780,                                  /* 置いた あと じりょくの はんいを 見せて いる 時間 */                                   /* うごきの 再生 1コマ ＝ 1.9ミリびょう（速さは シミュレーションどおり） */
+  trayY:380, trayH:62, chipY:418, chipR:8, chipGap:19, chipMax:13
+};
+/* ★レベルの かわりに **自分で えらぶ** 3つ（2026-08-26 ユーザー指てき）。
+   むずかしさを こちらで 3だんかいに 決めうちする より、
+   「あいてを 強く して、こまを 多く して、わくを せまく する」を
+   自分で 組み合わせた ほうが 手ごたえを 自分で 作れる。えらんだ ものは 端末に のこる */
+var MGOPT = {
+  foe:  [{ t:'よわい', cpu:0.5 }, { t:'ふつう', cpu:1.0 }, { t:'つよい', cpu:1.7 }],
+  num:  [4, 6, 8, 10],                           /* でんじしゃく 何こ ぶんの エナメル線を くばるか。
+                                                    12こは ばんが いっぱいに なって 事この どうどうめぐりに なり、
+                                                    一局 200手を こえる ことが あった ので 入れて いない */
+  ring: [{ t:'ひろい', R:152 }, { t:'ふつう', R:142 }, { t:'せまい', R:130 }],
+  stage:[{ t:'まる', shape:'circle' }, { t:'しかく', shape:'square' }, { t:'六角形', shape:'hex' }]
+};
+var mgSet = { foe:1, num:1, ring:1, stage:0 };   /* えらんで いる ばんごう */
+function mgOptLoad(){
+  var o = save.opt && save.opt['energy-cluster'];
+  if (!o) return;
+  if (o.foe >= 0 && o.foe < MGOPT.foe.length) mgSet.foe = o.foe;
+  if (o.num >= 0 && o.num < MGOPT.num.length) mgSet.num = o.num;
+  if (o.ring >= 0 && o.ring < MGOPT.ring.length) mgSet.ring = o.ring;
+  if (o.stage >= 0 && o.stage < MGOPT.stage.length) mgSet.stage = o.stage;
+  if (o.duo === true || o.duo === false) cur.duo = o.duo;
+}
+function mgOptSave(){
+  if (!save.opt) save.opt = {};
+  save.opt['energy-cluster'] = { foe:mgSet.foe, num:mgSet.num, ring:mgSet.ring, stage:mgSet.stage, duo:(cur.duo === true) };
+  store();
+}
+function mgR(){ return MGOPT.ring[mgSet.ring].R; }
+function mgStage(){ return MGOPT.stage[mgSet.stage] || MGOPT.stage[0]; }
+function mgNum(){ return MGOPT.num[mgSet.num]; }
+function mgCpuLv(){ return MGOPT.foe[mgSet.foe].cpu; }
+/* まきかず → 大きさ と 磁力。多いほど 大きく 強い（ひとつづきの 数） */
+function mgSize(maki){
+  /* のこりが minMaki に とどかない ときは maki が 下まわる ので 下げんを つける */
+  return Math.max(5, MG.rMin + (maki - MG.minMaki) / (MG.maxMaki - MG.minMaki) * (MG.rMax - MG.rMin));
+}
+function mgForce(maki){ return maki / 100; }
+/* ★くっつく きょり。**同じ極は どんなに 近づけても ぜったいに くっつかない**。
+   でんじしゃくの N/S は 電流の むきで きまって いて、ぼうじしゃくの ように
+   ひっくりかえる ことは ない。ちがう極どうしだけ、この きょりまで 近づいたら くっつく。
+   （2026-08-26 まで 同じ極も くっついて いた ―― ぼうじしゃく時代の「ひっくりかえる」ルールの
+     のこりで、でんじしゃくでは まちがい。ユーザー指てきで けした） */
+function mgStickD(a, b){ return (a.pole === b.pole) ? 0 : (a.r + b.r) * MG.pull; }
+/* 「置いても だいじょうぶ」の めやす（CPU が つかう）。同じ極は くっつかないが、
+   くっつけて 置くと 勢いよく はじき飛ばされて わくから 落ちる ので、すこし あける */
+function mgSafeD(a, b){
+  /* 同じ極 … くっつきは しないが、近すぎると 勢いよく はじき飛ばされて わくから 落ちる
+     ちがう極 … **じりょくが とどいたら もう だめ**。引き合う 力は 近づくほど 強く なる ので、
+                とどく はんいに 入れた じてんで ほぼ かならず くっつく */
+  return (a.pole === b.pole) ? (a.r + b.r) + MG.push * Math.sqrt(a.m * b.m) : mgReach(a, b) * MG.care;
+}
+/* ★じりょくが とどく きょり。ここより 遠い こまは **力を 受けない ＝ 1ミリも 動かない**。
+   ほんとうの じしゃくも 少し はなれれば 感じない。ぜんぶの こまが 毎回 じわっと 動くと
+   「ばん ぜんたいが かってに 動く」ように 見えて、どこに 置いたら 何が おきるのかが 読めなく なる。
+   強く 巻いた こまほど とどく はんいが 広い（√で きくので 4ばい 巻いて 2ばい） */
+function mgReach(a, b){ return a.r + b.r + MG.reach * Math.sqrt(a.m * b.m); }
+/* 置いた こまと、その まわり（とどく きょりの 中）だけが 動く。
+   置いた ところから 遠い こまは そのまま。seed ＝ いま 置いた こまの ばんごう */
+function mgActive(seed){
+  var P = cur.pieces, on = [], i;
+  for (i = 0; i < P.length; i++) on.push(false);
+  if (seed < 0 || seed >= P.length) return on;
+  on[seed] = true;
+  for (i = 0; i < P.length; i++)
+    if (i !== seed && Math.hypot(P[i].x - P[seed].x, P[i].y - P[seed].y) < mgReach(P[i], P[seed])) on[i] = true;
+  return on;
+}
+/* 手もとの でんじしゃくの 数（100かい ＝ 1こ ぶん）。ここが「あと 何こ 置けるか」 */
+function mgStock(who){ return Math.floor(cur.hands[who] / MG.unit); }
+function mgTrayCx(who){ return (who === 0) ? 156 : 444; }
+function mgSlot(who, i){
+  return { x: mgTrayCx(who) - 130 + Math.min(i, MG.chipMax - 1) * MG.chipGap + MG.chipR, y: MG.chipY };
+}
+
+function loadJishaku(st){
+  if (cur.mgRaf){ cancelAnimationFrame(cur.mgRaf); cur.mgRaf = null; }
+  cur.duo = (cur.duo === true);
+  mgOptLoad();
+  cur.pieces = [];
+  var wire = mgNum() * MG.unit;
+  cur.hands = [wire, wire];                     /* 手ふだ ＝ のこりの エナメル線（かい） */
+  cur.turn = 0; cur.maki = MG.minMaki; cur.pole = 1;
+  cur.mgPhase = 'ready'; cur.mgMsg = ''; cur.winner = null; cur.stuck = [0, 0];
+  cur.pathT = 1; cur.winding = false; cur.dice = 0;
+  cur.leaving = []; cur.mgT = 0; cur.gain = [0, 0];   /* 手もとへ もどって いく こまの アニメ */
+  cur.field = null; cur.fxT = 0;                     /* じりょくの はんいの え */
+}
+function jishakuOK(){ return cur.winner === 0; }
+/* ステージの ふちまでの 距離。＋なら中、−なら外。
+   置ける場所・落下・CPU・描画が ぜんぶ同じ形を使うので、見た目だけの飾りにしない。 */
+function mgStageVertices(R){
+  var out = [], shape = mgStage().shape, i, a;
+  if (shape === 'square') return [
+    [MG.cx - R, MG.cy - R], [MG.cx + R, MG.cy - R],
+    [MG.cx + R, MG.cy + R], [MG.cx - R, MG.cy + R]
+  ];
+  for (i = 0; i < 6; i++){
+    a = -Math.PI / 2 + i * Math.PI / 3;
+    out.push([MG.cx + Math.cos(a) * R, MG.cy + Math.sin(a) * R]);
+  }
+  return out;
+}
+function mgStageEdge(x, y){
+  if (mgStage().shape === 'circle') return mgR() - Math.hypot(x - MG.cx, y - MG.cy);
+  var V = mgStageVertices(mgR()), inside = false, best = 1e9, i, j;
+  for (i = 0, j = V.length - 1; i < V.length; j = i++){
+    var ax = V[j][0], ay = V[j][1], bx = V[i][0], by = V[i][1];
+    if (((ay > y) !== (by > y)) && x < (bx - ax) * (y - ay) / (by - ay) + ax) inside = !inside;
+    var vx = bx - ax, vy = by - ay, vv = vx * vx + vy * vy;
+    var q = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / vv));
+    best = Math.min(best, Math.hypot(x - (ax + q * vx), y - (ay + q * vy)));
+  }
+  return inside ? best : -best;
+}
+function mgStageRay(ang, extra){
+  var lo = 0, hi = mgR() * 1.6, i;
+  for (i = 0; i < 20; i++){
+    var mid = (lo + hi) / 2;
+    if (mgStageEdge(MG.cx + Math.cos(ang) * mid, MG.cy + Math.sin(ang) * mid) >= 0) lo = mid;
+    else hi = mid;
+  }
+  lo += extra || 0;
+  return { x:MG.cx + Math.cos(ang) * lo, y:MG.cy + Math.sin(ang) * lo };
+}
+function mgStageShapeArt(inset, attrs){
+  var R = Math.max(1, mgR() - inset), shape = mgStage().shape;
+  if (shape === 'circle') return '<circle cx="' + MG.cx + '" cy="' + MG.cy + '" r="' + R + '" ' + attrs + '/>';
+  if (shape === 'square') return '<rect x="' + (MG.cx - R) + '" y="' + (MG.cy - R) + '" width="' + (R * 2) +
+    '" height="' + (R * 2) + '" rx="3" ' + attrs + '/>';
+  return '<polygon points="' + mgStageVertices(R).map(function(p){ return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" ' + attrs + '/>';
+}
+function mgKeepOnStage(p){
+  var pad = p.r * MG.wall;
+  if (mgStageEdge(p.x, p.y) >= -pad) return;
+  var tx = p.x, ty = p.y, lo = 0, hi = 1, i;
+  for (i = 0; i < 20; i++){
+    var q = (lo + hi) / 2, x = MG.cx + (tx - MG.cx) * q, y = MG.cy + (ty - MG.cy) * q;
+    if (mgStageEdge(x, y) >= -pad) lo = q; else hi = q;
+  }
+  p.x = MG.cx + (tx - MG.cx) * lo; p.y = MG.cy + (ty - MG.cy) * lo;
+  p.vx *= 0.2; p.vy *= 0.2;
+}
+function mgRandomSpot(r){
+  for (var i = 0; i < 40; i++){
+    var x = MG.cx + (Math.random() * 2 - 1) * mgR();
+    var y = MG.cy + (Math.random() * 2 - 1) * mgR();
+    if (mgStageEdge(x, y) >= r + 4) return { x:x, y:y };
+  }
+  return { x:MG.cx, y:MG.cy };
+}
+function mgCanPut(x, y, r){
+  if (mgStageEdge(x, y) < r + 2) return false;
+  for (var i = 0; i < cur.pieces.length; i++){
+    var p = cur.pieces[i];
+    if (Math.hypot(x - p.x, y - p.y) < (r + p.r) * 1.02) return false;
+  }
+  return true;
+}
+/* ここに 置いたら どれだけ よゆうが あるか（m ＝ 置く こまの じりょく）。
+   マイナスなら「あぶない ところ」 */
+function mgClear(x, y, r, pole, m){
+  var me = { r:r, pole:pole, m:(m === undefined) ? 1 : m }, worst = 9999;
+  for (var i = 0; i < cur.pieces.length; i++){
+    var p = cur.pieces[i];
+    worst = Math.min(worst, Math.hypot(x - p.x, y - p.y) - mgSafeD(me, p));
+  }
+  return worst;
+}
+/* ふちまでの よゆう。マイナスなら もう 落ちて いる */
+function mgEdge(x, y, r){ return mgStageEdge(x, y) - r * MG.fall; }
+/* わくから おし出されて 落ちた こま（中心が ふちに かかったら たおれる） */
+function mgFellIdx(){
+  var out = [];
+  for (var i = 0; i < cur.pieces.length; i++){
+    var p = cur.pieces[i];
+    if (mgEdge(p.x, p.y, p.r) < 0) out.push(i);
+  }
+  return out;
+}
+/* seed ＝ いま 置いた こま（省りゃくすると さいごに 足した こま）。
+   **動くのは seed の まわりだけ**。力そのものは きょりの 2じょうに 反比例の まま
+   （とどく はんいの 中では 何も いじって いない）で、はんいの 外は ゼロに する */
+/* rec ＝ true なら **1ステップごとの ばしょを ぜんぶ おぼえる**（`p.path`）。
+   これを そのまま 再生すると「強い ほど 勢いよく 飛ぶ」が 目に 見える。
+   前は 出発点と 到着点を まっすぐ つないで いた ので、どんな 力でも 同じ 速さに 見えて いた。
+   CPU の 先読み（何百回も 走る）では rec を 立てない */
+function mgSim(seed, rec){
+  var P = cur.pieces, i, j, s, last = 0;
+  if (seed === undefined) seed = P.length - 1;
+  var on = mgActive(seed);
+  for (i = 0; i < P.length; i++){ P[i].vx = 0; P[i].vy = 0; if (rec) P[i].path = [[P[i].x, P[i].y]]; }
+  for (s = 0; s < MG.steps; s++){
+    if (s % 4 === 3 && mgClusters().length){ if (rec) mgTrim(last); return; }   /* くっついたら そこで 止める（止めないと はじけ飛ぶ） */
+    for (i = 0; i < P.length; i++){
+      if (!on[i]) continue;                           /* 遠い こまは 動かさない */
+      var fx = 0, fy = 0;
+      for (j = 0; j < P.length; j++){
+        if (i === j) continue;
+        var dx = P[i].x - P[j].x, dy = P[i].y - P[j].y;
+        var d = Math.sqrt(dx*dx + dy*dy);
+        if (d > mgReach(P[i], P[j])) continue;        /* とどかない ＝ 力ゼロ */
+        var minD = (P[i].r + P[j].r) * 0.9;
+        if (d < minD) d = minD;
+        var sign = (P[i].pole === P[j].pole) ? 1 : -1;
+        var f = sign * MG.K * P[i].m * P[j].m / (d * d);
+        fx += dx / d * f; fy += dy / d * f;
+      }
+      P[i].vx = (P[i].vx + fx / P[i].m) * MG.damp;
+      P[i].vy = (P[i].vy + fy / P[i].m) * MG.damp;
+    }
+    for (i = 0; i < P.length; i++){
+      if (!on[i]) continue;
+      P[i].x += P[i].vx * 0.05; P[i].y += P[i].vy * 0.05;
+      /* ★かべは ない。ふちを こえた こまは 落ちる（あとで mgFellIdx が 見つける）。
+         ただし はるか 遠くへ 飛んで いくと えが おかしく なるので ふちの すぐ 外で 止める */
+      mgKeepOnStage(P[i]);
+    }
+    if (rec){
+      var moved = 0;
+      for (i = 0; i < P.length; i++){
+        if (!on[i]) continue;
+        var pv = P[i].path[P[i].path.length - 1];
+        moved = Math.max(moved, Math.hypot(P[i].x - pv[0], P[i].y - pv[1]));
+        P[i].path.push([P[i].x, P[i].y]);
+      }
+      if (moved > 0.12) last = s + 1;                 /* まだ 動いて いた さいごの コマ */
+    }
+  }
+  if (rec) mgTrim(last);
+}
+/* 止まった あとの コマを 切りすてる（じっと して いる 時間を 再生しても しかたない） */
+function mgTrim(last){
+  var P = cur.pieces, i;
+  for (i = 0; i < P.length; i++)
+    if (P[i].path && P[i].path.length > last + 1) P[i].path.length = Math.max(1, last + 1);
+}
+/* いま 何コマめかの ばしょ（0→1 で 再生する） */
+function mgAt(p){
+  if (!p.path || p.path.length < 2) return [p.x, p.y];
+  var t = (cur.pathT === undefined) ? 1 : cur.pathT;
+  var f = t * (p.path.length - 1), i = Math.floor(f), u = f - i;
+  if (i >= p.path.length - 1) return p.path[p.path.length - 1];
+  return [p.path[i][0] + (p.path[i + 1][0] - p.path[i][0]) * u,
+          p.path[i][1] + (p.path[i + 1][1] - p.path[i][1]) * u];
+}
+function mgClusters(){
+  var P = cur.pieces, n = P.length, seen = [], out = [], i, j;
+  var adj = [];
+  for (i = 0; i < n; i++) adj.push([]);
+  for (i = 0; i < n; i++) for (j = i + 1; j < n; j++){
+    if (Math.hypot(P[i].x - P[j].x, P[i].y - P[j].y) < mgStickD(P[i], P[j])){ adj[i].push(j); adj[j].push(i); }
+  }
+  for (i = 0; i < n; i++){
+    if (seen[i] || !adj[i].length) continue;
+    var q = [i], comp = []; seen[i] = 1;
+    while (q.length){
+      var v = q.shift(); comp.push(v);
+      adj[v].forEach(function(w){ if (!seen[w]){ seen[w] = 1; q.push(w); } });
+    }
+    if (comp.length >= 2) out.push(comp);
+  }
+  return out;
+}
+/* ---- サイコロ：N か S かは 運。ここが えらべると ゲームが つまらなく なる ---- */
+function mgRollDice(){
+  cur.mgPhase = 'dice'; cur.dice = 0;
+  cur.maki = Math.min(MG.minMaki, cur.hands[cur.turn]); cur.winding = false;
+  var face = (Math.random() < 0.5) ? 1 : -1;
+  var t0 = null;
+  if (cur.mgRaf) cancelAnimationFrame(cur.mgRaf);
+  function step(now){
+    if (cur.kind !== 'jishaku' || cur.mgPhase !== 'dice'){ cur.mgRaf = null; return; }
+    if (t0 === null) t0 = now;
+    var k = Math.min(1, (now - t0) / 800);
+    cur.dice = k;
+    cur.pole = (k < 1) ? (((now / 90) | 0) % 2 ? 1 : -1) : face;
+    renderJishaku();
+    if (k < 1) cur.mgRaf = requestAnimationFrame(step);
+    else {
+      cur.mgRaf = null; cur.pole = face; cur.mgPhase = 'play';
+      cur.mgMsg = (face === 1 ? 'N きょく' : 'S きょく') + 'が 出た！ コイルを 巻こう';
+      cur.mgBad = false;
+      renderJishaku();
+      if (cur.turn === 1 && !cur.duo) setTimeout(mgCpu, 550);
+    }
+  }
+  cur.mgRaf = requestAnimationFrame(step);
+}
+/* ---- コイルを 巻く（おしっぱなし）---- */
+function mgWireMax(){ return Math.min(MG.maxMaki, cur.hands[cur.turn]); }
+function mgLeftAt(maki){ return Math.floor(cur.hands[cur.turn] / Math.max(1, Math.round(maki))); }
+function mgWindStart(){
+  if (cur.mgPhase !== 'play' || cur.winding) return;
+  if (cur.turn === 1 && !cur.duo) return;
+  if (cur.maki >= mgWireMax()) return;
+  cur.winding = true;
+  var last = null;
+  if (cur.windRaf) cancelAnimationFrame(cur.windRaf);
+  function step(now){
+    if (cur.kind !== 'jishaku' || !cur.winding){ cur.windRaf = null; return; }
+    if (last === null) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    cur.maki = Math.min(mgWireMax(), cur.maki + MG.windSpeed * dt);
+    if (cur.maki >= mgWireMax()) cur.winding = false;
+    mgWindSync();
+    cur.windRaf = requestAnimationFrame(step);
+  }
+  cur.windRaf = requestAnimationFrame(step);
+}
+function mgWindStop(){
+  if (!cur.winding) return;
+  cur.winding = false;
+  if (cur.windRaf){ cancelAnimationFrame(cur.windRaf); cur.windRaf = null; }
+  renderJishaku();
+}
+/* 巻いて いる あいだは **輪の 大きさと コイルの え だけ**を 書きかえる
+   （ばん ぜんたいを 作りなおすと おしっぱなしが 切れる／おもい） */
+function mgWindSync(){
+  var cg = document.getElementById('mg-coil');
+  if (cg) cg.innerHTML = mgCoilArt();
+  var mk = document.getElementById('mg-maki');
+  if (mk) mk.textContent = Math.round(cur.maki) + ' かい';
+  var fc = document.getElementById('mg-force');
+  if (fc) fc.textContent = 'じりょく ' + mgForce(cur.maki).toFixed(1);
+  var fb = document.getElementById('mg-force-bar');
+  if (fb) fb.setAttribute('width', (72 * Math.min(1, mgForce(cur.maki) / 4)).toFixed(1));
+  var lf = document.getElementById('mg-left');
+  if (lf) lf.textContent = 'あと ' + mgLeftAt(cur.maki) + 'こ';
+  var pv = document.getElementById('mg-prev');
+  if (pv) pv.innerHTML = mgPieceArt({ r:mgSize(cur.maki), maki:cur.maki, pole:cur.pole }, false);
+}
+/* ---- 置く → 動かす → くっつく／落ちる → 手もとへ もどす ---- */
+function mgPlace(x, y){
+  var who = cur.turn, r = mgSize(cur.maki), i;
+  if (cur.hands[who] <= 0 || cur.mgPhase !== 'play') return;
+  if (!mgCanPut(x, y, r)){ cur.mgMsg = 'そこには 置けないよ（わくの 外／こまに かさなる）'; cur.mgBad = true; renderJishaku(); return; }
+  mgWindStop();
+  var used = Math.round(cur.maki);
+  cur.hands[who] -= used;                        /* 巻いた ぶんだけ 線が へる */
+  cur.pieces.push({ x:x, y:y, r:r, m:mgForce(cur.maki), maki:used, pole:cur.pole, own:who, vx:0, vy:0 });
+  cur.pieces.forEach(function(p){ p.path = [[p.x, p.y]]; });     /* まず ぜんぶ 止まって いる ことに する */
+  var me = cur.pieces.length - 1;
+  cur.field = mgMakeField(me);                                   /* ★じりょくが どこまで とどいて 何に はたらいたか */
+  if (!mgClusters().length) mgSim(me, true);                     /* うごきを 1コマずつ おぼえる */
+  var frames = 1;
+  cur.pieces.forEach(function(p){ frames = Math.max(frames, p.path.length); });
+  cur.pathT = 0; cur.fxT = 0;
+
+  /* だれが 手もとへ もどるか ＝ ①わくから 落ちた こま ②くっついた こま */
+  var fellSet = {}, stickSet = {};
+  mgFellIdx().forEach(function(k){ fellSet[k] = 1; });
+  mgClusters().forEach(function(c){
+    var sx = 0, sy = 0;
+    c.forEach(function(k){ sx += cur.pieces[k].x; sy += cur.pieces[k].y; });
+    c.forEach(function(k){ if (!fellSet[k]) stickSet[k] = { x: sx / c.length, y: sy / c.length }; });
+  });
+  var idx = [], nFall = 0, nStick = 0, back = 0;
+  for (i = 0; i < cur.pieces.length; i++){
+    if (fellSet[i]){ idx.push(i); nFall++; back += cur.pieces[i].maki; }
+    else if (stickSet[i]){ idx.push(i); nStick++; back += cur.pieces[i].maki; }
+  }
+  cur.mgPhase = 'anim';
+  if (idx.length){
+    cur.mgMsg = nFall ? (nStick ? 'くっついて わくからも おちた！' : 'わくから おちる！') : 'くっついた！';
+    cur.mgBad = true;
+  }
+  /* 再生の 長さは コマ数から きめる ＝ **力が 強いほど 速く 大きく 動いて 見える**。
+     1コマ MG.playMs びょう。そのあと **じりょくの はんいを 見せる 時間**を たす */
+  var moveMs = Math.min(560, Math.max(90, frames * MG.playMs));
+  var showMs = cur.field.pairs.length ? MG.fieldMs : MG.fieldMs * 0.62;
+  var total = moveMs + showMs;
+  if (!idx.length && cur.field.pairs.length) cur.mgMsg = mgFieldMsg(cur.field);
+  mgTween(total, function(k){
+    var t = k * total;
+    cur.pathT = Math.min(1, t / moveMs);
+    cur.fxT = k;
+  }, function(){
+    cur.pathT = 1; cur.fxT = 0; cur.field = null;
+    if (!idx.length){ mgTurnEnd(who, 0, 0, 0); return; }
+    mgLeave(who, idx, fellSet, stickSet, function(){ mgTurnEnd(who, nStick, nFall, back); });
+  });
+}
+function mgTurnEnd(who, nStick, nFall, back){
+  if (nStick + nFall > 0){
+    cur.stuck[who] += nStick + nFall;
+    cur.mgMsg = (nFall ? (nStick ? 'くっついて わくからも おちた！ ' : 'わくから おちた！ ') : 'くっついた！ ') +
+                (nStick + nFall) + 'こ 手もとに もどって、線が ' + back + 'かい ふえた…';
+    cur.mgBad = true;
+  } else {
+    cur.mgMsg = 'ナイス！ うまく 置けた';
+    cur.mgBad = false;
+  }
+  if (cur.hands[who] <= 0){ cur.hands[who] = 0; cur.winner = who; cur.mgPhase = 'done'; }
+  else cur.turn = 1 - cur.turn;
+  if (cur.winner === 0) cur.noStar = (cur.stuck[0] > 0);
+  if (cur.winner === null) mgRollDice();
+  else renderJishaku();
+}
+/* アニメの もと（k は 0→1）。jishaku から はなれたら 止まる */
+function mgTween(ms, onFrame, onDone){
+  if (cur.mgRaf) cancelAnimationFrame(cur.mgRaf);
+  var t0 = null;
+  function step(now){
+    if (cur.kind !== 'jishaku'){ cur.mgRaf = null; return; }
+    if (t0 === null) t0 = now;
+    var k = Math.min(1, (now - t0) / ms);
+    onFrame(k);
+    renderJishaku();
+    if (k < 1) cur.mgRaf = requestAnimationFrame(step);
+    else { cur.mgRaf = null; if (onDone) onDone(); }
+  }
+  cur.mgRaf = requestAnimationFrame(step);
+}
+/* くっついた／落ちた こまを **ばんから 手もとへ 運ぶ**。
+   ここが 見えないと「きゅうに 消えた」に なって しまう ので、
+   1こずつ 少し ずらして 飛ばし、着いた しゅんかんに 線が ふえる */
+function mgLeave(who, idx, fellSet, stickSet, after){
+  var list = [], base = mgStock(who), sorted = idx.slice().sort(function(a, b){ return a - b; });
+  sorted.forEach(function(k, n){
+    var p = cur.pieces[k], slot = mgSlot(who, base + n);
+    list.push({
+      p:p, own:who, fell: (fellSet[k] === 1),
+      sx:p.x, sy:p.y,
+      hx: stickSet[k] ? stickSet[k].x : p.x,
+      hy: stickSet[k] ? stickSet[k].y : p.y,
+      tx:slot.x, ty:slot.y,
+      spin: (p.x < MG.cx) ? -1 : 1,
+      delay: n * 0.13, k:0, landed:false, landT:0
+    });
+  });
+  idx.slice().sort(function(a, b){ return b - a; }).forEach(function(k){ cur.pieces.splice(k, 1); });
+  cur.leaving = list; cur.gain = [0, 0];
+  var span = 0.90 + (list.length - 1) * 0.13 + 0.30;         /* びょう */
+  mgTween(span * 1000, function(k){
+    cur.mgT = k * span;
+    list.forEach(function(L){
+      L.k = Math.max(0, Math.min(1, (cur.mgT - L.delay) / 0.90));
+      if (L.k >= 1 && !L.landed){ L.landed = true; L.landT = cur.mgT; cur.hands[who] += L.p.maki; cur.gain[who] += L.p.maki; }
+    });
+  }, function(){
+    list.forEach(function(L){ if (!L.landed){ L.landed = true; cur.hands[who] += L.p.maki; cur.gain[who] += L.p.maki; } });
+    cur.leaving = []; cur.mgT = 0;
+    if (after) after();
+  });
+}
+/* 手もとが ふえた しゅんかんの ピカッ（0→1） */
+function mgPop(who){
+  var v = 0;
+  (cur.leaving || []).forEach(function(L){
+    if (L.landed && L.own === who) v = Math.max(v, 1 - (cur.mgT - L.landT) / 0.55);
+  });
+  return Math.max(0, Math.min(1, v));
+}
+/* ---- コンピュータ：まきかずと ばしょを さがす（極は サイコロで きまって いる） ---- */
+function mgCpu(){
+  if (cur.kind !== 'jishaku' || cur.winner !== null || cur.turn !== 1 || cur.hands[1] <= 0) return;
+  var lv = mgCpuLv(), best = null, bs = -1e9, cap = mgWireMax();
+  var tries = Math.round(50 + 90 * lv);
+  var cands = [];
+  for (var q = 0; q <= 4; q++) cands.push(Math.round(MG.minMaki + (MG.maxMaki - MG.minMaki) * q / 4));
+  cands.forEach(function(mk0){
+    var mk = Math.min(mk0, cap);
+    if (mk < MG.minMaki && cap >= MG.minMaki) return;
+    var r = mgSize(mk);
+    for (var a = 0; a < tries; a++){
+      var spot = mgRandomSpot(r), x = spot.x, y = spot.y;
+      if (!mgCanPut(x, y, r)) continue;
+      var room = mgClear(x, y, r, cur.pole, mgForce(mk));
+      if (room < 0) continue;
+      /* 線を たくさん つかえる ほど よい。ただし よゆうが ない 置き方と ふちぎわは さける */
+      var sc = mk / 80 + Math.min(room, 40) * lv * 0.12 + Math.min(mgEdge(x, y, r), 26) * lv * 0.10;
+      if (sc > bs){ bs = sc; best = { x:x, y:y, mk:mk }; }
+    }
+  });
+  if (!best){ cur.mgMsg = 'あいては 置く ところが なかった！'; cur.winner = 0; cur.mgPhase = 'done'; renderJishaku(); return; }
+  cur.maki = best.mk;
+  mgPlace(best.x, best.y);
+}
+/* ---- え ---- */
+function mgPieceArt(p, ghost){
+  var col = (p.pole === 1) ? '#E0574A' : '#3E7AD8';
+  var lt  = (p.pole === 1) ? '#FF8A78' : '#77A9FF';
+  var dk  = (p.pole === 1) ? '#9E2D25' : '#214F9A';
+  var op = ghost ? .42 : 1;
+  var rr = p.r.toFixed(1), s = '<g opacity="' + op + '">';
+  /* 鉄心＋銅線＋極板を 上から見た、立体的な電磁石のこま */
+  if (!ghost)
+    s += '<ellipse cx="1.5" cy="' + (p.r * .38).toFixed(1) + '" rx="' + (p.r * .92).toFixed(1) +
+         '" ry="' + (p.r * .78).toFixed(1) + '" fill="#15334A" opacity=".24" filter="url(#mg-soft-shadow)"/>';
+  s += '<circle cx="0" cy="0" r="' + rr + '" fill="url(#mg-steel)" stroke="#344B5C" stroke-width="2.2"/>';
+  s += '<circle cx="0" cy="0" r="' + (p.r * .82).toFixed(1) + '" fill="#B96828" stroke="#713A18" stroke-width="1.5"/>';
+  s += '<circle cx="0" cy="0" r="' + (p.r * .69).toFixed(1) + '" fill="' + col + '" stroke="' + dk + '" stroke-width="2"/>';
+  s += '<path d="M' + (-p.r * .48).toFixed(1) + ' ' + (-p.r * .40).toFixed(1) + ' A' +
+       (p.r * .66).toFixed(1) + ' ' + (p.r * .66).toFixed(1) + ' 0 0 1 ' + (p.r * .47).toFixed(1) + ' ' +
+       (-p.r * .32).toFixed(1) + '" fill="none" stroke="' + lt + '" stroke-width="' +
+       Math.max(1.2, p.r * .11).toFixed(1) + '" stroke-linecap="round" opacity=".9"/>';
+  var loops = Math.max(2, Math.min(5, Math.round(p.maki / 90)));
+  for (var i = 1; i <= loops; i++)
+    s += '<path d="M' + (-p.r * .64).toFixed(1) + ' ' + (-p.r * .42 + i * p.r * .18).toFixed(1) +
+         ' Q0 ' + (-p.r * .67 + i * p.r * .18).toFixed(1) + ' ' + (p.r * .64).toFixed(1) + ' ' +
+         (-p.r * .42 + i * p.r * .18).toFixed(1) + '" fill="none" stroke="#F6B36C" stroke-width="1" opacity=".48"/>';
+  s += '<text x="0" y="' + Math.round(p.r * 0.34) + '" font-size="' + Math.round(p.r * 0.94) +
+       '" font-weight="900" fill="#fff" stroke="' + dk + '" stroke-width=".65" paint-order="stroke" text-anchor="middle">' +
+       (p.pole === 1 ? 'N' : 'S') + '</text></g>';
+  if (p.own !== undefined && !ghost)
+    s += '<path d="M-4 ' + (-p.r - 4).toFixed(1) + ' L0 ' + (-p.r - 10).toFixed(1) + ' L4 ' +
+         (-p.r - 4).toFixed(1) + ' Z" fill="' + (p.own === 0 ? '#FFD24A' : '#FF7DA2') + '" stroke="#fff" stroke-width="1"/>';
+  return s;
+}
+/* 手もとの でんじしゃく 1こ ぶん（＝ エナメル線 100かい） */
+function mgChipArt(x, y, r){
+  var s = '<ellipse cx="' + (x + 1).toFixed(1) + '" cy="' + (y + 2) + '" rx="' + r + '" ry="' + (r * .72).toFixed(1) + '" fill="#15334A" opacity=".18"/>';
+  s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="' + r + '" fill="url(#mg-brass)" stroke="#8C4A1D" stroke-width="1.5"/>';
+  s += '<rect x="' + (x - r * 0.26).toFixed(1) + '" y="' + (y - r * 0.60) + '" width="' + (r * 0.52).toFixed(1) +
+       '" height="' + (r * 1.20).toFixed(1) + '" rx="1.5" fill="url(#mg-steel)"/>';
+  for (var i = -1; i <= 1; i++)
+    s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + (y + i * r * 0.42).toFixed(1) + '" rx="' + (r * 0.58).toFixed(1) +
+         '" ry="' + (r * 0.19).toFixed(1) + '" fill="none" stroke="#E98A3A" stroke-width="1.5"/>';
+  return s;
+}
+/* 手もと（トレイ）＝ **あと 何こ 置けるか**が ひと目で 分かる ところ */
+function mgTrayArt(who){
+  var c = mgTrayCx(who), n = mgStock(who), mine = (who === 0), pop = mgPop(who);
+  var col = mine ? '#27A6D7' : '#E95E88', bg = mine ? '#ECF9FE' : '#FFF0F5';
+  var turnNow = (cur.turn === who && cur.mgPhase !== 'done');
+  var s = '<rect x="' + (c - 142) + '" y="' + (MG.trayY + 3) + '" width="284" height="' + MG.trayH + '" rx="16" fill="#17364C" opacity=".14"/>';
+  s += '<rect x="' + (c - 142) + '" y="' + MG.trayY + '" width="284" height="' + MG.trayH + '" rx="16" fill="' + bg +
+          '" stroke="' + (pop > 0 ? '#F5B324' : (turnNow ? col : '#DCE5EB')) +
+          '" stroke-width="' + (2 + pop * 4).toFixed(1) + '"/>';
+  if (turnNow) s += '<rect x="' + (c - 132) + '" y="' + (MG.trayY + 5) + '" width="40" height="4" rx="2" fill="' + col + '"/>';
+  s += '<text x="' + (c - 130) + '" y="' + (MG.trayY + 19) + '" font-size="11.5" font-weight="900" fill="' + col + '">' +
+       (mine ? (cur.duo ? '1人めの 手もと' : 'あなたの 手もと') : (cur.duo ? '2人めの 手もと' : 'あいての 手もと')) + '</text>';
+  s += '<text x="' + (c + 130) + '" y="' + (MG.trayY + 20) + '" font-size="' + (15 + pop * 4).toFixed(1) +
+       '" font-weight="900" fill="' + (pop > 0 ? '#C9820A' : '#0F3350') + '" text-anchor="end">でんじしゃく ' + n + 'こ</text>';
+  var show = Math.min(n, MG.chipMax), i;
+  for (i = 0; i < show; i++) s += mgChipArt(c - 130 + i * MG.chipGap + MG.chipR, MG.chipY, MG.chipR);
+  if (n > MG.chipMax)
+    s += '<text x="' + (c - 130 + MG.chipMax * MG.chipGap + 4) + '" y="' + (MG.chipY + 4) +
+         '" font-size="11" font-weight="900" fill="#C9820A">+' + (n - MG.chipMax) + '</text>';
+  if (n === 0)
+    s += '<text x="' + (c - 130) + '" y="' + (MG.chipY + 4) + '" font-size="11" font-weight="900" fill="#A9B7C2">のこり わずか！</text>';
+  s += '<text x="' + (c - 130) + '" y="' + (MG.trayY + 56) + '" font-size="10" font-weight="900" fill="#8FA3B8">' +
+       'のこりの 線 ' + cur.hands[who] + 'かい' + (pop > 0 ? '' : '（' + MG.unit + 'かいで 1こ ぶん）') + '</text>';
+  if (pop > 0 && cur.gain[who] > 0)                  /* ふえた ぶんを ひとまとめで 見せる */
+    s += '<text x="' + (c + 130) + '" y="' + (MG.trayY + 56) + '" font-size="11" font-weight="900" fill="#2E9A4C" text-anchor="end">＋' +
+         cur.gain[who] + 'かい もどった</text>';
+  return s;
+}
+/* ばんから 手もとへ 運ばれて いく こま（くっついた／わくから 落ちた） */
+function mgLeaveArt(L){
+  var k = L.k, s = '', x, y, sc = 1, rot = 0;
+  if (L.landed){                                     /* 着いた あとは トレイの ところで ポンと はじける */
+    var a = Math.max(0, 1 - (cur.mgT - L.landT) / 0.55);
+    if (a > 0)
+      s += '<circle cx="' + L.tx.toFixed(1) + '" cy="' + L.ty + '" r="' + (MG.chipR + 12 * (1 - a)).toFixed(1) +
+           '" fill="none" stroke="#F5B324" stroke-width="' + (3.2 * a).toFixed(1) + '" opacity="' + a.toFixed(2) + '"/>';
+    return s;
+  }
+  if (k <= 0) return '<g transform="translate(' + L.sx.toFixed(1) + ',' + L.sy.toFixed(1) + ')">' + mgPieceArt(L.p, false) + '</g>';
+  if (L.fell){
+    /* ①ふちで かたむく → ②茶いろの わくから 落ちる → ③手もとへ ころがって いく */
+    var ang = Math.atan2(L.sy - MG.cy, L.sx - MG.cx);
+    var ox = Math.cos(ang), oy = Math.sin(ang);
+    var rim = mgStageRay(ang, 5);
+    var e = Math.min(1, k / 0.34);
+    var fx = L.sx + ox * 9, fy = L.sy + oy * 9 + 26;
+    if (k < 0.34){
+      x = L.sx + ox * 9 * e; y = L.sy + oy * 9 * e + 26 * e * e;
+      rot = L.spin * 70 * e; sc = 1 - 0.08 * e;
+    } else {
+      /* ふちの 外がわに 落ちた あと、**わくの 下を まわって** 手もとへ ころがって いく
+         （まっすぐ 手もとへ 向かうと ばんの 中を よこぎって しまい「落ちた」に 見えない） */
+      var f = (k - 0.34) / 0.66, ez = f * f * (3 - 2 * f), iv = 1 - ez;
+      var mx = (fx + L.tx) / 2, my = MG.cy + mgR() + 90;
+      x = iv * iv * fx + 2 * iv * ez * mx + ez * ez * L.tx;
+      y = iv * iv * fy + 2 * iv * ez * my + ez * ez * L.ty;
+      rot = L.spin * (70 + 240 * f); sc = 0.92 - 0.44 * ez;
+    }
+    if (k < 0.5){                                   /* 落ちた ところの ふちが 赤く 波うつ */
+      var b = 1 - k / 0.5;
+      s += '<circle cx="' + rim.x.toFixed(1) + '" cy="' + rim.y.toFixed(1) +
+           '" r="' + (6 + 22 * (1 - b)).toFixed(1) + '" fill="none" stroke="#E0574A" stroke-width="' +
+           (3.4 * b).toFixed(1) + '" opacity="' + b.toFixed(2) + '"/>';
+    }
+  } else {
+    /* ①ガチッと すいつく → ②ピカッ → ③手もとへ とんで いく */
+    if (k < 0.28){
+      var e2 = k / 0.28; e2 = e2 * e2 * (3 - 2 * e2);
+      x = L.sx + (L.hx - L.sx) * e2 * 0.92;
+      y = L.sy + (L.hy - L.sy) * e2 * 0.92;
+      sc = 1 + 0.12 * Math.sin(Math.PI * e2);
+    } else {
+      var g2 = (k - 0.28) / 0.72, eg = g2 * g2 * (3 - 2 * g2);
+      var hx = L.sx + (L.hx - L.sx) * 0.92, hy = L.sy + (L.hy - L.sy) * 0.92;
+      x = hx + (L.tx - hx) * eg;
+      y = hy + (L.ty - hy) * eg - Math.sin(Math.PI * g2) * 36;
+      sc = 1 - 0.44 * eg; rot = L.spin * 50 * eg;
+    }
+    if (k > 0.18 && k < 0.60){
+      var fk = (k - 0.18) / 0.42;
+      s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (L.p.r * (1 + fk * 1.7)).toFixed(1) +
+           '" fill="none" stroke="#FFD44D" stroke-width="' + (4.2 * (1 - fk)).toFixed(1) +
+           '" opacity="' + (0.95 * (1 - fk)).toFixed(2) + '"/>';
+    }
+  }
+  s += '<g transform="translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ') rotate(' + rot.toFixed(0) +
+       ') scale(' + sc.toFixed(3) + ')">' + mgPieceArt(L.p, false) + '</g>';
+  return s;
+}
+/* 巻かれて いく コイル（まきかずで わっかが ふえる） */
+function mgCoilArt(){
+  var s = '', n = Math.min(16, Math.round(cur.maki / 26)), i;
+  s += '<ellipse cx="2" cy="48" rx="25" ry="8" fill="#0C293D" opacity=".2" filter="url(#mg-soft-shadow)"/>';
+  s += '<rect x="-13" y="-51" width="26" height="102" rx="7" fill="url(#mg-steel)" stroke="#42596B" stroke-width="2"/>';
+  s += '<ellipse cx="0" cy="-50" rx="17" ry="6" fill="#DDE8EE" stroke="#42596B" stroke-width="2"/>';
+  s += '<ellipse cx="0" cy="50" rx="17" ry="6" fill="#7F929F" stroke="#42596B" stroke-width="2"/>';
+  s += '<circle cx="0" cy="-50" r="5" fill="#354A59"/>';
+  for (i = 0; i < n; i++){
+    var y = -42 + i * (84 / Math.max(n - 1, 1));
+    s += '<ellipse cx="0" cy="' + y.toFixed(1) + '" rx="20" ry="5.4" fill="none" stroke="#7A3515" stroke-width="5"/>';
+    s += '<ellipse cx="0" cy="' + (y - 1).toFixed(1) + '" rx="20" ry="5.4" fill="none" stroke="#ED8B3E" stroke-width="2.4"/>';
+  }
+  s += '<path d="M-20 42 C-32 47 -28 59 -38 62" fill="none" stroke="#E05A4A" stroke-width="3" stroke-linecap="round"/>';
+  s += '<circle cx="-39" cy="62" r="4" fill="#E05A4A" stroke="#9E2D25" stroke-width="1.5"/>';
+  if (cur.winding){
+    var a = (cur.maki * 7) % 360;
+    s += '<g transform="rotate(' + a.toFixed(0) + ')"><circle cx="0" cy="-67" r="6" fill="#FFD24A" stroke="#C9820A" stroke-width="2"/>' +
+         '<path d="M0-59 L0-52" stroke="#FFD24A" stroke-width="3" stroke-linecap="round"/></g>';
+  }
+  return s;
+}
+/* ★置いた あとに「じりょくが どこまで とどいて、何に はたらいたか」を 見せる
+   （2026-08-26 ユーザー案）。**置く 前には 出さない** ―― 先に 見えると
+   「輪の 外に 置くだけ」の 図形パズルに なって しまう（2026-08-25 の 教くん）。
+   置いた あとの こたえ合わせ なので、あそぶ ほど 「どこまで とどくか」が 手に 入る */
+function mgFieldR(p){ return p.r + MG.reach * p.m; }
+function mgMakeField(me){
+  var P = cur.pieces, a = P[me], pairs = [], i;
+  for (i = 0; i < P.length; i++){
+    if (i === me) continue;
+    if (Math.hypot(P[i].x - a.x, P[i].y - a.y) < mgReach(P[i], a))
+      pairs.push({ j:i, same:(P[i].pole === a.pole) });
+  }
+  return { i:me, r:mgFieldR(a), pole:a.pole, pairs:pairs };
+}
+function mgFieldMsg(f){
+  var same = 0, diff = 0;
+  f.pairs.forEach(function(q){ if (q.same) same++; else diff++; });
+  if (same && diff) return 'じりょくが とどいた！ しりぞけ合い ' + same + 'こ・引き合い ' + diff + 'こ';
+  if (same) return '同じ極どうし！ ' + same + 'こを 勢いよく しりぞけた';
+  return 'ちがう極どうし！ ' + diff + 'こを 引きよせた';
+}
+/* 矢じるし 1本（むきは dir、長さ len） */
+function mgArrow(x, y, ang, len, col, op){
+  var c = Math.cos(ang), sn = Math.sin(ang);
+  var x2 = x + c * len, y2 = y + sn * len;
+  var s = '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
+          '" stroke="' + col + '" stroke-width="3.4" stroke-linecap="round" opacity="' + op.toFixed(2) + '"/>';
+  var h = 6.5;
+  s += '<path d="M' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
+       ' L' + (x2 - c * h + sn * h * 0.75).toFixed(1) + ' ' + (y2 - sn * h - c * h * 0.75).toFixed(1) +
+       ' L' + (x2 - c * h - sn * h * 0.75).toFixed(1) + ' ' + (y2 - sn * h + c * h * 0.75).toFixed(1) +
+       ' Z" fill="' + col + '" opacity="' + op.toFixed(2) + '"/>';
+  return s;
+}
+/* はんいの え（こまの 下に かく ぶん） */
+function mgFieldBackArt(){
+  var f = cur.field;
+  if (!f || !cur.pieces[f.i]) return '';
+  var k = cur.fxT, p = cur.pieces[f.i], pos = mgAt(p);
+  var grow = Math.min(1, k / 0.22), fade = (k > 0.72) ? Math.max(0, 1 - (k - 0.72) / 0.28) : 1;
+  var e = 1 - Math.pow(1 - grow, 3);                     /* ぱっと ひろがって ゆっくり 止まる */
+  var R = f.r * e;
+  var col = (f.pole === 1) ? '#E0574A' : '#3E7AD8';
+  var s = '<circle cx="' + pos[0].toFixed(1) + '" cy="' + pos[1].toFixed(1) + '" r="' + R.toFixed(1) +
+          '" fill="url(#mg-field)" opacity="' + (0.85 * fade).toFixed(2) + '"/>';
+  s += '<circle cx="' + pos[0].toFixed(1) + '" cy="' + pos[1].toFixed(1) + '" r="' + R.toFixed(1) +
+       '" fill="none" stroke="' + col + '" stroke-width="2" stroke-dasharray="7 6" opacity="' + (0.55 * fade).toFixed(2) + '"/>';
+  /* ひろがる しゅんかんの 波 */
+  if (k < 0.34){
+    var w = k / 0.34;
+    s += '<circle cx="' + pos[0].toFixed(1) + '" cy="' + pos[1].toFixed(1) + '" r="' + (f.r * w * 1.12).toFixed(1) +
+         '" fill="none" stroke="' + col + '" stroke-width="' + (5 * (1 - w)).toFixed(1) +
+         '" opacity="' + (0.7 * (1 - w)).toFixed(2) + '"/>';
+  }
+  return s;
+}
+/* はたらいた 力の 矢じるし（こまの 上に かく ぶん） */
+function mgFieldFrontArt(){
+  var f = cur.field;
+  if (!f || !cur.pieces[f.i]) return '';
+  var k = cur.fxT, s = '';
+  if (k < 0.10) return '';
+  var fade = (k > 0.72) ? Math.max(0, 1 - (k - 0.72) / 0.28) : Math.min(1, (k - 0.10) / 0.10);
+  var a = cur.pieces[f.i], pa = mgAt(a);
+  var puls = 1 + 0.18 * Math.sin(k * 18);
+  f.pairs.forEach(function(q){
+    var b = cur.pieces[q.j];
+    if (!b) return;
+    var pb = mgAt(b), dx = pb[0] - pa[0], dy = pb[1] - pa[1], d = Math.hypot(dx, dy) || 1;
+    var ang = Math.atan2(dy, dx), col = q.same ? '#E0574A' : '#2E9A4C';
+    var len = Math.max(11, Math.min(22, d * 0.22)) * puls;   /* くっついた あとでも 見える 長さは のこす */
+    /* 同じ極 … おたがい 外がわへ ／ ちがう極 … おたがい 内がわへ */
+    if (q.same){
+      s += mgArrow(pa[0] - Math.cos(ang) * (a.r + 3), pa[1] - Math.sin(ang) * (a.r + 3), ang + Math.PI, len, col, fade);
+      s += mgArrow(pb[0] + Math.cos(ang) * (b.r + 3), pb[1] + Math.sin(ang) * (b.r + 3), ang, len, col, fade);
+    } else {
+      s += mgArrow(pa[0] + Math.cos(ang) * (a.r + 3 + len), pa[1] + Math.sin(ang) * (a.r + 3 + len), ang + Math.PI, len, col, fade);
+      s += mgArrow(pb[0] - Math.cos(ang) * (b.r + 3 + len), pb[1] - Math.sin(ang) * (b.r + 3 + len), ang, len, col, fade);
+    }
+    s += '<circle cx="' + pb[0].toFixed(1) + '" cy="' + pb[1].toFixed(1) + '" r="' + (b.r + 5).toFixed(1) +
+         '" fill="none" stroke="' + col + '" stroke-width="2.6" opacity="' + (0.75 * fade).toFixed(2) + '"/>';
+  });
+  return s;
+}
+/* えらぶ ボタン（せってい画面）。えらんで いる ものだけ 色が つく */
+function mgChoiceArt(cx, cy, w, h, txt, on, attr){
+  var s = '<g transform="translate(' + cx + ',' + cy + ')">';
+  s += '<rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h + '" rx="' + (h / 2) +
+       '" fill="' + (on ? '#1B7FA8' : '#fff') + '" stroke="' + (on ? '#0E5B7C' : '#B9C6D1') + '" stroke-width="3"/>';
+  s += '<text x="0" y="5" font-size="14" font-weight="900" fill="' + (on ? '#fff' : '#3B5A70') +
+       '" text-anchor="middle">' + txt + '</text>';
+  s += '<rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h +
+       '" fill="transparent" ' + attr + '/></g>';
+  return s;
+}
+function mgDiceArt(){
+  var rolling = (cur.mgPhase === 'dice');
+  var k = rolling ? (1 - cur.dice) : 0;
+  var rot = rolling ? (cur.dice * 900) % 360 : 0;
+  var col = (cur.pole === 1) ? '#E0574A' : '#3E7AD8';
+  var s = '<ellipse cx="3" cy="31" rx="29" ry="9" fill="#12334A" opacity=".22" filter="url(#mg-soft-shadow)"/>';
+  s += '<g transform="rotate(' + rot.toFixed(0) + ') scale(' + (1 + k * 0.18).toFixed(3) + ')">';
+  s += '<rect x="-29" y="-29" width="58" height="58" rx="14" fill="url(#mg-die)" stroke="#375367" stroke-width="2.5"/>';
+  s += '<path d="M-19 -18 Q0 -28 19 -18" fill="none" stroke="#fff" stroke-width="4" opacity=".72" stroke-linecap="round"/>';
+  s += '<circle cx="0" cy="0" r="20" fill="' + col + '" opacity=".12"/>';
+  s += '<text x="0" y="12" font-size="32" font-weight="900" fill="' + col + '" text-anchor="middle">' +
+       (cur.pole === 1 ? 'N' : 'S') + '</text></g>';
+  return s;
+}
+function renderJishaku(){
+  var st = curStage();
+  setBoardBox(600, MG.H);
+  var s = '', myTurn = (cur.turn === 0 || cur.duo), playing = (cur.mgPhase === 'play');
+
+  /* じりょくの え の グラデーション。まん中ほど こい ＝ **近いほど 力が 強い** */
+  s += '<defs><radialGradient id="mg-field">' +
+       '<stop offset="0%" stop-color="#FFD44D" stop-opacity=".55"/>' +
+       '<stop offset="55%" stop-color="#FFD44D" stop-opacity=".20"/>' +
+       '<stop offset="100%" stop-color="#FFD44D" stop-opacity="0"/></radialGradient>' +
+       '<linearGradient id="mg-steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4FAFC"/><stop offset=".28" stop-color="#9FB2BE"/><stop offset=".55" stop-color="#E9F1F4"/><stop offset="1" stop-color="#6E8392"/></linearGradient>' +
+       '<linearGradient id="mg-brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD39B"/><stop offset=".45" stop-color="#CE762F"/><stop offset="1" stop-color="#8A451B"/></linearGradient>' +
+       '<linearGradient id="mg-die" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DDE9EF"/></linearGradient>' +
+       '<linearGradient id="mg-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE5A6"/><stop offset=".28" stop-color="#B86E2C"/><stop offset=".55" stop-color="#F6C476"/><stop offset="1" stop-color="#7C451D"/></linearGradient>' +
+       '<pattern id="mg-board-texture" width="600" height="600" patternUnits="userSpaceOnUse"><image href="./images/magnet-arena-texture.png" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid slice"/></pattern>' +
+       '<filter id="mg-soft-shadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>' +
+       '<filter id="mg-board-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#09283C" flood-opacity=".28"/></filter></defs>';
+  /* 深い実験台の上に、真鍮で縁取ったアリーナを載せる */
+  s += '<rect x="0" y="0" width="600" height="' + MG.H + '" rx="20" fill="#EAF2F3"/>';
+  s += '<rect x="10" y="48" width="580" height="322" rx="24" fill="#17394F"/>';
+  s += '<path d="M28 68 H572" stroke="#5B8298" stroke-width="1" opacity=".55"/>';
+  s += '<circle cx="28" cy="64" r="4" fill="#88A3B2"/><circle cx="572" cy="64" r="4" fill="#88A3B2"/>';
+  s += '<rect x="20" y="6" width="560" height="34" rx="12" fill="' +
+       (cur.turn === 0 ? '#EAF3F8' : '#FBE9F0') + '" stroke="' + (cur.turn === 0 ? '#3EA7D8' : '#E8618C') + '" stroke-width="2"/>';
+  s += '<text x="300" y="29" font-size="14" font-weight="900" fill="' + (cur.turn === 0 ? '#1B7FA8' : '#B84268') +
+       '" text-anchor="middle">' + (cur.mgPhase === 'done' ? '　' :
+       '▶ ' + (cur.turn === 0 ? (cur.duo ? '1人め' : 'あなた') : (cur.duo ? '2人め' : 'あいて')) + 'の ばん') + '</text>';
+  s += '<text x="36" y="29" font-size="12" font-weight="900" fill="#1B7FA8">もどした ' + cur.stuck[0] + 'こ</text>';
+  s += '<text x="564" y="29" font-size="12" font-weight="900" fill="#B84268" text-anchor="end">もどした ' + cur.stuck[1] + 'こ</text>';
+
+  /* わく（茶いろの ふち）。まる・しかく・六角形で、落ちる境界も実際に変わる */
+  s += mgStageShapeArt(-15, 'fill="#071D2C" opacity=".65" filter="url(#mg-board-shadow)"');
+  s += mgStageShapeArt(-15, 'fill="url(#mg-rim)" stroke="#6F3B19" stroke-width="3"');
+  s += mgStageShapeArt(-8, 'fill="#283F4D" stroke="#FFE1A1" stroke-width="2"');
+  s += mgStageShapeArt(0, 'fill="url(#mg-board-texture)" stroke="#9C622C" stroke-width="3"');
+  s += mgStageShapeArt(7, 'fill="none" stroke="#C89151" stroke-width="1" stroke-dasharray="2 7" opacity=".72"');
+  for (var bt = 0; bt < 12; bt++){
+    var ba = bt * Math.PI / 6, bp = mgStageRay(ba, 11.5);
+    s += '<circle cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) + '" r="2.4" fill="#F9D591" stroke="#70401D" stroke-width="1"/>';
+  }
+  /* ★じりょくの とどく はんいは **置く 前には 見せない**。
+     先に 見えると「輪の 外に 置くだけ」の 図形パズルに なって しまう。
+     そのかわり **置いた あとに** どこまで とどいて 何に はたらいたかを 見せる（こたえ合わせ）。 */
+  s += mgFieldBackArt();
+  cur.pieces.forEach(function(p){
+    var pos = mgAt(p);
+    s += '<g transform="translate(' + pos[0].toFixed(1) + ',' + pos[1].toFixed(1) + ')">' + mgPieceArt(p, false) + '</g>';
+  });
+  s += mgFieldFrontArt();
+  /* あたりは いちばん 上（下に かくと 輪や こまに タップを うばわれる） */
+  s += mgStageShapeArt(0, 'fill="transparent" data-mgboard="1"');
+
+  /* ---- サイコロ（ひだり） ---- */
+  s += '<rect x="34" y="76" width="88" height="116" rx="18" fill="#21485F" stroke="#52758A" stroke-width="1.5"/>';
+  s += '<text x="78" y="94" font-size="11" font-weight="900" fill="#D9EDF5" text-anchor="middle">きょくサイコロ</text>';
+  s += '<g transform="translate(78,136)">' + mgDiceArt() + '</g>';
+  s += '<text x="78" y="181" font-size="10" font-weight="900" fill="#9CC9DB" text-anchor="middle">N / S は 運！</text>';
+
+  /* ---- コイル（みぎ） ---- */
+  s += '<rect x="470" y="76" width="104" height="250" rx="18" fill="#21485F" stroke="#52758A" stroke-width="1.5"/>';
+  s += '<text x="522" y="95" font-size="11" font-weight="900" fill="#D9EDF5" text-anchor="middle">でんじしゃく工房</text>';
+  s += '<g id="mg-coil" transform="translate(522,172)">' + mgCoilArt() + '</g>';
+  s += '<text id="mg-maki" x="522" y="246" font-size="16" font-weight="900" fill="#FFFFFF" text-anchor="middle">' +
+       Math.round(cur.maki) + ' かい</text>';
+  s += '<rect x="486" y="257" width="72" height="7" rx="3.5" fill="#112F43"/>';
+  s += '<rect id="mg-force-bar" x="486" y="257" width="' + (72 * Math.min(1, mgForce(cur.maki) / 4)).toFixed(1) + '" height="7" rx="3.5" fill="#FFD24A"/>';
+  s += '<text id="mg-force" x="522" y="280" font-size="11" font-weight="900" fill="#FFD77A" text-anchor="middle">じりょく ' +
+       mgForce(cur.maki).toFixed(1) + '</text>';
+  s += '<text x="522" y="297" font-size="9.5" font-weight="900" fill="#9CC9DB" text-anchor="middle">この 巻きかたなら</text>';
+  s += '<text id="mg-left" x="522" y="316" font-size="13" font-weight="900" fill="#FFFFFF" text-anchor="middle">あと ' +
+       mgLeftAt(cur.maki) + 'こ</text>';
+  s += '<rect x="34" y="202" width="88" height="124" rx="18" fill="#21485F" stroke="#52758A" stroke-width="1.5"/>';
+  s += '<text x="78" y="221" font-size="10.5" font-weight="900" fill="#D9EDF5" text-anchor="middle">つぎの こま</text>';
+  s += '<g id="mg-prev" transform="translate(78,254)">' +
+       mgPieceArt({ r:mgSize(cur.maki), maki:cur.maki, pole:cur.pole }, false) + '</g>';
+  s += '<text x="78" y="292" font-size="9.5" font-weight="900" fill="#FFCE7A" text-anchor="middle">ふちぎわ 注意！</text>';
+  s += '<text x="78" y="309" font-size="9" font-weight="900" fill="#9CC9DB" text-anchor="middle">はなせば 安全</text>';
+
+  /* ---- 手もと（あと 何こ 置けるか）---- */
+  s += mgTrayArt(0);
+  s += mgTrayArt(1);
+  /* ばんから 手もとへ 運ばれて いく こま（トレイの 上に かく） */
+  if (cur.leaving && cur.leaving.length){
+    s += '<g pointer-events="none">';
+    cur.leaving.forEach(function(L){ s += mgLeaveArt(L); });
+    s += '</g>';
+  }
+
+  /* ---- 巻く ボタン ---- */
+  var canWind = (playing && myTurn);
+  s += '<g transform="translate(300,484)">' +
+       '<rect x="-180" y="-30" width="360" height="68" rx="34" fill="#17364C" opacity=".2"/>' +
+       '<rect x="-180" y="-34" width="360" height="68" rx="34" fill="' + (canWind ? (cur.winding ? '#D97816' : 'url(#mg-brass)') : '#DCE5EB') + '" stroke="' + (canWind ? '#8C4A1D' : '#BCC9D1') + '" stroke-width="2.5"/>' +
+       '<path d="M-135-2 C-135-17 -112-17 -112-2 C-112 13 -89 13 -89-2" fill="none" stroke="' + (canWind ? '#FFF0CF' : '#A9B7C2') + '" stroke-width="4" stroke-linecap="round"/>' +
+       '<text x="18" y="-2" font-size="19" font-weight="900" fill="' + (canWind ? '#fff' : '#A9B7C2') +
+       '" text-anchor="middle">コイルを 巻く</text>' +
+       '<text x="0" y="19" font-size="12" font-weight="900" fill="' + (canWind ? '#FFF3C4' : '#A9B7C2') +
+       '" text-anchor="middle">おしっぱなしで ぐるぐる</text>' +
+       (canWind ? '<rect x="-180" y="-34" width="360" height="68" fill="transparent" data-mgwind="1"/>' : '') + '</g>';
+  s += '<text x="300" y="536" font-size="13" font-weight="900" fill="#5A7C93" text-anchor="middle">' +
+       (playing ? (myTurn ? '巻きおわったら わくの 中を タップ して 置く' : 'あいてが 考えて います…') : '') + '</text>';
+  s += '<text x="300" y="554" font-size="11" font-weight="900" fill="#A9B7C2" text-anchor="middle">' +
+       '同じ極どうしは くっつかない ―― かわりに 強いほど 勢いよく はじき飛ぶ</text>';
+
+  if (cur.mgPhase === 'ready'){
+    /* ★レベルを えらぶ 画面では なく **自分で 組み立てる** 画面。
+       むずかしさの つまみと ステージを 出して いる（あいて・こまの 数・わくの 大きさ・形） */
+    s += '<rect x="0" y="0" width="600" height="' + MG.H + '" fill="#0F3350" opacity=".42"/>';
+    s += '<g transform="translate(300,280)"><rect x="-214" y="-264" width="428" height="528" rx="24" fill="#fff"/>';
+    s += '<text x="0" y="-230" font-size="19" font-weight="900" fill="#0F3350" text-anchor="middle">じぶんで きめて たいせん</text>';
+    s += '<text x="0" y="-208" font-size="11" font-weight="900" fill="#A9B7C2" text-anchor="middle">' +
+         'サイコロで N か S ／ おしっぱなしで 巻く ／ わくの 中を タップ</text>';
+    var rows = [
+      { lb:'あいての つよさ', y:-185, w:124, list:MGOPT.foe.map(function(o){ return o.t; }), sel:mgSet.foe, key:'foe' },
+      { lb:'でんじしゃくの 数', y:-116, w:92, list:MGOPT.num.map(function(n){ return n + 'こ'; }), sel:mgSet.num, key:'num' },
+      { lb:'わくの 大きさ', y:-47, w:124, list:MGOPT.ring.map(function(o){ return o.t; }), sel:mgSet.ring, key:'ring' },
+      { lb:'ステージ', y:22, w:124, list:MGOPT.stage.map(function(o){ return o.t; }), sel:mgSet.stage, key:'stage' }
+    ];
+    rows.forEach(function(row){
+      s += '<text x="-196" y="' + (row.y - 4) + '" font-size="12" font-weight="900" fill="#5A7C93">' + row.lb + '</text>';
+      var n = row.list.length, gap = 8, tot = n * row.w + (n - 1) * gap;
+      row.list.forEach(function(txt, i){
+        var cx = -tot / 2 + row.w / 2 + i * (row.w + gap);
+        s += mgChoiceArt(cx, row.y + 28, row.w, 44, txt, (i === row.sel),
+                         'data-mgset="' + row.key + ':' + i + '"');
+      });
+    });
+    /* 1人／2人 */
+    s += '<text x="-196" y="90" font-size="12" font-weight="900" fill="#5A7C93">あそぶ 人</text>';
+    [[0, 'ひとりで', -96], [1, 'ふたりで', 96]].forEach(function(m){
+      s += mgChoiceArt(m[2], 120, 180, 44, m[1], (cur.duo === (m[0] === 1)), 'data-mgduo="' + m[0] + '"');
+    });
+    s += '<rect x="-104" y="160" width="208" height="50" rx="25" fill="#2E9A4C"/>' +
+         '<text x="0" y="193" font-size="18" font-weight="900" fill="#fff" text-anchor="middle">▶ はじめる</text>' +
+         '<rect x="-104" y="160" width="208" height="50" fill="transparent" data-mggo="1"/></g>';
+  }
+  if (cur.mgPhase === 'done'){
+    var win = (cur.winner === 0);
+    s += '<rect x="0" y="0" width="600" height="' + MG.H + '" fill="#0F3350" opacity=".42"/>';
+    s += '<g transform="translate(300,246)"><rect x="-200" y="-96" width="400" height="200" rx="24" fill="#fff"/>';
+    s += '<text x="0" y="-52" font-size="23" font-weight="900" fill="' + (win ? '#2E9A4C' : '#E08A00') +
+         '" text-anchor="middle">' + (win ? (cur.duo ? '1人めの 勝ち！' : 'あなたの 勝ち！') : (cur.duo ? '2人めの 勝ち！' : 'あいての 勝ち…')) + '</text>';
+    s += '<text x="0" y="-22" font-size="13" font-weight="900" fill="#5A7C93" text-anchor="middle">手もとに もどって きた こま</text>';
+    s += '<text x="0" y="-4" font-size="14" font-weight="900" fill="#3B5A70" text-anchor="middle">' +
+         (cur.duo ? '1人め ' : 'あなた ') + cur.stuck[0] + 'こ ／ ' + (cur.duo ? '2人め ' : 'あいて ') + cur.stuck[1] + 'こ</text>';
+    s += '<text x="0" y="20" font-size="12.5" font-weight="900" fill="' + (cur.stuck[0] === 0 ? '#C9820A' : '#A9B7C2') +
+         '" text-anchor="middle">★きんカードは「1こも もどさずに 勝つ」</text>';
+    /* 同じ せっていで すぐ もう1回 ／ せっていを えらび直す の 2つ */
+    s += '<rect x="-186" y="40" width="176" height="46" rx="23" fill="#1B7FA8"/>' +
+         '<text x="-98" y="70" font-size="15" font-weight="900" fill="#fff" text-anchor="middle">↺ もう いちど</text>' +
+         '<rect x="-186" y="40" width="176" height="46" fill="transparent" data-mgstart="1"/>';
+    s += '<rect x="10" y="40" width="176" height="46" rx="23" fill="#fff" stroke="#B9C6D1" stroke-width="3"/>' +
+         '<text x="98" y="70" font-size="15" font-weight="900" fill="#3B5A70" text-anchor="middle">⚙ せってい</text>' +
+         '<rect x="10" y="40" width="176" height="46" fill="transparent" data-mgopt="1"/></g>';
+  }
+  document.getElementById('board').innerHTML = s;
+  if (cur.mgPhase === 'dice') setStatus('サイコロを ふって います…', false);
+  else if (playing || cur.mgPhase === 'anim') setStatus(cur.mgMsg || 'コイルを 巻いて、わくの 中を タップ', cur.mgBad === true);
+  else setStatus('', false);
+  tryClear(jishakuOK());
+}
+/* ---- おしっぱなし（マウスでも 指でも） ---- */
+function downJishaku(e){
+  if (attrUp(e.target, 'data-mgwind') !== null){
+    if (e.cancelable) e.preventDefault();
+    mgWindStart();
+  }
+}
+function upJishaku(){ mgWindStop(); }
+function tapJishaku(e){
+  var set = attrUp(e.target, 'data-mgset');
+  if (set !== null){
+    var kv = set.split(':');
+    mgSet[kv[0]] = parseInt(kv[1], 10);
+    mgOptSave();
+    loadJishaku(curStage());                    /* えらび直したら くばり直す（画面に すぐ うつる） */
+    renderJishaku(); return;
+  }
+  var du = attrUp(e.target, 'data-mgduo');
+  if (du !== null){ cur.duo = (du === '1'); mgOptSave(); renderJishaku(); return; }
+  if (attrUp(e.target, 'data-mgopt') !== null){       /* せってい画面へ もどる */
+    loadJishaku(curStage()); renderJishaku(); return;
+  }
+  if (attrUp(e.target, 'data-mggo') !== null || attrUp(e.target, 'data-mgstart') !== null){
+    var duo = cur.duo;
+    loadJishaku(curStage()); cur.duo = duo;
+    mgRollDice(); return;
+  }
+  if (cur.mgPhase !== 'play') return;
+  if (attrUp(e.target, 'data-mgwind') !== null) return;      /* 巻く ボタンは おしっぱなしで しょり する */
+  if (cur.turn === 1 && !cur.duo) return;
+  if (attrUp(e.target, 'data-mgboard') !== null){
+    var box = document.getElementById('board').getBoundingClientRect();
+    mgPlace((e.clientX - box.left) / box.width * 600, (e.clientY - box.top) / box.height * MG.H);
+  }
+}
+ENGINES.jishaku = { load:loadJishaku, render:renderJishaku, tap:tapJishaku, down:downJishaku, up:upJishaku };
+
+/* ------------------------------------------------------------------ *
+ * 7. クリアの しょり と ごほうび
+ * ------------------------------------------------------------------ */
+function cardSVG(g, gold){
+  var base = gold ? '#F5B324' : '#8FBFD8';
+  var bg   = gold ? '#FFF6DE' : '#EFF7FB';
+  return '<svg class="card-get" viewBox="0 0 150 200">' +
+    '<rect x="4" y="4" width="142" height="192" rx="16" fill="' + bg + '" stroke="' + base + '" stroke-width="5"/>' +
+    '<rect x="14" y="14" width="122" height="120" rx="10" fill="#fff" stroke="' + base + '" stroke-width="2"/>' +
+    '<text x="75" y="96" font-size="62" text-anchor="middle">' + g.icon + '</text>' +
+    '<text x="75" y="158" font-size="15" font-weight="900" fill="#0F3350" text-anchor="middle">' + g.card + '</text>' +
+    '<text x="75" y="180" font-size="12" font-weight="900" fill="' + (gold ? '#8A5B00' : '#4A6C85') +
+    '" text-anchor="middle">' + (gold ? '★ きんカード ★' : 'かがくカード') + '</text>' +
+    '</svg>';
+}
+
+function onClear(){
+  var g = gameById(cur.gameId), st = g.stages[cur.si], key = stageKey(g.id, cur.si);
+  var old = save.stages[key];
+  /* ★は「できた！」の おびが 出た しゅんかんに きめて ある（20-shell.js の showClearBar）。
+     おびを 見て いる あいだに ヒントを ひらいても 下がらない。 */
+  var perfect = (cur.gotStar === 0 || cur.gotStar === 1) ? cur.gotStar
+              : ((cur.hint || cur.noStar) ? 0 : 1);
+  if (old && old.p) perfect = 1;                    /* 一度とった パーフェクトは 下げない（§6 単調増加） */
+  save.stages[key] = { c:1, p:perfect };
+  var justFinished = gameDone(g.id) && !save.cards[g.id];
+  if (gameDone(g.id)) save.cards[g.id] = gameGold(g.id) ? 2 : 1;
+  store();
+  renderStrip();
+
+  document.getElementById('modal-jhs').innerHTML =
+    g.jhs ? '<div class="jhs-note">🎓 中学でも つかうよ</div>' : '';
+  document.getElementById('modal-title').textContent = perfect ? 'パーフェクト！' : 'クリア！';
+  document.getElementById('modal-card').innerHTML = justFinished ? cardSVG(g, gameGold(g.id)) : '';
+  document.getElementById('modal-learn').innerHTML =
+    (justFinished ? '<b>「' + g.card + '」カード</b>を てにいれた！<br>' : '') + st.learn;
+  var last = (cur.si >= g.stages.length - 1);
+  /* ゲームが 1つだけの アプリには もどる 島が ない ので「とじる」に する */
+  document.getElementById('modal-next').textContent =
+    last ? (HOME_GAME ? 'とじる ▼' : '島に もどる ▶') : 'つぎへ ▶';
+  document.getElementById('modal').className = 'modal on';
+  confettiBurst(perfect ? 120 : 70);
+}
+document.getElementById('modal-again').onclick = function(){ closeModal(); loadStage(); };
+document.getElementById('modal-next').onclick = function(){
+  closeModal();
+  var g = gameById(cur.gameId);
+  if (cur.si >= g.stages.length - 1){
+    if (HOME_GAME){ renderStrip(); return; }   /* 1ゲームの アプリ：もんだい えらびに もどるだけ */
+    openIsland(g.island); return;
+  }
+  cur.si++; cur.hint = false; loadStage();
+};
+
+/* じぶんで かく コンフェッティ（外部ライブラリは つかわない） */
+function confettiBurst(n){
+  var cv = document.getElementById('confetti');
+  var ctx = cv.getContext('2d');
+  var W = cv.width = window.innerWidth, H = cv.height = window.innerHeight;
+  cv.style.display = 'block';
+  var cols = ['#F5B324','#4FC46A','#3EA7D8','#E8618C','#8B7BE8','#FF8A5B'];
+  var ps = [];
+  for (var i=0;i<n;i++){
+    ps.push({ x:W/2 + (Math.random()-.5)*W*.5, y:H*.42,
+      vx:(Math.random()-.5)*13, vy:-8 - Math.random()*11,
+      w:6 + Math.random()*8, h:8 + Math.random()*10,
+      r:Math.random()*6.28, vr:(Math.random()-.5)*.32,
+      c:cols[(Math.random()*cols.length)|0], life:0 });
+  }
+  setTimeout(function(){ ctx.clearRect(0,0,W,H); cv.style.display = 'none'; }, 6500);  /* rAFが とまっても のこらないように */
+  var t0 = 0;
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    var alive = 0;
+    ps.forEach(function(p){
+      p.vy += .42; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+      if (p.y < H + 40){ alive++;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h); ctx.restore();
+      }
+    });
+    t0++;
+    if (alive && t0 < 260) requestAnimationFrame(tick);
+    else { ctx.clearRect(0,0,W,H); cv.style.display = 'none'; }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ------------------------------------------------------------------ *
+ * 8. がめん：ホーム（地図）と 島
+ * ------------------------------------------------------------------ */
+function islandArt(isl, state){
+  var s = '<svg class="isl-art" viewBox="0 0 200 156">' +
+    '<ellipse cx="100" cy="132" rx="84" ry="16" fill="rgba(4,50,72,.28)"/>' +
+    '<path d="M12 122 Q24 92 58 86 Q78 50 112 56 Q152 60 166 96 Q188 102 188 122 Z" fill="' + isl.sand + '"/>' +
+    '<path d="M40 100 Q70 58 106 62 Q146 66 160 100 Z" fill="' + isl.color + '"/>' +
+    '<text x="100" y="102" font-size="46" text-anchor="middle">' + (state === 'lock' ? '🔒' : isl.emoji) + '</text>';
+  if (state === 'done') s += '<text x="158" y="112" font-size="30" text-anchor="middle">🏁</text>';
+  return s + '</svg>';
+}
+function renderHome(){
+  /* 島が 1つだけの アプリには 海の 地図が ない（ビルドが とりのぞく）。
+     その ときは 何も しない。 */
+  if (!document.getElementById('map-inner')) return;
+  var open = methodOpen(), h = '', total = 0, got = 0;
+  GAMES.forEach(function(g){
+    if (g.soon || !g.stages) return;
+    total += g.stages.length;
+    got += clearedCount(g.id);
+  });
+  ISLANDS.forEach(function(isl){
+    var lock = isl.needAll && !open;
+    var list = playableOf(isl.id);
+    var state = lock ? 'lock' : (list.length && islandDone(isl.id) ? 'done' : 'go');
+    var n = 0, all = 0;
+    list.forEach(function(g){ all += g.stages.length; n += clearedCount(g.id); });
+    var label = lock ? '4つの島 クリアで ひらく'
+              : (all ? n + ' / ' + all + ' もん' : 'じゅんびちゅう');
+    h += '<button class="island' + (lock ? ' locked' : '') + '" style="--x:' + isl.mx + '%; --y:' + isl.my +
+         '%; --nx:' + isl.nx + '%; --ny:' + isl.ny + '%" data-isl="' + isl.id + '">' + islandArt(isl, state) +
+         '<span class="isl-name">' + isl.emoji + ' ' + isl.name + '</span>' +
+         '<span class="isl-count">' + label + '</span></button>';
+  });
+  document.getElementById('map-inner').innerHTML = h;
+  document.getElementById('home-prog').style.width = (total ? (got / total * 100) : 0) + '%';
+  document.getElementById('home-note').textContent = 'クリアした もんだい　' + got + ' / ' + total;
+}
+if (document.getElementById('map-inner')) document.getElementById('map-inner').addEventListener('click', function(e){
+  var id = attrUp(e.target, 'data-isl');
+  if (!id) return;
+  var isl = islandById(id);
+  if (isl.needAll && !methodOpen()){
+    alert('🔬 かんがえかたの島は、ほかの 4つの島を ぜんぶ クリアすると ひらくよ！');
+    return;
+  }
+  openIsland(id);
+});
+
+function openIsland(id){
+  /* ゲームが 1つだけの アプリ（でんき回路 など）には 島の がめんが ない。
+     「島に もどる」で 行ける ところが ない ので、ゲームの がめんに とどまる。
+     こうしないと まっ白な がめんに おちる（クリア後・リサイクル工場・ふりこ が
+     openIsland を よぶ）。 */
+  if (HOME_GAME){ go('game'); return; }
+  /* 島が 1つだけの アプリには 島の がめんが 1まいしか ない（地図を とりのぞいて いる）。
+     🔬かんがえかたの島の ゲームも その 1まいの 下に ならべて いる ので、
+     どこから よばれても じぶんの 島の がめんを 出す。
+     こうしないと 🔬の ゲームを おえた とき「🔬かんがえかたの島」だけの がめんに
+     おりてしまい、もどるボタンが ない ので **そこから 出られなく なる**。 */
+  if (HOME_ISLAND) id = HOME_ISLAND;
+  var isl = islandById(id);
+  document.getElementById('isl-bar-title').textContent = isl.emoji + ' ' + isl.name;
+  var hero = document.getElementById('isl-hero');
+  hero.style.background = 'linear-gradient(180deg,' + isl.color + ' 0%, ' + isl.color + 'CC 100%)';
+  hero.innerHTML = '<div class="emoji">' + isl.emoji + '</div><h2>' + isl.name + '</h2><p>' + isl.desc + '</p>';
+  var h = '';
+  gamesOf(id).forEach(function(g){
+    var n = g.stages ? clearedCount(g.id) : 0;
+    var all = g.stages ? g.stages.length : 0;
+    var pct = all ? (n / all * 100) : 0;
+    var card = save.cards[g.id];
+    h += '<button class="game-card' + (g.soon ? ' soon' : '') + '" data-g="' + g.id + '">' +
+      '<span class="gc-ico" style="background:' + isl.color + '22">' + g.icon + '</span>' +
+      '<span class="gc-body">' +
+        '<span class="gc-name">' + g.name +
+          (card ? (card === 2 ? ' <span class="tag jhs">★きんカード</span>' : ' <span class="tag grade">カード</span>') : '') +
+          '<span class="tag grade">' + g.grade + '</span>' +
+          (g.jhs ? '<span class="tag jhs">🎓中学でも</span>' : '') +
+          (g.soon ? '<span class="tag soon">じゅんびちゅう</span>' : '') +
+        '</span>' +
+        '<span class="gc-sub">' + g.sub + (all ? '　' + n + '/' + all : '') + '</span>' +
+        (all ? '<span class="gc-meter"><i style="width:' + pct + '%"></i></span>' : '') +
+      '</span></button>';
+  });
+  /* 地図の ない アプリ（島が 1つだけ）では、🔬かんがえかたの島の 行き場が なくなる。
+     じぶんの 島の ゲームの 下に つづけて 出す。ひらく までは 「あと なに が いるか」を 見せる。 */
+  if (HOME_ISLAND && id === HOME_ISLAND) h += methodSection();
+  document.getElementById('game-list').innerHTML = h;
+  go('island');
+}
+/* まだ クリアして いない いちばん さいしょの もんだいの ばんごう */
+function firstTodo(g){
+  var si = 0;
+  for (var i=0;i<g.stages.length;i++){ if (!stageRec(g.id, i)){ si = i; break; } si = i; }
+  return si;
+}
+/* ゲームが 1つだけの アプリには この 一覧が ない（ビルドが がめんごと とりのぞく）。 */
+if (document.getElementById('game-list')) document.getElementById('game-list').addEventListener('click', function(e){
+  var id = attrUp(e.target, 'data-g');
+  if (!id) return;
+  var g = gameById(id);
+  if (g.soon){ alert('この ミニゲームは じゅんびちゅう。もうすこし まってね！'); return; }
+  startGame(id, firstTodo(g));
+});
+
+/* 🔬かんがえかたの島の ぶぶん（地図の ない アプリだけで つかう）。
+   ひらいて いれば ゲームを ならべ、まだなら 何を すれば ひらくかを 出す。 */
+function methodSection(){
+  var isl = islandById('method');
+  if (!isl) return '';
+  if (!methodOpen()){
+    return '<div class="method-lock">' +
+      '<span class="ml-ico">🔒</span>' +
+      '<b>' + isl.emoji + ' ' + isl.name + '</b>' +
+      '<span>⚡🧪🌱🌏 <b>4つの島 ぜんぶ</b>を クリアすると ひらくよ。' +
+      'ほかの島は 🏠アプリ集から いけるよ。</span></div>';
+  }
+  var h = '<div class="method-head">' + isl.emoji + ' ' + isl.name + '　<span>' + isl.desc + '</span></div>';
+  gamesOf('method').forEach(function(g){
+    var n = clearedCount(g.id), all = g.stages ? g.stages.length : 0;
+    var card = save.cards[g.id];
+    h += '<button class="game-card" data-g="' + g.id + '">' +
+      '<span class="gc-ico" style="background:' + isl.color + '22">' + g.icon + '</span>' +
+      '<span class="gc-body">' +
+        '<span class="gc-name">' + g.name +
+          (card ? (card === 2 ? ' <span class="tag jhs">★きんカード</span>' : ' <span class="tag grade">カードGET</span>') : '') +
+          '<span class="tag grade">' + g.grade + '</span>' +
+          (g.jhs ? '<span class="tag jhs">🎓中学でも</span>' : '') +
+        '</span>' +
+        '<span class="gc-sub">' + g.sub + (all ? '　' + n + '/' + all : '') + '</span>' +
+        (all ? '<span class="gc-meter"><i style="width:' + (all ? (n / all * 100) : 0) + '%"></i></span>' : '') +
+      '</span></button>';
+  });
+  return h;
+}
+
+/* ------------------------------------------------------------------ *
+ * 9. がめんの きりかえ と きどう
+ * ------------------------------------------------------------------ */
+function go(name){
+  /* ゲームの 画面から 出る ときは、うごいて いる アニメを とめる
+     （とめないと 見えない ところで まわり つづけて バッテリーを 食う） */
+  /* ゲームの がめんから 出たら 走って いる アニメを 止める。型（エンジン）に stop を
+     書いて おくと ここで よばれる（書かなくても よい）。 */
+  if (name !== 'game'){
+    for (var _k in ENGINES) if (ENGINES[_k].stop) ENGINES[_k].stop();
+    hideClearBar();                                  /* できた！の おびを のこさない */
+  }
+  ['home','island','game'].forEach(function(n){
+    var el = document.getElementById('screen-' + n);   /* 地図の ない アプリでは home が ない */
+    if (el) el.className = 'screen' + (n === name ? ' on' : '');
+  });
+  if (name === 'home') renderHome();
+  window.scrollTo(0, 0);
+}
+load();
+renderHome();
+/* 島が 1つだけの アプリ（エネルギーの島 など）には 海の 地図が ない
+   （ビルドが がめんごと とりのぞく）。島の 中（ミニゲームの 一覧）から はじめる。
+   🔬かんがえかたの島は その 一覧の 下に つづけて 出る（91-home.js の methodSection）。 */
+/* ゲームが 1つだけの アプリ（でんき回路 など）は、その ゲームを いきなり ひらく。
+   ゲームえらびも ポータルが する ので、1つしか ない 一覧を 見せる いみが ない。
+   つづきから はじまる（まだ クリアして いない さいしょの もんだい）。 */
+if (HOME_GAME) startGame(HOME_GAME, firstTodo(gameById(HOME_GAME)));
+else if (HOME_ISLAND) openIsland(HOME_ISLAND);
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
+}
+</script>
+
+<a href="../index.html" id="kagasen-home" aria-label="かがせんのHAPPYアプリ集にもどる">🏠 アプリ集</a>
+<style>
+#kagasen-home{
+  position:fixed; left:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:2147483000;
+  display:inline-flex; align-items:center; gap:5px; min-height:44px; padding:0 15px;
+  box-sizing:border-box; background:rgba(255,255,255,.93); color:#0F3350;
+  border:2px solid rgba(15,51,80,.10); border-radius:999px;
+  font-family:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;
+  font-size:13px; font-weight:800; line-height:1; text-decoration:none; white-space:nowrap;
+  box-shadow:0 3px 10px rgba(15,51,80,.20); opacity:.94;
+}
+#kagasen-home:hover{opacity:1;}
+#kagasen-home:active{transform:translateY(1px);}
+@media print{#kagasen-home{display:none!important;}}
+</style>
+</body>
+</html>

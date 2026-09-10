@@ -1,0 +1,20 @@
+{
+  "name": "でんき回路",
+  "short_name": "でんき回路",
+  "description": "かん電池・豆電球・スイッチを つないで あかりを つける 全31もん。直列・並列・ショートまで、さわって たしかめる 小学校理科。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2A33C",
+  "theme_color": "#F2A33C",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

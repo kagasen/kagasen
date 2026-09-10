@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260" role="img">
+  <title>つぶつぶの島 ― とけ方・水よう液・もえ方・重さ</title>
+  <!-- カードでは 上下が 切られる。かならず 見える y=78〜182 に 主役を おく。
+       左上（★お気に入りボタンの位置）も よけている。 -->
+  <defs>
+    <linearGradient id="ts-sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7FD5EF"/><stop offset=".5" stop-color="#2E96BE"/><stop offset="1" stop-color="#0E5B7C"/>
+    </linearGradient>
+    <linearGradient id="ts-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#CFF2FC"/><stop offset="1" stop-color="#7FD5EF"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#ts-sea)"/>
+  <rect width="400" height="86" fill="url(#ts-sky)"/>
+  <circle cx="344" cy="28" r="24" fill="#FFE082" opacity=".8"/>
+  <path d="M0 94 q26 -9 52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0 V120 H0 Z" fill="#4FB6DC" opacity=".45"/>
+  <path d="M0 198 q30 -11 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 V260 H0 Z" fill="#0E5B7C" opacity=".45"/>
+  <path d="M0 228 q30 -11 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 V260 H0 Z" fill="#0B4A66" opacity=".5"/>
+
+  <!-- おともの アイコン（小さい島） -->
+  <g transform="translate(56,150) scale(.92)">
+    <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".28"/>
+    <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#D8D2F7"/>
+    <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#8B7BE8"/>
+    <path d="M-9 -6 h18 v14 a9 9 0 0 1 -18 0 Z" fill="#FFF6DE"/>
+    <path d="M-9 3 h18 v5 a9 9 0 0 1 -18 0 Z" fill="#8B7BE8"/>
+    <circle cx="-3" cy="5" r="1.6" fill="#FFF6DE"/><circle cx="4" cy="6" r="1.6" fill="#FFF6DE"/>
+  </g>
+  <g transform="translate(344,150) scale(.92)">
+    <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".28"/>
+    <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#D8D2F7"/>
+    <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#8B7BE8"/>
+    <path d="M-13 -4 h26" stroke="#FFF6DE" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M0 -8 V8" stroke="#FFF6DE" stroke-width="2.6"/>
+    <rect x="-17" y="-4" width="8" height="6" fill="#FFF6DE"/><rect x="9" y="-4" width="8" height="6" fill="#FFF6DE"/>
+  </g>
+
+  <!-- 主役の 島（y=96〜176 ＝ 安全ゾーンの ど真ん中） -->
+  <g transform="translate(200,140) scale(2.35)">
+    <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".32"/>
+    <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#D8D2F7"/>
+    <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#8B7BE8"/>
+    <path d="M-5 -15 h10 v11 l10 18 a6 6 0 0 1 -5 9 h-20 a6 6 0 0 1 -5 -9 l10 -18 Z" fill="#FFF6DE" stroke="#3B2E6E" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M-12 10 h24 a6 6 0 0 1 -5 9 h-14 a6 6 0 0 1 -5 -9 Z" fill="#5FC6E8"/>
+    <circle cx="-3" cy="14" r="1.8" fill="#EAF9FF"/><circle cx="4" cy="16" r="1.4" fill="#EAF9FF"/>
+  </g>
+</svg>

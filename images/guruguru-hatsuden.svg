@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260" role="img">
+  <title>ぐるぐる発電 ― 10びょう れんだ！ どこまで もつ？</title>
+  <defs>
+    <linearGradient id="gh-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE3B4"/><stop offset="1" stop-color="#F2A33C"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#gh-bg)"/>
+  <path d="M0 214 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 V260 H0 Z" fill="#D98420" opacity=".45"/>
+  <!-- 手回し発電機 -->
+  <g transform="translate(126,132)">
+    <rect x="-56" y="-46" width="112" height="96" rx="16" fill="#FFF6DE" stroke="#7A4A10" stroke-width="7"/>
+    <circle r="30" fill="#F7D9A0" stroke="#7A4A10" stroke-width="7"/>
+    <path d="M0 -30 A 30 30 0 0 1 26 15" fill="none" stroke="#E08A16" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="7" fill="#7A4A10"/>
+    <path d="M0 0 L24 -18" stroke="#7A4A10" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="27" cy="-20" r="9" fill="#E2872A" stroke="#7A4A10" stroke-width="5"/>
+  </g>
+  <!-- でんきが たまる メーター -->
+  <g transform="translate(212,96)">
+    <rect x="0" y="0" width="140" height="30" rx="15" fill="#FFF6DE" stroke="#7A4A10" stroke-width="7"/>
+    <rect x="9" y="9" width="86" height="12" rx="6" fill="#4FC46A"/>
+  </g>
+  <!-- かみなり -->
+  <path d="M206 148 l-22 40 h22 l-14 32 44 -46 h-24 l16 -26 Z" fill="#FFF6C8" stroke="#7A4A10" stroke-width="6" stroke-linejoin="round"/>
+  <!-- 豆電球（ついた） -->
+  <g transform="translate(322,178)">
+    <path d="M0 -46 a26 26 0 0 1 16 46 v8 h-32 v-8 a26 26 0 0 1 16 -46 Z" fill="#FFF6C8" stroke="#7A4A10" stroke-width="7" stroke-linejoin="round"/>
+    <rect x="-13" y="8" width="26" height="16" rx="5" fill="#D9BE8E" stroke="#7A4A10" stroke-width="6"/>
+    <g stroke="#FFF6C8" stroke-width="6" stroke-linecap="round"><path d="M34 -30 h16"/><path d="M-34 -30 h-16"/></g>
+  </g>
+</svg>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1B7FA8">
+<title>サイエンスアイランド</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<style>
+/* =====================================================================
+   サイエンスアイランド — 小学校理科を5つの島でめぐる学習ゲーム
+   設計と経緯は HANDOFF.md を読むこと。
+   ES2017+α縛り（?. ?? は書かない＝古いiPadで全滅する）。
+   ===================================================================== */
+:root{
+  --sea:#1B7FA8; --sea-d:#0E5B7C; --sea-l:#5FC6E8;
+  --ink:#0F3350; --paper:#FFFDF6; --line:rgba(15,51,80,.12);
+  --gold:#F5B324; --ok:#2E9A4C; --ng:#E05A4A;
+  --fam:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0; height:100%;}
+body{
+  font-family:var(--fam); color:var(--ink); background:var(--sea);
+  overflow-x:hidden; -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+.screen{display:none; min-height:100%;}
+.screen.on{display:block;}
+
+/* ---------- ホーム（海の地図） ---------- */
+#screen-home{
+  background:
+    radial-gradient(ellipse at 50% 8%, #8FE0F5 0%, rgba(143,224,245,0) 60%),
+    linear-gradient(180deg,#4FB6DC 0%, var(--sea) 45%, var(--sea-d) 100%);
+  padding:0 0 86px;
+}
+.home-head{padding:26px 16px 10px; text-align:center;}
+.home-title{
+  margin:0; font-size:clamp(28px,7vw,46px); font-weight:900; color:#fff; letter-spacing:.04em;
+  text-shadow:0 3px 0 rgba(14,91,124,.45), 0 8px 20px rgba(0,0,0,.22);
+}
+.home-sub{margin:8px 0 0; color:#EAF9FF; font-size:clamp(13px,3.3vw,16px); font-weight:700; opacity:.95;}
+.progress-bar{
+  max-width:420px; margin:16px auto 0; background:rgba(255,255,255,.25);
+  border-radius:999px; height:16px; overflow:hidden; box-shadow:inset 0 2px 5px rgba(0,0,0,.15);
+}
+.progress-bar>i{display:block; height:100%; background:linear-gradient(90deg,#FFE082,var(--gold)); border-radius:999px; transition:width .5s;}
+.progress-note{text-align:center; color:#fff; font-weight:800; font-size:13px; margin-top:6px;}
+
+.map-wrap{position:relative; max-width:900px; margin:14px auto 0; padding:0 12px;}
+.map-inner{position:relative; width:100%; padding-top:80%;}
+.island{
+  position:absolute; left:var(--x); top:var(--y); transform:translate(-50%,-50%);
+  width:31%; max-width:230px; min-width:132px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:0; text-align:center; transition:transform .18s;
+}
+.island:active{transform:translate(-50%,-50%) scale(.95);}
+.island .isl-art{width:100%; filter:drop-shadow(0 10px 16px rgba(0,0,0,.28));}
+.island .isl-name{
+  margin-top:-6px; font-size:clamp(13px,3.2vw,17px); font-weight:900; color:#fff;
+  text-shadow:0 2px 0 rgba(14,91,124,.6), 0 4px 10px rgba(0,0,0,.3);
+}
+.island .isl-count{
+  font-size:11px; font-weight:800; color:#0F3350; background:rgba(255,255,255,.9);
+  border-radius:999px; padding:2px 10px; margin-top:3px;
+}
+.island.locked{opacity:.72;}
+.island.locked .isl-count{background:rgba(255,255,255,.75);}
+/* スマホ（せまい画面）では 島が かさなるので、たてに ながい ジグザグの 地図にする */
+@media (max-width:560px){
+  .map-inner{padding-top:235%;}
+  .island{left:var(--nx); top:var(--ny); width:42%; min-width:120px; max-width:180px;}
+}
+
+/* ---------- 共通のヘッダ ---------- */
+.bar{
+  position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:10px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px; background:rgba(255,255,255,.94);
+  box-shadow:0 2px 10px rgba(15,51,80,.14); backdrop-filter:blur(6px);
+}
+.bar .back{
+  min-height:44px; min-width:44px; padding:0 14px; border-radius:999px; background:#EAF3F8;
+  font-weight:900; font-size:15px; color:var(--ink); display:inline-flex; align-items:center; gap:4px;
+}
+.bar .back:active{transform:translateY(1px);}
+.bar .ttl{font-weight:900; font-size:clamp(16px,4.2vw,21px); flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ---------- 島の画面 ---------- */
+#screen-island{background:var(--paper);}
+.isl-hero{padding:18px 16px 20px; color:#fff; text-align:center;}
+.isl-hero .emoji{font-size:44px; line-height:1;}
+.isl-hero h2{margin:6px 0 4px; font-size:clamp(20px,5.4vw,28px); font-weight:900;
+  text-shadow:0 2px 6px rgba(0,0,0,.2);}
+.isl-hero p{margin:0; font-size:14px; font-weight:700; opacity:.95;}
+/* 島が 1つだけの アプリで、ゲームの 下に つづけて 出す 🔬かんがえかたの島 */
+.method-head{margin:18px 4px 10px; font-size:15px; font-weight:900; color:#0F3350;
+  border-top:2px dashed rgba(15,51,80,.18); padding-top:16px;}
+.method-head span{font-size:13px; font-weight:700; opacity:.7;}
+.method-lock{margin:18px 4px 4px; padding:16px 14px; border-radius:16px;
+  border:2px dashed rgba(15,51,80,.20); background:rgba(255,255,255,.55);
+  display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;}
+.method-lock .ml-ico{font-size:30px; line-height:1;}
+.method-lock b{font-size:15px; color:#0F3350;}
+.method-lock span{font-size:13px; font-weight:700; color:#0F3350; opacity:.8; line-height:1.6;}
+.game-list{max-width:720px; margin:0 auto; padding:16px 12px 130px; display:grid; gap:12px;}
+.game-card{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  background:#fff; border:2px solid var(--line); border-radius:18px; padding:14px 14px;
+  box-shadow:0 4px 12px rgba(15,51,80,.07); min-height:76px; transition:transform .15s;
+}
+.game-card:active{transform:translateY(2px);}
+.game-card .gc-ico{
+  flex:0 0 54px; height:54px; border-radius:16px; display:grid; place-items:center;
+  font-size:26px; background:#EAF3F8;
+}
+.game-card .gc-body{flex:1; min-width:0;}
+.game-card .gc-name{font-size:17px; font-weight:900; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.game-card .gc-sub{font-size:13px; font-weight:700; color:#4A6C85; margin-top:2px;}
+.game-card .gc-meter{margin-top:7px; height:9px; border-radius:999px; background:#E7EEF3; overflow:hidden;}
+.game-card .gc-meter>i{display:block; height:100%; background:linear-gradient(90deg,#7BD98F,var(--ok)); border-radius:999px;}
+.game-card.soon{opacity:.55;}
+.tag{font-size:10px; font-weight:900; border-radius:999px; padding:2px 8px; white-space:nowrap;}
+.tag.grade{background:#EAF3F8; color:#33637F;}
+.tag.jhs{background:#FFF0CF; color:#8A5B00;}
+.tag.soon{background:#EEE; color:#777;}
+
+/* ---------- ゲーム画面 ---------- */
+#screen-game{background:var(--paper); padding-bottom:130px;}
+.stage-strip{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; padding:10px 12px 0;}
+.stage-dot{
+  width:34px; height:34px; border-radius:12px; display:grid; place-items:center;
+  font-size:14px; font-weight:900; background:#E7EEF3; color:#7791A5;
+}
+.stage-dot.done{background:#CBEFD4; color:#1E6E37;}
+.stage-dot.gold{background:linear-gradient(135deg,#FFE9A8,#F5B324); color:#7A5200;}
+.stage-dot.now{outline:3px solid var(--sea); outline-offset:2px; background:#fff; color:var(--ink);}
+.quest{
+  max-width:640px; margin:12px auto 0; padding:12px 16px; background:#fff;
+  border:2px solid var(--line); border-radius:16px; text-align:center;
+}
+.quest .q-n{font-size:12px; font-weight:900; color:#7791A5;}
+.quest .q-t{font-size:clamp(16px,4.4vw,20px); font-weight:900; margin-top:2px;}
+.quest .q-h{font-size:14px; font-weight:700; color:#4A6C85; margin-top:8px; display:none; line-height:1.75; text-align:left;}
+.quest .q-h.on{display:block;}
+.quest .q-h .ans{margin-top:10px; border-top:1px dashed #C7D6E0; padding-top:6px;}
+.quest .q-h summary{cursor:pointer; color:#1B7FA8; font-weight:900; padding:11px 0; min-height:26px;}  /* 指で 押せる 48px */
+.quest .q-h .ans-in{background:#F2F8FC; border-radius:12px; padding:8px 12px 10px; margin-top:4px;}
+.quest .q-h ol{margin:6px 0 0 22px; padding:0;}
+.quest .q-h li{margin:4px 0;}
+.quest .q-h .ans-note{color:#6B8398; margin-top:8px;}
+.sw-pick{display:none; margin:8px auto 0; max-width:520px;}
+.sw-pick.on{display:block;}
+.sw-pick .sw-note{font-size:13px; font-weight:900; color:#8A5B00; text-align:center; margin-bottom:6px;}
+.sw-pick .sw-box{border-radius:16px; padding:8px 10px;}
+.sw-pick .sw-box.first{background:#FFF6DE; border:3px solid #F5B324;}
+.sw-pick .sw-row{display:flex; align-items:center; gap:6px; margin:4px 0;}
+.sw-pick .sw-lab{font-size:13px; font-weight:900; color:#8FA3B8; width:48px; flex:none; text-align:right;}
+.sw-pick .sw-b{flex:1; min-height:48px; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-family:inherit; font-size:14px; font-weight:900; color:#4A6C85; background:#F2F6F9;
+  border:3px solid #C3D0DA; border-radius:14px; cursor:pointer; padding:0 6px;}
+.sw-pick .sw-b .dot{border-radius:50%; display:inline-block; border:2px solid rgba(0,0,0,.25);}
+.sw-pick .sw-b.on{color:#fff;}
+.sw-pick .sw-b:disabled{opacity:.45; cursor:default;}
+.quest .q-h button.mini{font-family:inherit; font-size:14px; font-weight:900; color:#fff; background:#1B7FA8;
+  border:none; border-radius:12px; padding:11px 18px; min-height:44px; cursor:pointer;}
+.board-wrap{max-width:640px; margin:12px auto 0; padding:0 10px; position:relative;}
+.fc-controls{position:absolute; inset:0 10px; pointer-events:none; z-index:8;}
+.fc-controls.on{pointer-events:auto;}
+.fc-controls button{font:900 15px/1.2 inherit; min-height:54px; border:0; border-radius:17px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:0 3px 0 rgba(15,51,80,.18);}
+.fc-controls button:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(15,51,80,.18);}
+.fc-answer-buttons{position:absolute; left:17%; right:17%; top:41.2%; display:grid; gap:10px; pointer-events:auto;}
+.fc-answer-buttons button{background:#EEF4F7; color:#173F55; border:2px solid #7CA6B7;}
+.fc-answer-buttons button:nth-child(2){background:#EAF6F1;}
+.fc-result-buttons{position:absolute; left:17.2%; right:17.2%; top:65.3%; display:grid; grid-template-columns:1fr 1fr; gap:18px; pointer-events:auto;}
+.fc-result-buttons .back-result{background:#EEF4F7; color:#315A70; border:2px solid #AFC8D3;}
+.fc-result-buttons .again-result{background:#1B7FA8; color:#fff;}
+.board{
+  width:100%; background:#FFFFFF; border:2px solid var(--line); border-radius:20px;
+  box-shadow:0 6px 18px rgba(15,51,80,.08); display:block; touch-action:manipulation;
+}
+.tools{max-width:640px; margin:12px auto 0; padding:0 10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+.tool{
+  min-height:48px; padding:0 18px; border-radius:999px; background:#EAF3F8; color:var(--ink);
+  font-weight:900; font-size:15px; display:inline-flex; align-items:center; gap:6px;
+  border:2px solid transparent;
+}
+.tool:active{transform:translateY(1px);}
+.tool.primary{background:var(--sea); color:#fff;}
+.status{
+  max-width:640px; margin:10px auto 0; padding:0 12px; text-align:center;
+  font-size:15px; font-weight:900; min-height:24px; color:#4A6C85;
+}
+.status.short{color:var(--ng);}
+
+/* ---------- できた ときの おび ----------
+   せいかいでも クリアの まどを すぐには 出さない。この おびを おすまで、
+   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見なおせる。
+   2026-09-10 ユーザーの きぼう:「まだ 頭の せいりが できて いないのに クリアが 出る」 */
+.clear-bar{
+  max-width:640px; margin:12px auto 0; padding:12px 14px; display:none;
+  align-items:center; justify-content:center; gap:10px 14px; flex-wrap:wrap;
+  background:#E9F9EE; border:3px solid var(--ok); border-radius:20px;
+  animation:pop .3s cubic-bezier(.2,1.3,.5,1);
+}
+.clear-bar.on{display:flex;}
+.clear-bar .cb-msg{font-size:16px; font-weight:900; color:#1E7A3C;}
+.clear-bar .cb-go{
+  min-height:48px; padding:0 22px; border-radius:999px; border:none;
+  background:var(--ok); color:#fff; font-family:var(--fam); font-weight:900; font-size:16px;
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+}
+.clear-bar .cb-go:active{transform:translateY(1px);}
+
+/* ---------- クリアのモーダル ---------- */
+.modal{
+  position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
+  background:rgba(6,40,60,.6); padding:20px; backdrop-filter:blur(3px);
+}
+.modal.on{display:flex;}
+.modal-box{
+  background:var(--paper); border-radius:26px; padding:24px 20px; max-width:380px; width:100%;
+  text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.35); animation:pop .35s cubic-bezier(.2,1.3,.5,1);
+}
+@keyframes pop{from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;}}
+.modal-box h3{margin:0 0 6px; font-size:26px; font-weight:900; color:var(--ok);}
+.modal-box .learn{
+  background:#FFF8E4; border:2px dashed var(--gold); border-radius:16px; padding:12px 14px;
+  margin:14px 0; font-size:14px; font-weight:700; text-align:left; line-height:1.7;
+}
+.modal-box .learn b{color:#8A5B00;}
+.jhs-note{
+  display:inline-flex; align-items:center; gap:6px; background:#FFF0CF; color:#8A5B00;
+  border-radius:999px; padding:6px 12px; font-size:12px; font-weight:900; margin-bottom:10px;
+}
+.modal-btns{display:flex; gap:10px; margin-top:6px;}
+.modal-btns .tool{flex:1; justify-content:center;}
+.card-get{margin:10px auto 0; width:150px;}
+#confetti{position:fixed; inset:0; pointer-events:none; z-index:300; display:none;}
+</style>
+</head>
+<body>
+
+<!-- ========== ホーム：5つの島の地図 ========== -->
+<div id="screen-home" class="screen on">
+  <div class="home-head">
+    <h1 class="home-title">サイエンスアイランド</h1>
+    <p class="home-sub">5つの島をめぐって、りかの ちからを つけよう！</p>
+    <div class="progress-bar"><i id="home-prog" style="width:0%"></i></div>
+    <div class="progress-note" id="home-note">クリア 0 / 0</div>
+  </div>
+  <div class="map-wrap"><div class="map-inner" id="map-inner"></div></div>
+</div>
+
+<!-- ========== 島：ミニゲームの一覧 ========== -->
+<div id="screen-island" class="screen">
+  <div class="bar">
+    <button class="back" onclick="go('home')">◀ 地図</button>
+    <div class="ttl" id="isl-bar-title">島</div>
+  </div>
+  <div class="isl-hero" id="isl-hero"></div>
+  <div class="game-list" id="game-list"></div>
+</div>
+
+<!-- ========== ゲーム ========== -->
+<div id="screen-game" class="screen">
+  <div class="bar">
+    <button class="back" id="game-back">◀ もどる</button>
+    <div class="ttl" id="game-bar-title">ゲーム</div>
+  </div>
+  <div class="stage-strip" id="stage-strip"></div>
+  <div class="quest">
+    <div class="q-n" id="q-n">だい1もん</div>
+    <div class="q-t" id="q-t"></div>
+    <div class="q-h" id="q-h"></div>
+  </div>
+  <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
+  <div class="sw-pick" id="sw-pick"></div>
+  <div class="status" id="status"></div>
+  <!-- せいかいの とき ここが 出る。おすまで クリアの まどは 出ない。 -->
+  <div class="clear-bar" id="clear-bar">
+    <span class="cb-msg">🎉 できた！ じぶんの こたえを 見て みよう</span>
+    <button type="button" class="cb-go" id="cb-go">▶ つぎへ すすむ</button>
+  </div>
+  <div class="tools">
+    <button class="tool" id="btn-hint">💡 ヒント</button>
+    <button class="tool" id="btn-reset">↺ はじめから</button>
+  </div>
+</div>
+
+<!-- ========== クリア ========== -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modal-jhs"></div>
+    <h3 id="modal-title">クリア！</h3>
+    <div id="modal-card"></div>
+    <div class="learn" id="modal-learn"></div>
+    <div class="modal-btns">
+      <button class="tool" id="modal-again">↺ もういちど</button>
+      <button class="tool primary" id="modal-next">つぎへ ▶</button>
+    </div>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>

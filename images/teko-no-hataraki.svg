@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260" role="img">
+  <title>てこのはたらき ― つり合いの きまりを 見つけよう</title>
+  <defs>
+    <linearGradient id="tk-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE3B4"/><stop offset="1" stop-color="#F2A33C"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#tk-bg)"/>
+  <path d="M0 214 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 V260 H0 Z" fill="#D98420" opacity=".45"/>
+  <!-- うでと おもり（すこし かたむいて いる） -->
+  <g transform="rotate(-7 200 132)">
+    <rect x="72" y="122" width="256" height="18" rx="9" fill="#FFF6DE" stroke="#7A4A10" stroke-width="7"/>
+    <g stroke="#7A4A10" stroke-width="4">
+      <path d="M112 126 v10"/><path d="M144 126 v10"/><path d="M176 126 v10"/><path d="M224 126 v10"/><path d="M256 126 v10"/><path d="M288 126 v10"/>
+    </g>
+    <!-- ひだり：おもり 2つ -->
+    <g>
+      <path d="M128 140 v14" stroke="#7A4A10" stroke-width="6"/>
+      <rect x="104" y="154" width="48" height="34" rx="7" fill="#E2872A" stroke="#7A4A10" stroke-width="6"/>
+      <rect x="104" y="188" width="48" height="30" rx="7" fill="#E2872A" stroke="#7A4A10" stroke-width="6"/>
+    </g>
+    <!-- みぎ：おもり 1つ（とおい ところ） -->
+    <g>
+      <path d="M288 140 v14" stroke="#7A4A10" stroke-width="6"/>
+      <rect x="264" y="154" width="48" height="34" rx="7" fill="#E2872A" stroke="#7A4A10" stroke-width="6"/>
+    </g>
+  </g>
+  <!-- しちてん -->
+  <path d="M200 128 L158 210 h84 Z" fill="#FFF6DE" stroke="#7A4A10" stroke-width="7" stroke-linejoin="round"/>
+  <circle cx="200" cy="130" r="9" fill="#7A4A10"/>
+</svg>

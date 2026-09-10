@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260" role="img">
+  <title>ふりこゴール ― ふりこで ゴールを めざそう</title>
+  <defs>
+    <linearGradient id="fr-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE3B4"/><stop offset="1" stop-color="#F2A33C"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#fr-bg)"/>
+  <path d="M0 214 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 V260 H0 Z" fill="#D98420" opacity=".45"/>
+  <!-- てんじょうの ばー -->
+  <rect x="60" y="56" width="200" height="14" rx="7" fill="#7A4A10"/>
+  <!-- ふれた あとの みち -->
+  <path d="M96 158 A 88 88 0 0 1 222 128" fill="none" stroke="#FFF6DE" stroke-width="7" stroke-linecap="round" stroke-dasharray="4 16" opacity=".85"/>
+  <!-- ふりこ -->
+  <g>
+    <circle cx="160" cy="66" r="11" fill="#7A4A10"/>
+    <path d="M160 66 L104 150" stroke="#7A4A10" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="100" cy="156" r="26" fill="#FFF6DE" stroke="#7A4A10" stroke-width="7"/>
+    <circle cx="92" cy="148" r="7" fill="#FFFDF6" opacity=".9"/>
+  </g>
+  <!-- ゴールの わっか -->
+  <g transform="translate(300,140)">
+    <circle r="38" fill="none" stroke="#3EA76A" stroke-width="10" stroke-dasharray="14 9"/>
+    <circle r="18" fill="#FFF6DE" stroke="#3EA76A" stroke-width="7"/>
+    <path d="M-6 0 l5 6 9 -12" fill="none" stroke="#3EA76A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

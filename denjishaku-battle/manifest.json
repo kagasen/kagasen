@@ -1,0 +1,20 @@
+{
+  "name": "でんじしゃくバトル",
+  "short_name": "でんじしゃくバトル",
+  "description": "N極・S極の しりぞけ合う 力で こまを はじく 対戦ゲーム。近いほど 力が 強い ことを 手で たしかめる 小学校理科。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2A33C",
+  "theme_color": "#F2A33C",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

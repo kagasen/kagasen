@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260" role="img">
+  <title>リサイクル工場 ― 同じ ごみを つないで 加工品に</title>
+  <!-- カードでは 上下が 切られる。主役は かならず y=78〜182 に おく。 -->
+  <defs>
+    <linearGradient id="rc-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE3B4"/><stop offset="1" stop-color="#F2A33C"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#rc-bg)"/>
+  <path d="M0 214 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 V260 H0 Z" fill="#D98420" opacity=".45"/>
+  <!-- ベルトコンベア -->
+  <rect x="44" y="164" width="312" height="26" rx="13" fill="#7A4A10"/>
+  <g fill="#FFF6DE" opacity=".65">
+    <circle cx="76" cy="177" r="6"/><circle cx="132" cy="177" r="6"/><circle cx="188" cy="177" r="6"/>
+    <circle cx="244" cy="177" r="6"/><circle cx="300" cy="177" r="6"/>
+  </g>
+  <!-- ならんだ ごみ（同じ いろを つなぐ） -->
+  <g stroke="#7A4A10" stroke-width="6">
+    <rect x="58" y="118" width="44" height="44" rx="10" fill="#4FC46A"/>
+    <rect x="110" y="118" width="44" height="44" rx="10" fill="#4FC46A"/>
+    <rect x="162" y="118" width="44" height="44" rx="10" fill="#4FC46A"/>
+    <rect x="214" y="118" width="44" height="44" rx="10" fill="#6FB6E8"/>
+    <rect x="266" y="118" width="44" height="44" rx="10" fill="#E8618C"/>
+  </g>
+  <!-- つないだ せん -->
+  <path d="M80 140 H184" stroke="#FFF6DE" stroke-width="9" stroke-linecap="round"/>
+  <!-- リサイクルの やじるし -->
+  <g transform="translate(352,122)" stroke="#FFF6DE" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-22 8 A 24 24 0 0 1 6 -20"/><path d="M22 -2 A 24 24 0 0 1 -2 24"/>
+    <path d="M0 -26 l8 6 -8 8" fill="#FFF6DE" stroke-width="6"/>
+    <path d="M-6 30 l-8 -6 8 -8" fill="#FFF6DE" stroke-width="6"/>
+  </g>
+</svg>

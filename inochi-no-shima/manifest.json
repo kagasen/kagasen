@@ -1,0 +1,20 @@
+{
+  "name": "いのちの島",
+  "short_name": "いのちの島",
+  "description": "人のからだ・植物の育ち・食べもののつながり・受粉。生きものの しくみを たしかめる 小学校理科。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#4FC46A",
+  "theme_color": "#4FC46A",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

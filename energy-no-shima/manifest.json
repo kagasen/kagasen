@@ -1,0 +1,20 @@
+{
+  "name": "エネルギーの島",
+  "short_name": "エネルギーの島",
+  "description": "でんき回路・じしゃく・てこ・ふりこ・発電。さわって たしかめる 小学校理科の エネルギー分野。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2A33C",
+  "theme_color": "#F2A33C",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

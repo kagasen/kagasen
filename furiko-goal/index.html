@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F2A33C">
+<title>ふりこゴール｜かがせんのHAPPYアプリ集</title>
+<!-- SEO:auto build-seo.mjs が作る。手で直さない -->
+<meta name="description" content="ふりこを ゆらして ゴールに とめる 全30もん。長さ・おもさ・ふれはばを かえて、1おうふくの 時間の きまりを たしかめる。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<link rel="canonical" href="https://kagasen.github.io/kagasen/furiko-goal/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="かがせんのHAPPYアプリ集">
+<meta property="og:title" content="ふりこゴール｜かがせんのHAPPYアプリ集">
+<meta property="og:description" content="ふりこを ゆらして ゴールに とめる 全30もん。長さ・おもさ・ふれはばを かえて、1おうふくの 時間の きまりを たしかめる。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta property="og:url" content="https://kagasen.github.io/kagasen/furiko-goal/">
+<meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /SEO:auto -->
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<style>
+/* =====================================================================
+   サイエンスアイランド — 小学校理科を5つの島でめぐる学習ゲーム
+   設計と経緯は HANDOFF.md を読むこと。
+   ES2017+α縛り（?. ?? は書かない＝古いiPadで全滅する）。
+   ===================================================================== */
+:root{
+  --sea:#1B7FA8; --sea-d:#0E5B7C; --sea-l:#5FC6E8;
+  --ink:#0F3350; --paper:#FFFDF6; --line:rgba(15,51,80,.12);
+  --gold:#F5B324; --ok:#2E9A4C; --ng:#E05A4A;
+  --fam:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0; height:100%;}
+body{
+  font-family:var(--fam); color:var(--ink); background:var(--sea);
+  overflow-x:hidden; -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+.screen{display:none; min-height:100%;}
+.screen.on{display:block;}
+
+/* ---------- ホーム（海の地図） ---------- */
+#screen-home{
+  background:
+    radial-gradient(ellipse at 50% 8%, #8FE0F5 0%, rgba(143,224,245,0) 60%),
+    linear-gradient(180deg,#4FB6DC 0%, var(--sea) 45%, var(--sea-d) 100%);
+  padding:0 0 86px;
+}
+.home-head{padding:26px 16px 10px; text-align:center;}
+.home-title{
+  margin:0; font-size:clamp(28px,7vw,46px); font-weight:900; color:#fff; letter-spacing:.04em;
+  text-shadow:0 3px 0 rgba(14,91,124,.45), 0 8px 20px rgba(0,0,0,.22);
+}
+.home-sub{margin:8px 0 0; color:#EAF9FF; font-size:clamp(13px,3.3vw,16px); font-weight:700; opacity:.95;}
+.progress-bar{
+  max-width:420px; margin:16px auto 0; background:rgba(255,255,255,.25);
+  border-radius:999px; height:16px; overflow:hidden; box-shadow:inset 0 2px 5px rgba(0,0,0,.15);
+}
+.progress-bar>i{display:block; height:100%; background:linear-gradient(90deg,#FFE082,var(--gold)); border-radius:999px; transition:width .5s;}
+.progress-note{text-align:center; color:#fff; font-weight:800; font-size:13px; margin-top:6px;}
+
+.map-wrap{position:relative; max-width:900px; margin:14px auto 0; padding:0 12px;}
+.map-inner{position:relative; width:100%; padding-top:80%;}
+.island{
+  position:absolute; left:var(--x); top:var(--y); transform:translate(-50%,-50%);
+  width:31%; max-width:230px; min-width:132px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:0; text-align:center; transition:transform .18s;
+}
+.island:active{transform:translate(-50%,-50%) scale(.95);}
+.island .isl-art{width:100%; filter:drop-shadow(0 10px 16px rgba(0,0,0,.28));}
+.island .isl-name{
+  margin-top:-6px; font-size:clamp(13px,3.2vw,17px); font-weight:900; color:#fff;
+  text-shadow:0 2px 0 rgba(14,91,124,.6), 0 4px 10px rgba(0,0,0,.3);
+}
+.island .isl-count{
+  font-size:11px; font-weight:800; color:#0F3350; background:rgba(255,255,255,.9);
+  border-radius:999px; padding:2px 10px; margin-top:3px;
+}
+.island.locked{opacity:.72;}
+.island.locked .isl-count{background:rgba(255,255,255,.75);}
+/* スマホ（せまい画面）では 島が かさなるので、たてに ながい ジグザグの 地図にする */
+@media (max-width:560px){
+  .map-inner{padding-top:235%;}
+  .island{left:var(--nx); top:var(--ny); width:42%; min-width:120px; max-width:180px;}
+}
+
+/* ---------- 共通のヘッダ ---------- */
+.bar{
+  position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:10px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px; background:rgba(255,255,255,.94);
+  box-shadow:0 2px 10px rgba(15,51,80,.14); backdrop-filter:blur(6px);
+}
+.bar .back{
+  min-height:44px; min-width:44px; padding:0 14px; border-radius:999px; background:#EAF3F8;
+  font-weight:900; font-size:15px; color:var(--ink); display:inline-flex; align-items:center; gap:4px;
+}
+.bar .back:active{transform:translateY(1px);}
+.bar .ttl{font-weight:900; font-size:clamp(16px,4.2vw,21px); flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ---------- 島の画面 ---------- */
+#screen-island{background:var(--paper);}
+.isl-hero{padding:18px 16px 20px; color:#fff; text-align:center;}
+.isl-hero .emoji{font-size:44px; line-height:1;}
+.isl-hero h2{margin:6px 0 4px; font-size:clamp(20px,5.4vw,28px); font-weight:900;
+  text-shadow:0 2px 6px rgba(0,0,0,.2);}
+.isl-hero p{margin:0; font-size:14px; font-weight:700; opacity:.95;}
+/* 島が 1つだけの アプリで、ゲームの 下に つづけて 出す 🔬かんがえかたの島 */
+.method-head{margin:18px 4px 10px; font-size:15px; font-weight:900; color:#0F3350;
+  border-top:2px dashed rgba(15,51,80,.18); padding-top:16px;}
+.method-head span{font-size:13px; font-weight:700; opacity:.7;}
+.method-lock{margin:18px 4px 4px; padding:16px 14px; border-radius:16px;
+  border:2px dashed rgba(15,51,80,.20); background:rgba(255,255,255,.55);
+  display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;}
+.method-lock .ml-ico{font-size:30px; line-height:1;}
+.method-lock b{font-size:15px; color:#0F3350;}
+.method-lock span{font-size:13px; font-weight:700; color:#0F3350; opacity:.8; line-height:1.6;}
+.game-list{max-width:720px; margin:0 auto; padding:16px 12px 130px; display:grid; gap:12px;}
+.game-card{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  background:#fff; border:2px solid var(--line); border-radius:18px; padding:14px 14px;
+  box-shadow:0 4px 12px rgba(15,51,80,.07); min-height:76px; transition:transform .15s;
+}
+.game-card:active{transform:translateY(2px);}
+.game-card .gc-ico{
+  flex:0 0 54px; height:54px; border-radius:16px; display:grid; place-items:center;
+  font-size:26px; background:#EAF3F8;
+}
+.game-card .gc-body{flex:1; min-width:0;}
+.game-card .gc-name{font-size:17px; font-weight:900; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.game-card .gc-sub{font-size:13px; font-weight:700; color:#4A6C85; margin-top:2px;}
+.game-card .gc-meter{margin-top:7px; height:9px; border-radius:999px; background:#E7EEF3; overflow:hidden;}
+.game-card .gc-meter>i{display:block; height:100%; background:linear-gradient(90deg,#7BD98F,var(--ok)); border-radius:999px;}
+.game-card.soon{opacity:.55;}
+.tag{font-size:10px; font-weight:900; border-radius:999px; padding:2px 8px; white-space:nowrap;}
+.tag.grade{background:#EAF3F8; color:#33637F;}
+.tag.jhs{background:#FFF0CF; color:#8A5B00;}
+.tag.soon{background:#EEE; color:#777;}
+
+/* ---------- ゲーム画面 ---------- */
+#screen-game{background:var(--paper); padding-bottom:130px;}
+.stage-strip{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; padding:10px 12px 0;}
+.stage-dot{
+  width:34px; height:34px; border-radius:12px; display:grid; place-items:center;
+  font-size:14px; font-weight:900; background:#E7EEF3; color:#7791A5;
+}
+.stage-dot.done{background:#CBEFD4; color:#1E6E37;}
+.stage-dot.gold{background:linear-gradient(135deg,#FFE9A8,#F5B324); color:#7A5200;}
+.stage-dot.now{outline:3px solid var(--sea); outline-offset:2px; background:#fff; color:var(--ink);}
+.quest{
+  max-width:640px; margin:12px auto 0; padding:12px 16px; background:#fff;
+  border:2px solid var(--line); border-radius:16px; text-align:center;
+}
+.quest .q-n{font-size:12px; font-weight:900; color:#7791A5;}
+.quest .q-t{font-size:clamp(16px,4.4vw,20px); font-weight:900; margin-top:2px;}
+.quest .q-h{font-size:14px; font-weight:700; color:#4A6C85; margin-top:8px; display:none; line-height:1.75; text-align:left;}
+.quest .q-h.on{display:block;}
+.quest .q-h .ans{margin-top:10px; border-top:1px dashed #C7D6E0; padding-top:6px;}
+.quest .q-h summary{cursor:pointer; color:#1B7FA8; font-weight:900; padding:11px 0; min-height:26px;}  /* 指で 押せる 48px */
+.quest .q-h .ans-in{background:#F2F8FC; border-radius:12px; padding:8px 12px 10px; margin-top:4px;}
+.quest .q-h ol{margin:6px 0 0 22px; padding:0;}
+.quest .q-h li{margin:4px 0;}
+.quest .q-h .ans-note{color:#6B8398; margin-top:8px;}
+.sw-pick{display:none; margin:8px auto 0; max-width:520px;}
+.sw-pick.on{display:block;}
+.sw-pick .sw-note{font-size:13px; font-weight:900; color:#8A5B00; text-align:center; margin-bottom:6px;}
+.sw-pick .sw-box{border-radius:16px; padding:8px 10px;}
+.sw-pick .sw-box.first{background:#FFF6DE; border:3px solid #F5B324;}
+.sw-pick .sw-row{display:flex; align-items:center; gap:6px; margin:4px 0;}
+.sw-pick .sw-lab{font-size:13px; font-weight:900; color:#8FA3B8; width:48px; flex:none; text-align:right;}
+.sw-pick .sw-b{flex:1; min-height:48px; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-family:inherit; font-size:14px; font-weight:900; color:#4A6C85; background:#F2F6F9;
+  border:3px solid #C3D0DA; border-radius:14px; cursor:pointer; padding:0 6px;}
+.sw-pick .sw-b .dot{border-radius:50%; display:inline-block; border:2px solid rgba(0,0,0,.25);}
+.sw-pick .sw-b.on{color:#fff;}
+.sw-pick .sw-b:disabled{opacity:.45; cursor:default;}
+.quest .q-h button.mini{font-family:inherit; font-size:14px; font-weight:900; color:#fff; background:#1B7FA8;
+  border:none; border-radius:12px; padding:11px 18px; min-height:44px; cursor:pointer;}
+.board-wrap{max-width:640px; margin:12px auto 0; padding:0 10px; position:relative;}
+.fc-controls{position:absolute; inset:0 10px; pointer-events:none; z-index:8;}
+.fc-controls.on{pointer-events:auto;}
+.fc-controls button{font:900 15px/1.2 inherit; min-height:54px; border:0; border-radius:17px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:0 3px 0 rgba(15,51,80,.18);}
+.fc-controls button:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(15,51,80,.18);}
+.fc-answer-buttons{position:absolute; left:17%; right:17%; top:41.2%; display:grid; gap:10px; pointer-events:auto;}
+.fc-answer-buttons button{background:#EEF4F7; color:#173F55; border:2px solid #7CA6B7;}
+.fc-answer-buttons button:nth-child(2){background:#EAF6F1;}
+.fc-result-buttons{position:absolute; left:17.2%; right:17.2%; top:65.3%; display:grid; grid-template-columns:1fr 1fr; gap:18px; pointer-events:auto;}
+.fc-result-buttons .back-result{background:#EEF4F7; color:#315A70; border:2px solid #AFC8D3;}
+.fc-result-buttons .again-result{background:#1B7FA8; color:#fff;}
+.board{
+  width:100%; background:#FFFFFF; border:2px solid var(--line); border-radius:20px;
+  box-shadow:0 6px 18px rgba(15,51,80,.08); display:block; touch-action:manipulation;
+}
+.tools{max-width:640px; margin:12px auto 0; padding:0 10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+.tool{
+  min-height:48px; padding:0 18px; border-radius:999px; background:#EAF3F8; color:var(--ink);
+  font-weight:900; font-size:15px; display:inline-flex; align-items:center; gap:6px;
+  border:2px solid transparent;
+}
+.tool:active{transform:translateY(1px);}
+.tool.primary{background:var(--sea); color:#fff;}
+.status{
+  max-width:640px; margin:10px auto 0; padding:0 12px; text-align:center;
+  font-size:15px; font-weight:900; min-height:24px; color:#4A6C85;
+}
+.status.short{color:var(--ng);}
+
+/* ---------- できた ときの おび ----------
+   せいかいでも クリアの まどを すぐには 出さない。この おびを おすまで、
+   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見なおせる。
+   2026-09-10 ユーザーの きぼう:「まだ 頭の せいりが できて いないのに クリアが 出る」 */
+.clear-bar{
+  max-width:640px; margin:12px auto 0; padding:12px 14px; display:none;
+  align-items:center; justify-content:center; gap:10px 14px; flex-wrap:wrap;
+  background:#E9F9EE; border:3px solid var(--ok); border-radius:20px;
+  animation:pop .3s cubic-bezier(.2,1.3,.5,1);
+}
+.clear-bar.on{display:flex;}
+.clear-bar .cb-msg{font-size:16px; font-weight:900; color:#1E7A3C;}
+.clear-bar .cb-go{
+  min-height:48px; padding:0 22px; border-radius:999px; border:none;
+  background:var(--ok); color:#fff; font-family:var(--fam); font-weight:900; font-size:16px;
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+}
+.clear-bar .cb-go:active{transform:translateY(1px);}
+
+/* ---------- クリアのモーダル ---------- */
+.modal{
+  position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
+  background:rgba(6,40,60,.6); padding:20px; backdrop-filter:blur(3px);
+}
+.modal.on{display:flex;}
+.modal-box{
+  background:var(--paper); border-radius:26px; padding:24px 20px; max-width:380px; width:100%;
+  text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.35); animation:pop .35s cubic-bezier(.2,1.3,.5,1);
+}
+@keyframes pop{from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;}}
+.modal-box h3{margin:0 0 6px; font-size:26px; font-weight:900; color:var(--ok);}
+.modal-box .learn{
+  background:#FFF8E4; border:2px dashed var(--gold); border-radius:16px; padding:12px 14px;
+  margin:14px 0; font-size:14px; font-weight:700; text-align:left; line-height:1.7;
+}
+.modal-box .learn b{color:#8A5B00;}
+.jhs-note{
+  display:inline-flex; align-items:center; gap:6px; background:#FFF0CF; color:#8A5B00;
+  border-radius:999px; padding:6px 12px; font-size:12px; font-weight:900; margin-bottom:10px;
+}
+.modal-btns{display:flex; gap:10px; margin-top:6px;}
+.modal-btns .tool{flex:1; justify-content:center;}
+.card-get{margin:10px auto 0; width:150px;}
+#confetti{position:fixed; inset:0; pointer-events:none; z-index:300; display:none;}
+</style>
+</head>
+<body>
+
+
+
+<!-- ========== ゲーム ========== -->
+<div id="screen-game" class="screen on">
+  <div class="bar">
+    <div class="ttl" id="game-bar-title">ゲーム</div>
+  </div>
+  <div class="stage-strip" id="stage-strip"></div>
+  <div class="quest">
+    <div class="q-n" id="q-n">だい1もん</div>
+    <div class="q-t" id="q-t"></div>
+    <div class="q-h" id="q-h"></div>
+  </div>
+  <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
+  <div class="sw-pick" id="sw-pick"></div>
+  <div class="status" id="status"></div>
+  <!-- せいかいの とき ここが 出る。おすまで クリアの まどは 出ない。 -->
+  <div class="clear-bar" id="clear-bar">
+    <span class="cb-msg">🎉 できた！ じぶんの こたえを 見て みよう</span>
+    <button type="button" class="cb-go" id="cb-go">▶ つぎへ すすむ</button>
+  </div>
+  <div class="tools">
+    <button class="tool" id="btn-hint">💡 ヒント</button>
+    <button class="tool" id="btn-reset">↺ はじめから</button>
+  </div>
+</div>
+
+<!-- ========== クリア ========== -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modal-jhs"></div>
+    <h3 id="modal-title">クリア！</h3>
+    <div id="modal-card"></div>
+    <div class="learn" id="modal-learn"></div>
+    <div class="modal-btns">
+      <button class="tool" id="modal-again">↺ もういちど</button>
+      <button class="tool primary" id="modal-next">つぎへ ▶</button>
+    </div>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* =====================================================================
+   サイエンスアイランド — 本体
+   ここでの約束（CLAUDE.md より）
+     ・?. ?? は書かない（古いiPadで全滅する）
+     ・ミニゲームは「型（エンジン）」＋「データ」。データを1行足せば増える
+     ・子どもの記録は絶対に捨てない。load() で旧データを移行する
+   ===================================================================== */
+'use strict';
+
+/* ------------------------------------------------------------------ *
+ * 1. データ：島
+ * ------------------------------------------------------------------ */
+var ISLANDS = [
+  { id:'energy',   name:'エネルギーの島',   emoji:'⚡', color:'#F2A33C', sand:'#F7D9A0',
+    desc:'でんき・じしゃく・てこ・ふりこ', mx:20, my:26, nx:26, ny:9 },
+  { id:'particle', name:'つぶつぶの島',     emoji:'🧪', color:'#8B7BE8', sand:'#D8D2F7',
+    desc:'とけ方・水よう液・もえ方・重さ', mx:78, my:22, nx:74, ny:27 },
+  { id:'life',     name:'いのちの島',       emoji:'🌱', color:'#4FC46A', sand:'#CDEFD3',
+    desc:'からだ・しょくぶつ・生きもの',   mx:22, my:72, nx:26, ny:47 },
+  { id:'earth',    name:'ちきゅうの島',     emoji:'🌏', color:'#3EA7D8', sand:'#C7E7F5',
+    desc:'月と太陽・天気・大地',           mx:80, my:74, nx:74, ny:66 },
+  { id:'method',   name:'かんがえかたの島', emoji:'🔬', color:'#E8618C', sand:'#F9CFDD',
+    desc:'りかの こころ',                  mx:50, my:48, nx:50, ny:86, needAll:true }
+];
+
+
+/* ---- ここは build-islands.mjs が 書きこむ。手で 直さない ---- */
+var ALL_GAMES = [['energy-denki','energy'],['energy-teko','energy'],['energy-swing','energy'],['energy-jishaku','energy'],['energy-hatsuden','energy'],['energy-cluster','energy'],['particle-tokekata','particle'],['particle-suiyoueki','particle'],['particle-moe','particle'],['particle-omosa','particle'],['life-karada','life'],['life-kougousei','life'],['life-shokumotsu','life'],['life-jufun','life'],['life-medaka','life'],['earth-tsuki','earth'],['earth-tenki','earth'],['earth-mizu','earth'],['earth-chiso','earth'],['method-jouken','method'],['method-taisho','method'],['method-tejun','method'],['method-graph','method'],['method-ieru','method']];
+var HOME_ISLAND = 'energy';
+var HOME_GAME = 'energy-swing';
+/* この アプリに 出す 島。島えらびは ポータル（かがせんのHAPPYアプリ集）が するので、
+   ここでは じぶんの 島と、4島 クリアで ひらく かんがえかたの島だけを 出す。 */
+var ONLY_ISLANDS = ["energy"];
+ISLANDS = ISLANDS.filter(function(i){ return ONLY_ISLANDS.indexOf(i.id) >= 0; });
+/* 島が 2つの ときの 地図の おきどころ（5つの ときの ざひょうだと はしに よって しまう） */
+if (ISLANDS.length === 2){
+  ISLANDS[0].mx = 32; ISLANDS[0].my = 38; ISLANDS[0].nx = 32; ISLANDS[0].ny = 14;
+  ISLANDS[1].mx = 68; ISLANDS[1].my = 66; ISLANDS[1].nx = 68; ISLANDS[1].ny = 89;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. データ：ミニゲーム
+ *    kind …… どの「型（エンジン）」で動かすか。第1段は tsunagu だけ実装ずみ。
+ *    jhs  …… 🎓「中学でも つかうよ」の印
+ *    soon …… まだ中身が入っていない（じゅんびちゅう表示）
+ * ------------------------------------------------------------------ */
+var LAMP_R = 1, BATT_V = 1.5, REF_I = BATT_V / LAMP_R;
+/* モーターは まめでんきゅうと おなじ とおりにくさ（明るさと 回る はやさを くらべやすい ように）。
+   けんりゅうけいは でんきの みちの じゃまを ほとんど しない ＝ とても 小さい ていこう。
+   MAX_I …… これいじょう ながれる つなぎ方は あぶない あつかい（けんりゅうけいだけを でんちに
+   つなぐ／でんきゅうの りょうはしを けんりゅうけいで つなぐ、など ほんものなら こわれる つなぎ方）。 */
+var MOTOR_R = 1, GALV_R = 0.05, MAX_I = 10;
+
+/* ながれた でんりゅうを「でんち1こ＋でんきゅう1こ」を 1.0 と した ときの ばいりつに して
+   5だんかいに わける。off いがいは そのまま 明るさ／回る はやさ／はりの ふれ に つかう。
+   ・faint  とても くらい（でんきゅう3こ 直列 ＝ 0.33）
+   ・dim    くらい      （でんきゅう2こ 直列 ＝ 0.50）
+   ・full   ふつう      （でんち1こ・でんきゅう1こ ＝ 1.00）
+   ・bright とても 明るい（でんち2こ 直列 ＝ 2.00） */
+function iCat(ratio){
+  return ratio < 0.06 ? 'off'
+       : ratio < 0.42 ? 'faint'
+       : ratio < 0.78 ? 'dim'
+       : ratio < 1.35 ? 'full' : 'bright';
+}
+
+/* でんじしゃく の じょうけん。3もん 共通。つよさ ∝ まきかず × でんりゅう（しんが 鉄の とき）。 */
+var JISHAKU_VARS = [
+  { id:'maki',   label:'コイルの まきかず',       values:[{ label:'100かい', v:100 }, { label:'200かい', v:200 }] },
+  { id:'denchi', label:'かんでんちの 数（直列）', values:[{ label:'1こ',    v:1   }, { label:'2こ',    v:2   }] },
+  { id:'shin',   label:'しんの ざいりょう',       values:[{ label:'鉄',     v:'tetsu' }, { label:'アルミ', v:'alumi' }] }
+];
+/* もののとけ方 の じょうけん。per50 は 水50mL に とける りょう（g）。じっさいの ようかい度を まるめた 数ち。
+   えらびようが 1つしか ない 行は「この じっけんは 食塩で やる」の 意味（loadJikken が 先に 入れる）。 */
+var TOKE_MONO = {
+  shio:   { name:'食塩',     per50:{ 20:18, 60:19 }, water:'#D7E9F5', grain:'#FFFFFF', line:'#9FB4C4' },
+  myoban: { name:'ミョウバン', per50:{ 20:6,  60:29 }, water:'#E3DCF6', grain:'#F6F2FF', line:'#A99AD6' }
+};
+var TOKE_MIZU = { id:'mizu', label:'水の りょう', values:[{ label:'50mL', v:50 }, { label:'100mL', v:100 }] };
+var TOKE_ONDO = { id:'ondo', label:'水の おん度', values:[{ label:'20ど', v:20 }, { label:'60ど', v:60 }] };
+var TOKE_VARS = [
+  { id:'mono', label:'とかす もの', values:[{ label:'食塩', v:'shio' }, { label:'ミョウバン', v:'myoban' }] },
+  TOKE_MIZU, TOKE_ONDO
+];
+/* えらびようが 1つしか ない 行は、はじめから 入って いる（＝「この じっけんは 食塩で やる」の 意味） */
+var TOKE_VARS_SHIO   = [ { id:'mono', label:'とかす もの', values:[{ label:'食塩', v:'shio' }] }, TOKE_MIZU, TOKE_ONDO ];
+var TOKE_VARS_MYOBAN = [ { id:'mono', label:'とかす もの', values:[{ label:'ミョウバン', v:'myoban' }] }, TOKE_MIZU, TOKE_ONDO ];
+/* たねの 発芽の じょうけん。🔬かんがえかたの島（条件制御）で つかう。
+   発芽に いるのは 水・空気・てきとうな温度 の 3つだけ。日光と 肥料は いらない。
+   （書いて いない じょうけんは「あり」あつかい。だから 表に 出す 行を 問題ごとに えらべる） */
+var HG = {
+  mizu:   { id:'mizu',   label:'水',     values:[{ label:'あり', v:1 }, { label:'なし', v:0 }] },
+  kuki:   { id:'kuki',   label:'空気',   values:[{ label:'あり', v:1 }, { label:'水に しずめる', v:0 }] },
+  ondo:   { id:'ondo',   label:'温度',   values:[{ label:'20ど', v:20 }, { label:'5ど', v:5 }] },
+  hikari: { id:'hikari', label:'日光',   values:[{ label:'あてる', v:1 }, { label:'あてない', v:0 }] },
+  hiryo:  { id:'hiryo',  label:'肥料',   values:[{ label:'あり', v:1 }, { label:'なし', v:0 }] }
+};
+var HATSUGA_A = [HG.mizu, HG.ondo, HG.hikari, HG.hiryo];
+var HATSUGA_B = [HG.mizu, HG.kuki, HG.ondo, HG.hiryo];
+
+/* 水よう液の せいしつ表。**道具の けっかは ぜんぶ ここから 計算する**（正かいの 手じゅんは 用意しない）。
+   さんせい＝炭酸水・うすい塩酸／中せい＝食塩水・さとう水／アルカリせい＝石灰水・アンモニア水。
+   awa（見た目で 分かる あわ）だけは 道具を つかわなくても 見える。 */
+var SUI_EKI = [
+  { id:'shio',    name:'食塩水',       sei:'中',      ato:'白い つぶ',    nioi:false, tetsu:false, sekkai:false, awa:false },
+  { id:'sato',    name:'さとう水',     sei:'中',      ato:'黒く こげる',  nioi:false, tetsu:false, sekkai:false, awa:false },
+  { id:'tansan',  name:'炭酸水',       sei:'さん',    ato:'なし',        nioi:false, tetsu:false, sekkai:true,  awa:true  },
+  { id:'ensan',   name:'うすい塩酸',   sei:'さん',    ato:'なし',        nioi:true,  tetsu:true,  sekkai:false, awa:false },
+  { id:'sekkai',  name:'石灰水',       sei:'アルカリ', ato:'白い つぶ',   nioi:false, tetsu:false, sekkai:false, awa:false },
+  { id:'anmonia', name:'アンモニア水', sei:'アルカリ', ato:'なし',        nioi:true,  tetsu:false, sekkai:false, awa:false }
+];
+/* 道具。read＝メモに のこす みじかい けっか、full＝したに 出す ことば。 */
+var SUI_TOOLS = [
+  { id:'litmus', name:'リトマス紙', hint:'リトマス紙を つける びんを えらぼう',
+    read:function(e){
+      return e.sei === 'さん'      ? { t:'さんせい',    c:'#E05A4A' }
+           : e.sei === 'アルカリ'  ? { t:'アルカリせい', c:'#1B7FA8' }
+                                   : { t:'中せい',      c:'#5A7C93' };
+    },
+    full:function(e){
+      return e.sei === 'さん'      ? '青い リトマス紙が 赤に なった ＝ さんせい'
+           : e.sei === 'アルカリ'  ? '赤い リトマス紙が 青に なった ＝ アルカリせい'
+                                   : 'どちらの 色も かわらない ＝ 中せい';
+    } },
+  { id:'evap', name:'じょうはつ', hint:'蒸発皿で 水を とばす びんを えらぼう',
+    read:function(e){ return { t:e.ato, c:(e.ato === 'なし' ? '#5A7C93' : '#8A5B00') }; },
+    full:function(e){
+      return e.ato === 'なし' ? '水が とんだ あと、何も のこらなかった（気体が とけて いる）'
+                             : 'あとに ' + e.ato + '（固体が とけて いる）';
+    } },
+  { id:'nioi', name:'におい', hint:'手で あおいで におう びんを えらぼう（ぜったいに なめない）',
+    read:function(e){ return e.nioi ? { t:'つんと する', c:'#8A5B00' } : { t:'におい なし', c:'#5A7C93' }; },
+    full:function(e){ return e.nioi ? 'つんと した においが した' : 'においは しなかった'; } },
+  { id:'tetsu', name:'鉄くぎ', hint:'鉄くぎを 入れる びんを えらぼう',
+    read:function(e){ return e.tetsu ? { t:'鉄が とけた', c:'#E05A4A' } : { t:'かわらない', c:'#5A7C93' }; },
+    full:function(e){ return e.tetsu ? '鉄くぎが あわを 出して とけた' : '鉄くぎは かわらなかった'; } },
+  { id:'sekkai', name:'石灰水', hint:'石灰水を 入れる びんを えらぼう',
+    read:function(e){ return e.sekkai ? { t:'白く にごる', c:'#8A5B00' } : { t:'かわらない', c:'#5A7C93' }; },
+    full:function(e){ return e.sekkai ? '石灰水が 白く にごった（二酸化炭素が とけて いる）' : '石灰水は かわらなかった'; } }
+];
+
+/* 花の つくりの「あたり」。3もん 共通 */
+var HANA_TARGETS = [
+  { id:'meshibe',  label:'めしべ',  hits:[[300,186,26]] },
+  { id:'oshibe',   label:'おしべ',  hits:[[238,204,26],[362,204,26]] },
+  { id:'hanabira', label:'花びら',  hits:[[196,146,34],[404,146,34]] },
+  { id:'gaku',     label:'がく',    hits:[[230,306,26],[370,306,26]] },
+  { id:'shibou',   label:'子ぼう',  hits:[[300,288,26]] }
+];
+/* 川の 図の「あたり」。曲がりの 外がわ／内がわ が この単元の キモ */
+var KAWA_TARGETS = [
+  { id:'jouryu', label:'上流',                 hits:[[66,150,30]] },
+  { id:'soto1',  label:'上の 曲がりの 外がわ', hits:[[240,40,30]] },
+  { id:'uchi1',  label:'上の 曲がりの 内がわ', hits:[[240,146,30]] },
+  { id:'uchi2',  label:'下の 曲がりの 内がわ', hits:[[440,244,30]] },
+  { id:'soto2',  label:'下の 曲がりの 外がわ', hits:[[440,352,30]] },
+  { id:'karyu',  label:'下流',                 hits:[[556,340,30]] }
+];
+/* グラフの「あたり」 */
+var GRAPH_TARGETS = [
+  { id:'jiku_x', label:'よこじく',             hits:[[316,387,30]] },
+  { id:'jiku_y', label:'たてじく',             hits:[[48,208,30]] },
+  { id:'ten1',   label:'25cmの 点',            hits:[[110,234,28]] },
+  { id:'ten2',   label:'50cmの 点',            hits:[[247,194,28]] },
+  { id:'ten4',   label:'100cmの 点',           hits:[[520,137,28]] },
+  { id:'nazo',   label:'しらべて いない ところ', hits:[[566,200,28]] }
+];
+
+/* 人のからだ の「あたり」。3もん 共通なので ここに 1つだけ おく。
+   hits は [x, y, はんけい]。lx/ly は みつけた ときの 名ふだの ばしょ。 */
+var TAI_TARGETS = [
+  { id:'kuchi',  label:'口',     hits:[[300,116,26]],              lx:392, ly:108 },
+  { id:'hai',    label:'肺',     hits:[[250,192,28],[350,192,28]], lx:196, ly:170 },
+  { id:'shinzo', label:'心臓',   hits:[[300,228,22]],              lx:424, ly:214 },
+  { id:'kanzo',  label:'かん臓', hits:[[258,266,28]],              lx:186, ly:258 },
+  { id:'i',      label:'胃',     hits:[[346,274,28]],              lx:424, ly:282 },
+  { id:'shocho', label:'小腸',   hits:[[300,338,26]],              lx:424, ly:348 },
+  { id:'daicho', label:'大腸',   hits:[[246,340,20],[354,340,20]], lx:186, ly:378 }
+];
+
+/* 「どの でんきゅうでも いい」タイプの goal を つくる ヘルパー。
+   もんだいが 「3このうち 1こだけ 消せるように」と 言って いるのに、消すのを l3 に 決めうちに
+   すると、l1 で 作った 子が ×に なる。おなじ 勉強なので ぜんぶ 通す（goal.anyOf に わたす）。 */
+function goalOnly1Off(ids){                        /* 並列。スイッチを 切ると どれか 1こだけ 消える */
+  return ids.map(function(x){
+    var rest = ids.filter(function(y){ return y !== x; });
+    var all = {}; ids.forEach(function(y){ all[y] = 'full'; });
+    return [ { sw:{s1:true},  on:ids.slice(), bright:all },
+             { sw:{s1:false}, on:rest, off:[x] } ];
+  });
+}
+function goalTrunkSplit(ids){                      /* 1こ とおった あと 2本に わかれる。みきは どれでも いい */
+  return ids.map(function(t){
+    var br = {};
+    ids.forEach(function(y){ br[y] = (y === t ? 'dim' : 'faint'); });
+    return [ { on:ids.slice(), bright:br } ];
+  });
+}
+
+var GAMES = [
+  { id:'energy-swing', island:'energy', kind:'swing', icon:'🪀',
+    name:'ふりこゴール', sub:'ふりこで ゴールを めざそう', grade:'5年', jhs:true,
+    card:'ふりこの ひみつ',
+    stages:[
+      { t:'ふりこで ゴールへ！',
+        h:'さいしょは フックに ぶら下がって <b>とまって いる</b>。<b>ばんめんを タップ すると ふりこが うごきだす</b>。ロープは <b>もう一度 タップ するまで 切れない</b>ので、ゆっくり タイミングを 見て いいよ。<br>下の <b>「ひも」</b>で 長さを かえられる ―― <b>みじかい ほど はやく ゆれる</b>。ぶら下がった まま かえて、ゆれ方の ちがいを 見て みよう。ふりこの ように ゆれて、<b>ちょうど いい ところで 手を はなす</b>と その むきに 飛ぶ。<br>いきおいが つくのは <b>いちばん 下を すぎた あと</b>。のぼって いく とちゅうで はなすと 遠くまで 飛べるよ。',
+        start:{ x:60, y:140 }, goal:{ x:330, y:235, r:32 },
+        hooks:[{ x:180, y:60 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.6916,'r']],
+        learn:'ふりこは 高い ところから ふり下ろすほど はやく なり、そのいきおいで 上に のぼる。この あそびは <b>ほんものの ふりこの 計算</b>で うごいて いるよ。' },
+
+      { t:'フックを のりついで いこう',
+        h:'フックは いくつも あるよ。はなして 飛んだら、<b>つぎの フックが きいろく なった しゅんかんに また おす</b>。<br>きいろい 点線は「いま おすと ここに つかまるよ」の しるし。',
+        start:{ x:50, y:130 }, goal:{ x:540, y:240, r:28 },
+        hooks:[{ x:160, y:60 }, { x:330, y:70 }, { x:470, y:80 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.7666,'r'],[0.9916,'g'],[1.3333,'r']],
+        learn:'ふりこを のりついで いくと、少しの 力で 遠くまで 行ける。ブランコを こぐのも、サルが 木を わたるのも 同じ しくみ。' },
+
+      { t:'長い ひも・みじかい ひも',
+        h:'高い ところの フックに つかまると <b>ひもが 長く</b>、低い ところだと <b>みじかく</b>なる。<br>長い ひもは <b>ゆっくり 大きく</b>、みじかい ひもは <b>はやく 小さく</b> ゆれる。ゆれる はやさを 見ながら はなす ときを 決めよう。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:290, r:30 },
+        hooks:[{ x:150, y:50 }, { x:280, y:120 }, { x:400, y:60 }, { x:500, y:140 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.5666,'r'],[0.8083,'g'],[1.0749,'r']],
+        learn:'<b>ふりこが 1おうふくする 時間は、ひもの 長さだけで きまる。</b>長いほど おそい。この あそびで 何回も 見た とおり、これが 5年の「ふりこのきまり」だよ。' },
+
+      { t:'とげに あたらないように',
+        h:'下の <b>とげ</b>に さわると やりなおし。<br>ゆれが 小さい うちは 低い ところを 通って しまう。<b>大きく ゆれてから</b> はなすと 高く 飛べるよ。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:230, r:28 },
+        hooks:[{ x:150, y:50 }, { x:300, y:60 }, { x:450, y:70 }],
+        spikes:[{ x:230, y:360, w:260, h:30 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.8333,'r'],[0.9999,'g'],[1.3583,'r'],[1.7999,'g']],
+        learn:'ふりこは ふるほど 高く 上がる わけでは ない ―― <b>はじめの 高さより 高くは 上がらない</b>。だから 高い ところで つかまるのが だいじ。' },
+
+      { t:'岩を まわりこもう',
+        h:'はいいろの <b>岩</b>は こわせない。ぶつかると はねかえされる。<br>岩の <b>上を こえる</b>コースを さがそう。高い フックで 大きく ゆれてから はなすと こえられる。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:180, r:30 },
+        hooks:[{ x:150, y:50 }, { x:300, y:50 }, { x:460, y:60 }],
+        blocks:[{ x:360, y:250, w:30, h:150, type:'rock' }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.7583,'r'],[1.0249,'g'],[1.2249,'r'],[1.4166,'g']],
+        learn:'こわせない ものは よけて 通る。どこで はなすと どこに 飛ぶか、<b>ふりこの いきおいの むき</b>を 見て 決めよう。' },
+
+      { t:'ひびの かべは おもい ボールで',
+        h:'茶色い <b>ひび</b>の かべは、<b>おもい ボール（100g）</b>が いきおい よく ぶつかった ときだけ こわれる。ふつうの ボールでは はねかえされるよ。<br><b>ぶら下がって いる あいだ</b>に 下の「おもさ」を <b>100g</b>に かえよう（空中では かえられないよ）。',
+        start:{ x:50, y:130 }, goal:{ x:545, y:300, r:32 },
+        hooks:[{ x:160, y:50 }, { x:290, y:60 }, { x:430, y:90 }],
+        blocks:[{ x:352, y:0, w:24, h:400, type:'brick' }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.1249,'w:100'],[0.1249,'L:long'],[1.1666,'r'],[1.6249,'g']],
+        learn:'おもい ものほど <b>ぶつかった ときの 力が 大きい</b>。おもさを かえても <b>ゆれる はやさは かわらなかった</b>ね ―― ふりこの しゅうきに おもさは かんけいない。<b>大きさを かえても 同じ</b>。ためして みよう。' },
+
+      { t:'ばねで 高く とぶには かるい ボール',
+        h:'みどりの <b>ばね</b>は はねかえして くれる。<br>同じ ばねでも、<b>かるい ボール（10g）</b>ほど 高く 飛ぶ。ぶら下がって いる あいだに 「おもさ」を <b>10g</b>に かえてから、ばねに 落ちよう。',
+        start:{ x:50, y:120 }, goal:{ x:520, y:80, r:30 },
+        hooks:[{ x:150, y:50 }, { x:300, y:60 }],
+        springs:[{ x:420, y:350, w:110 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.275,'w:10'],[0.275,'L:long'],[0.9999,'r']],
+        learn:'同じ 力で おされても、<b>かるい ものほど はやく うごく</b>。だから かるい ボールほど 高く はね上がる。おもい ボールでは とどかない 高さも これで とどく。' },
+
+      { t:'とびすぎ ちゅうい。おもく しよう',
+        h:'こんどは ゴールが <b>ばねの すぐ 先</b>。かるい ボールの ままだと <b>高く とびすぎて 通りすぎて しまう</b>。<br>ぶら下がって いる あいだに 「おもさ」を <b>おもい ほうへ</b> かえて、とぶ 高さを おさえよう。',
+        start:{ x:50, y:120 }, goal:{ x:425, y:325, r:30 },
+        hooks:[{ x:150, y:50 }, { x:290, y:70 }],
+        springs:[{ x:320, y:355, w:80 }],
+        w0:10, r0:12,
+        ex:[[0,'r'],[0,'g'],[0.2833,'g'],[0.8499,'r']],
+        learn:'「かるい＝いつも とく」では ない。<b>とどきたい ところに 合わせて えらぶ</b>のが だいじ。ここでは おもさが ちょうど よい ブレーキに なるね。' },
+
+      { t:'かべを こわして 先へ すすもう',
+        h:'かべは 上から 下まで ふさがって いる。<b>こわさないと 先へ 行けない</b>。<br>「おもさ」を 100gに かえて、大きく ゆれてから ぶつけよう。こわしたら、その先の ばねと とげに 気を つけて。',
+        start:{ x:50, y:130 }, goal:{ x:470, y:190, r:28 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:425, y:190 }],
+        blocks:[{ x:348, y:0, w:24, h:400, type:'brick' }],
+        springs:[{ x:410, y:355, w:120 }],
+        spikes:[{ x:400, y:95, w:150, h:24 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.625,'r'],[0.8583,'g'],[0.8583,'w:100'],[1.3083,'r']],
+        learn:'おもさも 大きさも <b>ゆれ方は まったく かえない</b>。ちがうのは「ぶつかる 力」と「はねる 高さ」だけ。目てきに 合わせて つかいわけよう。' },
+
+      { t:'しあげ①：3つを つかいわけよう',
+        h:'かるい ボールから スタート。このままでは かべを こわせないよ。<br>①ぶら下がって 「おもさ」を 100gに する ②かべを こわす ③その先で 高さに 合った おもさに かえる ―― の じゅんに 考えよう。',
+        start:{ x:50, y:130 }, goal:{ x:470, y:190, r:28 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:425, y:190 }],
+        blocks:[{ x:348, y:0, w:24, h:400, type:'brick' }],
+        springs:[{ x:410, y:355, w:120 }],
+        spikes:[{ x:400, y:95, w:150, h:24 }],
+        w0:10, r0:12,
+        ex:[[0,'g'],[0.0333,'w:100'],[0.6583,'r'],[0.8583,'g'],[0.8583,'L:long']],
+        learn:'<b>ふりこで すすむ・おもさで こわす・おもさで とぶ 高さを えらぶ。</b>この 3つを つなげたら もう たつじん！ ―― そして どれも <b>ふりこの ゆれ方は かえて いない</b>。' },
+
+      { t:'しあげ②：もっと 高い ゴールへ',
+        h:'かたちは 前と 同じだけど <b>ゴールが 高い</b>。ばねで とぶ 高さが 足りないと とどかないよ。<br>かべを こわす ときと、とび上がる ときで、<b>いる おもさが ちがう</b>。',
+        start:{ x:50, y:130 }, goal:{ x:470, y:150, r:30 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:425, y:190 }],
+        blocks:[{ x:348, y:0, w:24, h:400, type:'brick' }],
+        springs:[{ x:410, y:355, w:120 }],
+        spikes:[{ x:400, y:95, w:150, h:24 }],
+        w0:10, r0:12,
+        ex:[[0,'g'],[0.0499,'w:100'],[0.625,'r'],[0.9083,'g']],
+        learn:'ふりこの ゆれ方は おもさで かわらない。でも <b>ぶつかる 力</b>と <b>はねる 高さ</b>は おもさで かわる ―― 5年「ふりこのきまり」と、中学の「うんどうエネルギー」に つながる 話だよ。' },
+
+      { t:'長い ひも・みじかい ひも を つかいわけよう',
+        h:'高い フックに つかまると <b>ひもが 長く</b> なり、<b>ゆっくり 大きく</b> ゆれる。低い フックだと <b>みじかくて はやい</b>。<br>とげの 上を こえるには 大きく ゆれたい ―― <b>高い フックを えらぼう</b>。',
+        start:{ x:50, y:110 }, goal:{ x:545, y:320, r:30 },
+        hooks:[{ x:140, y:40 }, { x:270, y:170 }, { x:400, y:40 }, { x:510, y:180 }],
+        spikes:[{ x:200, y:370, w:300, h:28 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.5333,'r'],[0.6416,'g'],[1.2666,'r']],
+        learn:'ふりこが 1おうふくする 時間は <b>ひもの 長さだけ</b>で きまる。長い ほど おそい。おもさや ふれはばでは かわらない ―― これが 5年「ふりこのきまり」。' },
+
+      { t:'高い フックだけで わたろう',
+        h:'下は ぜんぶ とげ。フックは ぜんぶ 同じ 高さに ならんで いる。<br>ひもの 長さが 同じ ＝ <b>ゆれる はやさも 同じ</b>。リズムを つかんで 同じ タイミングで はなそう。',
+        start:{ x:50, y:110 }, goal:{ x:545, y:200, r:30 },
+        hooks:[{ x:150, y:40 }, { x:320, y:40 }, { x:480, y:40 }],
+        spikes:[{ x:180, y:372, w:340, h:26 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[1.0333,'r'],[1.0666,'g'],[1.7749,'r'],[2.0083,'g']],
+        learn:'同じ 長さの ふりこは <b>いつでも 同じ リズム</b>で ゆれる。だから タイミングが おぼえられる。ふりこ時計は この せいしつを つかって いるよ。' },
+
+      { t:'岩を こえて とげを よけて',
+        h:'はいいろの 岩は こわせない。<b>大きく ゆれてから はなす</b>と 高く 遠くまで 飛べるよ。<br>とげの 上を こえられる 高さまで ゆらしてから いこう。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:190, r:30 },
+        hooks:[{ x:150, y:50 }, { x:300, y:50 }, { x:450, y:60 }],
+        blocks:[{ x:370, y:250, w:34, h:150, type:'rock' }],
+        spikes:[{ x:190, y:372, w:150, h:26 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.8083,'r'],[0.9249,'g'],[1.3666,'r'],[1.5333,'g']],
+        learn:'ふりこは <b>はじめの 高さより 高くは 上がらない</b>。高く 飛びたければ、まず 高い ところから ふり下ろす こと。' },
+
+      { t:'岩の トンネルを ぬけよう',
+        h:'上の 岩と 下の たなの あいだが 通り道。<br>あわてず、ゆれが ちょうど いい 高さに なった ところで はなそう。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:320, r:30 },
+        hooks:[{ x:150, y:50 }, { x:300, y:60 }, { x:460, y:80 }],
+        blocks:[{ x:360, y:0, w:34, h:230, type:'rock' }, { x:230, y:300, w:180, h:26, type:'rock' }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.6166,'r']],
+        learn:'どこで はなすかで 飛ぶ <b>むきと 高さ</b>が かわる。いちばん 下を すぎて 上がって いく とちゅうで はなすと、ななめ 上に 飛ぶ。' },
+
+      { t:'フックを 5つ のりついで いこう',
+        h:'フックが たくさん ある。1つずつ 着実に のりついで いこう。<br>ロープは <b>もう一度 タップ するまで 切れない</b>から、あわてなくて だいじょうぶ。',
+        start:{ x:45, y:130 }, goal:{ x:555, y:330, r:30 },
+        hooks:[{ x:130, y:60 }, { x:240, y:70 }, { x:350, y:60 }, { x:455, y:80 }, { x:540, y:150 }],
+        spikes:[{ x:150, y:374, w:360, h:24 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.0583,'L:long'],[0.6583,'r'],[0.8833,'g'],[1.3749,'r'],[1.8583,'g']],
+        learn:'少しの 力でも、ふりこを のりついで いけば 遠くまで 行ける。サルが 木から 木へ わたるのと 同じ しくみだよ。' },
+
+      { t:'みじかい ひもで こきざみに',
+        h:'フックが 低い ところに ならんで いる ＝ <b>ひもが みじかい</b>。<br>みじかい ふりこは <b>はやく ゆれる</b>ので、はなす タイミングも はやめに なるよ。',
+        start:{ x:50, y:150 }, goal:{ x:545, y:300, r:30 },
+        hooks:[{ x:130, y:90 }, { x:230, y:110 }, { x:330, y:90 }, { x:430, y:110 }, { x:520, y:150 }],
+        spikes:[{ x:170, y:372, w:330, h:26 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.1166,'L:long'],[0.6166,'r'],[0.7416,'g'],[1.3666,'r'],[1.6083,'g']],
+        learn:'ひもが みじかいほど <b>はやく</b> ゆれる（1おうふくの 時間が 短い）。長さを かえると リズムが かわる ―― ふりこで 大事なのは いつも <b>長さ</b>。' },
+
+      { t:'とげの すきまを ぬけよう',
+        h:'上にも 下にも とげ。その あいだを 通る。<br>ゆれが 大きすぎると 上の とげに、小さすぎると 下の とげに あたるよ。ちょうど いい ところで はなそう。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:230, r:28 },
+        hooks:[{ x:150, y:50 }, { x:300, y:60 }, { x:450, y:80 }],
+        spikes:[{ x:220, y:360, w:300, h:30 }, { x:250, y:100, w:200, h:24 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.6333,'r'],[0.8583,'g'],[1.2333,'r']],
+        learn:'ふりこの ふれはばは <b>どこで つかまったか</b>で 決まる。高い ところで つかまえるほど 大きく ゆれる。' },
+
+      { t:'うごく かべ ―― タイミングを 合わせよう',
+        h:'むらさきの かべは 上下に うごいて いる。<br>かべが <b>下がった しゅんかん</b>に 上を 通りぬけよう。ふりこの リズムと かべの リズムを 見くらべて。',
+        start:{ x:50, y:130 }, goal:{ x:545, y:250, r:30 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:460, y:90 }],
+        movers:[{ x:365, y:120, w:26, h:150, ay:110, per:2.2 }],
+        w0:50, r0:12,
+        ex:[[0,'r'],[0,'g'],[0.1583,'g'],[0.8583,'r'],[0.9083,'g'],[1.9499,'g']],
+        learn:'ふりこの リズムは <b>ひもの 長さ</b>で 決まる。うごく ものと タイミングを 合わせたい ときは、つかまる フックを えらんで リズムを 調整するんだ。' },
+
+      { t:'かべが はやく うごく！',
+        h:'さっきより かべが <b>はやく</b> 上下する。<br>まちがえても だいじょうぶ、何度でも やりなおせるよ。かべが 下に ある しゅんかんを ねらおう。',
+        start:{ x:50, y:130 }, goal:{ x:545, y:250, r:30 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:460, y:90 }],
+        movers:[{ x:365, y:120, w:26, h:150, ay:110, per:1.4 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.8249,'r'],[0.9499,'g'],[1.8499,'g']],
+        learn:'かべの リズムは かわっても、<b>ふりこの リズムは ひもの 長さで きまったまま</b>。だから「どの フックに つかまるか」で タイミングを 合わせる。' },
+
+      { t:'うごく かべが 2まい',
+        h:'2まいの かべは <b>ちがう はやさ</b>で 上下して いる。<br>1まい目を こえたら、2まい目の リズムを 見て つぎの タイミングを 待とう。ぶら下がったまま 待てるよ。',
+        start:{ x:50, y:130 }, goal:{ x:545, y:260, r:30 },
+        hooks:[{ x:140, y:50 }, { x:270, y:60 }, { x:420, y:80 }],
+        movers:[{ x:330, y:120, w:24, h:140, ay:100, per:2 }, { x:480, y:130, w:24, h:140, ay:100, per:2.6 }],
+        w0:50, r0:12,
+        ex:[[0,'r'],[0,'g'],[0.2333,'g'],[0.8583,'r'],[1.0749,'g'],[1.7749,'g']],
+        learn:'ぶら下がって いる あいだ ふりこは <b>止まらずに ゆれつづける</b>。ゆれながら 待って、いい しゅんかんに はなす ―― これが ふりこの つかい方。' },
+
+      { t:'せまい すきま ―― 小さく なろう！',
+        h:'岩の あいだの すきまが とても せまい。<b>ふつうの 大きさでは 通れない</b>。<br>ぶら下がって いる あいだに 下の「大きさ」を <b>小さい</b>に かえよう。',
+        start:{ x:50, y:130 }, goal:{ x:545, y:250, r:30 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:470, y:90 }],
+        blocks:[{ x:360, y:0, w:26, h:170, type:'rock' }, { x:360, y:192, w:26, h:208, type:'rock' }],
+        w0:50, r0:12,
+        ex:[[0,'r'],[0,'g'],[0.0499,'g'],[0.8833,'r'],[1.0499,'g'],[1.5749,'g'],[1.5749,'L:long'],[1.7833,'g']],
+        learn:'<b>大きさを かえても ふりこの ゆれ方は かわらない。</b>かわるのは 通れる すきまの 大きさだけ。おもさも 大きさも しゅうきには きかない ―― ふりこは <b>長さが すべて</b>。' },
+
+      { t:'すきまを ぬけて 下の ゴールへ',
+        h:'こんども せまい すきま。<b>小さい</b>に かえてから 通ろう。<br>とどきにくい ときは <b>ひもを 長く</b> して 大きく ゆらすと、いきおいが ついて 遠くまで 飛べるよ。',
+        start:{ x:50, y:120 }, goal:{ x:525, y:325, r:40 },
+        hooks:[{ x:150, y:50 }, { x:290, y:60 }, { x:460, y:100 }, { x:545, y:170 }],
+        blocks:[{ x:355, y:0, w:40, h:160, type:'rock' }, { x:355, y:182, w:40, h:218, type:'rock' }],
+        w0:50, r0:12,
+        ex:[[0,'r'],[0,'g'],[0.1999,'g'],[0.7499,'r'],[1.0499,'g'],[1.0499,'L:short'],[1.4583,'g'],[1.4583,'L:long'],[1.7166,'g']],
+        learn:'小さく すると すきまを 通れるが、そのぶん ゴールに <b>ふれにくく</b>も なる（あたりが 小さいから）。よい ところと わるい ところが あるんだね。' },
+
+      { t:'ばねを 2つ のりついで',
+        h:'ばねが 2つ。<b>かるい ボールほど 高く はねる</b>。<br>ぶら下がって いる あいだに「おもさ」を <b>10g</b>に かえてから ばねに 落ちよう。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:70, r:30 },
+        hooks:[{ x:150, y:50 }, { x:300, y:70 }],
+        springs:[{ x:360, y:365, w:90 }, { x:480, y:300, w:90 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.1333,'w:10'],[0.6416,'r']],
+        learn:'同じ 力で おされても <b>かるい ものほど はやく うごく</b>。だから かるい ボールほど 高く とぶ。おもさは ふりこの ゆれ方には きかないのに、はねる 高さには きく。' },
+
+      { t:'ばねで 高い フックまで とぼう',
+        h:'高い ところの フックに とどきたい。<br>ふつうの おもさでは とどかない ―― <b>10g</b>に かえて ばねで 高く とび上がろう。',
+        start:{ x:50, y:150 }, goal:{ x:545, y:80, r:30 },
+        hooks:[{ x:140, y:80 }, { x:300, y:90 }, { x:470, y:60 }],
+        springs:[{ x:360, y:365, w:110 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.0583,'w:10'],[0.7749,'r']],
+        learn:'はねる 高さは <b>おもさで かわる</b>。とどかない ときは「もっと かるく できないか」を 考えよう。' },
+
+      { t:'うごく かべの 先に ばね',
+        h:'かべを こえた 先に ばね。ゴールは ずっと 上。<br>①<b>ひもを みじかく</b> すると ゆれが はやく なって かべの タイミングに 合わせやすいよ ②かべを こえたら <b>10g</b>に かえて ばねで とび上がる。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:80, r:32 },
+        hooks:[{ x:150, y:50 }, { x:290, y:70 }],
+        movers:[{ x:358, y:150, w:22, h:110, ay:85, per:3 }],
+        springs:[{ x:400, y:360, w:180 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.0916,'w:10'],[0.0916,'L:long'],[0.7749,'r']],
+        learn:'やる ことが 2つ あっても、<b>1つずつ 片づける</b>。ぶら下がって いる あいだは <b>ひもの 長さも おもさも かえられる</b>ので、じっくり じゅんびして いいんだ。' },
+
+      { t:'ひびの かべ＋うごく かべ',
+        h:'まず <b>100g</b>で ひびの かべを こわす。その先で うごく かべを こえる。<br>うごく かべの タイミングが 合わない ときは <b>ひもの ながさ</b>を かえて ゆれる はやさを 調整しよう。',
+        start:{ x:50, y:130 }, goal:{ x:545, y:260, r:34 },
+        hooks:[{ x:150, y:50 }, { x:280, y:60 }, { x:400, y:90 }, { x:500, y:140 }],
+        movers:[{ x:445, y:160, w:22, h:90, ay:65, per:3.4 }],
+        blocks:[{ x:340, y:0, w:24, h:400, type:'brick' }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[1.0083,'r'],[1.0166,'g'],[1.0166,'w:100'],[1.4749,'r'],[1.8083,'g']],
+        learn:'おもさは <b>ぶつかる 力</b>を かえる。100gなら こわせて 10gなら こわせない ―― でも <b>ゆれ方は どちらも 同じ</b>。ゆれ方を かえたい ときは <b>ひもの 長さ</b>だよ。' },
+
+      { t:'うごく かべの 先に せまい すきま',
+        h:'うごく かべを こえたら、こんどは せまい すきま。<br>すきまの 手前の フックに ぶら下がって、そこで <b>小さい</b>に かえてから 通ろう。',
+        start:{ x:50, y:130 }, goal:{ x:550, y:270, r:32 },
+        hooks:[{ x:140, y:50 }, { x:270, y:60 }, { x:370, y:110 }, { x:500, y:110 }],
+        blocks:[{ x:420, y:0, w:40, h:175, type:'rock' }, { x:420, y:197, w:40, h:203, type:'rock' }],
+        movers:[{ x:320, y:140, w:22, h:120, ay:85, per:2.2 }],
+        w0:50, r0:12,
+        ex:[[0,'r'],[0,'g'],[0.1249,'g'],[0.1249,'r:6'],[1.8416,'r'],[1.8833,'g'],[3.2333,'r'],[3.3333,'g'],[4.0333,'g']],
+        learn:'つぎに 何が くるかを 見て、<b>ぶら下がって いる うちに じゅんびする</b>。ふりこは 待って いられるのが 強み。' },
+
+      { t:'とげの トンネル',
+        h:'上下 どちらも とげ。まっすぐ ぬけるしか ない。<br>ゆれの 大きさを よく 見て、まん中を 通る タイミングで はなそう。',
+        start:{ x:50, y:120 }, goal:{ x:545, y:300, r:30 },
+        hooks:[{ x:150, y:50 }, { x:300, y:60 }, { x:460, y:90 }],
+        spikes:[{ x:230, y:150, w:260, h:22 }, { x:230, y:372, w:260, h:26 }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.1333,'L:long'],[0.8749,'r'],[1.0249,'g'],[1.5833,'r']],
+        learn:'ふりこは いちばん 下を 通る ときが <b>いちばん はやい</b>。その あたりで はなすと、まっすぐ 遠くまで 飛べる。' },
+
+      { t:'しあげ：おもさも 大きさも つかいこなそう',
+        h:'さいごの もんだい。<b>①100gで ひびの かべを こわす</b> → <b>②小さいに かえて せまい すきまを ぬける</b> → ゴール。<br>すきまの 手前の フックで ぶら下がって、ゆっくり じゅんびしよう。ひもの ながさも つかって いいよ。',
+        start:{ x:50, y:130 }, goal:{ x:550, y:300, r:38 },
+        hooks:[{ x:140, y:50 }, { x:250, y:60 }, { x:370, y:120 }, { x:530, y:190 }],
+        blocks:[{ x:300, y:0, w:24, h:400, type:'brick' }, { x:430, y:0, w:40, h:180, type:'rock' }, { x:430, y:202, w:40, h:198, type:'rock' }],
+        w0:50, r0:12,
+        ex:[[0,'g'],[0.7,'r'],[0.8499,'g'],[0.8499,'w:100'],[0.8499,'r:6'],[1.1249,'r'],[1.3499,'g'],[1.7333,'g'],[1.7333,'L:long'],[2.3333,'g']],
+        learn:'<b>おもさは ぶつかる 力と はねる 高さ。大きさは 通れる すきま。ひもの ながさは ゆれる はやさ。</b>そして <b>おもさと 大きさは ふりこの ゆれ方を かえない</b> ―― ゆれる はやさを 決めるのは <b>ひもの 長さ</b>だけ。ここまで つかいこなせたら、ふりこは かんぺき！' },
+    ] },
+
+];
+
+function gameById(id){ for(var i=0;i<GAMES.length;i++){ if(GAMES[i].id===id) return GAMES[i]; } return null; }
+function islandById(id){ for(var i=0;i<ISLANDS.length;i++){ if(ISLANDS[i].id===id) return ISLANDS[i]; } return null; }
+function gamesOf(islandId){ return GAMES.filter(function(g){ return g.island===islandId; }); }
+function playableOf(islandId){ return gamesOf(islandId).filter(function(g){ return !g.soon; }); }
+
+/* ------------------------------------------------------------------ *
+ * 3. セーブ（CLAUDE.md §3：記録を絶対に壊さない）
+ * ------------------------------------------------------------------ */
+var SAVE_KEY = 'science-island-save-v1';
+var save = { v:1, stages:{}, cards:{}, opt:{} };
+
+function load(){
+  var raw = null;
+  try { raw = localStorage.getItem(SAVE_KEY); } catch(e){ raw = null; }
+  if (!raw) return;
+  var d = null;
+  try { d = JSON.parse(raw); } catch(e){ return; }
+  if (!d || typeof d !== 'object') return;
+  /* --- スキーマ移行のフック。形をかえても 古いデータを すてない --- *
+     いまは v1 だけ。v2 に するときは ここで d.v===1 のデータを つめかえる。 */
+  if (d.stages) save.stages = d.stages;
+  if (d.cards)  save.cards  = d.cards;
+  if (d.opt)    save.opt    = d.opt;            /* 自分で えらんだ せってい（でんじしゃくバトル など） */
+  save.v = 1;
+}
+function store(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){}
+}
+function stageKey(gameId, i){ return gameId + '-' + (i+1); }
+function stageRec(gameId, i){
+  var r = save.stages[stageKey(gameId,i)];
+  return r ? r : null;
+}
+function clearedCount(gameId){
+  var g = gameById(gameId);
+  if (!g || !g.stages) return 0;
+  var n = 0;
+  for (var i=0;i<g.stages.length;i++){ if (stageRec(gameId,i)) n++; }
+  return n;
+}
+function gameDone(gameId){
+  var g = gameById(gameId);
+  if (!g || !g.stages) return false;
+  return clearedCount(gameId) >= g.stages.length;
+}
+function gameGold(gameId){
+  var g = gameById(gameId);
+  if (!g || !g.stages) return false;
+  for (var i=0;i<g.stages.length;i++){
+    var r = stageRec(gameId,i);
+    if (!r || !r.p) return false;
+  }
+  return true;
+}
+function islandDone(islandId){
+  var all  = ALL_GAMES.filter(function(g){ return g[1] === islandId; });
+  var list = playableOf(islandId);
+  /* その島の ゲームを ぜんぶ 持って いる アプリの ときだけ、じぶんで 数える。
+     1ゲームだけの アプリ（でんき回路 など）で これを やると、その 1つを クリアしただけで
+     「エネルギーの島 クリア」に なって しまう。 */
+  if (list.length && list.length >= all.length){
+    for (var i=0;i<list.length;i++){ if(!gameDone(list[i].id)) return false; }
+    return true;
+  }
+  /* この アプリには そろって いない 島（島ごと・ゲームごとに アプリを 分けた ため）。
+     セーブは 4アプリで 同じ もの（同一オリジンの localStorage）を 見て いるので、
+     その島の ゲームが ぜんぶ 図かんに のって いれば クリアずみと 分かる。
+     こうしないと「4島 クリアで かんがえかたの島が ひらく」が どの アプリでも
+     ひらかなく なる（じぶんの 島の ゲームしか 数えられない ため）。 */
+  if (!all.length) return false;
+  for (var j=0;j<all.length;j++){ if(!save.cards[all[j][0]]) return false; }
+  return true;
+}
+function methodOpen(){
+  return islandDone('energy') && islandDone('particle') && islandDone('life') && islandDone('earth');
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. ゲームの じょうたい と 型（エンジン）の わりふり
+ *
+ *    型は ENGINES に { load(stage), render(), tap(event) } の かたちで とうろくする。
+ *    ミニゲームの kind が きほんの型。stage.kind を 書けば その1もんだけ
+ *    べつの型に できる（例：月と太陽は「ならべる」と「むすぶ」を まぜている）。
+ *    あたらしい型を ふやすときは ENGINES に 1つ 足すだけで すむように すること。
+ * ------------------------------------------------------------------ */
+var ENGINES = {};
+var cur = {
+  gameId:null, si:0, kind:null, hint:false, done:false,
+  parts:[], wires:[], sel:null,      /* つなぐ型（回路・むすぶ）で つかう */
+  slots:[], tray:[]                  /* ならべる型で つかう */
+};
+
+function curStage(){ var g = gameById(cur.gameId); return g ? g.stages[cur.si] : null; }
+function engine(){ return ENGINES[cur.kind]; }
+function setBoardBox(w, h){ document.getElementById('board').setAttribute('viewBox', '0 0 ' + w + ' ' + h); }
+function setStatus(msg, bad){
+  document.getElementById('status').className = bad ? 'status short' : 'status';
+  document.getElementById('status').textContent = msg || '';
+}
+function closeModal(){ document.getElementById('modal').className = 'modal'; }
+/* せいかいした ときの ながれ（2026-09-10 に かえた）
+     せいかい → 480ms あと に「できた！」の おびを 出す → **子が おして はじめて** クリアの まど
+   むかしは まどが かってに 出て いた。回路や つり合いを 作りおえた ばかりで
+   まだ 見て いたい のに まどが かぶさって しまう、という ユーザーの 指てき。
+   おびが 出て いる あいだ、ばんめんは そのまま のこる（見なおせる）。
+   タイマーは おぼえて おいて loadStage で 取り消す（はじめから・もんだい きりかえ の ため）。 */
+function tryClear(ok){
+  if (!cur.done && ok){ cur.done = true; cur.clearTimer = setTimeout(showClearBar, 480); }
+}
+function showClearBar(){
+  /* ★ を とる か どうかは **この しゅんかん** で きめて おく。
+     おびが 出た あとに ヒントを ひらいても、もう とれた ★を 下げない（§6 単調増加）。 */
+  cur.gotStar = (cur.hint || cur.noStar) ? 0 : 1;
+  var bar = document.getElementById('clear-bar');
+  bar.className = 'clear-bar on';
+  if (bar.scrollIntoView) bar.scrollIntoView({ block:'nearest' });
+}
+function hideClearBar(){ document.getElementById('clear-bar').className = 'clear-bar'; }
+document.getElementById('cb-go').onclick = function(){ hideClearBar(); onClear(); };
+function renderBoard(){ var e = engine(); if (e) e.render(); }
+
+/* タップされた ところから 親を たどって data-○○ を さがす。
+   ぜんぶの 型（エンジン）と ホームの 地図が つかう ので、ここ（共通）に 置く。 */
+function attrUp(el, name){
+  while (el && el !== document){
+    if (el.getAttribute){ var v = el.getAttribute(name); if (v !== null) return v; }
+    el = el.parentNode;
+  }
+  return null;
+}
+
+function startGame(gameId, si){
+  var g = gameById(gameId);
+  if (!g || g.soon) return;
+  cur.gameId = gameId; cur.si = si; cur.sel = null; cur.done = false;
+  cur.hint = false;                           /* 1もん目は そうさの せつめいを 出すが ヒントあつかいには しない */
+  loadStage();
+  document.getElementById('game-bar-title').textContent = g.name;
+  /* ゲームが 1つだけの アプリには「◀ もどる」が ない（ビルドが とりのぞく）。
+     出口は 左下の「アプリ集」ボタン。 */
+  var backBtn = document.getElementById('game-back');
+  if (backBtn) backBtn.onclick = function(){ openIsland(g.island); };
+  go('game');
+}
+function loadStage(){
+  var g = gameById(cur.gameId), st = g.stages[cur.si];
+  if (cur.clearTimer){ clearTimeout(cur.clearTimer); cur.clearTimer = null; }
+  closeModal();
+  hideClearBar();
+  cur.kind = st.kind || g.kind;
+  cur.sel = null; cur.done = false; cur.noStar = false; cur.gotStar = null;
+  document.getElementById('q-n').textContent =
+    (g.stages.length > 1) ? ('だい' + (cur.si + 1) + 'もん / ' + g.stages.length + 'もん') : g.sub;
+  document.getElementById('q-t').textContent = st.t;
+  document.getElementById('q-h').innerHTML = st.h + hintAnswer(st, cur.kind);   /* ヒントも learn と 同じく <b> を つかえる */
+  /* ヒントの 中に ボタンを 出す 型は、その ボタンを じぶんで つなぐ（hintBind）。
+     ここに 型ごとの しょりを 書かない こと。 */
+  var hintEng = ENGINES[cur.kind];
+  if (hintEng && hintEng.hintBind) hintEng.hintBind();
+  document.getElementById('q-h').className = 'q-h' + (cur.si === 0 ? ' on' : '');
+  renderStrip();
+  var pk = document.getElementById('sw-pick');
+  pk.className = 'sw-pick'; pk.innerHTML = '';   /* ふりこ以外の 型では かくす */
+  var fcCtl = document.getElementById('fc-controls');
+  fcCtl.innerHTML = '';                          /* リサイクル工場いがいでは かくす */
+  engine().load(st);
+  renderBoard();
+}
+function renderStrip(){
+  var g = gameById(cur.gameId), h = '';
+  if (g.stages.length <= 1){ document.getElementById('stage-strip').innerHTML = ''; return; }
+  for (var i=0;i<g.stages.length;i++){
+    var r = stageRec(g.id, i);
+    var cls = 'stage-dot' + (r ? (r.p ? ' gold' : ' done') : '') + (i === cur.si ? ' now' : '');
+    h += '<button class="' + cls + '" data-go="' + i + '">' + (i + 1) + '</button>';
+  }
+  document.getElementById('stage-strip').innerHTML = h;
+}
+
+function sameWire(w, a, b){ return (w[0] === a && w[1] === b) || (w[0] === b && w[1] === a); }
+function hasWire(a, b){
+  for (var i=0;i<cur.wires.length;i++){ if (sameWire(cur.wires[i], a, b)) return true; }
+  return false;
+}
+
+/* ヒントの 中に 入れる「こたえの れい」。中身は それぞれの 型（エンジン）が
+   ENGINES.○○.hintAnswer に 書く。書かない 型は ヒントだけ 出て こたえの れいは 出ない。
+   ここに 型の 名まえを ならべない こと（型を 足すたびに ここを 直す ことに なる）。 */
+function hintAnswer(st, kind){
+  var e = ENGINES[kind];
+  return (e && e.hintAnswer) ? e.hintAnswer(st) : '';
+}
+
+/* ------------------------------------------------------------------ *
+ * がめんの そうさを 型（エンジン）に わたす ところ。
+ *
+ * ★ここは 共通。2026-09-10 まで engines/swing.js（ふりこ）の 中に あった。
+ *   ゲーム 1つずつの アプリに 分けた とき、ふりこの 入って いない アプリで
+ *   **ばんめんの タップも もんだいえらびも ヒントも ぜんぶ 効かなく なった**。
+ *   エラーは 1つも 出ない（おしても 何も おきないだけ）ので、気づくのが むずかしい。
+ *   型に かんけいない そうさは かならず ここに 書く こと。
+ * ------------------------------------------------------------------ */
+/* ばんめんの タップは、いまの 型に わたすだけ */
+document.getElementById('board').addEventListener('click', function(e){
+  if (cur.done) return;
+  var eng = engine();
+  if (eng) eng.tap(e);
+});
+/* おしっぱなしを つかう 型（でんじしゃくバトルの コイル巻き）のための down/up。
+   Pointer Events は 古い iPad に ない ので mouse と touch の 両方を 見る。 */
+['mousedown', 'touchstart'].forEach(function(ev){
+  document.getElementById('board').addEventListener(ev, function(e){
+    if (cur.done) return;
+    var eng = engine();
+    if (eng && eng.down) eng.down(e);
+  });
+});
+/* なぞって つなぐ型（リサイクル工場）。指が こまの間へ動いても 追えるよう document で見る。 */
+document.addEventListener('mousemove', function(e){
+  var eng=engine(); if(eng&&eng.move)eng.move(e);
+});
+document.addEventListener('touchmove', function(e){
+  var eng=engine(); if(eng&&eng.move)eng.move(e);
+}, {passive:false});
+['mouseup', 'touchend', 'touchcancel'].forEach(function(ev){
+  document.addEventListener(ev, function(e){
+    var eng = engine();
+    if (eng && eng.up) eng.up(e);
+  });
+});
+document.getElementById('stage-strip').addEventListener('click', function(e){
+  var i = attrUp(e.target, 'data-go');
+  if (i === null) return;
+  i = parseInt(i, 10);
+  /* どのもんだいにも いつでも とべる（2026-08-28 ユーザーの きぼうで じゅんばんの
+     ロックを 外した）。むずかしくて つまった とき、先に すすんで あとで もどれる ように。
+     クリアの きろくは もんだいごとに もつので、とばしても 記ろくは こわれない。 */
+  cur.si = i; cur.hint = false; loadStage();
+});
+document.getElementById('btn-hint').onclick = function(){
+  var h = document.getElementById('q-h');
+  h.className = (h.className.indexOf('on') >= 0) ? 'q-h' : 'q-h on';
+  if (cur.si !== 0) cur.hint = true;
+};
+document.getElementById('btn-reset').onclick = function(){ loadStage(); };
+
+
+/* ================================================================== *
+ * ふりこアクション型（swing）— ふりこで ゆれて ゴールを めざす
+ *
+ *   ふりこの うごきは **ほんものの 式**で といて いる：θ'' = -(g/L)sinθ。
+ *   ここに **おもさは 出て こない**。だから 3つの ボールは どれも
+ *   「同じ 長さの ひもなら 同じ はやさで ゆれる」―― 5年「ふりこのきまり」そのもの。
+ *   おもさが きいて くるのは ぶつかった とき（かべを こわす）・ばねで はねる とき・
+ *   風に 流される とき。**周期には きかない／力には きく**を あそびながら 体で おぼえる。
+ *
+ *   そうさ：ばんめんを おして いる あいだ 近くの フックに ぶら下がる → はなすと 飛ぶ。
+ *   ボールの 入れかえは **ぶら下がって いる あいだだけ**（入れかえても ゆれ方が
+ *   かわらない ことが その場で 分かる）。
+ * ================================================================== */
+var SWG = 900, SW_DT = 1 / 120, SW_ROPE = 175, SW_GRAB = 168, SW_DAMP = 0.10, SW_HOOK = 14;
+var SW_W = 600, SW_H = 400;
+/* **おもさ**と**大きさ**は べつべつに えらべる（2026-08-29 ユーザーの きぼう）。
+   おもさ …… かべを こわす 力・ばねで はねる 高さ に きく
+   大きさ …… ボールの あたりの 大きさ だけ
+   **どちらも ふりこの ゆれる はやさには きかない**（ひもの 長さだけで きまる）。 */
+var SWW = {
+  100: { g:100, name:'おもい', col:'#C0503C', dark:'#7E2E1E', hit:true,  spring:0.75 },
+  50:  { g:50,  name:'ふつう', col:'#3EA7D8', dark:'#1B6E96', hit:false, spring:1.15 },
+  10:  { g:10,  name:'かるい', col:'#F0B429', dark:'#9C6F00', hit:false, spring:1.75 }
+};
+/* 大きさは 6/12/18。**さが 大きい ほど「せまい すきま」を つかった 面が 作れる**
+   （d=12/24/36 なので、すきま 16〜22px は 小さい ボールだけ 通れる）。 */
+var SW_WS = [100, 50, 10], SW_RS = [18, 12, 6];
+var SWR = { 18:'大きい', 12:'ふつう', 6:'小さい' };
+/* **ひもの ながさ**（2026-08-29 ユーザーの ていあん）。
+   ふりこの 1おうふくの 時間は **ひもの 長さだけ**で きまる ―― それを 自分で さわれる ように した。
+   みじかい＝たぐりよせる（はやく ゆれる）／長い＝くり出す（ゆっくり 大きく ゆれる）。
+   スタートでも きくので、長い ほど 支点から 遠く＝低く なり **はじめの いきおいも 大きく なる**。 */
+var SW_LS = ['short', 'normal', 'long'];
+var SWL = { short:'みじかい', normal:'ふつう', long:'長い' };
+/* **長さは「きまった 数」**（2026-08-29 ユーザーの 指てきで こう した）。
+   まえは「つかんだ ときの きょり ＋70」と いう **その ときしだいの 長さ**だったので、
+   近くの フックを つかむと 長いを えらんで いても みじかく なって しまった。
+   いまは みじかい=90／長い=200 の **いつも 同じ 長さ**。ふつうだけ「つかんだ ところの まま」。 */
+var SW_LN = { short:90, long:200 };
+var SW_LMAX = 240;
+function swL(st){ return (st && st.lens) || SW_LS; }
+function swRopeLen(lk, dist){
+  if (SW_LN[lk]) return SW_LN[lk];                       /* みじかい／長いは いつも 同じ 長さ */
+  return Math.max(34, Math.min(SW_ROPE, dist));          /* ふつうは つかんだ ところの まま */
+}
+/* 「長い」は 出せる だけ 出す。いっぱいまで のばすと かべに あたる ときは 少しずつ みじかく して ためす。 */
+function swRopeFit(st, s, hx, hy, th, dist){
+  var want = swRopeLen(s.lk, dist);
+  for (var L = want; L >= 40; L -= 6){
+    if (!swBlocked(st, s, hx + L * Math.sin(th), hy + L * Math.cos(th))) return L;
+  }
+  return Math.max(34, Math.min(SW_ROPE, dist));
+}
+/* かべ（岩・ひび・うごく かべ）に めり込んで いるか だけを 見る。
+   **すきまより ボールが 大きい ときに かどから すりぬける のを ふせぐ**ため、
+   1こま すすんだ あと ここで たしかめて、めり込んで いたら 元の ばしょに もどす。 */
+function swSolid(st, s, x, y){
+  var r = s.r, i;
+  for (i = 0; i < (st.blocks || []).length; i++){
+    var b = st.blocks[i];
+    if (s.broken[i]) continue;
+    if (x + r > b.x && x - r < b.x + b.w && y + r > b.y && y - r < b.y + b.h) return true;
+  }
+  for (i = 0; i < (st.movers || []).length; i++){
+    var mv = st.movers[i], my = swMoverY(mv, s.t);
+    if (x + r > mv.x && x - r < mv.x + mv.w && y + r > my && y - r < my + mv.h) return true;
+  }
+  return false;
+}
+/* その ばしょに おいたら 何かに あたるか（ひもの 長さを かえる ときの 安全かくにん） */
+function swBlocked(st, s, x, y){
+  var r = s.r, i;
+  if (x < r + 4 || x > SW_W - r - 4 || y < r + 4 || y > SW_H - r - 4) return true;
+  for (i = 0; i < (st.blocks || []).length; i++){
+    var b = st.blocks[i];
+    if (s.broken[i]) continue;
+    if (x + r > b.x && x - r < b.x + b.w && y + r > b.y && y - r < b.y + b.h) return true;
+  }
+  for (i = 0; i < (st.movers || []).length; i++){
+    var mv = st.movers[i], my = swMoverY(mv, s.t);
+    if (x + r > mv.x && x - r < mv.x + mv.w && y + r > my && y - r < my + mv.h) return true;
+  }
+  for (i = 0; i < (st.spikes || []).length; i++){
+    var k = st.spikes[i];
+    if (x + r > k.x && x - r < k.x + k.w && y + r > k.y && y - r < k.y + k.h) return true;
+  }
+  return false;
+}
+function swW(st){ return (st && st.weights) || SW_WS; }
+function swR(st){ return (st && st.sizes) || SW_RS; }
+
+function swingInit(st, keep){
+  var s = { x:st.start.x, y:st.start.y, vx:0, vy:0,
+            w:(keep && keep.w) || st.w0 || 50, r:(keep && keep.r) || st.r0 || 12,
+            lk:(keep && keep.lk) || st.l0 || 'normal',
+            hook:null, t:0, dead:false, clear:false,
+            broken:{}, started:false, fx:0, msg:'' };
+  /* **さいしょから いちばん 近い フックに ぶら下がった じょうたいで とまって いる。**
+     おす まで うごかない ―― かってに 落ちて しまう のを やめた（2026-08-29）。 */
+  var i = swingNearHook(st, s);
+  if (i >= 0){
+    var h = st.hooks[i], dx = s.x - h.x, dy = s.y - h.y;
+    var dist = Math.max(28, Math.sqrt(dx * dx + dy * dy));
+    var th = Math.atan2(dx, dy), L = swRopeFit(st, s, h.x, h.y, th, dist);
+    s.hook = { i:i, L:L, th:th, om:0 };
+    s.x = h.x + L * Math.sin(th); s.y = h.y + L * Math.cos(th);
+  }
+  return s;
+}
+/* ボールと フックの あいだに かべが ないか（かべごしには ひもを かけられない）。
+   ここを 見て いないと **かべごしに つかんで、つかんだ しゅんかんの いち直しで
+   かべの むこうへ すりぬけられる** ―― すきまも こわせる かべも 意味が なくなる
+   （2026-08-29 に 見つけた 穴）。 */
+function swSightClear(st, s, x0, y0, x1, y1){
+  /* かべを **ボールの 大きさぶん ふくらませて** しらべる。
+     そうしないと「せんは 通るが ボールは 通れない すきま」の むこうの フックを つかめて しまい、
+     つかんだ ときの いち直しで すきまを ワープして しまう（2026-08-29 に 見つけた 穴）。 */
+  var r = s.r, n = 20, i, j;
+  for (i = 1; i < n; i++){
+    var x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n;
+    for (j = 0; j < (st.blocks || []).length; j++){
+      var b = st.blocks[j];
+      if (s.broken[j]) continue;                  /* こわした かべは もう じゃま しない */
+      if (x > b.x - r && x < b.x + b.w + r && y > b.y - r && y < b.y + b.h + r) return false;
+    }
+    for (j = 0; j < (st.movers || []).length; j++){
+      var mv = st.movers[j];                      /* うごく かべは 上下に うごく はんい ぜんぶで 見る（きびしめ） */
+      if (x > mv.x - r && x < mv.x + mv.w + r &&
+          y > mv.y - (mv.ay || 0) - r && y < mv.y + mv.h + (mv.ay || 0) + r) return false;
+    }
+  }
+  return true;
+}
+/* とどく はんいの、いちばん 近い フック（ボールより 上に ある もの） */
+function swingNearHook(st, s){
+  var best = -1, bd = 1e9;
+  st.hooks.forEach(function(h, i){
+    var dx = h.x - s.x, dy = h.y - s.y, d = Math.sqrt(dx * dx + dy * dy);
+    if (dy > 26) return;                       /* ボールより 下の フックには つかまらない */
+    if (d > SW_GRAB || d < 26) return;
+    if (!swSightClear(st, s, s.x, s.y, h.x, h.y)) return;   /* かべごしは だめ */
+    if (d < bd){ bd = d; best = i; }
+  });
+  return best;
+}
+function swingGrab(st, s){
+  if (!s.started){ s.started = true; return true; }   /* さいしょの ひと おしで うごきだす */
+  if (s.hook || s.dead || s.clear) return false;
+  var i = swingNearHook(st, s);
+  if (i < 0) return false;
+  var h = st.hooks[i], dx = s.x - h.x, dy = s.y - h.y;
+  var dist = Math.max(28, Math.sqrt(dx * dx + dy * dy));
+  var th = Math.atan2(dx, dy), L = swRopeFit(st, s, h.x, h.y, th, dist);
+  /* いち直しの 先まで まっすぐ 行けない なら、うごかさない（かべを ワープ しない） */
+  if (!swSightClear(st, s, s.x, s.y, h.x + L * Math.sin(th), h.y + L * Math.cos(th))) L = Math.min(SW_ROPE, dist);
+  /* いまの 速さの うち「ひもと 直角の ぶん」だけが 回る 力に なる */
+  var om = (s.vx * Math.cos(th) - s.vy * Math.sin(th)) / L;
+  s.hook = { i:i, L:L, th:th, om:om };
+  s.x = h.x + L * Math.sin(th); s.y = h.y + L * Math.cos(th);
+  return true;
+}
+function swingRelease(s){
+  if (!s.hook) return;
+  var h = s.hook;
+  s.vx = h.om * h.L * Math.cos(h.th);
+  s.vy = -h.om * h.L * Math.sin(h.th);
+  s.hook = null;
+}
+/* おもさ／大きさを かえる。ぶら下がって いる あいだだけ できる。
+   かえても θ も ω も さわらない ＝ **ゆれ方は まったく かわらない**（ふりこのきまり）。 */
+/* かえられるのは **スタート前（まだ うごきだして いない）** と **ぶら下がって いる あいだ**。
+   スタート前は フックに とどいて いなくても かならず えらべる（2026-08-29）。 */
+function swingCanSet(s){ return !s.started || !!s.hook; }
+function swingSetW(st, s, w){
+  if (swW(st).indexOf(w) < 0 || !swingCanSet(s) || s.w === w) return false;
+  s.w = w; return true;
+}
+function swingSetR(st, s, r){
+  if (swR(st).indexOf(r) < 0 || !swingCanSet(s) || s.r === r) return false;
+  s.r = r; return true;
+}
+/* ひもの 長さを かえる。**ぶら下がった まま かえると その場で ゆれ方が かわる**ので、
+   「みじかい ほうが はやく ゆれる」を 目で 見て たしかめられる。
+   せっせん方向の 速さは そのままに して、ω ＝ v ÷ L で 回りぐあいを 出しなおす。 */
+function swingSetL(st, s, lk){
+  if (swL(st).indexOf(lk) < 0 || !swingCanSet(s) || s.lk === lk) return false;
+  s.lk = lk;
+  if (s.hook){
+    var hk = st.hooks[s.hook.i];
+    var dx = s.x - hk.x, dy = s.y - hk.y;
+    var dist = Math.max(28, Math.sqrt(dx * dx + dy * dy));
+    var th = s.hook.th, L2 = swRopeFit(st, s, hk.x, hk.y, th, dist);
+    var nx = hk.x + L2 * Math.sin(th), ny = hk.y + L2 * Math.cos(th);
+    if (L2 !== s.hook.L){
+      var v = Math.abs(s.hook.om) * s.hook.L, sgn = (s.hook.om >= 0 ? 1 : -1);
+      s.hook.L = L2; s.hook.om = sgn * v / L2;
+      s.x = nx; s.y = ny;
+    }
+  }
+  return true;
+}
+/* うごく かべの いま の いち。t だけで きまる ので、お手本の さいせいでも まったく 同じ。
+   ay ＝ 上下に うごく はば ／ per ＝ 1おうふくの 時間（びょう）。
+   **ふりこの しゅうきと 合わせる**と「いつ はなすか」が だいじな 面に なる。 */
+function swMoverY(m, t){
+  return m.y + (m.ay || 0) * Math.sin(2 * Math.PI * t / (m.per || 2));
+}
+function swingHit(st, s){
+  var B = SWW[s.w], r = s.r, i;
+  for (i = 0; i < (st.movers || []).length; i++){
+    var mv = st.movers[i], my = swMoverY(mv, s.t);
+    if (s.x + r < mv.x || s.x - r > mv.x + mv.w || s.y + r < my || s.y - r > my + mv.h) continue;
+    var qxL = (mv.x - r) - s.x, qxR = (mv.x + mv.w + r) - s.x;
+    var qyT = (my - r) - s.y, qyB = (my + mv.h + r) - s.y;
+    var qx = (Math.abs(qxL) < Math.abs(qxR)) ? qxL : qxR;
+    var qy = (Math.abs(qyT) < Math.abs(qyB)) ? qyT : qyB;
+    if (s.hook) swingRelease(s);
+    if (Math.abs(qx) < Math.abs(qy)){ s.x += qx; s.vx = -s.vx * 0.3; }
+    else { s.y += qy; s.vy = -s.vy * 0.3; }
+  }
+  for (i = 0; i < (st.blocks || []).length; i++){
+    var b = st.blocks[i];
+    if (s.broken[i]) continue;
+    if (s.x + r < b.x || s.x - r > b.x + b.w || s.y + r < b.y || s.y - r > b.y + b.h) continue;
+    var sp = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+    /* ひび入りブロックは **おもい ボールが 十分な いきおいで** ぶつかった ときだけ こわれる */
+    if (b.type === 'brick' && B.hit && sp > 230){ s.broken[i] = 1; s.fx = 10; continue; }
+    var pxL = (b.x - r) - s.x, pxR = (b.x + b.w + r) - s.x;
+    var pyT = (b.y - r) - s.y, pyB = (b.y + b.h + r) - s.y;
+    var px = (Math.abs(pxL) < Math.abs(pxR)) ? pxL : pxR;
+    var py = (Math.abs(pyT) < Math.abs(pyB)) ? pyT : pyB;
+    if (s.hook) swingRelease(s);
+    if (Math.abs(px) < Math.abs(py)){ s.x += px; s.vx = -s.vx * 0.3; }
+    else { s.y += py; s.vy = -s.vy * 0.3; }
+  }
+  for (i = 0; i < (st.spikes || []).length; i++){
+    var k = st.spikes[i];
+    if (s.x + r > k.x && s.x - r < k.x + k.w && s.y + r > k.y && s.y - r < k.y + k.h){ s.dead = true; s.msg = 'とげに あたった！'; }
+  }
+  for (i = 0; i < (st.springs || []).length; i++){
+    var sp2 = st.springs[i];
+    if (s.vy > 0 && s.x + r > sp2.x && s.x - r < sp2.x + sp2.w && s.y + r > sp2.y && s.y - r < sp2.y + 16){
+      if (s.hook) swingRelease(s);
+      s.y = sp2.y - r - 1; s.vy = -400 * B.spring; s.fx = 8;
+    }
+  }
+}
+/* 1こま すすめる。**画面が なくても 動く**（verify.mjs が お手本を 再生して たしかめる） */
+function swingStep(st, s, dt){
+  if (s.dead || s.clear || !s.started) return;      /* おす まで うごかない */
+  var B = SWW[s.w];
+  s.t += dt;
+  if (s.fx > 0) s.fx--;
+  if (s.hook){
+    var h = s.hook, hk = st.hooks[h.i];
+    h.om += (-(SWG / h.L) * Math.sin(h.th) - SW_DAMP * h.om) * dt;   /* θ'' = -(g/L)sinθ */
+    h.th += h.om * dt;
+    s.x = hk.x + h.L * Math.sin(h.th);
+    s.y = hk.y + h.L * Math.cos(h.th);
+    s.vx = h.om * h.L * Math.cos(h.th);
+    s.vy = -h.om * h.L * Math.sin(h.th);
+    swingHit(st, s);
+    if (s.hook && swSolid(st, s, s.x, s.y)){    /* ぶら下がった まま かべに 入りこまない */
+      h.th -= h.om * dt; h.om *= -0.2;
+      s.x = hk.x + h.L * Math.sin(h.th); s.y = hk.y + h.L * Math.cos(h.th);
+    }
+  } else {
+    s.vy += SWG * dt;
+    (st.winds || []).forEach(function(w){
+      if (s.x > w.x && s.x < w.x + w.w && s.y > w.y && s.y < w.y + w.h)
+        s.vx += w.a * (50 / B.g) * dt;         /* 同じ 力でも かるい ほど 大きく 流される */
+    });
+    var ox = s.x, oy = s.y;
+    s.x += s.vx * dt; s.y += s.vy * dt;
+    swingHit(st, s);
+    /* まだ かべに めり込んで いたら 元の ばしょへ もどす（すきまを むりやり すりぬけない） */
+    if (swSolid(st, s, s.x, s.y)){ s.x = ox; s.y = oy; s.vx *= -0.2; s.vy *= -0.2; }
+  }
+  var gx = st.goal.x - s.x, gy = st.goal.y - s.y;
+  if (Math.sqrt(gx * gx + gy * gy) < st.goal.r + s.r) s.clear = true;
+  if (s.y > SW_H + 30){ s.dead = true; s.msg = '下に おちた！'; }
+  if (s.x < -30 || s.x > SW_W + 30){ s.dead = true; s.msg = 'そとに 出て しまった！'; }
+}
+/* お手本（ex）を さいごまで 走らせる。画面なしでも 同じ けっかに なる（時間きざみが 一定）。
+   ex は [びょう, 'g'（つかむ）／'r'（はなす）／'b:heavy' など] の ならび。 */
+function swingRun(st, script, maxT){
+  var s = swingInit(st), k = 0, lim = Math.round((maxT || 20) / SW_DT);
+  for (var n = 0; n < lim; n++){
+    while (k < script.length && script[k][0] <= s.t + 1e-9){
+      var a = script[k][1];
+      if (a === 'g') swingGrab(st, s);
+      else if (a === 'r') swingRelease(s);
+      else if (a.indexOf('w:') === 0) swingSetW(st, s, +a.slice(2));
+      else if (a.indexOf('r:') === 0) swingSetR(st, s, +a.slice(2));
+      else if (a.indexOf('L:') === 0) swingSetL(st, s, a.slice(2));
+      k++;
+    }
+    swingStep(st, s, SW_DT);
+    if (s.clear || s.dead) break;
+  }
+  return s;
+}
+
+function swingStop(){ if (cur.swRaf){ cancelAnimationFrame(cur.swRaf); cur.swRaf = null; } }
+function loadSwing(st){
+  swingStop();
+  /* **えらんだ おもさ・大きさは その もんだいの あいだ ずっと おぼえて おく。**
+     しっぱいの たびに もどると えらび直しが めんどう、という 指てきで こうした。
+     べつの もんだいに うつったら もとに もどす。 */
+  var key = cur.gameId + ':' + cur.si;
+  if (cur.swKeepFor !== key){ cur.swKeep = null; cur.swKeepFor = key; }
+  cur.sw = swingInit(st, cur.swKeep);
+  cur.swDemo = null; cur.swAcc = 0; cur.swLast = 0; cur.swTries = 0;
+  cur.swPickHtml = null;
+  swingLoop();
+}
+function swingLoop(){
+  swingStop();
+  cur.swLast = 0; cur.swAcc = 0;
+  var step = function(ts){
+    if (cur.kind !== 'swing'){ cur.swRaf = null; return; }
+    if (!cur.swLast) cur.swLast = ts;
+    var d = Math.min(0.05, (ts - cur.swLast) / 1000);
+    cur.swLast = ts; cur.swAcc += d;
+    var s = cur.sw, st = curStage();
+    while (cur.swAcc >= SW_DT){
+      cur.swAcc -= SW_DT;
+      if (cur.swDemo){
+        while (cur.swDemo.k < cur.swDemo.list.length && cur.swDemo.list[cur.swDemo.k][0] <= s.t + 1e-9){
+          var a = cur.swDemo.list[cur.swDemo.k][1];
+          if (a === 'g') swingGrab(st, s);
+          else if (a === 'r') swingRelease(s);
+          else if (a.indexOf('w:') === 0) swingSetW(st, s, +a.slice(2));
+          else if (a.indexOf('r:') === 0) swingSetR(st, s, +a.slice(2));
+          else if (a.indexOf('L:') === 0) swingSetL(st, s, a.slice(2));
+          cur.swDemo.k++;
+        }
+      }
+      swingStep(st, s, SW_DT);
+      if (s.dead || s.clear) break;
+    }
+    renderSwing();
+    if (s.clear){ cur.swRaf = null; tryClear(true); return; }
+    if (s.dead){
+      cur.swRaf = null;
+      setTimeout(function(){
+        if (cur.kind !== 'swing' || cur.done) return;
+        cur.swTries++; cur.sw = swingInit(curStage(), cur.swKeep); cur.swDemo = null; swingLoop();
+      }, 850);
+      return;
+    }
+    cur.swRaf = requestAnimationFrame(step);
+  };
+  cur.swRaf = requestAnimationFrame(step);
+}
+function swingDemo(){
+  var st = curStage();
+  if (!st.ex) return;
+  cur.noStar = true;                      /* お手本を 見たら パーフェクトは つかない */
+  cur.sw = swingInit(st);                 /* お手本は かならず もんだいの さいしょの おもさから */
+  cur.swDemo = { list:st.ex, k:0 };
+  swingLoop();
+}
+
+function renderSwing(){
+  setBoardBox(SW_W, SW_H + 44);    /* 上に 44 の あんない帯。えらびボタンは ばんめんの そと（HTML） */
+  var st = curStage(), s = cur.sw, B = SWW[s.w], g = '';
+  g += '<rect x="0" y="0" width="' + SW_W + '" height="' + SW_H + '" rx="14" fill="#EAF4FA"/>';
+  (st.winds || []).forEach(function(w){
+    g += '<rect x="' + w.x + '" y="' + w.y + '" width="' + w.w + '" height="' + w.h +
+         '" rx="8" fill="#CFE9F7" opacity=".85"/>';
+    for (var i = 0; i < 3; i++){
+      var yy = w.y + w.h * (i + 1) / 4, dir = w.a > 0 ? 1 : -1;
+      g += '<path d="M' + (w.x + 8) + ' ' + yy + ' h' + (w.w - 16) + '" stroke="#6FB6DA" stroke-width="3" stroke-linecap="round" fill="none"/>';
+      g += '<path d="M' + (dir > 0 ? w.x + w.w - 8 : w.x + 8) + ' ' + yy + ' l' + (-12 * dir) + ' -6 v12 z" fill="#6FB6DA"/>';
+    }
+    g += '<text x="' + (w.x + w.w / 2) + '" y="' + (w.y + 16) + '" font-size="11" font-weight="900" fill="#3E88AE" text-anchor="middle">かぜ</text>';
+  });
+  (st.blocks || []).forEach(function(b, i){
+    if (s.broken[i]) return;
+    if (b.type === 'brick'){
+      g += '<rect x="' + b.x + '" y="' + b.y + '" width="' + b.w + '" height="' + b.h +
+           '" rx="4" fill="#D99A5B" stroke="#8A5B22" stroke-width="3"/>';
+      g += '<path d="M' + (b.x + b.w * .3) + ' ' + b.y + ' l' + (b.w * .18) + ' ' + (b.h * .4) +
+           ' l' + (-b.w * .12) + ' ' + (b.h * .3) + ' l' + (b.w * .2) + ' ' + (b.h * .3) +
+           '" fill="none" stroke="#7A4A18" stroke-width="2.5" stroke-linejoin="round"/>';
+      g += '<text x="' + (b.x + b.w / 2) + '" y="' + (b.y + b.h / 2 + 4) +
+           '" font-size="10" font-weight="900" fill="#5E3400" text-anchor="middle">ひび</text>';
+    } else {
+      g += '<rect x="' + b.x + '" y="' + b.y + '" width="' + b.w + '" height="' + b.h +
+           '" rx="5" fill="#9AA6B0" stroke="#5D6874" stroke-width="3"/>';
+    }
+  });
+  (st.movers || []).forEach(function(mv){
+    var my = swMoverY(mv, s.t);
+    g += '<rect x="' + (mv.x - 3) + '" y="' + (mv.y - (mv.ay || 0) - 4) + '" width="' + (mv.w + 6) +
+         '" height="' + (mv.h + (mv.ay || 0) * 2 + 8) + '" rx="8" fill="#E7EDF2"/>';
+    g += '<rect x="' + mv.x + '" y="' + my.toFixed(1) + '" width="' + mv.w + '" height="' + mv.h +
+         '" rx="6" fill="#8B7BE8" stroke="#4E3FA8" stroke-width="3"/>';
+    g += '<text x="' + (mv.x + mv.w / 2) + '" y="' + (my + mv.h / 2 + 5).toFixed(1) +
+         '" font-size="13" font-weight="900" fill="#fff" text-anchor="middle">↕</text>';
+  });
+  (st.springs || []).forEach(function(k){
+    g += '<rect x="' + k.x + '" y="' + (k.y + 8) + '" width="' + k.w + '" height="10" rx="5" fill="#7E6B54"/>';
+    g += '<path d="M' + (k.x + 6) + ' ' + (k.y + 8) + ' q' + (k.w / 4) + ' -14 ' + (k.w / 2) + ' 0 q' +
+         (k.w / 4) + ' 14 ' + (k.w / 2 - 6) + ' 0" fill="none" stroke="#2E9A4C" stroke-width="5" stroke-linecap="round"/>';
+    g += '<text x="' + (k.x + k.w / 2) + '" y="' + (k.y - 6) + '" font-size="11" font-weight="900" fill="#2E9A4C" text-anchor="middle">ばね</text>';
+  });
+  (st.spikes || []).forEach(function(k){
+    var n = Math.max(1, Math.round(k.w / 14)), d = k.w / n, sp = '';
+    for (var i = 0; i < n; i++) sp += 'M' + (k.x + i * d) + ' ' + (k.y + k.h) + ' L' + (k.x + i * d + d / 2) + ' ' + k.y + ' L' + (k.x + (i + 1) * d) + ' ' + (k.y + k.h) + ' ';
+    g += '<path d="' + sp + '" fill="#E05A4A" stroke="#9A2D20" stroke-width="2" stroke-linejoin="round"/>';
+  });
+  /* ゴール */
+  g += '<circle cx="' + st.goal.x + '" cy="' + st.goal.y + '" r="' + (st.goal.r + 6) + '" fill="#2E9A4C" opacity=".18"/>';
+  g += '<circle cx="' + st.goal.x + '" cy="' + st.goal.y + '" r="' + st.goal.r + '" fill="#CBEFD4" stroke="#2E9A4C" stroke-width="3"/>';
+  g += '<text x="' + st.goal.x + '" y="' + (st.goal.y + 8) + '" font-size="22" text-anchor="middle">🏁</text>';
+  /* フック（とどく ものは 目立たせる） */
+  /* フックは 大きく（2026-08-29 「紐を つける ところが 小さい」の 指てき）。
+     verify.mjs が この 大きさで とげ／かべに かさなって いないかを 見はって いる。 */
+  var near = s.hook ? s.hook.i : swingNearHook(st, s);
+  st.hooks.forEach(function(h, i){
+    var on = (i === near);
+    if (on) g += '<circle cx="' + h.x + '" cy="' + h.y + '" r="26" fill="#F5B324" opacity=".28"/>';
+    g += '<circle cx="' + h.x + '" cy="' + h.y + '" r="' + SW_HOOK + '" fill="' + (on ? '#F5B324' : '#CBD6DE') +
+         '" stroke="#5A7C93" stroke-width="4"/>';
+    g += '<circle cx="' + h.x + '" cy="' + h.y + '" r="' + (SW_HOOK - 7) + '" fill="none" stroke="' +
+         (on ? '#9A6B00' : '#8FA3B8') + '" stroke-width="3"/>';
+  });
+  /* ひも と ボール */
+  if (s.hook){
+    var hk = st.hooks[s.hook.i];
+    g += '<line x1="' + hk.x + '" y1="' + hk.y + '" x2="' + s.x.toFixed(1) + '" y2="' + s.y.toFixed(1) +
+         '" stroke="#5A7C93" stroke-width="4"/>';
+  } else if (near >= 0 && !s.dead && !s.clear){
+    g += '<line x1="' + st.hooks[near].x + '" y1="' + st.hooks[near].y + '" x2="' + s.x.toFixed(1) + '" y2="' + s.y.toFixed(1) +
+         '" stroke="#F5B324" stroke-width="3" stroke-dasharray="5 6" opacity=".8"/>';
+  }
+  if (s.fx > 0) g += '<circle cx="' + s.x.toFixed(1) + '" cy="' + s.y.toFixed(1) + '" r="' + (s.r + s.fx * 2) + '" fill="#FFD54F" opacity="' + (s.fx / 20).toFixed(2) + '"/>';
+  g += '<circle cx="' + s.x.toFixed(1) + '" cy="' + s.y.toFixed(1) + '" r="' + s.r +
+       '" fill="' + B.col + '" stroke="' + B.dark + '" stroke-width="3"/>';
+  if (s.r >= 11) g += '<text x="' + s.x.toFixed(1) + '" y="' + (s.y + 4).toFixed(1) +
+       '" font-size="' + (s.r >= 15 ? 11 : 9) + '" font-weight="900" fill="#fff" text-anchor="middle">' + s.w + 'g</text>';
+  if (s.dead) g += '<g transform="translate(300,' + (SW_H / 2) + ')"><rect x="-118" y="-24" width="236" height="46" rx="22" fill="#E05A4A"/>' +
+    '<text x="0" y="8" font-size="19" font-weight="900" fill="#fff" text-anchor="middle">' + (s.msg || 'ざんねん') + '</text></g>';
+  /* えらびボタン：うえの れつ＝おもさ、したの れつ＝大きさ。
+     どちらも **ぶら下がって いる あいだだけ** かえられる。 */
+  /* えらびボタンは **SVGでは なく ほんものの HTMLボタン**に した（2026-08-29）。
+     SVGの とうめいな あたり判定は ブラウザに よって きかない ことが あり、
+     じっさいに Safari で「100gを おしても かわらない」が 起きた。
+     HTMLの <button> なら どの ブラウザでも かならず 押せる。 */
+  var can = swingCanSet(s) && !s.dead && !s.clear;
+  var ph = '';
+  if (!s.started && !s.dead) ph += '<div class="sw-note">まず ここで えらぼう（あとから ぶら下がって いる ときも かえられるよ）</div>';
+  ph += '<div class="sw-box' + (!s.started && !s.dead ? ' first' : '') + '">';
+  function row(items, label, sel, key, draw){
+    ph += '<div class="sw-row"><div class="sw-lab">' + label + '</div>';
+    items.forEach(function(v){
+      var on = (sel === v), d = draw(v);
+      ph += '<button class="sw-b' + (on ? ' on' : '') + '" data-' + key + '="' + v + '"' +
+            (can || on ? '' : ' disabled') +
+            ' style="' + (on ? 'background:' + d.col + ';border-color:' + d.dark + ';' : '') + '">' +
+            '<span class="dot" style="width:' + (d.r * 2) + 'px;height:' + (d.r * 2) + 'px;background:' +
+            (on ? '#fff' : d.col) + '"></span>' + d.t + '</button>';
+    });
+    ph += '</div>';
+  }
+  row(swW(st), 'おもさ', s.w, 'sww', function(v){
+    return { col:SWW[v].col, dark:SWW[v].dark, r:8, t:v + 'g' };
+  });
+  row(swR(st), '大きさ', s.r, 'swr', function(v){
+    return { col:'#7E8FA0', dark:'#4A5A6A', r:Math.max(5, Math.round(v * 0.55)), t:SWR[v] };
+  });
+  row(swL(st), 'ひも', s.lk, 'swl', function(v){
+    return { col:'#5FA98C', dark:'#2F6E56', r:7, t:SWL[v] };
+  });
+  ph += '</div>';
+  /* **中みが かわった ときだけ** 作りなおす。
+     アニメは 1びょうに 60回 えを かきなおすので、毎回 ボタンを 作りなおすと
+     ゆびを はなす まえに ボタンが 入れかわり、**click が 一度も 成立しない**
+     （2026-08-29 「100gを おしても かわらない」の 正体は これ）。 */
+  var pk = document.getElementById('sw-pick');
+  if (pk.className !== 'sw-pick on') pk.className = 'sw-pick on';
+  if (cur.swPickHtml !== ph){ pk.innerHTML = ph; cur.swPickHtml = ph; }
+  /* 上の あんない帯（ばんめんの そとに 出すので、ばねや かべに かさならない） */
+  var top = '';
+  if (!s.started && !s.dead && !s.clear){
+    top = '<g transform="translate(300,24)"><rect x="-232" y="-20" width="464" height="40" rx="20" fill="#2E9A4C"/>' +
+          '<text x="0" y="7" font-size="17" font-weight="900" fill="#fff" text-anchor="middle">おもさ・大きさ・ひもを えらんで ▶ タップ！</text></g>';
+  } else if (cur.swDemo){
+    top = '<g transform="translate(300,24)"><rect x="-140" y="-20" width="280" height="40" rx="20" fill="#1B7FA8"/>' +
+          '<text x="0" y="7" font-size="18" font-weight="900" fill="#fff" text-anchor="middle">お手本を さいせい中</text></g>';
+  }
+  document.getElementById('board').innerHTML = top + '<g transform="translate(0,44)">' + g + '</g>';
+  var msg;
+  if (cur.swDemo) msg = 'お手本を 見て いるよ';
+  else if (!s.started) msg = 'まず おもさ・大きさ・ひもを えらぼう' +
+    (s.hook ? '（ひもの 長さ ' + Math.round(s.hook.L) + '）' : '') + '。ばんめんを タップ すると うごきだすよ';
+  else if (s.hook) msg = 'ぶら下がり中（ひもの 長さ ' + Math.round(s.hook.L) +
+    '）。いま おもさ・大きさ・ひもを かえられるよ。もう一度 タップ すると はなれて 飛ぶ！';
+  else if (near >= 0) msg = 'いま タップ すると きいろい フックに つかまるよ';
+  else msg = 'ばんめんを タップ して フックに つかまろう';
+  setStatus(msg, false);
+}
+/* そうさは **かんぜんな タップ式**（2026-08-29 ユーザーの 指てきで こうした）。
+     1回目の タップ … ふりこが うごきだす（ついたまま）
+     つぎの タップ  … ロープが はなれて 飛ぶ
+     そのつぎ       … また 近くの フックに つかまる
+   **ゆびを はなしても 切れない。**まえは「300ms いじょう おして はなすと 飛ぶ」も 生かして
+   いたが、ばんめんを ちょっと 長めに おしただけで 糸が 切れて しまい、
+   ぶら下がった まま おもさを かえる ことが できなかった。 */
+function tapSwing(){}   /* えらびボタンは ばんめんの そと（HTML）なので、ここでは 何も しない */
+function downSwing(e){
+  if (cur.swDemo) return;
+  var s = cur.sw;
+  if (s.dead || s.clear) return;
+  if (!s.started){ s.started = true; renderBoard(); return; }
+  if (s.hook) swingRelease(s);                 /* ついて いる → はなれて 飛ぶ */
+  else swingGrab(curStage(), s);               /* とんで いる → 近くの フックに つかまる */
+  renderBoard();
+}
+ENGINES.swing = { load:loadSwing, render:renderSwing, tap:tapSwing, down:downSwing, stop:swingStop };  /* up は つかわない（タップ式） */
+
+document.getElementById('sw-pick').addEventListener('click', function(e){
+  var el = e.target;
+  while (el && el !== this && !(el.getAttribute && (el.getAttribute('data-sww') || el.getAttribute('data-swr') || el.getAttribute('data-swl')))) el = el.parentNode;
+  if (!el || el === this) return;
+  if (cur.kind !== 'swing' || cur.swDemo || cur.done) return;
+  var w = el.getAttribute('data-sww'), r = el.getAttribute('data-swr');
+  var lk = el.getAttribute('data-swl');
+  if (w) swingSetW(curStage(), cur.sw, +w);
+  else if (r) swingSetR(curStage(), cur.sw, +r);
+  else if (lk) swingSetL(curStage(), cur.sw, lk);
+  cur.swKeep = { w:cur.sw.w, r:cur.sw.r, lk:cur.sw.lk };   /* しっぱいしても この えらびを のこす */
+  renderBoard();
+});
+/* ふりこアクションの「こたえの れい」は 文では なく **お手本の さいせい**。
+   ex は verify.mjs が 画面なしで 走らせて「ほんとうに ゴールする」ことを たしかめて いる。 */
+function hintAnswerSwing(st){
+  if (!st.ex) return '';
+  return '<details class="ans"><summary>▶ それでも こまったら「お手本」を 見る</summary>' +
+    '<div class="ans-in">じどうで 1回 あそんで みせるよ。よく 見て、同じ タイミングで やって みよう。' +
+    '<div style="margin-top:8px"><button class="mini" id="sw-demo">▶ お手本を さいせい</button></div>' +
+    '<div class="ans-note">これは クリアの しかたの <b>1つ</b>。ほかの コースでも ゴールすれば せいかいだよ。' +
+    'お手本を 見ると パーフェクト（★）は つかないので、まずは 自分で ためして みてね。</div></div></details>';
+}
+ENGINES.swing.hintAnswer = hintAnswerSwing;
+
+/* ヒントの 中の「▶ お手本を さいせい」ボタンを つなぐ（ヒントを 出しなおす たびに よばれる）。 */
+ENGINES.swing.hintBind = function(){
+  var dm = document.getElementById('sw-demo');
+  if (dm) dm.onclick = function(){ swingDemo(); };
+};
+
+/* ------------------------------------------------------------------ *
+ * 7. クリアの しょり と ごほうび
+ * ------------------------------------------------------------------ */
+function cardSVG(g, gold){
+  var base = gold ? '#F5B324' : '#8FBFD8';
+  var bg   = gold ? '#FFF6DE' : '#EFF7FB';
+  return '<svg class="card-get" viewBox="0 0 150 200">' +
+    '<rect x="4" y="4" width="142" height="192" rx="16" fill="' + bg + '" stroke="' + base + '" stroke-width="5"/>' +
+    '<rect x="14" y="14" width="122" height="120" rx="10" fill="#fff" stroke="' + base + '" stroke-width="2"/>' +
+    '<text x="75" y="96" font-size="62" text-anchor="middle">' + g.icon + '</text>' +
+    '<text x="75" y="158" font-size="15" font-weight="900" fill="#0F3350" text-anchor="middle">' + g.card + '</text>' +
+    '<text x="75" y="180" font-size="12" font-weight="900" fill="' + (gold ? '#8A5B00' : '#4A6C85') +
+    '" text-anchor="middle">' + (gold ? '★ きんカード ★' : 'かがくカード') + '</text>' +
+    '</svg>';
+}
+
+function onClear(){
+  var g = gameById(cur.gameId), st = g.stages[cur.si], key = stageKey(g.id, cur.si);
+  var old = save.stages[key];
+  /* ★は「できた！」の おびが 出た しゅんかんに きめて ある（20-shell.js の showClearBar）。
+     おびを 見て いる あいだに ヒントを ひらいても 下がらない。 */
+  var perfect = (cur.gotStar === 0 || cur.gotStar === 1) ? cur.gotStar
+              : ((cur.hint || cur.noStar) ? 0 : 1);
+  if (old && old.p) perfect = 1;                    /* 一度とった パーフェクトは 下げない（§6 単調増加） */
+  save.stages[key] = { c:1, p:perfect };
+  var justFinished = gameDone(g.id) && !save.cards[g.id];
+  if (gameDone(g.id)) save.cards[g.id] = gameGold(g.id) ? 2 : 1;
+  store();
+  renderStrip();
+
+  document.getElementById('modal-jhs').innerHTML =
+    g.jhs ? '<div class="jhs-note">🎓 中学でも つかうよ</div>' : '';
+  document.getElementById('modal-title').textContent = perfect ? 'パーフェクト！' : 'クリア！';
+  document.getElementById('modal-card').innerHTML = justFinished ? cardSVG(g, gameGold(g.id)) : '';
+  document.getElementById('modal-learn').innerHTML =
+    (justFinished ? '<b>「' + g.card + '」カード</b>を てにいれた！<br>' : '') + st.learn;
+  var last = (cur.si >= g.stages.length - 1);
+  /* ゲームが 1つだけの アプリには もどる 島が ない ので「とじる」に する */
+  document.getElementById('modal-next').textContent =
+    last ? (HOME_GAME ? 'とじる ▼' : '島に もどる ▶') : 'つぎへ ▶';
+  document.getElementById('modal').className = 'modal on';
+  confettiBurst(perfect ? 120 : 70);
+}
+document.getElementById('modal-again').onclick = function(){ closeModal(); loadStage(); };
+document.getElementById('modal-next').onclick = function(){
+  closeModal();
+  var g = gameById(cur.gameId);
+  if (cur.si >= g.stages.length - 1){
+    if (HOME_GAME){ renderStrip(); return; }   /* 1ゲームの アプリ：もんだい えらびに もどるだけ */
+    openIsland(g.island); return;
+  }
+  cur.si++; cur.hint = false; loadStage();
+};
+
+/* じぶんで かく コンフェッティ（外部ライブラリは つかわない） */
+function confettiBurst(n){
+  var cv = document.getElementById('confetti');
+  var ctx = cv.getContext('2d');
+  var W = cv.width = window.innerWidth, H = cv.height = window.innerHeight;
+  cv.style.display = 'block';
+  var cols = ['#F5B324','#4FC46A','#3EA7D8','#E8618C','#8B7BE8','#FF8A5B'];
+  var ps = [];
+  for (var i=0;i<n;i++){
+    ps.push({ x:W/2 + (Math.random()-.5)*W*.5, y:H*.42,
+      vx:(Math.random()-.5)*13, vy:-8 - Math.random()*11,
+      w:6 + Math.random()*8, h:8 + Math.random()*10,
+      r:Math.random()*6.28, vr:(Math.random()-.5)*.32,
+      c:cols[(Math.random()*cols.length)|0], life:0 });
+  }
+  setTimeout(function(){ ctx.clearRect(0,0,W,H); cv.style.display = 'none'; }, 6500);  /* rAFが とまっても のこらないように */
+  var t0 = 0;
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    var alive = 0;
+    ps.forEach(function(p){
+      p.vy += .42; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+      if (p.y < H + 40){ alive++;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h); ctx.restore();
+      }
+    });
+    t0++;
+    if (alive && t0 < 260) requestAnimationFrame(tick);
+    else { ctx.clearRect(0,0,W,H); cv.style.display = 'none'; }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ------------------------------------------------------------------ *
+ * 8. がめん：ホーム（地図）と 島
+ * ------------------------------------------------------------------ */
+function islandArt(isl, state){
+  var s = '<svg class="isl-art" viewBox="0 0 200 156">' +
+    '<ellipse cx="100" cy="132" rx="84" ry="16" fill="rgba(4,50,72,.28)"/>' +
+    '<path d="M12 122 Q24 92 58 86 Q78 50 112 56 Q152 60 166 96 Q188 102 188 122 Z" fill="' + isl.sand + '"/>' +
+    '<path d="M40 100 Q70 58 106 62 Q146 66 160 100 Z" fill="' + isl.color + '"/>' +
+    '<text x="100" y="102" font-size="46" text-anchor="middle">' + (state === 'lock' ? '🔒' : isl.emoji) + '</text>';
+  if (state === 'done') s += '<text x="158" y="112" font-size="30" text-anchor="middle">🏁</text>';
+  return s + '</svg>';
+}
+function renderHome(){
+  /* 島が 1つだけの アプリには 海の 地図が ない（ビルドが とりのぞく）。
+     その ときは 何も しない。 */
+  if (!document.getElementById('map-inner')) return;
+  var open = methodOpen(), h = '', total = 0, got = 0;
+  GAMES.forEach(function(g){
+    if (g.soon || !g.stages) return;
+    total += g.stages.length;
+    got += clearedCount(g.id);
+  });
+  ISLANDS.forEach(function(isl){
+    var lock = isl.needAll && !open;
+    var list = playableOf(isl.id);
+    var state = lock ? 'lock' : (list.length && islandDone(isl.id) ? 'done' : 'go');
+    var n = 0, all = 0;
+    list.forEach(function(g){ all += g.stages.length; n += clearedCount(g.id); });
+    var label = lock ? '4つの島 クリアで ひらく'
+              : (all ? n + ' / ' + all + ' もん' : 'じゅんびちゅう');
+    h += '<button class="island' + (lock ? ' locked' : '') + '" style="--x:' + isl.mx + '%; --y:' + isl.my +
+         '%; --nx:' + isl.nx + '%; --ny:' + isl.ny + '%" data-isl="' + isl.id + '">' + islandArt(isl, state) +
+         '<span class="isl-name">' + isl.emoji + ' ' + isl.name + '</span>' +
+         '<span class="isl-count">' + label + '</span></button>';
+  });
+  document.getElementById('map-inner').innerHTML = h;
+  document.getElementById('home-prog').style.width = (total ? (got / total * 100) : 0) + '%';
+  document.getElementById('home-note').textContent = 'クリアした もんだい　' + got + ' / ' + total;
+}
+if (document.getElementById('map-inner')) document.getElementById('map-inner').addEventListener('click', function(e){
+  var id = attrUp(e.target, 'data-isl');
+  if (!id) return;
+  var isl = islandById(id);
+  if (isl.needAll && !methodOpen()){
+    alert('🔬 かんがえかたの島は、ほかの 4つの島を ぜんぶ クリアすると ひらくよ！');
+    return;
+  }
+  openIsland(id);
+});
+
+function openIsland(id){
+  /* ゲームが 1つだけの アプリ（でんき回路 など）には 島の がめんが ない。
+     「島に もどる」で 行ける ところが ない ので、ゲームの がめんに とどまる。
+     こうしないと まっ白な がめんに おちる（クリア後・リサイクル工場・ふりこ が
+     openIsland を よぶ）。 */
+  if (HOME_GAME){ go('game'); return; }
+  /* 島が 1つだけの アプリには 島の がめんが 1まいしか ない（地図を とりのぞいて いる）。
+     🔬かんがえかたの島の ゲームも その 1まいの 下に ならべて いる ので、
+     どこから よばれても じぶんの 島の がめんを 出す。
+     こうしないと 🔬の ゲームを おえた とき「🔬かんがえかたの島」だけの がめんに
+     おりてしまい、もどるボタンが ない ので **そこから 出られなく なる**。 */
+  if (HOME_ISLAND) id = HOME_ISLAND;
+  var isl = islandById(id);
+  document.getElementById('isl-bar-title').textContent = isl.emoji + ' ' + isl.name;
+  var hero = document.getElementById('isl-hero');
+  hero.style.background = 'linear-gradient(180deg,' + isl.color + ' 0%, ' + isl.color + 'CC 100%)';
+  hero.innerHTML = '<div class="emoji">' + isl.emoji + '</div><h2>' + isl.name + '</h2><p>' + isl.desc + '</p>';
+  var h = '';
+  gamesOf(id).forEach(function(g){
+    var n = g.stages ? clearedCount(g.id) : 0;
+    var all = g.stages ? g.stages.length : 0;
+    var pct = all ? (n / all * 100) : 0;
+    var card = save.cards[g.id];
+    h += '<button class="game-card' + (g.soon ? ' soon' : '') + '" data-g="' + g.id + '">' +
+      '<span class="gc-ico" style="background:' + isl.color + '22">' + g.icon + '</span>' +
+      '<span class="gc-body">' +
+        '<span class="gc-name">' + g.name +
+          (card ? (card === 2 ? ' <span class="tag jhs">★きんカード</span>' : ' <span class="tag grade">カード</span>') : '') +
+          '<span class="tag grade">' + g.grade + '</span>' +
+          (g.jhs ? '<span class="tag jhs">🎓中学でも</span>' : '') +
+          (g.soon ? '<span class="tag soon">じゅんびちゅう</span>' : '') +
+        '</span>' +
+        '<span class="gc-sub">' + g.sub + (all ? '　' + n + '/' + all : '') + '</span>' +
+        (all ? '<span class="gc-meter"><i style="width:' + pct + '%"></i></span>' : '') +
+      '</span></button>';
+  });
+  /* 地図の ない アプリ（島が 1つだけ）では、🔬かんがえかたの島の 行き場が なくなる。
+     じぶんの 島の ゲームの 下に つづけて 出す。ひらく までは 「あと なに が いるか」を 見せる。 */
+  if (HOME_ISLAND && id === HOME_ISLAND) h += methodSection();
+  document.getElementById('game-list').innerHTML = h;
+  go('island');
+}
+/* まだ クリアして いない いちばん さいしょの もんだいの ばんごう */
+function firstTodo(g){
+  var si = 0;
+  for (var i=0;i<g.stages.length;i++){ if (!stageRec(g.id, i)){ si = i; break; } si = i; }
+  return si;
+}
+/* ゲームが 1つだけの アプリには この 一覧が ない（ビルドが がめんごと とりのぞく）。 */
+if (document.getElementById('game-list')) document.getElementById('game-list').addEventListener('click', function(e){
+  var id = attrUp(e.target, 'data-g');
+  if (!id) return;
+  var g = gameById(id);
+  if (g.soon){ alert('この ミニゲームは じゅんびちゅう。もうすこし まってね！'); return; }
+  startGame(id, firstTodo(g));
+});
+
+/* 🔬かんがえかたの島の ぶぶん（地図の ない アプリだけで つかう）。
+   ひらいて いれば ゲームを ならべ、まだなら 何を すれば ひらくかを 出す。 */
+function methodSection(){
+  var isl = islandById('method');
+  if (!isl) return '';
+  if (!methodOpen()){
+    return '<div class="method-lock">' +
+      '<span class="ml-ico">🔒</span>' +
+      '<b>' + isl.emoji + ' ' + isl.name + '</b>' +
+      '<span>⚡🧪🌱🌏 <b>4つの島 ぜんぶ</b>を クリアすると ひらくよ。' +
+      'ほかの島は 🏠アプリ集から いけるよ。</span></div>';
+  }
+  var h = '<div class="method-head">' + isl.emoji + ' ' + isl.name + '　<span>' + isl.desc + '</span></div>';
+  gamesOf('method').forEach(function(g){
+    var n = clearedCount(g.id), all = g.stages ? g.stages.length : 0;
+    var card = save.cards[g.id];
+    h += '<button class="game-card" data-g="' + g.id + '">' +
+      '<span class="gc-ico" style="background:' + isl.color + '22">' + g.icon + '</span>' +
+      '<span class="gc-body">' +
+        '<span class="gc-name">' + g.name +
+          (card ? (card === 2 ? ' <span class="tag jhs">★きんカード</span>' : ' <span class="tag grade">カードGET</span>') : '') +
+          '<span class="tag grade">' + g.grade + '</span>' +
+          (g.jhs ? '<span class="tag jhs">🎓中学でも</span>' : '') +
+        '</span>' +
+        '<span class="gc-sub">' + g.sub + (all ? '　' + n + '/' + all : '') + '</span>' +
+        (all ? '<span class="gc-meter"><i style="width:' + (all ? (n / all * 100) : 0) + '%"></i></span>' : '') +
+      '</span></button>';
+  });
+  return h;
+}
+
+/* ------------------------------------------------------------------ *
+ * 9. がめんの きりかえ と きどう
+ * ------------------------------------------------------------------ */
+function go(name){
+  /* ゲームの 画面から 出る ときは、うごいて いる アニメを とめる
+     （とめないと 見えない ところで まわり つづけて バッテリーを 食う） */
+  /* ゲームの がめんから 出たら 走って いる アニメを 止める。型（エンジン）に stop を
+     書いて おくと ここで よばれる（書かなくても よい）。 */
+  if (name !== 'game'){
+    for (var _k in ENGINES) if (ENGINES[_k].stop) ENGINES[_k].stop();
+    hideClearBar();                                  /* できた！の おびを のこさない */
+  }
+  ['home','island','game'].forEach(function(n){
+    var el = document.getElementById('screen-' + n);   /* 地図の ない アプリでは home が ない */
+    if (el) el.className = 'screen' + (n === name ? ' on' : '');
+  });
+  if (name === 'home') renderHome();
+  window.scrollTo(0, 0);
+}
+load();
+renderHome();
+/* 島が 1つだけの アプリ（エネルギーの島 など）には 海の 地図が ない
+   （ビルドが がめんごと とりのぞく）。島の 中（ミニゲームの 一覧）から はじめる。
+   🔬かんがえかたの島は その 一覧の 下に つづけて 出る（91-home.js の methodSection）。 */
+/* ゲームが 1つだけの アプリ（でんき回路 など）は、その ゲームを いきなり ひらく。
+   ゲームえらびも ポータルが する ので、1つしか ない 一覧を 見せる いみが ない。
+   つづきから はじまる（まだ クリアして いない さいしょの もんだい）。 */
+if (HOME_GAME) startGame(HOME_GAME, firstTodo(gameById(HOME_GAME)));
+else if (HOME_ISLAND) openIsland(HOME_ISLAND);
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
+}
+</script>
+
+<a href="../index.html" id="kagasen-home" aria-label="かがせんのHAPPYアプリ集にもどる">🏠 アプリ集</a>
+<style>
+#kagasen-home{
+  position:fixed; left:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:2147483000;
+  display:inline-flex; align-items:center; gap:5px; min-height:44px; padding:0 15px;
+  box-sizing:border-box; background:rgba(255,255,255,.93); color:#0F3350;
+  border:2px solid rgba(15,51,80,.10); border-radius:999px;
+  font-family:'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;
+  font-size:13px; font-weight:800; line-height:1; text-decoration:none; white-space:nowrap;
+  box-shadow:0 3px 10px rgba(15,51,80,.20); opacity:.94;
+}
+#kagasen-home:hover{opacity:1;}
+#kagasen-home:active{transform:translateY(1px);}
+@media print{#kagasen-home{display:none!important;}}
+</style>
+</body>
+</html>

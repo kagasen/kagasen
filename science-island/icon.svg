@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="サイエンスアイランドのアイコン">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5FC6E8"/><stop offset="1" stop-color="#0E5B7C"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sea)"/>
+  <!-- なみ -->
+  <path d="M0 372 q42 -20 84 0 t84 0 t84 0 t84 0 t84 0 t84 0 V512 H0 Z" fill="#0E5B7C" opacity=".45"/>
+  <path d="M0 412 q42 -20 84 0 t84 0 t84 0 t84 0 t84 0 t84 0 V512 H0 Z" fill="#0B4A66" opacity=".55"/>
+  <!-- 島 -->
+  <ellipse cx="256" cy="368" rx="176" ry="34" fill="#083C55" opacity=".35"/>
+  <path d="M72 356 Q96 288 168 276 Q206 200 268 210 Q356 220 382 296 Q436 308 440 356 Z" fill="#F7D9A0"/>
+  <path d="M126 314 Q182 224 258 232 Q340 240 368 314 Z" fill="#4FC46A"/>
+  <!-- フラスコ -->
+  <g transform="translate(256,246)">
+    <path d="M-16 -60 h32 v42 l40 66 a20 20 0 0 1 -17 30 h-78 a20 20 0 0 1 -17 -30 l40 -66 Z"
+          fill="#FFFDF6" stroke="#0F3350" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M-46 42 h92 a20 20 0 0 1 -17 36 h-58 a20 20 0 0 1 -17 -36 Z" fill="#3EA7D8"/>
+    <line x1="-24" y1="-60" x2="24" y2="-60" stroke="#0F3350" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="-8" cy="56" r="7" fill="#EAF9FF"/><circle cx="14" cy="64" r="5" fill="#EAF9FF"/>
+  </g>
+</svg>

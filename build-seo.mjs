@@ -102,9 +102,17 @@ function loadApps() {
   }));
 }
 
-/* ---- りかの4島＋全部入りは build-islands.mjs の 生成物。ここでは さわらない ---- */
-const GENERATED = new Set([
-  'science-island', 'energy-no-shima', 'tsubutsubu-no-shima', 'inochi-no-shima', 'chikyu-no-shima',
+/* ---- りかの アプリは science-island/build-islands.mjs の 生成物。ここでは さわらない ----
+   ここに 書きわすれると、build-seo が 生成物に 手を 入れて しまい
+   `build-islands.mjs --check` が「src と ちがう」と 言いつづける ことに なる。
+   build-islands.mjs が この 一覧を 読んで、じぶんの 出力が ぜんぶ 入って いるかを たしかめる。 */
+export const GENERATED = new Set([
+  'science-island',
+  /* 島ごと */
+  'energy-no-shima', 'tsubutsubu-no-shima', 'inochi-no-shima', 'chikyu-no-shima',
+  /* ⚡の 中の ゲームごと（2026-09-10）*/
+  'denki-kairo', 'teko-no-hataraki', 'furiko-goal',
+  'recycle-koujou', 'guruguru-hatsuden', 'denjishaku-battle',
 ]);
 
 /* ---- <title> の 下に SEOブロックを 置きなおす（何回 走らせても 同じ 形に なる）---- */

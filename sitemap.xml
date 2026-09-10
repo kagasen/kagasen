@@ -2,8 +2,53 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kagasen.github.io/kagasen/</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/denki-kairo/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/teko-no-hataraki/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/furiko-goal/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/recycle-koujou/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/guruguru-hatsuden/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/denjishaku-battle/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/tsubutsubu-no-shima/</loc>
+    <lastmod>2026-08-30</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/inochi-no-shima/</loc>
+    <lastmod>2026-08-30</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kagasen.github.io/kagasen/chikyu-no-shima/</loc>
+    <lastmod>2026-08-30</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kagasen.github.io/kagasen/sekai-o-mawarou/</loc>

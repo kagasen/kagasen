@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260" role="img">
+  <title>サイエンスアイランド ― 5つの島をめぐる小学校理科の学習ゲーム</title>
+  <!-- カードでは 上下が 切られる。かならず 見える y=78〜182 に 主役（5つの島）を おく。
+       左上（★お気に入りボタンの位置）も よけている。 -->
+  <defs>
+    <linearGradient id="si-sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7FD5EF"/><stop offset=".5" stop-color="#2E96BE"/><stop offset="1" stop-color="#0E5B7C"/>
+    </linearGradient>
+    <linearGradient id="si-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#CFF2FC"/><stop offset="1" stop-color="#7FD5EF"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="url(#si-sea)"/>
+  <rect width="400" height="86" fill="url(#si-sky)"/>
+  <circle cx="342" cy="30" r="26" fill="#FFE082" opacity=".85"/>
+  <!-- なみ（400pxを こえるまで くりかえす。とちゅうで 切れると たての すじが 出る） -->
+  <path d="M0 94 q26 -9 52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0 V120 H0 Z" fill="#4FB6DC" opacity=".45"/>
+  <path d="M0 196 q30 -11 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 V260 H0 Z" fill="#0E5B7C" opacity=".45"/>
+  <path d="M0 226 q30 -11 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 V260 H0 Z" fill="#0B4A66" opacity=".5"/>
+
+  <!-- 島から島へ わたる ルート -->
+  <path d="M60 146 Q112 108 148 138 Q186 170 216 132 Q252 100 288 136 Q320 166 352 134"
+        fill="none" stroke="#FFFDF6" stroke-width="4" stroke-linecap="round"
+        stroke-dasharray="2 12" opacity=".75"/>
+
+  <!-- 5つの島（y=110〜166 ＝ 安全ゾーンの ど真ん中） -->
+  <g>
+    <!-- ⚡ エネルギー -->
+    <g transform="translate(62,132) scale(1.18)">
+      <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".3"/>
+      <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#F7D9A0"/>
+      <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#F2A33C"/>
+      <path d="M4 -8 L-8 8 L0 8 L-4 20 L10 2 L2 2 Z" fill="#FFF6DE"/>
+    </g>
+    <!-- 🧪 つぶつぶ -->
+    <g transform="translate(134,132) scale(1.18)">
+      <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".3"/>
+      <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#D8D2F7"/>
+      <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#8B7BE8"/>
+      <path d="M-4 -13 h9 v10 l9 16 a5 5 0 0 1 -4 8 h-19 a5 5 0 0 1 -4 -8 l9 -16 Z" fill="#FFF6DE"/>
+      <path d="M-11 9 h23 a5 5 0 0 1 -4 8 h-15 a5 5 0 0 1 -4 -8 Z" fill="#5FC6E8"/>
+    </g>
+    <!-- 🌱 いのち -->
+    <g transform="translate(206,132) scale(1.18)">
+      <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".3"/>
+      <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#CDEFD3"/>
+      <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#4FC46A"/>
+      <path d="M0 12 V-6" stroke="#FFF6DE" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M0 -1 Q-14 -3 -13 -13 Q-2 -14 0 -1 Z" fill="#FFF6DE"/>
+      <path d="M0 -3 Q13 -6 13 -15 Q2 -15 0 -3 Z" fill="#FFF6DE"/>
+    </g>
+    <!-- 🌏 ちきゅう -->
+    <g transform="translate(278,132) scale(1.18)">
+      <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".3"/>
+      <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#C7E7F5"/>
+      <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#3EA7D8"/>
+      <circle cx="1" cy="-1" r="13" fill="#FFF6DE"/>
+      <path d="M-7 -7 q7 4 3 10 M6 -10 q-2 7 6 8" stroke="#3EA7D8" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    <!-- 🔬 かんがえかた（まだ ロック） -->
+    <g transform="translate(350,132) scale(1.18)">
+      <ellipse cx="0" cy="24" rx="34" ry="8" fill="#083C55" opacity=".3"/>
+      <path d="M-33 20 Q-27 4 -8 0 Q2 -16 16 -10 Q31 -5 33 14 Z" fill="#F9CFDD"/>
+      <path d="M-22 8 Q-8 -14 8 -10 Q24 -6 26 10 Z" fill="#E8618C"/>
+      <rect x="-9" y="-2" width="19" height="15" rx="3" fill="#FFF6DE"/>
+      <path d="M-4 -2 v-4 a5 5 0 0 1 10 0 v4" fill="none" stroke="#FFF6DE" stroke-width="3.4"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+{
+  "name": "リサイクル工場",
+  "short_name": "リサイクル工場",
+  "description": "同じ ごみを つないで けして 加工品を つくる パズル。もえる・もえない・きけんの 分けかたを あそびながら おぼえる。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2A33C",
+  "theme_color": "#F2A33C",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

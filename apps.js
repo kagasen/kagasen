@@ -1,19 +1,72 @@
 const appsData = [
     {
-        id: "energy-no-shima",
-        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
-        title: "エネルギーの島",
-        description: "でんき回路・てこ・ふりこ・発電など、エネルギーを たしかめる 6つのゲーム・全104もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
+        id: "denki-kairo",
+        title: "でんき回路",
+        description: "かん電池・豆電球・スイッチを つないで あかりを つける 全31もん。直列・並列・ショートまで、さわって たしかめよう。",
         category: "science",
         tagName: "理科",
-        date: "2026/08/30",
+        date: "2026/09/10",
         colorClass: "subject-orange",
-        image: "images/energy-no-shima.svg",
-        link: "energy-no-shima/index.html"
+        image: "images/denki-kairo.svg",
+        link: "denki-kairo/index.html"
+    },
+    {
+        id: "teko-no-hataraki",
+        title: "てこのはたらき",
+        description: "おもりを つるして てこを つり合わせる 全35もん。「おもさ×きょり」の きまりを じぶんで 見つけよう。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/09/10",
+        colorClass: "subject-yellow",
+        image: "images/teko-no-hataraki.svg",
+        link: "teko-no-hataraki/index.html"
+    },
+    {
+        id: "furiko-goal",
+        title: "ふりこゴール",
+        description: "ふりこを ゆらして ゴールに とめる 全30もん。長さ・おもさ・ふれはばを かえて 1おうふくの 時間を たしかめよう。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/09/10",
+        colorClass: "subject-green",
+        image: "images/furiko-goal.svg",
+        link: "furiko-goal/index.html"
+    },
+    {
+        id: "recycle-koujou",
+        title: "リサイクル工場",
+        description: "同じ ごみを つないで けして 加工品を つくる パズル。もえる・もえない・きけんの 分けかたを あそびながら おぼえよう。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/09/10",
+        colorClass: "subject-blue",
+        image: "images/recycle-koujou.svg",
+        link: "recycle-koujou/index.html"
+    },
+    {
+        id: "guruguru-hatsuden",
+        title: "ぐるぐる発電",
+        description: "手回し発電機を 10びょう まわして 電気を ためる アクション。豆電球と LED、どっちが 長く もつ？",
+        category: "science",
+        tagName: "理科",
+        date: "2026/09/10",
+        colorClass: "subject-red",
+        image: "images/guruguru-hatsuden.svg",
+        link: "guruguru-hatsuden/index.html"
+    },
+    {
+        id: "denjishaku-battle",
+        title: "でんじしゃくバトル",
+        description: "N極・S極の しりぞけ合う 力で こまを はじく 対戦ゲーム。近いほど 力が 強い ことを 手で たしかめよう。",
+        category: "science",
+        tagName: "理科",
+        date: "2026/09/10",
+        colorClass: "subject-purple",
+        image: "images/denjishaku-battle.svg",
+        link: "denjishaku-battle/index.html"
     },
     {
         id: "tsubutsubu-no-shima",
-        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "つぶつぶの島",
         description: "もののとけ方・水よう液・もえ方・重さを「つぶ」で考える 4つのゲーム・全13もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
         category: "science",
@@ -25,7 +78,6 @@ const appsData = [
     },
     {
         id: "inochi-no-shima",
-        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "いのちの島",
         description: "人のからだ・植物そだて・食物れんさ・花・メダカの 5つのゲーム・全15もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
         category: "science",
@@ -37,7 +89,6 @@ const appsData = [
     },
     {
         id: "chikyu-no-shima",
-        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "ちきゅうの島",
         description: "月と太陽・天気の変化・流れる水・土地のつくりの 4つのゲーム・全12もん。4つの島 ぜんぶで かんがえかたの島が ひらくよ。",
         category: "science",

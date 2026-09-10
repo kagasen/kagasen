@@ -1,0 +1,15 @@
+{
+  "name": "サイエンスアイランド",
+  "short_name": "りかの島",
+  "description": "小学校理科を5つの島でめぐる学習ゲーム。電気回路・てこ・月と太陽など、中学・高校まで役立つ内容を、さわって確かめながら身につける。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1B7FA8",
+  "theme_color": "#1B7FA8",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

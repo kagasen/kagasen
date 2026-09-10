@@ -1,0 +1,20 @@
+{
+  "name": "ふりこゴール",
+  "short_name": "ふりこ",
+  "description": "ふりこを ゆらして ゴールに とめる 全30もん。長さ・おもさ・ふれはばを かえて、1おうふくの 時間の きまりを たしかめる。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2A33C",
+  "theme_color": "#F2A33C",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

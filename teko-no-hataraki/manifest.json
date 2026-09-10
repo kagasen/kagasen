@@ -1,0 +1,20 @@
+{
+  "name": "てこのはたらき",
+  "short_name": "てこ",
+  "description": "おもりを つるして てこを つり合わせる 全35もん。「おもさ×きょり」の きまりを じぶんで 見つける 小学校6年の理科。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2A33C",
+  "theme_color": "#F2A33C",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

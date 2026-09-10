@@ -319,6 +319,101 @@
     let life = 5;
     let frameCount = 0;
     let shakeTime = 0;
+    let paused = false;
+    /** ポーズを押した時刻（難易度アップのタイマーを止めておくため） */
+    let pausedAt = 0;
+    /** 弾が判定ラインに当たったときにラインを光らせるカウンタ */
+    let judgeLineFlash = 0;
+
+    /** 「見えるところで当たる」ための判定ライン。
+     *  これより上（HUDと重なる領域・画面外）では弾と敵は当たらない＝必ず見える位置で撃破される。 */
+    const JUDGE_LINE_Y = 170;
+    /** 敵を逃したと判定するライン。画面外ではなく見える位置で✕を出すため少し内側にする。 */
+    const MISS_LINE_Y = 780;
+
+    /** コンボ（正解を連続で撃つと伸びる。ミスで0に戻る） */
+    let combo = 0;
+    let maxCombo = 0;
+    /** この回で作れた漢字（ゲームオーバー画面のふりかえり用・重複なし） */
+    let learnedKanji = [];
+    /** 逃した・まちがえた漢字（ふりかえり用・重複なし） */
+    let missedKanji = [];
+    /** 部首ごとのハイスコア（localStorage） */
+    let highScores = {};
+    const HIGHSCORE_KEY = 'kannjibusyu-ta:highscores:v1';
+    let isNewRecord = false;
+    /** ゲームオーバーになった時刻（すぐタップしてもタイトルに飛ばないようにするため） */
+    let gameoverAt = 0;
+
+    /** 画面まん中に出す「なにが正解したか」のおしらせ。連打しても必ずここに出る。 */
+    let resultBanner = null; // { kind:'ok'|'ng'|'miss'|'cut', bushu, tsukuri, kanji, yomi, combo, life, maxLife }
+    /** 連打で一瞬で消えないように、次に出すおしらせを待たせておく列 */
+    let resultQueue = [];
+    const RESULT_BANNER_Y = 285;
+    /** おしらせを最低これだけのフレーム数は出しっぱなしにする（約0.4秒） */
+    const RESULT_MIN_SHOW_FRAMES = 24;
+
+    // 部首えらび画面のパネル配置（描画とタップ判定で同じ値を使う）
+    const SELECT_PANEL_W = 100;
+    const SELECT_PANEL_H = 170;
+    const SELECT_PANEL_GAP = 12;
+    const SELECT_PANEL_Y = 330;
+    function selectPanelX(index, count) {
+        const totalWidth = count * SELECT_PANEL_W + (count - 1) * SELECT_PANEL_GAP;
+        const startX = (canvas.width - totalWidth) / 2 + SELECT_PANEL_W / 2;
+        return startX + index * (SELECT_PANEL_W + SELECT_PANEL_GAP);
+    }
+
+    function loadHighScores() {
+        try {
+            const raw = localStorage.getItem(HIGHSCORE_KEY);
+            highScores = raw ? JSON.parse(raw) : {};
+            if (!highScores || typeof highScores !== 'object') highScores = {};
+        } catch (e) {
+            highScores = {};
+        }
+    }
+
+    function saveHighScore(bushu, value) {
+        if (!bushu) return false;
+        const prev = highScores[bushu] || 0;
+        if (value <= prev) return false;
+        highScores[bushu] = value;
+        try { localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(highScores)); } catch (e) {}
+        return true;
+    }
+
+    /** 画面まん中に結果を出す（正解／まちがい／にがした）。
+     *  連打で前のおしらせが一瞬で消えないよう、出したばかりのときは列に並べて順番に見せる。 */
+    function showResult(kind, bushu, tsukuri, kanji, yomi) {
+        const span = kind === 'ok' ? 75 : 100;
+        const item = {
+            kind: kind,
+            bushu: bushu,
+            tsukuri: tsukuri,
+            kanji: kanji || '',
+            yomi: yomi || '',
+            combo: combo,
+            life: span,
+            maxLife: span
+        };
+
+        // まちがい・見逃しは今すぐ知らせたいので、待っているものを追いこして表示する
+        if (kind !== 'ok') {
+            resultQueue = [];
+            resultBanner = item;
+            return;
+        }
+
+        const shownFrames = resultBanner ? resultBanner.maxLife - resultBanner.life : Infinity;
+        if (resultBanner && shownFrames < RESULT_MIN_SHOW_FRAMES) {
+            if (resultQueue.length < 3) resultQueue.push(item);
+            // 次が待っているので、今のおしらせは最低表示時間で切りあげる
+            resultBanner.life = Math.min(resultBanner.life, RESULT_MIN_SHOW_FRAMES - shownFrames);
+        } else {
+            resultBanner = item;
+        }
+    }
     /** PLAY開始からの経過で判定（ハートは開始20秒間は出さない） */
     let playStartTime = 0;
     const HEART_SPAWN_DELAY_MS = 20000;
@@ -360,15 +455,27 @@
         let master = null;
         let bgmTimer = null;
         let noteIndex = 0;
+        let muted = false;
+        const MUTE_KEY = 'kannjibusyu-ta:muted:v1';
+        try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
 
         function getCtx() {
             if (!ctx) {
                 ctx = new (window.AudioContext || window.webkitAudioContext)();
                 master = ctx.createGain();
-                master.gain.value = 0.38;
+                master.gain.value = muted ? 0 : 0.38;
                 master.connect(ctx.destination);
             }
             return ctx;
+        }
+
+        function isMuted() { return muted; }
+
+        function toggleMute() {
+            muted = !muted;
+            try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+            if (master) master.gain.value = muted ? 0 : 0.38;
+            return muted;
         }
 
         function out() {
@@ -452,6 +559,61 @@
             osc2.stop(t0 + 0.18);
         }
 
+        /** 正解のピロリン。コンボが伸びるほど高くなる（最大+1オクターブ） */
+        function playCorrect(comboCount) {
+            const c = getCtx();
+            const t0 = c.currentTime;
+            const step = Math.min(comboCount || 0, 12);
+            const base = 523.25 * Math.pow(2, step / 24); // 半音ずつ上がっていく
+            [0, 0.06, 0.12].forEach(function (delay, i) {
+                const osc = c.createOscillator();
+                const g = c.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(base * [1, 1.26, 1.5][i], t0 + delay);
+                g.gain.setValueAtTime(0.09, t0 + delay);
+                g.gain.exponentialRampToValueAtTime(0.001, t0 + delay + 0.12);
+                osc.connect(g);
+                g.connect(out());
+                osc.start(t0 + delay);
+                osc.stop(t0 + delay + 0.13);
+            });
+        }
+
+        /** まちがい・にがしたときのブー音 */
+        function playMiss() {
+            const c = getCtx();
+            const t0 = c.currentTime;
+            const osc = c.createOscillator();
+            const g = c.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, t0);
+            osc.frequency.exponentialRampToValueAtTime(70, t0 + 0.32);
+            g.gain.setValueAtTime(0.12, t0);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.34);
+            osc.connect(g);
+            g.connect(out());
+            osc.start(t0);
+            osc.stop(t0 + 0.35);
+        }
+
+        /** ハートを取ったときのキラリン */
+        function playHeal() {
+            const c = getCtx();
+            const t0 = c.currentTime;
+            [784, 988, 1319].forEach(function (f, i) {
+                const osc = c.createOscillator();
+                const g = c.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, t0 + i * 0.07);
+                g.gain.setValueAtTime(0.1, t0 + i * 0.07);
+                g.gain.exponentialRampToValueAtTime(0.001, t0 + i * 0.07 + 0.18);
+                osc.connect(g);
+                g.connect(out());
+                osc.start(t0 + i * 0.07);
+                osc.stop(t0 + i * 0.07 + 0.19);
+            });
+        }
+
         const bassPattern = [130.81, 98.0, 130.81, 82.41];
         const beatMs = 158;
 
@@ -502,8 +664,13 @@
             playShoot: playShoot,
             playSlash: playSlash,
             playEnemyDestroyed: playEnemyDestroyed,
+            playCorrect: playCorrect,
+            playMiss: playMiss,
+            playHeal: playHeal,
             startBgm: startBgm,
-            stopBgm: stopBgm
+            stopBgm: stopBgm,
+            isMuted: isMuted,
+            toggleMute: toggleMute
         };
     })();
 
@@ -565,9 +732,9 @@
                 this.y += dy * 0.15;
             }
 
-            // 画面外に出ないように制限
+            // 画面外に出ないように制限。判定ラインより上には行けない（そこは当たらない場所なので）
             this.x = Math.max(this.width/2, Math.min(canvas.width - this.width/2, this.x));
-            this.y = Math.max(this.height/2, Math.min(canvas.height - this.height/2, this.y));
+            this.y = Math.max(JUDGE_LINE_Y + this.height/2 + 10, Math.min(canvas.height - this.height/2, this.y));
 
             // 刀の更新
             if (this.slashCooldown > 0) this.slashCooldown--;
@@ -733,7 +900,12 @@
                 this.y += this.vy;
             }
 
-            if (this.y < -50 || this.x < -50 || this.x > canvas.width + 50) {
+            // 判定ラインより上には弾を通さない（見えないところで当たらないようにするため）
+            if (this.y - this.height / 2 <= JUDGE_LINE_Y) {
+                this.markedForDeletion = true;
+                judgeLineFlash = 8;
+            }
+            if (this.x < -50 || this.x > canvas.width + 50) {
                 this.markedForDeletion = true;
             }
         }
@@ -779,7 +951,13 @@
     // --- 不足していた Enemy クラスを復元 ---
     class Enemy {
         constructor() {
+            // 文字が読めるよう、出てくるときに他の敵と重ならない位置をさがす
             this.x = Math.random() * (canvas.width - 80) + 40;
+            for (let tryCount = 0; tryCount < 8; tryCount++) {
+                const tooClose = enemies.some(e => e.y < JUDGE_LINE_Y && Math.abs(e.x - this.x) < 80);
+                if (!tooClose) break;
+                this.x = Math.random() * (canvas.width - 80) + 40;
+            }
             this.y = -50;
             this.baseX = this.x;
             // スピードをさらに遅くして、じっくり考えられるようにする
@@ -813,9 +991,14 @@
             }
         }
 
+        /** 判定ラインより下に全身が出ている＝プレイヤーから見えている敵だけ当たる */
+        isHittable() {
+            return this.y - this.height / 2 >= JUDGE_LINE_Y;
+        }
+
         update() {
             this.y += this.speed;
-            
+
             if (this.moveType === 1) {
                 // 個体ごとに違う幅・速さで蛇行
                 this.x = this.baseX + Math.sin(this.angle) * this.amplitude;
@@ -830,17 +1013,14 @@
             // 画面外（左右）に完全にはみ出さないように制限
             this.x = Math.max(this.width/2 + 10, Math.min(canvas.width - this.width/2 - 10, this.x));
 
-            if (this.y > canvas.height + 50) {
+            // 見逃し判定は画面外ではなく「見えるライン」で行う（何を逃したか分かるように）
+            if (this.y > MISS_LINE_Y) {
                 this.markedForDeletion = true;
-                
+
                 // 正解の漢字を見逃したらライフマイナス1
                 if (state === 'PLAY' && player && isValidKanji(player.bushu, this.tsukuri)) {
-                    life -= 1;
-                    shakeTime = 15;
-                    particles.push(new Particle(player.x, player.y, 'batsu'));
-                    if (life <= 0) {
-                        state = 'GAMEOVER';
-                    }
+                    const kanji = KANJI_MAP[player.bushu][this.tsukuri];
+                    onMiss('miss', this.tsukuri, kanji, this.x, MISS_LINE_Y - 30);
                 }
             }
         }
@@ -912,17 +1092,19 @@
     }
 
     class Particle {
-        constructor(x, y, type, text = '', yomi = '') {
-            this.x = x;
-            this.y = y;
-            this.type = type; // 'maru', 'batsu', 'explosion', 'score', 'kanji'
+        // 合体した漢字そのものは画面まん中の resultBanner が受け持つ。
+        // ここは「どの敵に当たったか」を示すその場のしるし（〇✕・得点・爆発）だけ。
+        constructor(x, y, type, text = '') {
+            // 画面のはしや HUD の裏に出て見えなくならないよう、必ず見える範囲に入れる
+            this.x = Math.max(60, Math.min(canvas.width - 60, x));
+            this.y = Math.max(JUDGE_LINE_Y + 40, Math.min(canvas.height - 80, y));
+            this.type = type; // 'maru', 'batsu', 'explosion', 'score'
             this.text = text;
-            this.yomi = yomi;
             this.life = 60;
             this.maxLife = 60;
             this.vx = (Math.random() - 0.5) * 4;
             this.vy = (Math.random() - 0.5) * 4;
-            if (type === 'score' || type === 'maru' || type === 'batsu' || type === 'kanji') {
+            if (type === 'score' || type === 'maru' || type === 'batsu') {
                 this.vx = 0;
                 this.vy = -1; // 上にゆっくり昇る
             }
@@ -954,21 +1136,6 @@
                 ctx.moveTo(-s, -s); ctx.lineTo(s, s);
                 ctx.moveTo(s, -s); ctx.lineTo(-s, s);
                 ctx.stroke();
-            } else if (this.type === 'kanji') {
-                // 合体した漢字と読み（ひらがな）
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#ffff00';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#ffff00';
-                ctx.font = 'bold 50px ' + FONT_FAMILY;
-                ctx.fillText(this.text, 0, this.yomi ? -10 : 0);
-                ctx.shadowBlur = 0;
-                if (this.yomi) {
-                    ctx.fillStyle = '#ffffaa';
-                    ctx.font = '22px ' + FONT_FAMILY;
-                    ctx.fillText(this.yomi, 0, 26);
-                }
             } else if (this.type === 'score') {
                 ctx.fillStyle = '#ffff00';
                 ctx.font = 'bold 24px ' + FONT_FAMILY;
@@ -1039,6 +1206,50 @@
         }
     }
 
+    /** そのつくりが、どの部首となら漢字になるかを1つ返す（まちがえたときのヒント用） */
+    function findBushuFor(tsukuri, exceptBushu) {
+        for (const bushu in KANJI_MAP) {
+            if (bushu === exceptBushu) continue;
+            if (KANJI_MAP[bushu][tsukuri]) return bushu;
+        }
+        return null;
+    }
+
+    /** ゲームオーバーへ。ハイスコアの更新もここで行う */
+    function gameOver() {
+        state = 'GAMEOVER';
+        gameoverAt = performance.now();
+        isNewRecord = player ? saveHighScore(player.bushu, score) : false;
+        combo = 0;
+    }
+
+    /** 正解の敵を撃ったとき。得点・コンボ・画面まん中のおしらせをまとめて出す */
+    function onCorrect(tsukuri, kanji, x, y) {
+        combo++;
+        if (combo > maxCombo) maxCombo = combo;
+        const bonus = Math.min(combo - 1, 10) * 20; // コンボが伸びるほどボーナス（最大+200）
+        score += 100 + bonus;
+        if (kanji && learnedKanji.indexOf(kanji) === -1) learnedKanji.push(kanji);
+        showResult('ok', player.bushu, tsukuri, kanji, KANJI_YOMI[kanji] || '');
+        particles.push(new Particle(x, y, 'maru'));
+        particles.push(new Particle(x, y - 30, 'score', bonus > 0 ? `+${100 + bonus}  ${combo}れんぞく！` : `+100`));
+        spawnExplosion(x, y);
+        GameAudio.playCorrect(combo);
+    }
+
+    /** まちがえた・にがしたとき。ライフを減らして、何が正しかったのかを見せる */
+    function onMiss(kind, tsukuri, kanji, x, y) {
+        combo = 0;
+        life -= 1;
+        shakeTime = 15;
+        if (kanji && missedKanji.indexOf(kanji) === -1) missedKanji.push(kanji);
+        showResult(kind, player ? player.bushu : '', tsukuri, kanji, kanji ? (KANJI_YOMI[kanji] || '') : '');
+        particles.push(new Particle(x, y, 'batsu'));
+        spawnExplosion(x, y);
+        GameAudio.playMiss();
+        if (life <= 0) gameOver();
+    }
+
     // --- ゲームループ関連 ---
 
     function resetGame() {
@@ -1050,13 +1261,33 @@
         enemies = [];
         items = []; // アイテムもリセット
         particles = [];
+        combo = 0;
+        maxCombo = 0;
+        learnedKanji = [];
+        missedKanji = [];
+        resultBanner = null;
+        resultQueue = [];
+        isNewRecord = false;
+        paused = false;
+        shakeTime = 0;
+        judgeLineFlash = 0;
         pointer.active = false; // タッチ状態リセット
     }
 
     function update() {
         frameCount++;
 
-        if (state === 'PLAY') {
+        if (judgeLineFlash > 0) judgeLineFlash--;
+
+        // 画面まん中のおしらせは、ポーズ中でも消えないよう PLAY 中だけ寿命を減らす
+        if (resultBanner && state === 'PLAY' && !paused) {
+            resultBanner.life--;
+            if (resultBanner.life <= 0) {
+                resultBanner = resultQueue.length > 0 ? resultQueue.shift() : null;
+            }
+        }
+
+        if (state === 'PLAY' && !paused) {
             player.update();
 
             // 弾の更新
@@ -1074,6 +1305,7 @@
                 // プレイヤーとハートの衝突判定
                 if (!item.markedForDeletion && checkCollision(player, item)) {
                     item.markedForDeletion = true;
+                    GameAudio.playHeal();
                     if (life < 5) {
                         life++; // ライフ回復（最大5）
                         particles.push(new Particle(player.x, player.y - 20, 'score', '+1 💖'));
@@ -1100,6 +1332,9 @@
             enemies.forEach(enemy => {
                 enemy.update();
 
+                // 判定ラインより上（＝まだ画面のじゃまな位置・HUDの裏）にいる敵には当たらない
+                if (!enemy.isHittable()) return;
+
                 // 刀(斬撃)と敵の衝突判定
                 if (player.isSlashing && !enemy.markedForDeletion) {
                     const dx = enemy.x - player.x;
@@ -1109,14 +1344,10 @@
                     if (dist < player.slashRadius + enemy.width/2 && dy < 10) {
                         enemy.markedForDeletion = true;
                         GameAudio.playEnemyDestroyed();
-                        
+
                         if (isValidKanji(player.bushu, enemy.tsukuri)) {
                             // ペナルティ：正解の漢字を切ってしまった
-                            life -= 1;
-                            shakeTime = 15;
-                            particles.push(new Particle(enemy.x, enemy.y, 'batsu'));
-                            spawnExplosion(enemy.x, enemy.y);
-                            if (life <= 0) state = 'GAMEOVER';
+                            onMiss('cut', enemy.tsukuri, KANJI_MAP[player.bushu][enemy.tsukuri], enemy.x, enemy.y);
                         } else {
                             // セーフ：不正解の漢字を切り捨てた
                             score += 100; // 刀で切った時のポイント追加
@@ -1130,7 +1361,7 @@
                 bullets.forEach(bullet => {
                     if (!bullet.markedForDeletion && !enemy.markedForDeletion) {
                         if (checkCollision(bullet, enemy)) {
-                            
+
                             // レーザーの貫通処理
                             if (bullet.piercing) {
                                 if (bullet.hitEnemies.has(enemy)) return; // 既に当たった敵は無視
@@ -1138,28 +1369,16 @@
                             } else {
                                 bullet.markedForDeletion = true;
                             }
-                            
+
                             enemy.markedForDeletion = true;
                             GameAudio.playEnemyDestroyed();
-                            
+
                             if (isValidKanji(player.bushu, enemy.tsukuri)) {
                                 // 正解！
-                                score += 100;
-                                // 〇と得点の代わりに合体漢字を表示
-                                const combinedKanji = KANJI_MAP[player.bushu][enemy.tsukuri];
-                                const yomi = (KANJI_YOMI[combinedKanji] || '');
-                                particles.push(new Particle(enemy.x, enemy.y, 'kanji', combinedKanji, yomi));
-                                spawnExplosion(enemy.x, enemy.y);
+                                onCorrect(enemy.tsukuri, KANJI_MAP[player.bushu][enemy.tsukuri], enemy.x, enemy.y);
                             } else {
-                                // 不正解！
-                                life -= 1;
-                                shakeTime = 15; // 画面揺れ
-                                particles.push(new Particle(enemy.x, enemy.y, 'batsu'));
-                                spawnExplosion(enemy.x, enemy.y);
-                                
-                                if (life <= 0) {
-                                    state = 'GAMEOVER';
-                                }
+                                // 不正解！（この部首とはくっつかないつくりを撃ってしまった）
+                                onMiss('ng', enemy.tsukuri, '', enemy.x, enemy.y);
                             }
                         }
                     }
@@ -1169,13 +1388,14 @@
                 if (!enemy.markedForDeletion && checkCollision(player, enemy)) {
                     enemy.markedForDeletion = true;
                     GameAudio.playEnemyDestroyed();
+                    combo = 0;
                     life -= 1;
                     shakeTime = 15;
                     particles.push(new Particle(player.x, player.y, 'batsu'));
+                    particles.push(new Particle(player.x, player.y - 40, 'score', 'ぶつかった！'));
                     spawnExplosion(player.x, player.y);
-                    if (life <= 0) {
-                        state = 'GAMEOVER';
-                    }
+                    GameAudio.playMiss();
+                    if (life <= 0) gameOver();
                 }
             });
 
@@ -1185,6 +1405,265 @@
             particles.forEach(p => p.update());
             particles = particles.filter(p => p.life > 0);
         }
+    }
+
+    // --- 画面上のボタン（描画とタップ判定で同じ値を使う） ---
+    const BTN_PAUSE = { x: canvas.width - 42, y: 40, r: 28, label: '⏸' };
+    const BTN_MUTE = { x: canvas.width - 106, y: 40, r: 28 };
+    const BTN_SLASH = { x: canvas.width - 70, y: canvas.height - 70, r: 46 };
+
+    function isInsideButton(btn, x, y) {
+        return Math.sqrt((x - btn.x) ** 2 + (y - btn.y) ** 2) <= btn.r;
+    }
+
+    function drawCircleButton(btn, label, enabled) {
+        ctx.save();
+        ctx.fillStyle = enabled ? 'rgba(0, 255, 255, 0.22)' : 'rgba(120, 120, 120, 0.25)';
+        ctx.beginPath();
+        ctx.arc(btn.x, btn.y, btn.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = enabled ? '#00ffff' : '#666666';
+        ctx.stroke();
+        ctx.fillStyle = enabled ? '#ffffff' : '#999999';
+        ctx.font = 'bold 20px ' + FONT_FAMILY;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, btn.x, btn.y);
+        ctx.restore();
+    }
+
+    /** 「ここから下なら当たる」ラインを描く。ここが今回の一番のポイント。 */
+    function drawJudgeLine() {
+        ctx.save();
+        // 上部（判定の外）をうっすら暗くして、当たらない場所だと分かるようにする
+        const grad = ctx.createLinearGradient(0, 0, 0, JUDGE_LINE_Y);
+        grad.addColorStop(0, 'rgba(0, 8, 20, 0.92)');
+        grad.addColorStop(0.7, 'rgba(0, 8, 20, 0.55)');
+        grad.addColorStop(1, 'rgba(0, 8, 20, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, JUDGE_LINE_Y);
+
+        // ライン本体（弾が当たると一瞬光る）
+        const glow = judgeLineFlash > 0 ? 1 : 0.55 + Math.abs(Math.sin(frameCount * 0.05)) * 0.25;
+        ctx.globalAlpha = glow;
+        ctx.strokeStyle = '#00ffcc';
+        ctx.lineWidth = judgeLineFlash > 0 ? 4 : 2;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = '#00ffcc';
+        ctx.beginPath();
+        ctx.setLineDash([14, 10]);
+        ctx.moveTo(0, JUDGE_LINE_Y);
+        ctx.lineTo(canvas.width, JUDGE_LINE_Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.shadowBlur = 0;
+
+        // ラインの意味を書いておく（最初の30秒だけ）
+        if (playStartTime > 0 && performance.now() - playStartTime < 30000) {
+            ctx.globalAlpha = 0.9;
+            ctx.fillStyle = '#00ffcc';
+            ctx.font = 'bold 15px ' + FONT_FAMILY;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('▼ ここから下で あたる ▼', canvas.width / 2, JUDGE_LINE_Y + 6);
+        }
+        ctx.restore();
+    }
+
+    /** 見逃しライン（ここを通りすぎるとミス） */
+    function drawMissLine() {
+        ctx.save();
+        ctx.globalAlpha = 0.4 + Math.abs(Math.sin(frameCount * 0.04)) * 0.2;
+        ctx.strokeStyle = '#ff4477';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.setLineDash([8, 12]);
+        ctx.moveTo(0, MISS_LINE_Y);
+        ctx.lineTo(canvas.width, MISS_LINE_Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+    }
+
+    /** 画面まん中の「なにが正解したか」のおしらせ。連打しても必ずここに出る。 */
+    function drawResultBanner() {
+        if (!resultBanner) return;
+        const b = resultBanner;
+        const t = b.life / b.maxLife;              // 1 → 0
+        const appear = Math.min(1, (1 - t) * 6);   // 出はじめのポップ
+        const alpha = t < 0.25 ? t / 0.25 : 1;     // 終わりぎわのフェード
+
+        const w = 500;
+        const h = b.kind === 'ok' ? 120 : 138;
+        const x = canvas.width / 2;
+        const y = RESULT_BANNER_Y;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        ctx.scale(0.85 + appear * 0.15, 0.85 + appear * 0.15);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const accent = b.kind === 'ok' ? '#00ff88' : '#ff5577';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-w / 2, -h / 2, w, h, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // 見出し
+        ctx.fillStyle = accent;
+        ctx.font = 'bold 20px ' + FONT_FAMILY;
+        const headline = {
+            ok: b.combo >= 2 ? `せいかい！  ${b.combo} れんぞく！` : 'せいかい！',
+            ng: 'この つくりは くっつかないよ',
+            miss: 'にがした！',
+            cut: 'きっては だめ！'
+        }[b.kind] || '';
+        ctx.fillText(headline, 0, -h / 2 + 22);
+
+        if (b.kind === 'ng') {
+            // まちがえて撃ったとき：くっつかないことと、どの部首なら合うかを見せる
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 40px ' + FONT_FAMILY;
+            ctx.fillText(`${b.bushu} ＋ ${b.tsukuri} ？`, 0, -4);
+            const other = findBushuFor(b.tsukuri, b.bushu);
+            ctx.font = '18px ' + FONT_FAMILY;
+            ctx.fillStyle = '#ffdd88';
+            if (other) {
+                ctx.fillText(`「${b.tsukuri}」は ${other} と くっつくよ → ${KANJI_MAP[other][b.tsukuri]}`, 0, 44);
+            } else {
+                ctx.fillText('この つくりは 刀できりすてよう！', 0, 44);
+            }
+        } else {
+            // 正解・見逃し・切りすぎ：合体した漢字と読みを大きく見せる
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 34px ' + FONT_FAMILY;
+            ctx.fillText(`${b.bushu} ＋ ${b.tsukuri} ＝`, -70, 8);
+
+            ctx.fillStyle = b.kind === 'ok' ? '#ffff33' : '#ffaacc';
+            ctx.shadowBlur = 18;
+            ctx.shadowColor = ctx.fillStyle;
+            ctx.font = 'bold 58px ' + FONT_FAMILY;
+            ctx.fillText(b.kanji, 120, 8);
+            ctx.shadowBlur = 0;
+
+            if (b.yomi) {
+                ctx.fillStyle = '#ffffaa';
+                ctx.font = '20px ' + FONT_FAMILY;
+                ctx.fillText(b.yomi, 120, h / 2 - 18);
+            }
+        }
+        ctx.restore();
+    }
+
+    /** 画面上部のスコア・ライフ・コンボ・じぶんの部首 */
+    function drawHud() {
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 26px ' + FONT_FAMILY;
+        ctx.fillText(`スコア: ${score}`, 20, 16);
+
+        let heartStr = '';
+        for (let i = 0; i < life; i++) heartStr += '❤️';
+        ctx.font = '24px ' + FONT_FAMILY;
+        ctx.fillText(`ライフ: ${heartStr}`, 20, 50);
+
+        if (combo >= 2) {
+            ctx.fillStyle = `rgba(255, 220, 0, ${0.7 + Math.abs(Math.sin(frameCount * 0.15)) * 0.3})`;
+            ctx.font = 'bold 24px ' + FONT_FAMILY;
+            ctx.fillText(`🔥 ${combo} れんぞく！`, 20, 86);
+        }
+
+        // じぶんの部首（なにを探せばいいか いつでも分かるように）
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 22px ' + FONT_FAMILY;
+        ctx.fillText(`きみ: ${player.bushu}（${BUSHU_LABELS[player.bushu]}）`, canvas.width - 20, 82);
+        ctx.restore();
+    }
+
+    /** ポーズ・音・刀のボタン */
+    function drawPlayButtons() {
+        drawCircleButton(BTN_PAUSE, paused ? '▶' : '⏸', true);
+        drawCircleButton(BTN_MUTE, GameAudio.isMuted() ? '🔇' : '🔊', !GameAudio.isMuted());
+
+        // 刀ボタン（右下）。クールダウン中は残り時間をリング表示
+        const ready = player.slashCooldown <= 0;
+        ctx.save();
+        ctx.fillStyle = ready ? 'rgba(0, 255, 255, 0.35)' : 'rgba(100, 100, 100, 0.4)';
+        ctx.beginPath();
+        ctx.arc(BTN_SLASH.x, BTN_SLASH.y, BTN_SLASH.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = ready ? '#00ffff' : '#555555';
+        ctx.stroke();
+        if (!ready) {
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            const p = 1 - player.slashCooldown / 30;
+            ctx.arc(BTN_SLASH.x, BTN_SLASH.y, BTN_SLASH.r - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p);
+            ctx.stroke();
+        }
+        ctx.fillStyle = ready ? '#ffffff' : '#aaaaaa';
+        ctx.font = 'bold 17px ' + FONT_FAMILY;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('刀', BTN_SLASH.x, BTN_SLASH.y - 9);
+        ctx.font = 'bold 13px ' + FONT_FAMILY;
+        ctx.fillText('(Nキー)', BTN_SLASH.x, BTN_SLASH.y + 13);
+        ctx.restore();
+    }
+
+    function drawPauseOverlay() {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 52px ' + FONT_FAMILY;
+        ctx.fillText('きゅうけい中', canvas.width / 2, canvas.height / 2 - 40);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '24px ' + FONT_FAMILY;
+        ctx.fillText('右上の ▶ ボタンで つづきから', canvas.width / 2, canvas.height / 2 + 20);
+        ctx.restore();
+    }
+
+    /** 漢字＋読みを並べて描く（ゲームオーバーのふりかえり用）。次のyを返す */
+    function drawKanjiGrid(list, startY, color) {
+        const perRow = 6;
+        const cellW = 88;
+        const rowH = 62;
+        let y = startY;
+        for (let i = 0; i < list.length; i += perRow) {
+            const row = list.slice(i, i + perRow);
+            const startX = canvas.width / 2 - ((row.length - 1) * cellW) / 2;
+            row.forEach((kanji, j) => {
+                const x = startX + j * cellW;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = color;
+                ctx.font = 'bold 34px ' + FONT_FAMILY;
+                ctx.fillText(kanji, x, y);
+                const yomi = KANJI_YOMI[kanji];
+                if (yomi) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.font = '13px ' + FONT_FAMILY;
+                    ctx.fillText(yomi, x, y + 24);
+                }
+            });
+            y += rowH;
+        }
+        return y;
     }
 
     function draw() {
@@ -1204,102 +1683,123 @@
         updateDrawStars();
 
         if (state === 'TITLE') {
-            ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            
+            ctx.textBaseline = 'alphabetic';
+
             ctx.font = 'bold 50px ' + FONT_FAMILY;
             ctx.fillStyle = '#00ffff';
-            ctx.fillText('漢字部首シューティング', canvas.width/2, canvas.height/2 - 150);
-            
-            // ルール説明を追加
-            ctx.font = 'bold 24px ' + FONT_FAMILY;
+            ctx.fillText('漢字部首シューティング', canvas.width/2, 190);
+
+            // ルール説明
+            ctx.font = 'bold 26px ' + FONT_FAMILY;
             ctx.fillStyle = '#ffff00';
-            ctx.fillText('【ルール】', canvas.width/2, canvas.height/2 - 80);
-            
-            ctx.font = '18px ' + FONT_FAMILY;
+            ctx.fillText('【あそびかた】', canvas.width/2, 280);
+
+            ctx.font = '19px ' + FONT_FAMILY;
             ctx.fillStyle = '#ffffff';
-            ctx.fillText('自分の部首と合体して、正しい漢字になる「つくり」を撃とう！', canvas.width/2, canvas.height/2 - 45);
-            ctx.fillText('デタラメな漢字になる「つくり」は、Nボタン(刀)で切り捨てろ！', canvas.width/2, canvas.height/2 - 15);
-            ctx.fillText('正しい漢字を逃がしたり、間違えて切ったりするとダメージだ！', canvas.width/2, canvas.height/2 + 15);
-            
+            const rules = [
+                '① じぶんの ぶしゅ と くっついて',
+                '　 かんじになる「つくり」を うつ！',
+                '② かんじにならない「つくり」は',
+                '　 N(刀)ボタンで きりすてる！',
+                '③ かんじになるのを にがしたり、',
+                '　 まちがえて うつと ライフが へるよ'
+            ];
+            rules.forEach((line, i) => {
+                ctx.fillText(line, canvas.width/2, 320 + i * 30);
+            });
+
+            // 判定ラインの説明（今回の一番の変更点なので、ここで先に伝える）
+            ctx.font = 'bold 19px ' + FONT_FAMILY;
+            ctx.fillStyle = '#00ffaa';
+            ctx.fillText('たまは「ひかるライン」より上には とどかないよ。', canvas.width/2, 525);
+            ctx.fillText('ラインを こえてきた てきを ねらおう！', canvas.width/2, 552);
+
+            // ハイスコア（部首ごと）
+            const hsList = Object.keys(highScores).filter(k => highScores[k] > 0);
+            if (hsList.length > 0) {
+                ctx.font = 'bold 20px ' + FONT_FAMILY;
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillText('ハイスコア  ' + hsList.map(k => `${k}:${highScores[k]}`).join('　'), canvas.width/2, 610);
+            }
+
             ctx.font = '30px ' + FONT_FAMILY;
             ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frameCount * 0.05))})`;
-            ctx.fillText('画面をタップしてスタート！', canvas.width/2, canvas.height/2 + 100);
+            ctx.fillText('画面をタップしてスタート！', canvas.width/2, 690);
 
         } else if (state === 'SELECT') {
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
+            ctx.textBaseline = 'alphabetic';
             ctx.font = 'bold 36px ' + FONT_FAMILY;
-            ctx.fillText('じぶんの ぶしゅ を えらんでね', canvas.width/2, 100);
+            ctx.fillText('じぶんの ぶしゅ を えらんでね', canvas.width/2, 120);
 
             // 部首の選択パネルを描画 (縦長画面に合わせてサイズ調整)
             const bushuKeys = Object.keys(KANJI_DATA);
-            const panelWidth = 90;
-            const panelHeight = 120;
-            const gap = 15;
-            const totalWidth = bushuKeys.length * panelWidth + (bushuKeys.length - 1) * gap;
-            const startX = (canvas.width - totalWidth) / 2 + panelWidth / 2;
-            const y = canvas.height / 2;
+            const y = SELECT_PANEL_Y;
 
             bushuKeys.forEach((bushu, index) => {
-                const x = startX + index * (panelWidth + gap);
-                
+                const x = selectPanelX(index, bushuKeys.length);
+
                 // パネル背景
                 ctx.fillStyle = '#0a2a4a';
                 ctx.strokeStyle = '#00ffff';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.roundRect(x - panelWidth/2, y - panelHeight/2, panelWidth, panelHeight, 15);
+                ctx.roundRect(x - SELECT_PANEL_W/2, y - SELECT_PANEL_H/2, SELECT_PANEL_W, SELECT_PANEL_H, 15);
                 ctx.fill();
                 ctx.stroke();
 
                 // 漢字
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 40px ' + FONT_FAMILY;
-                ctx.fillText(bushu, x, y - 20);
+                ctx.fillText(bushu, x, y - 25);
 
                 // 読み方
-                ctx.font = '16px ' + FONT_FAMILY;
+                ctx.font = '15px ' + FONT_FAMILY;
                 ctx.fillStyle = '#aaaaaa';
-                ctx.fillText(BUSHU_LABELS[bushu], x, y + 35);
+                ctx.fillText(BUSHU_LABELS[bushu], x, y + 15);
 
-                // クリック判定用に領域を保存しておく（簡略化のため描画時に計算）
+                // つくれる漢字の数
+                ctx.font = 'bold 14px ' + FONT_FAMILY;
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillText(KANJI_DATA[bushu].length + 'こ', x, y + 42);
+
+                // ハイスコア
+                const hs = highScores[bushu] || 0;
+                ctx.font = '13px ' + FONT_FAMILY;
+                ctx.fillStyle = hs > 0 ? '#00ffaa' : '#556677';
+                ctx.fillText(hs > 0 ? '★' + hs : '★ー', x, y + 64);
             });
 
+            // 武器の説明（部首ごとに弾がちがうのが分かるように）
+            ctx.font = '17px ' + FONT_FAMILY;
+            ctx.fillStyle = '#ffffff';
+            const weaponLines = [
+                '木＝ふつうの たま　　亻＝つらぬく レーザー',
+                '氵＝5ほうこう さんだん　言＝おおきな「わぁ」',
+                '口＝らせんに とぶ たま'
+            ];
+            weaponLines.forEach((line, i) => {
+                ctx.fillText(line, canvas.width/2, y + 130 + i * 28);
+            });
+
+            ctx.font = '18px ' + FONT_FAMILY;
+            ctx.fillStyle = '#8899aa';
+            ctx.fillText('（すうじは「つくれる かんじ」の かず・★はハイスコア）', canvas.width/2, y + 235);
+
         } else if (state === 'PLAY') {
+            drawMissLine();
             bullets.forEach(b => b.draw(ctx));
             items.forEach(i => i.draw(ctx)); // アイテム描画
             enemies.forEach(e => e.draw(ctx));
             player.draw(ctx);
             particles.forEach(p => p.draw(ctx));
-
-            // UI描画（スコアとライフ）
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.font = 'bold 30px ' + FONT_FAMILY;
-            ctx.fillText(`スコア: ${score}`, 20, 20);
-
-            // ライフ（ハート）
-            let heartStr = '';
-            for(let i=0; i<life; i++) heartStr += '❤️';
-            ctx.fillText(`ライフ: ${heartStr}`, 20, 60);
-
-            // 刀ボタン（右下）
-            const btnX = canvas.width - 60;
-            const btnY = canvas.height - 60;
-            ctx.fillStyle = player.slashCooldown > 0 ? 'rgba(100, 100, 100, 0.5)' : 'rgba(0, 255, 255, 0.4)';
-            ctx.beginPath();
-            ctx.arc(btnX, btnY, 40, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = player.slashCooldown > 0 ? '#555' : '#0ff';
-            ctx.stroke();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 18px ' + FONT_FAMILY;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('N(刀)', btnX, btnY);
+            drawJudgeLine();
+            drawResultBanner();
+            drawHud();
+            drawPlayButtons();
+            if (paused) drawPauseOverlay();
 
         } else if (state === 'GAMEOVER') {
             bullets.forEach(b => b.draw(ctx));
@@ -1307,22 +1807,66 @@
             enemies.forEach(e => e.draw(ctx));
             particles.forEach(p => p.draw(ctx));
 
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#ff0000';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = 'bold 70px ' + FONT_FAMILY;
-            ctx.fillText('ゲームオーバー', canvas.width/2, canvas.height/2 - 60);
+
+            ctx.fillStyle = '#ff3355';
+            ctx.font = 'bold 58px ' + FONT_FAMILY;
+            ctx.fillText('ゲームオーバー', canvas.width/2, 90);
 
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 40px ' + FONT_FAMILY;
-            ctx.fillText(`スコア: ${score}`, canvas.width/2, canvas.height/2 + 20);
+            ctx.fillText(`スコア: ${score}`, canvas.width/2, 155);
 
-            ctx.font = '30px ' + FONT_FAMILY;
+            // ハイスコア／さいこうコンボ
+            const hs = player ? (highScores[player.bushu] || 0) : 0;
+            if (isNewRecord) {
+                ctx.fillStyle = `rgba(255, 210, 0, ${0.55 + Math.abs(Math.sin(frameCount * 0.08)) * 0.45})`;
+                ctx.font = 'bold 30px ' + FONT_FAMILY;
+                ctx.fillText('🎉 ハイスコアこうしん！ 🎉', canvas.width/2, 200);
+            } else {
+                ctx.fillStyle = '#ffaa00';
+                ctx.font = '22px ' + FONT_FAMILY;
+                ctx.fillText(`ハイスコア: ${hs}`, canvas.width/2, 200);
+            }
+            ctx.fillStyle = '#00ffaa';
+            ctx.font = '22px ' + FONT_FAMILY;
+            ctx.fillText(`さいこう ${maxCombo} れんぞく`, canvas.width/2, 235);
+
+            // --- ふりかえり：この回でつくれた漢字 ---
+            let y = 295;
+            ctx.fillStyle = '#ffff66';
+            ctx.font = 'bold 24px ' + FONT_FAMILY;
+            ctx.fillText(`つくれた かんじ  ${learnedKanji.length}こ`, canvas.width/2, y);
+            y += 40;
+            if (learnedKanji.length === 0) {
+                ctx.fillStyle = '#aaaaaa';
+                ctx.font = '20px ' + FONT_FAMILY;
+                ctx.fillText('つぎは くっつく つくりを ねらってみよう！', canvas.width/2, y);
+                y += 36;
+            } else {
+                // 画面に入る分だけ（あたらしい順に18こ）見せる
+                y = drawKanjiGrid(learnedKanji.slice(-18), y, '#ffffff');
+            }
+
+            // --- ふりかえり：にがした・まちがえた漢字 ---
+            if (missedKanji.length > 0) {
+                y += 18;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ff8899';
+                ctx.font = 'bold 22px ' + FONT_FAMILY;
+                ctx.fillText('にがした かんじ（おぼえよう）', canvas.width/2, y);
+                y += 36;
+                y = drawKanjiGrid(missedKanji.slice(-6), y, '#ffbbcc');
+            }
+
+            ctx.textAlign = 'center';
+            ctx.font = '28px ' + FONT_FAMILY;
             ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frameCount * 0.05))})`;
-            ctx.fillText('画面をタップして もういちど', canvas.width/2, canvas.height/2 + 100);
+            ctx.fillText('画面をタップして もういちど', canvas.width/2, canvas.height - 45);
         }
 
         ctx.restore(); // shakeTime用のrestore
@@ -1330,13 +1874,15 @@
 
     function gameLoop(timestamp) {
         update();
-        if (prevStateForAudio === 'PLAY' && state !== 'PLAY') {
+        // ポーズ中は「PLAY 以外」と同じ扱いにして BGM を止める
+        const audioState = (state === 'PLAY' && paused) ? 'PAUSED' : state;
+        if (prevStateForAudio === 'PLAY' && audioState !== 'PLAY') {
             GameAudio.stopBgm();
         }
-        if (prevStateForAudio !== 'PLAY' && state === 'PLAY') {
+        if (prevStateForAudio !== 'PLAY' && audioState === 'PLAY') {
             GameAudio.resume().then(function () { GameAudio.startBgm(); });
         }
-        prevStateForAudio = state;
+        prevStateForAudio = audioState;
         draw();
         requestAnimationFrame(gameLoop);
     }
@@ -1367,19 +1913,14 @@
             state = 'SELECT';
         } else if (state === 'SELECT') {
             const bushuKeys = Object.keys(KANJI_DATA);
-            const panelWidth = 90;
-            const panelHeight = 120;
-            const gap = 15;
-            const totalWidth = bushuKeys.length * panelWidth + (bushuKeys.length - 1) * gap;
-            const startX = (canvas.width - totalWidth) / 2 + panelWidth / 2;
-            const panelY = canvas.height / 2;
+            const panelY = SELECT_PANEL_Y;
 
             for (let i = 0; i < bushuKeys.length; i++) {
-                const panelX = startX + i * (panelWidth + gap);
+                const panelX = selectPanelX(i, bushuKeys.length);
                 // パネルの矩形内か判定
-                if (x > panelX - panelWidth/2 && x < panelX + panelWidth/2 &&
-                    y > panelY - panelHeight/2 && y < panelY + panelHeight/2) {
-                    
+                if (x > panelX - SELECT_PANEL_W/2 && x < panelX + SELECT_PANEL_W/2 &&
+                    y > panelY - SELECT_PANEL_H/2 && y < panelY + SELECT_PANEL_H/2) {
+
                     resetGame();
                     player = new Player(bushuKeys[i]);
                     state = 'PLAY';
@@ -1388,30 +1929,49 @@
                 }
             }
         } else if (state === 'GAMEOVER') {
-            // 少し時間をあけてから再スタート可能にする（連打防止）
-            if (shakeTime <= 0) {
+            // ふりかえりを読む前に消えないよう、少し時間をあけてから再スタート可能にする
+            if (performance.now() - gameoverAt > 1200) {
                 state = 'TITLE';
             }
         }
     }
 
-    function checkSlashButton(x, y) {
+    function togglePause() {
+        if (state !== 'PLAY') return;
+        paused = !paused;
+        // BGM の停止/再開は gameLoop がまとめて面倒を見る
+        if (paused) {
+            pausedAt = performance.now();
+        } else {
+            // 止まっていた時間ぶん、難易度アップのタイマーをずらす
+            if (pausedAt > 0) playStartTime += performance.now() - pausedAt;
+            pausedAt = 0;
+        }
+    }
+
+    /** 画面上のボタンを押したか。押したなら true（＝移動・射撃には使わない） */
+    function checkButtons(x, y) {
         if (state !== 'PLAY') return false;
-        const btnX = canvas.width - 60;
-        const btnY = canvas.height - 60;
-        const dist = Math.sqrt((x - btnX)**2 + (y - btnY)**2);
-        if (dist <= 40) {
+        if (isInsideButton(BTN_PAUSE, x, y)) {
+            togglePause();
+            return true;
+        }
+        if (isInsideButton(BTN_MUTE, x, y)) {
+            GameAudio.toggleMute();
+            return true;
+        }
+        if (!paused && isInsideButton(BTN_SLASH, x, y)) {
             pointer.slashInput = true;
             return true;
         }
-        return false;
+        return paused; // ポーズ中は画面をさわっても動かない
     }
 
     // マウス・タッチイベント
     canvas.addEventListener('mousedown', (e) => {
         GameAudio.resume();
         const pos = getMousePos(e);
-        if (checkSlashButton(pos.x, pos.y)) return;
+        if (checkButtons(pos.x, pos.y)) return;
         pointer.x = pos.x;
         pointer.y = pos.y;
         pointer.active = true;
@@ -1430,7 +1990,7 @@
         e.preventDefault(); // スクロール防止
         GameAudio.resume();
         const pos = getMousePos(e);
-        if (checkSlashButton(pos.x, pos.y)) return;
+        if (checkButtons(pos.x, pos.y)) return;
         pointer.x = pos.x;
         pointer.y = pos.y;
         pointer.active = true;
@@ -1449,6 +2009,15 @@
     // キーボードイベント
     window.addEventListener('keydown', (e) => {
         GameAudio.resume();
+        // P=ポーズ / M=音のオンオフ（ゲームを止めずに切りかえられる）
+        if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+            togglePause();
+            return;
+        }
+        if (e.key === 'm' || e.key === 'M') {
+            GameAudio.toggleMute();
+            return;
+        }
         if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.code)) {
             keys[e.key] = true;
             keys[e.code] = true;
@@ -1461,7 +2030,13 @@
         }
     });
 
+    // 画面がかくれたら自動でポーズ（他のアプリを見ているあいだに死なないように）
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && state === 'PLAY' && !paused) togglePause();
+    });
+
     // 初期化と開始
+    loadHighScores();
     initStars();
     requestAnimationFrame(gameLoop);
 

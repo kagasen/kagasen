@@ -17,10 +17,7 @@ function cardSVG(g, gold){
 function onClear(){
   var g = gameById(cur.gameId), st = g.stages[cur.si], key = stageKey(g.id, cur.si);
   var old = save.stages[key];
-  /* ★は「できた！」の おびが 出た しゅんかんに きめて ある（20-shell.js の showClearBar）。
-     おびを 見て いる あいだに ヒントを ひらいても 下がらない。 */
-  var perfect = (cur.gotStar === 0 || cur.gotStar === 1) ? cur.gotStar
-              : ((cur.hint || cur.noStar) ? 0 : 1);
+  var perfect = (cur.hint || cur.noStar) ? 0 : 1;   /* ヒントを 見た／ミッションの 目標を こえた */
   if (old && old.p) perfect = 1;                    /* 一度とった パーフェクトは 下げない（§6 単調増加） */
   save.stages[key] = { c:1, p:perfect };
   var justFinished = gameDone(g.id) && !save.cards[g.id];
@@ -38,19 +35,30 @@ function onClear(){
   /* ゲームが 1つだけの アプリには もどる 島が ない ので「とじる」に する */
   document.getElementById('modal-next').textContent =
     last ? (HOME_GAME ? 'とじる ▼' : '島に もどる ▶') : 'つぎへ ▶';
-  document.getElementById('modal').className = 'modal on';
+  openClearModal();
   confettiBurst(perfect ? 120 : 70);
 }
-document.getElementById('modal-again').onclick = function(){ closeModal(); loadStage(); };
-document.getElementById('modal-next').onclick = function(){
-  closeModal();
+/* まどを 出すだけ（中みは もう 作って ある）。見なおしから もどる ときも ここを 通る ので、
+   コンフェッティや セーブを やりなおさない。 */
+function openClearModal(){ document.getElementById('modal').className = 'modal on'; }
+
+/* つぎの もんだいへ。まどの「つぎへ」と、見なおしの おびの「つぎへ」が どちらも ここへ。 */
+function goNextStage(){
+  closeModal(); hideClearBar();
   var g = gameById(cur.gameId);
   if (cur.si >= g.stages.length - 1){
     if (HOME_GAME){ renderStrip(); return; }   /* 1ゲームの アプリ：もんだい えらびに もどるだけ */
     openIsland(g.island); return;
   }
   cur.si++; cur.hint = false; loadStage();
-};
+}
+document.getElementById('modal-again').onclick = function(){ closeModal(); loadStage(); };
+document.getElementById('modal-next').onclick = goNextStage;
+/* 「🔍 見なおす」… まどを どけて、じぶんが 作った ばんめんを 見せる。
+   ばんめんは そのまま のこって いる（loadStage を よばない ので こわれない）。 */
+document.getElementById('modal-look').onclick = function(){ closeModal(); showClearBar(); };
+document.getElementById('cb-back').onclick = function(){ hideClearBar(); openClearModal(); };
+document.getElementById('cb-next').onclick = goNextStage;
 
 /* じぶんで かく コンフェッティ（外部ライブラリは つかわない） */
 function confettiBurst(n){

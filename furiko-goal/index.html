@@ -208,10 +208,13 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 }
 .status.short{color:var(--ng);}
 
-/* ---------- できた ときの おび ----------
-   せいかいでも クリアの まどを すぐには 出さない。この おびを おすまで、
-   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見なおせる。
-   2026-09-10 ユーザーの きぼう:「まだ 頭の せいりが できて いないのに クリアが 出る」 */
+/* ---------- 見なおして いる あいだの おび ----------
+   クリアの まどは せいかいの あと すぐ 出す（できた よろこびを へらさない）。
+   まどの「🔍 見なおす」を おすと まどが どいて この おびに かわり、
+   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見られる。
+   おびから けっかに もどる ことも、そのまま つぎへ すすむ ことも できる。
+   2026-09-10 ユーザーの きぼう。はじめは おびで クリアを 止めて いたが、
+   「完成した ときの うれしさが 半減する」ので すぐ 出す 形に もどした。 */
 .clear-bar{
   max-width:640px; margin:12px auto 0; padding:12px 14px; display:none;
   align-items:center; justify-content:center; gap:10px 14px; flex-wrap:wrap;
@@ -220,12 +223,19 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 }
 .clear-bar.on{display:flex;}
 .clear-bar .cb-msg{font-size:16px; font-weight:900; color:#1E7A3C;}
-.clear-bar .cb-go{
+.clear-bar .cb-go, .clear-bar .cb-back{
   min-height:48px; padding:0 22px; border-radius:999px; border:none;
-  background:var(--ok); color:#fff; font-family:var(--fam); font-weight:900; font-size:16px;
+  font-family:var(--fam); font-weight:900; font-size:16px;
   display:inline-flex; align-items:center; gap:6px; cursor:pointer;
 }
-.clear-bar .cb-go:active{transform:translateY(1px);}
+.clear-bar .cb-go{background:var(--ok); color:#fff;}
+.clear-bar .cb-back{background:#fff; color:#1E7A3C; border:2px solid var(--ok);}
+.clear-bar .cb-go:active, .clear-bar .cb-back:active{transform:translateY(1px);}
+.modal-look{
+  margin-top:10px; width:100%; min-height:44px; border-radius:999px; border:2px solid var(--line);
+  background:transparent; color:#4A6C85; font-family:var(--fam); font-weight:900; font-size:14px; cursor:pointer;
+}
+.modal-look:active{transform:translateY(1px);}
 
 /* ---------- クリアのモーダル ---------- */
 .modal{
@@ -272,10 +282,11 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
   <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
   <div class="sw-pick" id="sw-pick"></div>
   <div class="status" id="status"></div>
-  <!-- せいかいの とき ここが 出る。おすまで クリアの まどは 出ない。 -->
+  <!-- クリアの まどを どけて 見なおして いる あいだ 出る おび。 -->
   <div class="clear-bar" id="clear-bar">
-    <span class="cb-msg">🎉 できた！ じぶんの こたえを 見て みよう</span>
-    <button type="button" class="cb-go" id="cb-go">▶ つぎへ すすむ</button>
+    <span class="cb-msg">🔍 じぶんの こたえを 見て いるよ</span>
+    <button type="button" class="cb-back" id="cb-back">◀ けっかに もどる</button>
+    <button type="button" class="cb-go" id="cb-next">▶ つぎへ すすむ</button>
   </div>
   <div class="tools">
     <button class="tool" id="btn-hint">💡 ヒント</button>
@@ -294,6 +305,8 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
       <button class="tool" id="modal-again">↺ もういちど</button>
       <button class="tool primary" id="modal-next">つぎへ ▶</button>
     </div>
+    <!-- まどを どけて、じぶんが 作った ものを 見なおす。あとで もどって これる。 -->
+    <button class="modal-look" id="modal-look">🔍 じぶんの こたえを 見なおす</button>
   </div>
 </div>
 <canvas id="confetti"></canvas>
@@ -883,25 +896,23 @@ function setStatus(msg, bad){
   document.getElementById('status').textContent = msg || '';
 }
 function closeModal(){ document.getElementById('modal').className = 'modal'; }
-/* せいかいした ときの ながれ（2026-09-10 に かえた）
-     せいかい → 480ms あと に「できた！」の おびを 出す → **子が おして はじめて** クリアの まど
-   むかしは まどが かってに 出て いた。回路や つり合いを 作りおえた ばかりで
-   まだ 見て いたい のに まどが かぶさって しまう、という ユーザーの 指てき。
-   おびが 出て いる あいだ、ばんめんは そのまま のこる（見なおせる）。
+/* せいかいした ときの ながれ（2026-09-10）
+     せいかい → 480ms あと に クリアの まど（できた よろこびは すぐ 出す）
+     まどの「🔍 見なおす」→ まどが どいて 見なおしの おび → 「けっかに もどる」か「つぎへ」
+
+   さいしょは おびで クリアを 止めて いたが、ユーザーに 実きで ためして もらい
+   「完成した ときの うれしさが 半減する」と 分かった ので、まどは すぐ 出す 形に した。
+   かわりに **まどを どけて 見なおせる 出口**を まどの 中に つけて ある。
    タイマーは おぼえて おいて loadStage で 取り消す（はじめから・もんだい きりかえ の ため）。 */
 function tryClear(ok){
-  if (!cur.done && ok){ cur.done = true; cur.clearTimer = setTimeout(showClearBar, 480); }
+  if (!cur.done && ok){ cur.done = true; cur.clearTimer = setTimeout(onClear, 480); }
 }
 function showClearBar(){
-  /* ★ を とる か どうかは **この しゅんかん** で きめて おく。
-     おびが 出た あとに ヒントを ひらいても、もう とれた ★を 下げない（§6 単調増加）。 */
-  cur.gotStar = (cur.hint || cur.noStar) ? 0 : 1;
   var bar = document.getElementById('clear-bar');
   bar.className = 'clear-bar on';
   if (bar.scrollIntoView) bar.scrollIntoView({ block:'nearest' });
 }
 function hideClearBar(){ document.getElementById('clear-bar').className = 'clear-bar'; }
-document.getElementById('cb-go').onclick = function(){ hideClearBar(); onClear(); };
 function renderBoard(){ var e = engine(); if (e) e.render(); }
 
 /* タップされた ところから 親を たどって data-○○ を さがす。
@@ -933,7 +944,7 @@ function loadStage(){
   closeModal();
   hideClearBar();
   cur.kind = st.kind || g.kind;
-  cur.sel = null; cur.done = false; cur.noStar = false; cur.gotStar = null;
+  cur.sel = null; cur.done = false; cur.noStar = false;
   document.getElementById('q-n').textContent =
     (g.stages.length > 1) ? ('だい' + (cur.si + 1) + 'もん / ' + g.stages.length + 'もん') : g.sub;
   document.getElementById('q-t').textContent = st.t;
@@ -1603,10 +1614,7 @@ function cardSVG(g, gold){
 function onClear(){
   var g = gameById(cur.gameId), st = g.stages[cur.si], key = stageKey(g.id, cur.si);
   var old = save.stages[key];
-  /* ★は「できた！」の おびが 出た しゅんかんに きめて ある（20-shell.js の showClearBar）。
-     おびを 見て いる あいだに ヒントを ひらいても 下がらない。 */
-  var perfect = (cur.gotStar === 0 || cur.gotStar === 1) ? cur.gotStar
-              : ((cur.hint || cur.noStar) ? 0 : 1);
+  var perfect = (cur.hint || cur.noStar) ? 0 : 1;   /* ヒントを 見た／ミッションの 目標を こえた */
   if (old && old.p) perfect = 1;                    /* 一度とった パーフェクトは 下げない（§6 単調増加） */
   save.stages[key] = { c:1, p:perfect };
   var justFinished = gameDone(g.id) && !save.cards[g.id];
@@ -1624,19 +1632,30 @@ function onClear(){
   /* ゲームが 1つだけの アプリには もどる 島が ない ので「とじる」に する */
   document.getElementById('modal-next').textContent =
     last ? (HOME_GAME ? 'とじる ▼' : '島に もどる ▶') : 'つぎへ ▶';
-  document.getElementById('modal').className = 'modal on';
+  openClearModal();
   confettiBurst(perfect ? 120 : 70);
 }
-document.getElementById('modal-again').onclick = function(){ closeModal(); loadStage(); };
-document.getElementById('modal-next').onclick = function(){
-  closeModal();
+/* まどを 出すだけ（中みは もう 作って ある）。見なおしから もどる ときも ここを 通る ので、
+   コンフェッティや セーブを やりなおさない。 */
+function openClearModal(){ document.getElementById('modal').className = 'modal on'; }
+
+/* つぎの もんだいへ。まどの「つぎへ」と、見なおしの おびの「つぎへ」が どちらも ここへ。 */
+function goNextStage(){
+  closeModal(); hideClearBar();
   var g = gameById(cur.gameId);
   if (cur.si >= g.stages.length - 1){
     if (HOME_GAME){ renderStrip(); return; }   /* 1ゲームの アプリ：もんだい えらびに もどるだけ */
     openIsland(g.island); return;
   }
   cur.si++; cur.hint = false; loadStage();
-};
+}
+document.getElementById('modal-again').onclick = function(){ closeModal(); loadStage(); };
+document.getElementById('modal-next').onclick = goNextStage;
+/* 「🔍 見なおす」… まどを どけて、じぶんが 作った ばんめんを 見せる。
+   ばんめんは そのまま のこって いる（loadStage を よばない ので こわれない）。 */
+document.getElementById('modal-look').onclick = function(){ closeModal(); showClearBar(); };
+document.getElementById('cb-back').onclick = function(){ hideClearBar(); openClearModal(); };
+document.getElementById('cb-next').onclick = goNextStage;
 
 /* じぶんで かく コンフェッティ（外部ライブラリは つかわない） */
 function confettiBurst(n){

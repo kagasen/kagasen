@@ -1,6 +1,6 @@
 // エネルギーの島 — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'energy-no-shima-cache-db6f7956';
+const CACHE = 'energy-no-shima-cache-cd2a8590';
 const ASSETS = [
   './',
   './index.html',

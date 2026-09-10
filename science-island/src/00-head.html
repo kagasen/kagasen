@@ -196,10 +196,13 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 }
 .status.short{color:var(--ng);}
 
-/* ---------- できた ときの おび ----------
-   せいかいでも クリアの まどを すぐには 出さない。この おびを おすまで、
-   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見なおせる。
-   2026-09-10 ユーザーの きぼう:「まだ 頭の せいりが できて いないのに クリアが 出る」 */
+/* ---------- 見なおして いる あいだの おび ----------
+   クリアの まどは せいかいの あと すぐ 出す（できた よろこびを へらさない）。
+   まどの「🔍 見なおす」を おすと まどが どいて この おびに かわり、
+   じぶんが 作った もの（回路・つり合い・ならべた じゅんばん…）を ゆっくり 見られる。
+   おびから けっかに もどる ことも、そのまま つぎへ すすむ ことも できる。
+   2026-09-10 ユーザーの きぼう。はじめは おびで クリアを 止めて いたが、
+   「完成した ときの うれしさが 半減する」ので すぐ 出す 形に もどした。 */
 .clear-bar{
   max-width:640px; margin:12px auto 0; padding:12px 14px; display:none;
   align-items:center; justify-content:center; gap:10px 14px; flex-wrap:wrap;
@@ -208,12 +211,19 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 }
 .clear-bar.on{display:flex;}
 .clear-bar .cb-msg{font-size:16px; font-weight:900; color:#1E7A3C;}
-.clear-bar .cb-go{
+.clear-bar .cb-go, .clear-bar .cb-back{
   min-height:48px; padding:0 22px; border-radius:999px; border:none;
-  background:var(--ok); color:#fff; font-family:var(--fam); font-weight:900; font-size:16px;
+  font-family:var(--fam); font-weight:900; font-size:16px;
   display:inline-flex; align-items:center; gap:6px; cursor:pointer;
 }
-.clear-bar .cb-go:active{transform:translateY(1px);}
+.clear-bar .cb-go{background:var(--ok); color:#fff;}
+.clear-bar .cb-back{background:#fff; color:#1E7A3C; border:2px solid var(--ok);}
+.clear-bar .cb-go:active, .clear-bar .cb-back:active{transform:translateY(1px);}
+.modal-look{
+  margin-top:10px; width:100%; min-height:44px; border-radius:999px; border:2px solid var(--line);
+  background:transparent; color:#4A6C85; font-family:var(--fam); font-weight:900; font-size:14px; cursor:pointer;
+}
+.modal-look:active{transform:translateY(1px);}
 
 /* ---------- クリアのモーダル ---------- */
 .modal{
@@ -280,10 +290,11 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
   <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
   <div class="sw-pick" id="sw-pick"></div>
   <div class="status" id="status"></div>
-  <!-- せいかいの とき ここが 出る。おすまで クリアの まどは 出ない。 -->
+  <!-- クリアの まどを どけて 見なおして いる あいだ 出る おび。 -->
   <div class="clear-bar" id="clear-bar">
-    <span class="cb-msg">🎉 できた！ じぶんの こたえを 見て みよう</span>
-    <button type="button" class="cb-go" id="cb-go">▶ つぎへ すすむ</button>
+    <span class="cb-msg">🔍 じぶんの こたえを 見て いるよ</span>
+    <button type="button" class="cb-back" id="cb-back">◀ けっかに もどる</button>
+    <button type="button" class="cb-go" id="cb-next">▶ つぎへ すすむ</button>
   </div>
   <div class="tools">
     <button class="tool" id="btn-hint">💡 ヒント</button>
@@ -302,6 +313,8 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
       <button class="tool" id="modal-again">↺ もういちど</button>
       <button class="tool primary" id="modal-next">つぎへ ▶</button>
     </div>
+    <!-- まどを どけて、じぶんが 作った ものを 見なおす。あとで もどって これる。 -->
+    <button class="modal-look" id="modal-look">🔍 じぶんの こたえを 見なおす</button>
   </div>
 </div>
 <canvas id="confetti"></canvas>

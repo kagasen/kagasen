@@ -1,6 +1,6 @@
 // ぐるぐる発電 — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'guruguru-hatsuden-cache-b85c617c';
+const CACHE = 'guruguru-hatsuden-cache-f6ee07a3';
 const ASSETS = [
   './',
   './index.html',

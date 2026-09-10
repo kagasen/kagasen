@@ -391,7 +391,9 @@ const MUST_WIRE = [
   { id:'btn-reset',   prop:'onclick', why:'「はじめから」が 効かない' },
   { id:'modal-next',  prop:'onclick', why:'クリア後の「つぎへ」が 効かない' },
   { id:'modal-again', prop:'onclick', why:'クリア後の「もういちど」が 効かない' },
-  { id:'cb-go',      prop:'onclick', why:'「できた！」の おびを おしても クリアが 出ない' },
+  { id:'modal-look', prop:'onclick', why:'クリア後の「見なおす」が 効かない' },
+  { id:'cb-back',    prop:'onclick', why:'見なおし中の「けっかに もどる」が 効かない' },
+  { id:'cb-next',    prop:'onclick', why:'見なおし中の「つぎへ すすむ」が 効かない' },
 ];
 
 function checkEngines(t, html, want) {

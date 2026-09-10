@@ -21,25 +21,23 @@ function setStatus(msg, bad){
   document.getElementById('status').textContent = msg || '';
 }
 function closeModal(){ document.getElementById('modal').className = 'modal'; }
-/* せいかいした ときの ながれ（2026-09-10 に かえた）
-     せいかい → 480ms あと に「できた！」の おびを 出す → **子が おして はじめて** クリアの まど
-   むかしは まどが かってに 出て いた。回路や つり合いを 作りおえた ばかりで
-   まだ 見て いたい のに まどが かぶさって しまう、という ユーザーの 指てき。
-   おびが 出て いる あいだ、ばんめんは そのまま のこる（見なおせる）。
+/* せいかいした ときの ながれ（2026-09-10）
+     せいかい → 480ms あと に クリアの まど（できた よろこびは すぐ 出す）
+     まどの「🔍 見なおす」→ まどが どいて 見なおしの おび → 「けっかに もどる」か「つぎへ」
+
+   さいしょは おびで クリアを 止めて いたが、ユーザーに 実きで ためして もらい
+   「完成した ときの うれしさが 半減する」と 分かった ので、まどは すぐ 出す 形に した。
+   かわりに **まどを どけて 見なおせる 出口**を まどの 中に つけて ある。
    タイマーは おぼえて おいて loadStage で 取り消す（はじめから・もんだい きりかえ の ため）。 */
 function tryClear(ok){
-  if (!cur.done && ok){ cur.done = true; cur.clearTimer = setTimeout(showClearBar, 480); }
+  if (!cur.done && ok){ cur.done = true; cur.clearTimer = setTimeout(onClear, 480); }
 }
 function showClearBar(){
-  /* ★ を とる か どうかは **この しゅんかん** で きめて おく。
-     おびが 出た あとに ヒントを ひらいても、もう とれた ★を 下げない（§6 単調増加）。 */
-  cur.gotStar = (cur.hint || cur.noStar) ? 0 : 1;
   var bar = document.getElementById('clear-bar');
   bar.className = 'clear-bar on';
   if (bar.scrollIntoView) bar.scrollIntoView({ block:'nearest' });
 }
 function hideClearBar(){ document.getElementById('clear-bar').className = 'clear-bar'; }
-document.getElementById('cb-go').onclick = function(){ hideClearBar(); onClear(); };
 function renderBoard(){ var e = engine(); if (e) e.render(); }
 
 /* タップされた ところから 親を たどって data-○○ を さがす。
@@ -71,7 +69,7 @@ function loadStage(){
   closeModal();
   hideClearBar();
   cur.kind = st.kind || g.kind;
-  cur.sel = null; cur.done = false; cur.noStar = false; cur.gotStar = null;
+  cur.sel = null; cur.done = false; cur.noStar = false;
   document.getElementById('q-n').textContent =
     (g.stages.length > 1) ? ('だい' + (cur.si + 1) + 'もん / ' + g.stages.length + 'もん') : g.sub;
   document.getElementById('q-t').textContent = st.t;

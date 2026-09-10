@@ -833,7 +833,7 @@
       'background:#c0392b;color:#fff;font-weight:800;font-size:16px;line-height:1.6;text-align:center;' +
       'box-shadow:0 4px 12px rgba(0,0,0,.25);';
     bar.innerHTML = '⚠ いまは きろくが ほぞんできません。<br>' +
-      'このまま つづけても、ペットや ポイントは のこりません。<br>' +
+      'たまごを かったり おせわしたり できません（ポイントは 減らないよ）。<br>' +
       '<span style="font-size:14px;font-weight:700;">ページを 読みこみ直すか、先生・おうちのひとに つたえてね。</span>';
     document.body.appendChild(bar);
   }
@@ -872,11 +872,33 @@
     state.points = readPoints() + n;
     updatePointsUI(); savePoints();
   }
-  function spendPoints(n) {
+
+  // ------------------------------------------------------------------
+  // 「ポイントだけ減って ペットがいない」を作らないための決まり（2026-09-10）
+  //   むかしは 先にポイントを引いてから ペットを保存していた。
+  //   きおくの ばしょが いっぱいで ペットの保存だけ失敗すると、
+  //   ポイントは減ったのに ペットは のこらない。そのあと おせわを押すと
+  //   「いないペット」あつかいで ボタンがきかず、カードも消える。
+  //   そこで かならず「ペットを保存してから ポイントを引く」順にする。
+  //   保存できなければ ポイントは1つも引かず、なにも なかったことにする。
+  // ------------------------------------------------------------------
+
+  // 足りるかを見るだけ（まだ引かない）。最新の残高に そろえてから くらべる。
+  function canPay(n) {
     state.points = readPoints();
-    if (state.points < n) { updatePointsUI(); return false; }
-    state.points -= n; updatePointsUI(); savePoints();
-    return true;
+    updatePointsUI();
+    return state.points >= n;
+  }
+
+  // 保存がうまくいったあとに、はじめてポイントを引く
+  function payPoints(n) {
+    state.points = Math.max(0, readPoints() - n);
+    updatePointsUI(); savePoints();
+  }
+
+  // 保存できなかったときの おしらせ（ポイントは減っていない、と伝える）
+  function toastSaveFailed() {
+    toast('いま きろくが ほぞんできません。ポイントは そのままだよ', 'bad');
   }
   function updatePointsUI() {
     document.getElementById('points-display').textContent = state.points.toLocaleString();
@@ -1453,8 +1475,9 @@
   // 実際にポイントを消費して新しいたまごをむかえる
   function finalizeBuy(eggId) {
     const egg = EGG_TYPES[eggId];
-    if (!spendPoints(egg.price)) {
+    if (!canPay(egg.price)) {
       toast('ポイントが たりないよ！', 'bad');
+      renderShop();
       return;
     }
     const pet = {
@@ -1463,8 +1486,17 @@
       warmCount: 0, feedCount: 0, playCount: 0,
       birthAt: Date.now()
     };
+    // 先にペットを保存する。ここで失敗したら「買わなかった」ことにして、
+    // ポイントは1つも引かない（減ったのにペットがいない、を起こさない）。
     state.pets.push(pet);
-    saveState();
+    if (!savePets()) {
+      state.pets.pop();
+      toastSaveFailed();
+      renderShop();
+      renderPets();
+      return;
+    }
+    payPoints(egg.price);
     toast(`${egg.eggName}を かったよ！マイペットを見てね`, 'good');
     renderShop();
     renderPets();
@@ -1528,7 +1560,14 @@
     const releasedEgg = EGG_TYPES[released.eggType];
     const releasedName = (released.stage === 'egg' && releasedEgg.special) ? '？？？' : releasedEgg.name;
     state.pets.splice(idx, 1);
-    saveState();
+    // 保存できないときは にがさない。画面からだけ消えて、
+    // つぎに読み直したら もどってくる…という ちぐはぐを起こさないため。
+    if (!savePets()) {
+      state.pets.splice(idx, 0, released);
+      toastSaveFailed();
+      renderPets();
+      return;
+    }
     const eggId = pendingEggId;
     document.getElementById('release-modal').classList.remove('show');
     pendingEggId = null;
@@ -1560,7 +1599,7 @@
 
   function renderPetCard(pet) {
     const egg = EGG_TYPES[pet.eggType];
-    const mul = egg.costMul || 1;            // 天使だけ 5倍
+    const mul = egg.costMul || 1;            // 天使だけ 10倍
     const cWarm = COST_WARM * mul, cFeed = COST_FEED * mul, cPlay = COST_PLAY * mul;
     const div = document.createElement('div');
     div.className = 'pet-card';
@@ -1636,43 +1675,76 @@
       return;
     }
     const egg = EGG_TYPES[pet.eggType];
-    const mul = egg.costMul || 1;            // 天使だけ 5倍
+    const mul = egg.costMul || 1;            // 天使だけ 10倍
     const costs = { warm: COST_WARM * mul, feed: COST_FEED * mul, play: COST_PLAY * mul };
-    if (!spendPoints(costs[act])) {
+
+    // いまの すがた に合わない おせわ（ふるい画面から押された・ほかのタブで育った）は、
+    // なにも起こらないのに ポイントだけ減っていた。画面を新しくして やり直してもらう。
+    const needStage = { warm: 'egg', feed: 'baby', play: 'teen' }[act];
+    if (pet.stage !== needStage) {
+      renderPets(); renderShop(); renderDex();
+      toast('がめんを あたらしくしたよ。もういちど おしてね', 'bad');
+      return;
+    }
+    // 足りるか見るだけ。引くのは、ちゃんと保存できてから。
+    if (!canPay(costs[act])) {
       toast('ポイントが たりない！', 'bad');
       return;
     }
 
-    let evolved = false;
+    // 保存できなかったときに もとへ もどせるように、いまの記録を ひかえておく
+    const before = {
+      stage: pet.stage, warmCount: pet.warmCount,
+      feedCount: pet.feedCount, playCount: pet.playCount,
+      dex: state.dex.slice()
+    };
 
-    if (act === 'warm' && pet.stage === 'egg') {
+    let evolved = false;
+    let mainToast = null, mainToastKind = 'good', dexToast = null;
+
+    if (act === 'warm') {
       pet.warmCount++;
       if (pet.warmCount >= WARM_NEEDED) {
         pet.stage = 'baby';
-        toast(`🎉 ${egg.name}が生まれたよ！`, 'special');
+        mainToast = `🎉 ${egg.name}が生まれたよ！`; mainToastKind = 'special';
         evolved = true;
-      } else toast('ぽかぽか…💕', 'good');
-    } else if (act === 'feed' && pet.stage === 'baby') {
+      } else { mainToast = 'ぽかぽか…💕'; }
+    } else if (act === 'feed') {
       pet.feedCount++;
       if (pet.feedCount >= FEED_NEEDED) {
         pet.stage = 'teen';
-        toast(`✨ おおきくなった！`, 'special');
+        mainToast = `✨ おおきくなった！`; mainToastKind = 'special';
         evolved = true;
-      } else toast('もぐもぐ🍴', 'good');
-    } else if (act === 'play' && pet.stage === 'teen') {
+      } else { mainToast = 'もぐもぐ🍴'; }
+    } else if (act === 'play') {
       pet.playCount++;
       if (pet.playCount >= PLAY_NEEDED) {
         pet.stage = 'adult';
         if (!state.dex.includes(pet.eggType)) {
           state.dex.push(pet.eggType);
-          setTimeout(() => toast(`📖 ずかんに「${egg.name}」を登録！`, 'special'), 1900);
+          dexToast = `📖 ずかんに「${egg.name}」を登録！`;
         }
-        toast(`🌟 大人になった！すごい！`, 'special');
+        mainToast = `🌟 大人になった！すごい！`; mainToastKind = 'special';
         evolved = true;
-      } else toast('たのしいね！🎾', 'good');
+      } else { mainToast = 'たのしいね！🎾'; }
     }
 
-    saveState();
+    // 先に記録を保存する。保存できなければ おせわを なかったことにして、
+    // ポイントも引かない（減ったのに ぜんぜん育っていない、を起こさない）。
+    if (!savePets()) {
+      pet.stage = before.stage;
+      pet.warmCount = before.warmCount;
+      pet.feedCount = before.feedCount;
+      pet.playCount = before.playCount;
+      state.dex = before.dex;
+      toastSaveFailed();
+      renderPets();
+      return;
+    }
+    payPoints(costs[act]);
+    toast(mainToast, mainToastKind);
+    if (dexToast) setTimeout(() => toast(dexToast, 'special'), 1900);
+
     const card = document.querySelector(`[data-pet-id="${pet.id}"]`);
     if (card) {
       const petVisual = card.querySelector('.pet-svg');

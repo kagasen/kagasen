@@ -1,12 +1,17 @@
 // 言葉さがし — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'kotobasagashi-cache-v3';
+const CACHE = 'kotobasagashi-cache-v9';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
+  // 辞書は shiritori のものを流用している。これが無いと
+  // オフラインのとき言葉が1つも正解にならないので必ず入れる。
+  '../shiritori/dictionary_output.js',
+  // 語彙＋意味データ（約2.9MB）。初回だけダウンロードされ、あとはキャッシュから読む。
+  './kotoba-dict.js?v=3',
 ];
 
 self.addEventListener('install', (e) => {

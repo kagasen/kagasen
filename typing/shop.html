@@ -736,34 +736,146 @@
   // ============================================
   let state = { points: 0, pets: [], dex: [] };
 
-  function loadState() {
-    // ペット・図鑑データを読み込む
+  // ------------------------------------------------------------------
+  // ペットが消える事故をふせぐための決まりごと（2026-09-08）
+  //   ブラウザの「もどる」で開きなおしたページは、画面を読みこみ直さずに
+  //   むかしのメモリ（＝そのとき見ていたペット一覧）のまま復活することがある
+  //   （bfcache。iPad の Safari でよく起きる）。
+  //   そこで書きこむ前に必ず localStorage を読み直し、
+  //   「ふるいメモリで新しい記録を上書きしてペットを消す」ことを起こさない。
+  //   保存に失敗したときも、だまって成功したふりをしない（§3 データを壊さない）。
+  // ------------------------------------------------------------------
+
+  // 保存データを読む。読めた＝{ ok:true, data }／読めなかった＝{ ok:false }
+  // ok:false のときは中身が分からないので、絶対に上書きしない。
+  function readSave() {
+    let raw = null;
     try {
-      const raw = localStorage.getItem(PET_SAVE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        state.pets = saved.pets || [];
-        state.dex  = saved.dex  || [];
+      raw = localStorage.getItem(PET_SAVE_KEY);
+    } catch (e) { console.warn(e); return { ok: false, reason: 'read' }; }
+    if (raw === null || raw === '') return { ok: true, data: { pets: [], dex: [] } };
+    try {
+      const saved = JSON.parse(raw);
+      if (!saved || typeof saved !== 'object') return { ok: false, reason: 'broken', raw: raw };
+      return {
+        ok: true,
+        data: {
+          pets: Array.isArray(saved.pets) ? saved.pets : [],
+          dex:  Array.isArray(saved.dex)  ? saved.dex  : []
+        }
+      };
+    } catch (e) { console.warn(e); return { ok: false, reason: 'broken', raw: raw }; }
+  }
+
+  function readPoints() {
+    try {
+      const n = parseInt(localStorage.getItem(TYPING_POINTS_KEY) || '0', 10);
+      return isNaN(n) ? 0 : Math.max(0, n);
+    } catch (e) { console.warn(e); return 0; }
+  }
+
+  // 記録が読めない（こわれている）ときは、消さずに別のキーへ よけておく
+  function stashBrokenSave(raw) {
+    if (typeof raw !== 'string') return;
+    try { localStorage.setItem(PET_SAVE_KEY + '_kowareta', raw); } catch (e) { console.warn(e); }
+  }
+
+  let saveBroken = false;   // 保存に失敗した状態か（失敗中は書きこみを止める）
+
+  function loadState() {
+    const r = readSave();
+    if (r.ok) {
+      state.pets = r.data.pets;
+      state.dex  = r.data.dex;
+      saveBroken = false;
+    } else {
+      // 読めなかった。中身が分からないまま上書きするとペットが消えるので、
+      // よけておいてから空で始める（あとから大人が取り出せる）。
+      if (r.reason === 'broken') { stashBrokenSave(r.raw); saveBroken = false; }
+      else { saveBroken = true; showSaveError(); }   // localStorage 自体が使えない
+      state.pets = [];
+      state.dex  = [];
+    }
+    state.points = readPoints();
+    return r.ok;
+  }
+
+  // 操作する直前に、ほかの画面での変化を取りこむ。
+  // 読めなかったときは false（＝この操作はやらない）。
+  function refreshFromStorage(silent) {
+    const r = readSave();
+    if (!r.ok) {
+      if (r.reason === 'broken') { stashBrokenSave(r.raw); state.pets = []; state.dex = []; }
+      else {
+        saveBroken = true;
+        showSaveError();
+        return false;
       }
-    } catch (e) { console.warn(e); }
-    if (!state.dex) state.dex = [];
-    // ポイントはタイピングアプリと共有のキーから読む
-    state.points = parseInt(localStorage.getItem(TYPING_POINTS_KEY) || '0');
+    } else {
+      state.pets = r.data.pets;
+      state.dex  = r.data.dex;
+    }
+    state.points = readPoints();
+    updatePointsUI();
+    return true;
+  }
+
+  // 保存できないとき（きおくの ばしょが いっぱい・ブラウザの せってい など）は、
+  // 「かったよ！」のような うれしいメッセージで かくれてしまわないように、
+  // 消えない おしらせを がめんの上に出す。だまって失敗しない（§3）。
+  function showSaveError() {
+    if (document.getElementById('save-error')) return;
+    const bar = document.createElement('div');
+    bar.id = 'save-error';
+    bar.setAttribute('role', 'alert');
+    bar.style.cssText =
+      'position:fixed;left:0;right:0;top:0;z-index:99999;padding:14px 18px;' +
+      'background:#c0392b;color:#fff;font-weight:800;font-size:16px;line-height:1.6;text-align:center;' +
+      'box-shadow:0 4px 12px rgba(0,0,0,.25);';
+    bar.innerHTML = '⚠ いまは きろくが ほぞんできません。<br>' +
+      'このまま つづけても、ペットや ポイントは のこりません。<br>' +
+      '<span style="font-size:14px;font-weight:700;">ページを 読みこみ直すか、先生・おうちのひとに つたえてね。</span>';
+    document.body.appendChild(bar);
+  }
+
+  // 書きこみ。書いたあと読み直して、ほんとうに保存できたか確かめる。
+  function writeKey(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      if (localStorage.getItem(key) !== value) throw new Error('書きこみを かくにんできない');
+      return true;
+    } catch (e) {
+      console.warn(e);
+      saveBroken = true;
+      showSaveError();
+      return false;
+    }
+  }
+
+  function savePets() {
+    return writeKey(PET_SAVE_KEY, JSON.stringify({ pets: state.pets, dex: state.dex }));
+  }
+
+  function savePoints() {
+    const n = Math.floor(Number(state.points));
+    return writeKey(TYPING_POINTS_KEY, String(isNaN(n) ? 0 : Math.max(0, n)));
   }
 
   function saveState() {
-    try {
-      // ペット・図鑑を専用キーに保存
-      localStorage.setItem(PET_SAVE_KEY, JSON.stringify({ pets: state.pets, dex: state.dex }));
-      // ポイント残高をタイピングアプリと共有のキーに書き戻す
-      localStorage.setItem(TYPING_POINTS_KEY, String(state.points));
-    } catch (e) { console.warn(e); }
+    const a = savePets();
+    const b = savePoints();
+    return a && b;
   }
 
-  function addPoints(n) { state.points += n; updatePointsUI(); saveState(); }
+  // ポイントは練習ページでも増えるので、書く前に必ず最新の残高を読み直す
+  function addPoints(n) {
+    state.points = readPoints() + n;
+    updatePointsUI(); savePoints();
+  }
   function spendPoints(n) {
-    if (state.points < n) return false;
-    state.points -= n; updatePointsUI(); saveState();
+    state.points = readPoints();
+    if (state.points < n) { updatePointsUI(); return false; }
+    state.points -= n; updatePointsUI(); savePoints();
     return true;
   }
   function updatePointsUI() {
@@ -1322,6 +1434,9 @@
 
   function buyEgg(eggId) {
     const egg = EGG_TYPES[eggId];
+    // ほかの画面での変化（練習で増えたポイント・ふえたペット）を取りこんでから判定する
+    if (!refreshFromStorage()) return;
+    renderPets();
     // ポイントが足りるかを先にチェック（ここではまだ消費しない）
     if (state.points < egg.price) {
       toast('ポイントが たりないよ！', 'bad');
@@ -1392,8 +1507,13 @@
   // マイペット画面から、自分の意思でペットを逃がす（買うときの強制ではない）
   // 大事な仲間を まちがえて 逃がさないように、かならず確認する
   function confirmReleasePet(petId) {
+    if (!refreshFromStorage()) return;
     const pet = state.pets.find(p => p.id === petId);
-    if (!pet) return;
+    if (!pet) {
+      renderPets(); renderShop(); renderDex();
+      toast('がめんを あたらしくしたよ。もういちど おしてね', 'bad');
+      return;
+    }
     const egg = EGG_TYPES[pet.eggType];
     const name = (pet.stage === 'egg' && egg.special) ? '？？？' : egg.name;
     if (!confirm(`${name}を そとに にがしますか？\nいちど にがすと、もう もどってきません。`)) return;
@@ -1506,8 +1626,15 @@
   }
 
   function petAction(act, petId) {
+    // 「もどる」で開きなおした古い画面から押されても、
+    // 保存されている今の記録に対して おせわをする（古い内容で上書きしない）
+    if (!refreshFromStorage()) return;
     const pet = state.pets.find(p => p.id === petId);
-    if (!pet) return;
+    if (!pet) {
+      renderPets(); renderShop(); renderDex();
+      toast('がめんを あたらしくしたよ。もういちど おしてね', 'bad');
+      return;
+    }
     const egg = EGG_TYPES[pet.eggType];
     const mul = egg.costMul || 1;            // 天使だけ 5倍
     const costs = { warm: COST_WARM * mul, feed: COST_FEED * mul, play: COST_PLAY * mul };
@@ -1644,9 +1771,32 @@
   // ============================================
   // 初期化
   // ============================================
+  function renderAll() {
+    updatePointsUI();
+    renderShop();
+    renderPets();
+    renderDex();
+  }
+
+  // ブラウザの「もどる」で復活した画面や、ほかのタブでの変化を取りこんで描き直す。
+  // これをしないと、古い画面のままの一覧を見て「ペットが消えた」と思ってしまう。
+  let ready = false;
+  function resyncAndRender() {
+    if (!ready) return;
+    if (!refreshFromStorage(true)) return;
+    renderAll();
+  }
+
   function init() {
     loadState();
     updatePointsUI();
+
+    window.addEventListener('pageshow', (e) => { if (e.persisted) resyncAndRender(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) resyncAndRender(); });
+    window.addEventListener('focus', resyncAndRender);
+    window.addEventListener('storage', (e) => {
+      if (!e.key || e.key === PET_SAVE_KEY || e.key === TYPING_POINTS_KEY) resyncAndRender();
+    });
 
     document.querySelectorAll('.tab').forEach(t => {
       t.addEventListener('click', () => switchView(t.dataset.view));
@@ -1690,6 +1840,7 @@
     renderShop();
     renderPets();
     renderDex();
+    ready = true;
   }
 
   document.addEventListener('DOMContentLoaded', init);

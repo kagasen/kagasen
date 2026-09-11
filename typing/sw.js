@@ -1,7 +1,7 @@
 // キッズタイピング — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'typing-cache-v11';
+const CACHE = 'typing-cache-v16';
 const ASSETS = [
   './',
   './backup-kit.js?v=3',

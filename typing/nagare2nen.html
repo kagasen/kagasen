@@ -133,9 +133,9 @@
             display: flex; align-items: center; justify-content: center;
             font-family: monospace; font-weight: bold; font-size: 1.1rem;
             color: #424242;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-bottom: 4px solid #bdbdbd;
+            background: var(--kc, white);
+            border: 1px solid var(--kb, #e0e0e0);
+            border-bottom: 4px solid var(--kb, #bdbdbd);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.1s, box-shadow 0.1s, background 0.1s, border-color 0.1s;
             user-select: none; position: relative;
@@ -145,13 +145,15 @@
             content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
             width: 8px; height: 2px; background: rgba(0,0,0,0.18); border-radius: 2px;
         }
+        /* 押すキーは黄色にせず、その指の色を少し濃くして太字に（目立ちすぎないように） */
         .kb-key.key-active {
-            background: #fde047 !important;
-            border-color: #eab308 !important;
-            border-bottom-color: #ca8a04 !important;
-            color: #dc2626 !important;
-            transform: scale(1.15) translateY(-3px);
-            box-shadow: 0 8px 18px rgba(234,179,8,0.5);
+            background: var(--kb, #fde047) !important;
+            border-color: var(--kl, #eab308) !important;
+            border-bottom-color: var(--kl, #ca8a04) !important;
+            color: #111827 !important;
+            font-weight: 900;
+            transform: scale(1.12) translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             z-index: 5;
         }
         /* 手のオーバーレイ */
@@ -161,52 +163,53 @@
             width: 100%; height: 100%;
             transform-origin: bottom center;
             transition: transform 0.2s ease, opacity 0.15s;
-            opacity: 0.28;
+            opacity: 0.45;
             transform: translateY(0) scale(1);
         }
         .finger-positioner.active-f .finger-animator {
-            opacity: 0.92;
+            opacity: 0.75;
             transform: translateY(-10px) scale(1.12);
         }
         .finger-body {
             width: 100%; height: 100%;
             border-radius: 50% 50% 30% 30% / 40% 40% 25% 25%;
-            border: 2px solid #f6b98a;
-            background: rgba(255,200,160,0.45);
+            border: 2px solid var(--fb, #f6b98a);
+            background: var(--fc, rgba(255,200,160,0.45));
             display: flex; flex-direction: column; align-items: center;
             padding-top: 3px; overflow: hidden;
             transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
         }
+        /* 押す指も黄色にせず その指の色のまま（すけ具合を減らして少しだけ目立たせる） */
         .finger-positioner.active-f .finger-body {
-            background: #fde047;
-            border-color: #facc15;
-            box-shadow: 0 0 16px rgba(250,204,21,0.75);
+            background: var(--fc, #fde047);
+            border-color: var(--fb, #facc15);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
         .finger-nail {
             width: 55%; aspect-ratio: 1 / 1;
             border-radius: 50%;
             background: rgba(255,255,255,0.8);
-            border: 1px solid #f6b98a;
+            border: 1px solid var(--fb, #f6b98a);
             flex-shrink: 0; margin-bottom: 3px;
         }
-        .finger-positioner.active-f .finger-nail { border-color: #eab308; }
+        .finger-positioner.active-f .finger-nail { border-color: var(--fb, #eab308); }
         .finger-joint {
             width: 75%; height: 2px;
-            background: rgba(255,140,90,0.5);
+            background: var(--fb, rgba(255,140,90,0.5));
             border-radius: 2px; margin-top: 4px; flex-shrink: 0;
         }
-        .finger-positioner.active-f .finger-joint { background: #d97706; }
+        .finger-positioner.active-f .finger-joint { background: var(--fb, #d97706); }
         .finger-label {
             font-size: 8px; font-weight: 900;
             color: transparent; margin-top: auto; margin-bottom: 3px;
             white-space: nowrap; flex-shrink: 0;
             transition: color 0.15s;
         }
-        .finger-positioner.active-f .finger-label { color: #dc2626; }
+        .finger-positioner.active-f .finger-label { color: #374151; }
         /* 凡例 */
-        #kb-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center; font-size: 0.6rem; color: #8d6e63; }
+        #kb-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: center; font-size: 0.75rem; font-weight: bold; color: #8d6e63; }
         .legend-item { display: flex; align-items: center; gap: 3px; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); }
+        .legend-dot { width: 13px; height: 13px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
 
         /* オーバーレイ */
         #overlay {
@@ -589,15 +592,20 @@ const FINGER_LABEL = {
     L_PINKY:'左小指', L_RING:'左薬指', L_MIDDLE:'左中指', L_INDEX:'左人差し指',
     R_INDEX:'右人差し指', R_MIDDLE:'右中指', R_RING:'右薬指', R_PINKY:'右小指',
 };
+// 指ごとの色（左右おなじ指はおなじ色・うすい色）。app.js の FINGER_COLORS と同じ値にそろえること。
+const FINGER_PALETTE = {
+    PINKY:  { bg:'#fde4ee', border:'#f2bfd3', line:'#e79bb9' },
+    RING:   { bg:'#e5f5d3', border:'#bfe0a0', line:'#9dcb76' },
+    MIDDLE: { bg:'#dcedfc', border:'#abcdef', line:'#80b4e4' },
+    INDEX:  { bg:'#ebe5fb', border:'#c8bdf0', line:'#a898e0' },
+};
 const FINGER_COLORS = {
-    L_PINKY:'#f8bbd0', L_RING:'#ffe0b2', L_MIDDLE:'#fff9c4', L_INDEX:'#c8e6c9',
-    R_INDEX:'#bbdefb', R_MIDDLE:'#b2ebf2', R_RING:'#e1bee7',  R_PINKY:'#ffcdd2',
+    L_PINKY:FINGER_PALETTE.PINKY, L_RING:FINGER_PALETTE.RING, L_MIDDLE:FINGER_PALETTE.MIDDLE, L_INDEX:FINGER_PALETTE.INDEX,
+    R_INDEX:FINGER_PALETTE.INDEX, R_MIDDLE:FINGER_PALETTE.MIDDLE, R_RING:FINGER_PALETTE.RING, R_PINKY:FINGER_PALETTE.PINKY,
 };
 const FINGER_DISP = [
-    {key:'L_PINKY',label:'左小指'}, {key:'L_RING',label:'左薬指'},
-    {key:'L_MIDDLE',label:'左中指'}, {key:'L_INDEX',label:'左人差し指'},
-    {key:'R_INDEX',label:'右人差し指'}, {key:'R_MIDDLE',label:'右中指'},
-    {key:'R_RING',label:'右薬指'}, {key:'R_PINKY',label:'右小指'},
+    {key:'L_PINKY',label:'こゆび'}, {key:'L_RING',label:'くすりゆび'},
+    {key:'L_MIDDLE',label:'なかゆび'}, {key:'L_INDEX',label:'ひとさしゆび'},
 ];
 
 // ============================================================
@@ -631,6 +639,8 @@ function buildHandsOverlay() {
             width: clamp(18px, 3vw, 30px);
             height: clamp(${Math.round(f.len * 0.65)}px, ${(f.len * 0.14).toFixed(2)}vw, ${Math.round(f.len * 1.1)}px);
             transform: translate(-50%, -100%) rotate(${f.rot}deg);
+            --fc: ${FINGER_COLORS[f.id].border};
+            --fb: ${FINGER_COLORS[f.id].line};
         `;
         positioner.innerHTML = `
             <div class="finger-animator">
@@ -658,6 +668,8 @@ function buildKeyboard() {
             el.className = 'kb-key';
             if (key === 'f' || key === 'j') el.classList.add('home-pos');
             el.id = `key-${key}`; el.dataset.key = key;
+            const kc = FINGER_COLORS[FINGER_MAP[key]];
+            if (kc) { el.style.setProperty('--kc', kc.bg); el.style.setProperty('--kb', kc.border); el.style.setProperty('--kl', kc.line); }
             el.textContent = key.toUpperCase(); // 大文字で表示
             rowEl.appendChild(el);
         });
@@ -668,7 +680,7 @@ function buildKeyboard() {
     FINGER_DISP.forEach(f => {
         const item = document.createElement('div');
         item.className = 'legend-item';
-        item.innerHTML = `<div class="legend-dot" style="background:${FINGER_COLORS[f.key]}"></div>${f.label}`;
+        item.innerHTML = `<div class="legend-dot" style="background:${FINGER_COLORS[f.key].bg};border-color:${FINGER_COLORS[f.key].border}"></div>${f.label}`;
         legend.appendChild(item);
     });
     buildHandsOverlay();

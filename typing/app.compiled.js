@@ -227,6 +227,17 @@ const FINGER_MAP = {
   "/": "R_PINKY",
   "-": "R_PINKY"
 };
+const FINGER_COLORS = {
+  PINKY: { bg: "#fde4ee", border: "#f2bfd3", line: "#e79bb9", label: "\u3053\u3086\u3073" },
+  RING: { bg: "#e5f5d3", border: "#bfe0a0", line: "#9dcb76", label: "\u304F\u3059\u308A\u3086\u3073" },
+  MIDDLE: { bg: "#dcedfc", border: "#abcdef", line: "#80b4e4", label: "\u306A\u304B\u3086\u3073" },
+  INDEX: { bg: "#ebe5fb", border: "#c8bdf0", line: "#a898e0", label: "\u3072\u3068\u3055\u3057\u3086\u3073" }
+};
+const FINGER_COLOR_ORDER = ["PINKY", "RING", "MIDDLE", "INDEX"];
+const fingerColorOfKey = (key) => {
+  const finger = FINGER_MAP[key];
+  return finger ? FINGER_COLORS[finger.slice(2)] : null;
+};
 const KEYBOARD_LAYOUT = [
   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-"],
   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", ""],
@@ -362,25 +373,28 @@ const playClearSound = () => {
 const KeyboardRow = ({ row, targetKey }) => /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-1 sm:mb-2" }, row.map((key, i) => {
   if (!key) return /* @__PURE__ */ React.createElement("div", { key: i, className: "w-7 h-9 sm:w-11 sm:h-12 mx-0.5 sm:mx-1" });
   const isTarget = targetKey === key;
+  const color = fingerColorOfKey(key);
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       key,
-      className: `w-7 h-9 sm:w-11 sm:h-12 mx-0.5 sm:mx-1 flex items-center justify-center rounded-md shadow-sm border-b-2 sm:border-b-4 text-sm sm:text-lg
-            ${isTarget ? "bg-yellow-300 border-yellow-500 font-bold text-red-600 scale-110 z-10 translate-y-[-2px] shadow-lg shadow-yellow-200" : "bg-white border-gray-300 text-gray-700"}
-            transition-all duration-100 uppercase`
+      className: `relative w-7 h-9 sm:w-11 sm:h-12 mx-0.5 sm:mx-1 flex items-center justify-center rounded-md shadow-sm border-b-2 sm:border-b-4 text-sm sm:text-lg
+            ${isTarget ? "bg-yellow-300 border-yellow-500 font-black text-gray-900 scale-110 z-10 translate-y-[-2px] shadow-md" : "bg-white border-gray-300 text-gray-700"}
+            transition-all duration-100 uppercase`,
+      style: color ? isTarget ? { backgroundColor: color.border, borderColor: color.line } : { backgroundColor: color.bg, borderColor: color.border } : void 0
     },
-    key
+    key,
+    (key === "f" || key === "j") && /* @__PURE__ */ React.createElement("span", { style: { position: "absolute", bottom: "3px", left: "50%", transform: "translateX(-50%)", width: "8px", height: "2px", borderRadius: "2px", background: "rgba(0,0,0,0.25)" } })
   );
 }));
 const Keyboard = ({ targetKey }) => {
-  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-center text-xs sm:text-sm font-bold text-indigo-500 mt-1 mb-1 sm:mb-2" }, "\u{1F448} \u5DE6\u624B\u4EBA\u5DEE\u3057\u6307\u3092 ", /* @__PURE__ */ React.createElement("span", { className: "font-black text-indigo-700 bg-indigo-50 px-1 rounded" }, "F"), "\u3001\u53F3\u624B\u4EBA\u5DEE\u3057\u6307\u3092 ", /* @__PURE__ */ React.createElement("span", { className: "font-black text-indigo-700 bg-indigo-50 px-1 rounded" }, "J"), " \u306B\u304A\u3044\u3066\u306D \u{1F449}"), /* @__PURE__ */ React.createElement("div", { className: "relative p-2 sm:p-3 bg-gray-100 rounded-xl shadow-inner overflow-hidden" }, KEYBOARD_LAYOUT.map((row, i) => /* @__PURE__ */ React.createElement(KeyboardRow, { key: i, row, targetKey })), /* @__PURE__ */ React.createElement(HandsOverlay, { activeFinger: FINGER_MAP[targetKey] })));
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-center text-xs sm:text-sm font-bold text-indigo-500 mt-1 mb-1 sm:mb-2" }, "\u{1F448} \u5DE6\u624B\u4EBA\u5DEE\u3057\u6307\u3092 ", /* @__PURE__ */ React.createElement("span", { className: "font-black text-indigo-700 bg-indigo-50 px-1 rounded" }, "F"), "\u3001\u53F3\u624B\u4EBA\u5DEE\u3057\u6307\u3092 ", /* @__PURE__ */ React.createElement("span", { className: "font-black text-indigo-700 bg-indigo-50 px-1 rounded" }, "J"), " \u306B\u304A\u3044\u3066\u306D \u{1F449}"), /* @__PURE__ */ React.createElement("div", { className: "relative p-2 sm:p-3 bg-gray-100 rounded-xl shadow-inner overflow-hidden" }, KEYBOARD_LAYOUT.map((row, i) => /* @__PURE__ */ React.createElement(KeyboardRow, { key: i, row, targetKey })), /* @__PURE__ */ React.createElement(HandsOverlay, { activeFinger: FINGER_MAP[targetKey] })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", marginTop: "6px", fontSize: "12px", fontWeight: "bold", color: "#6b7280" } }, FINGER_COLOR_ORDER.map((f) => /* @__PURE__ */ React.createElement("span", { key: f, style: { display: "inline-flex", alignItems: "center", gap: "4px" } }, /* @__PURE__ */ React.createElement("span", { style: { width: "14px", height: "14px", borderRadius: "4px", background: FINGER_COLORS[f].bg, border: `1px solid ${FINGER_COLORS[f].border}` } }), FINGER_COLORS[f].label))));
 };
-const Finger = ({ cx, cy, rot, length, isActive, label }) => /* @__PURE__ */ React.createElement(
+const Finger = ({ cx, cy, rot, length, isActive, label, color }) => /* @__PURE__ */ React.createElement(
   "div",
   {
     className: `absolute flex flex-col items-center justify-start transition-all duration-200 origin-bottom pointer-events-none
-      ${isActive ? "z-30 scale-110 translate-y-[-10px] opacity-90" : "z-20 opacity-40"}`,
+      ${isActive ? "z-30 scale-110 translate-y-[-10px] opacity-70" : "z-20 opacity-40"}`,
     style: {
       left: `${cx}%`,
       top: `${cy}%`,
@@ -389,8 +403,36 @@ const Finger = ({ cx, cy, rot, length, isActive, label }) => /* @__PURE__ */ Rea
       transform: `translate(-50%, -100%) rotate(${rot}deg)`
     }
   },
-  /* @__PURE__ */ React.createElement("div", { className: `w-full h-full rounded-t-full rounded-b-lg border shadow-sm flex flex-col items-center justify-start pt-1 sm:pt-2 overflow-hidden
-      ${isActive ? "bg-yellow-300 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]" : "bg-orange-100 border-orange-200 backdrop-blur-sm"}` }, /* @__PURE__ */ React.createElement("div", { className: `w-[60%] aspect-square rounded-full border border-b-2 ${isActive ? "bg-white border-yellow-500" : "bg-white/80 border-orange-200"} mb-1 sm:mb-2` }), /* @__PURE__ */ React.createElement("div", { className: `w-[80%] h-[2px] rounded-full ${isActive ? "bg-yellow-500" : "bg-orange-300"}` }), /* @__PURE__ */ React.createElement("div", { className: `w-[80%] h-[2px] rounded-full mt-1.5 sm:mt-2.5 ${isActive ? "bg-yellow-500" : "bg-orange-300"}` }), /* @__PURE__ */ React.createElement("span", { className: `mt-auto mb-1 text-[9px] sm:text-[11px] font-black ${isActive ? "text-red-600 drop-shadow-md" : "text-gray-500/0"}` }, isActive ? label : ""))
+  /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: `w-full h-full rounded-t-full rounded-b-lg border shadow-sm flex flex-col items-center justify-start pt-1 sm:pt-2 overflow-hidden
+      ${isActive ? "bg-yellow-300 border-yellow-400 shadow-md" : "bg-orange-100 border-orange-200 backdrop-blur-sm"}`,
+      style: color ? isActive ? { backgroundColor: color.border, borderColor: color.line, borderWidth: "2px" } : { backgroundColor: color.border, borderColor: color.line } : void 0
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: `w-[60%] aspect-square rounded-full border border-b-2 ${isActive ? "bg-white border-yellow-500" : "bg-white/80 border-orange-200"} mb-1 sm:mb-2`,
+        style: color ? { borderColor: color.line } : void 0
+      }
+    ),
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: `w-[80%] h-[2px] rounded-full ${isActive ? "bg-yellow-500" : "bg-orange-300"}`,
+        style: color ? { backgroundColor: color.line } : void 0
+      }
+    ),
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: `w-[80%] h-[2px] rounded-full mt-1.5 sm:mt-2.5 ${isActive ? "bg-yellow-500" : "bg-orange-300"}`,
+        style: color ? { backgroundColor: color.line } : void 0
+      }
+    ),
+    /* @__PURE__ */ React.createElement("span", { className: `mt-auto mb-1 text-[9px] sm:text-[11px] font-black ${isActive ? "text-gray-800" : "text-gray-500/0"}` }, isActive ? label : "")
+  )
 );
 const Palm = ({ cx, cy, isRight }) => /* @__PURE__ */ React.createElement(
   "div",
@@ -407,7 +449,7 @@ const Palm = ({ cx, cy, isRight }) => /* @__PURE__ */ React.createElement(
   /* @__PURE__ */ React.createElement("div", { className: "w-full h-full bg-orange-100 border border-orange-200 rounded-[40%] backdrop-blur-sm shadow-sm relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-10 left-1/2 -translate-x-1/2 w-[70%] h-16 bg-orange-100 border-x border-orange-200 rounded-b-xl backdrop-blur-sm" }))
 );
 const HandsOverlay = ({ activeFinger }) => {
-  return /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 w-full h-full pointer-events-none" }, /* @__PURE__ */ React.createElement(Palm, { cx: 20, cy: 115, isRight: false }), /* @__PURE__ */ React.createElement(Finger, { cx: 11, cy: 95, rot: -12, length: 85, isActive: activeFinger === "L_PINKY", label: "\u5C0F\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 18, cy: 90, rot: -4, length: 95, isActive: activeFinger === "L_RING", label: "\u85AC\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 25, cy: 87, rot: 2, length: 105, isActive: activeFinger === "L_MIDDLE", label: "\u4E2D\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 32, cy: 90, rot: 8, length: 95, isActive: activeFinger === "L_INDEX", label: "\u4EBA\u5DEE\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 38, cy: 105, rot: 55, length: 60, isActive: activeFinger === "L_THUMB", label: "\u89AA\u6307" }), /* @__PURE__ */ React.createElement(Palm, { cx: 80, cy: 115, isRight: true }), /* @__PURE__ */ React.createElement(Finger, { cx: 53, cy: 105, rot: -55, length: 60, isActive: activeFinger === "R_THUMB", label: "\u89AA\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 59, cy: 90, rot: -8, length: 95, isActive: activeFinger === "R_INDEX", label: "\u4EBA\u5DEE\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 66, cy: 87, rot: -2, length: 105, isActive: activeFinger === "R_MIDDLE", label: "\u4E2D\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 73, cy: 90, rot: 4, length: 95, isActive: activeFinger === "R_RING", label: "\u85AC\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 80, cy: 95, rot: 12, length: 85, isActive: activeFinger === "R_PINKY", label: "\u5C0F\u6307" }));
+  return /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 w-full h-full pointer-events-none" }, /* @__PURE__ */ React.createElement(Palm, { cx: 20, cy: 115, isRight: false }), /* @__PURE__ */ React.createElement(Finger, { cx: 11, cy: 95, rot: -12, length: 85, isActive: activeFinger === "L_PINKY", label: "\u5C0F\u6307", color: FINGER_COLORS.PINKY }), /* @__PURE__ */ React.createElement(Finger, { cx: 18, cy: 90, rot: -4, length: 95, isActive: activeFinger === "L_RING", label: "\u85AC\u6307", color: FINGER_COLORS.RING }), /* @__PURE__ */ React.createElement(Finger, { cx: 25, cy: 87, rot: 2, length: 105, isActive: activeFinger === "L_MIDDLE", label: "\u4E2D\u6307", color: FINGER_COLORS.MIDDLE }), /* @__PURE__ */ React.createElement(Finger, { cx: 32, cy: 90, rot: 8, length: 95, isActive: activeFinger === "L_INDEX", label: "\u4EBA\u5DEE\u6307", color: FINGER_COLORS.INDEX }), /* @__PURE__ */ React.createElement(Finger, { cx: 38, cy: 105, rot: 55, length: 60, isActive: activeFinger === "L_THUMB", label: "\u89AA\u6307" }), /* @__PURE__ */ React.createElement(Palm, { cx: 80, cy: 115, isRight: true }), /* @__PURE__ */ React.createElement(Finger, { cx: 53, cy: 105, rot: -55, length: 60, isActive: activeFinger === "R_THUMB", label: "\u89AA\u6307" }), /* @__PURE__ */ React.createElement(Finger, { cx: 59, cy: 90, rot: -8, length: 95, isActive: activeFinger === "R_INDEX", label: "\u4EBA\u5DEE\u6307", color: FINGER_COLORS.INDEX }), /* @__PURE__ */ React.createElement(Finger, { cx: 66, cy: 87, rot: -2, length: 105, isActive: activeFinger === "R_MIDDLE", label: "\u4E2D\u6307", color: FINGER_COLORS.MIDDLE }), /* @__PURE__ */ React.createElement(Finger, { cx: 73, cy: 90, rot: 4, length: 95, isActive: activeFinger === "R_RING", label: "\u85AC\u6307", color: FINGER_COLORS.RING }), /* @__PURE__ */ React.createElement(Finger, { cx: 80, cy: 95, rot: 12, length: 85, isActive: activeFinger === "R_PINKY", label: "\u5C0F\u6307", color: FINGER_COLORS.PINKY }));
 };
 function App() {
   const params = new URLSearchParams(window.location.search);

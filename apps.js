@@ -7,7 +7,7 @@ const appsData = [
         tagName: "理科",
         date: "2026/09/10",
         colorClass: "subject-orange",
-        image: "images/denki-kairo.svg",
+        image: "images/thumbnails-v5/denki-kairo.jpg",
         link: "denki-kairo/index.html"
     },
     {

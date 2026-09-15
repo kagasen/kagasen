@@ -834,8 +834,34 @@
       'box-shadow:0 4px 12px rgba(0,0,0,.25);';
     bar.innerHTML = '⚠ いまは きろくが ほぞんできません。<br>' +
       'たまごを かったり おせわしたり できません（ポイントは 減らないよ）。<br>' +
-      '<span style="font-size:14px;font-weight:700;">ページを 読みこみ直すか、先生・おうちのひとに つたえてね。</span>';
+      '<span style="font-size:14px;font-weight:700;">ページを 読みこみ直すか、先生・おうちのひとに つたえてね。</span>' +
+      storageReportHtml();
     document.body.appendChild(bar);
+  }
+
+  // 大人むけ：なにが保存場所をうめているか（2026-09-15）
+  //   localStorage は kagasen.github.io の全アプリで分け合う約5MB。ほかのアプリ
+  //   （思考ツールに貼った写真など）が いっぱいにすると、ここも保存できなくなる。
+  //   原因のアプリが分かるように、大きい順に3つ出す。
+  function storageReportHtml() {
+    const STORAGE_KEY_NAMES = { 'sikou-tool-app-pages-v1': '思考ツール' };
+    try {
+      const rows = [];
+      let total = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        const n = (k.length + (localStorage.getItem(k) || '').length) * 2;   // UTF-16で数える
+        rows.push({ k: k, n: n });
+        total += n;
+      }
+      if (total < 3 * 1024 * 1024) return '';   // いっぱいではない（ブラウザの設定などが原因）
+      rows.sort((a, b) => b.n - a.n);
+      const mb = (n) => (n / 1024 / 1024).toFixed(1) + 'MB';
+      const top = rows.slice(0, 3).map((r) => (STORAGE_KEY_NAMES[r.k] || r.k) + ' ' + mb(r.n)).join('、');
+      const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+      return '<br><span style="font-size:12px;font-weight:600;opacity:.95;">おとなの方へ：この端末の保存場所（全アプリ共通・約5MB）がいっぱいです（' +
+        mb(total) + '）。大きい順：' + esc(top) + '</span>';
+    } catch (e) { console.warn(e); return ''; }
   }
 
   // 書きこみ。書いたあと読み直して、ほんとうに保存できたか確かめる。

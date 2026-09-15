@@ -28,6 +28,40 @@ const Pencil = (p) => <LucideIcon {...p}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 
 
 const STORAGE_KEY = 'sikou-tool-app-pages-v1';
 
+// --- 貼った写真を小さくする（2026-09-15）---
+// むかしは 表示は400px幅なのに、写真を元の大きさのまま保存していた。iPadの写真は1枚で数MBになり、
+// さらに「元に戻す」の履歴(past/future)ごと保存していたので、同じ写真が何枚ぶんも保存されていた。
+// localStorage は kagasen.github.io の全アプリで分け合う約5MBなので、ここがいっぱいになると
+// ほかのアプリ（タイピングのペットショップ等）まで保存できなくなる。
+// そこで 大きい写真は長い辺を IMAGE_MAX_SIDE までに縮めて JPEG にし、履歴は保存しない。
+const IMAGE_MAX_SIDE = 1000;
+const BIG_IMAGE_CHARS = 300000; // これより小さい画像は そのまま（透過PNGのスタンプ等を白ぬりにしない）
+
+function shrinkImageDataUrl(dataUrl, done) {
+    if (typeof dataUrl !== 'string' || dataUrl.length <= BIG_IMAGE_CHARS) { done(dataUrl); return; }
+    const img = new Image();
+    img.onload = () => {
+        try {
+            const scale = Math.min(1, IMAGE_MAX_SIDE / Math.max(img.width, img.height));
+            const w = Math.max(1, Math.round(img.width * scale));
+            const h = Math.max(1, Math.round(img.height * scale));
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            const small = c.toDataURL('image/jpeg', 0.85);
+            done(small.length < dataUrl.length ? small : dataUrl);
+        } catch (e) {
+            console.warn(e);
+            done(dataUrl);
+        }
+    };
+    img.onerror = () => done(dataUrl);
+    img.src = dataUrl;
+}
+
 function createNewPage(name) {
     return {
         id: `page-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -212,6 +246,31 @@ function App() {
     const [activePageId, setActivePageId] = useState(initialActiveId);
     const [renamingPageId, setRenamingPageId] = useState(null);
     const cancelRenameBlurRef = useRef(false);
+    const [saveFailed, setSaveFailed] = useState(false);
+
+    // 前の版で保存された 大きな写真を、ひらいたときに1回だけ小さくする（場所をあける）。
+    // 写真をふくむページの「元に戻す」履歴は、大きな写真が戻ってこないように消す。
+    useEffect(() => {
+        const bigSrcs = [];
+        pages.forEach((p) => p.present.forEach((it) => {
+            if (it.type === 'image' && typeof it.content === 'string' && it.content.length > BIG_IMAGE_CHARS
+                && bigSrcs.indexOf(it.content) < 0) bigSrcs.push(it.content);
+        }));
+        bigSrcs.forEach((src) => {
+            shrinkImageDataUrl(src, (small) => {
+                if (small === src) return;
+                setPages((prev) => prev.map((p) => {
+                    if (!p.present.some((it) => it.type === 'image' && it.content === src)) return p;
+                    return {
+                        ...p,
+                        past: [],
+                        future: [],
+                        present: p.present.map((it) => (it.type === 'image' && it.content === src ? { ...it, content: small } : it)),
+                    };
+                }));
+            });
+        });
+    }, []);
 
     const activePageIdRef = useRef(activePageId);
     useEffect(() => {
@@ -304,10 +363,15 @@ function App() {
     }, []);
 
     useEffect(() => {
+        // 「元に戻す」の履歴は保存しない（写真が何枚ぶんも保存されて、全アプリの保存場所をうめるため）
+        const toSave = pages.map((p) => ({ ...p, past: [], future: [] }));
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ pages, activePageId }));
-        } catch (_) {
-            /* 容量不足など */
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ pages: toSave, activePageId }));
+            setSaveFailed(false);
+        } catch (e) {
+            // 容量不足など。だまって失敗しない（ページを閉じると消えるので知らせる）
+            console.warn(e);
+            setSaveFailed(true);
         }
     }, [pages, activePageId]);
 
@@ -571,8 +635,7 @@ function App() {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
-            const dataUrl = event.target.result;
+        reader.onload = (event) => shrinkImageDataUrl(event.target.result, (dataUrl) => {
             const img = new Image();
             img.onload = () => {
                 let w = img.width;
@@ -592,7 +655,7 @@ function App() {
                 }]);
             };
             img.src = dataUrl;
-        };
+        });
         reader.readAsDataURL(file);
         e.target.value = '';
     };
@@ -932,6 +995,15 @@ function App() {
             className="w-screen h-screen flex relative overflow-hidden text-slate-800"
             style={{ fontFamily: '"Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN", "Meiryo", sans-serif' }}
         >
+            {saveFailed && (
+                <div
+                    role="alert"
+                    style={{ position: 'fixed', left: 0, right: 0, top: 0, zIndex: 99999, padding: '10px 16px', background: '#c0392b', color: '#fff', fontWeight: 800, fontSize: 15, lineHeight: 1.6, textAlign: 'center' }}
+                >
+                    ⚠ いまは この画面を ほぞんできません（ほぞんする場所が いっぱいです）。<br />
+                    <span style={{ fontSize: 13, fontWeight: 700 }}>写真や いらないページを けすと なおります。</span>
+                </div>
+            )}
             <div
                 className="w-full h-full absolute inset-0 touch-none"
                 onPointerDown={handleCanvasPointerDown}

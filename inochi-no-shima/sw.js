@@ -1,6 +1,6 @@
 // いのちの島 — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'inochi-no-shima-cache-82654ef3';
+const CACHE = 'inochi-no-shima-cache-d56cd898';
 const ASSETS = [
   './',
   './index.html',

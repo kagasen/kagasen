@@ -3,6 +3,9 @@
 ## 概要
 10×10の文字盤にかくれた言葉をドラッグで見つける言葉さがしゲーム（たて・よこ・ななめ・逆さ読み対応、1分間チャレンジ）。
 構成＝`index.html` 1ファイル完結（CSS/JS/辞書込み）。localStorage 未使用（記録は持たない）。
+  ★↑は古い。いまは ことば図鑑（`kotobasagashi:zukan:v1`）と じこさいこう（`kotobasagashi:best:v1`）を localStorage に持つ。
+- ★**💾 きろくの バックアップ＆ひきつぎ（2026-09-16）**: backup-kit.js（全アプリ共通・同一ファイル）を同梱し、キーが2つなので v2 の collect/restore（どちらも `_mae` に1世代退避）。スタート画面の 図鑑ボタンの下に「💾 きろくを まもる」（kotobasagashi-cache-v10）。
+  あわせて全アプリ共通の「保存の見はり」が `<head>` 先頭に埋めこまれた（原本 `../hozon-guard.js`・ルート HANDOFF 参照。手で直さない）。SWは backup-kit.js も先に入れる。
 
 ## PWA化（2026-07-07・全アプリ一括）
 - `manifest.json` / `sw.js` / `icon.svg` を追加。index.html に theme-color / manifest / apple-touch-icon / SW登録（http(s)のみ）を追記。

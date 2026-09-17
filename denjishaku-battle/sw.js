@@ -1,6 +1,6 @@
 // でんじしゃくバトル — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'denjishaku-battle-cache-ccb6c898';
+const CACHE = 'denjishaku-battle-cache-0527b159';
 const ASSETS = [
   './',
   './index.html',

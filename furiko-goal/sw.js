@@ -1,6 +1,6 @@
 // ふりこゴール — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'furiko-goal-cache-41554a5e';
+const CACHE = 'furiko-goal-cache-3a60dd8e';
 const ASSETS = [
   './',
   './index.html',

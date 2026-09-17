@@ -1,6 +1,6 @@
 // てこのはたらき — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'teko-no-hataraki-cache-1897c6c6';
+const CACHE = 'teko-no-hataraki-cache-79a5c5fd';
 const ASSETS = [
   './',
   './index.html',

@@ -1,6 +1,11 @@
 # サイエンスアイランド — HANDOFF
 
 小学校理科の全領域を「5つの島」でめぐる学習ゲーム。
+
+> ★**2026-09-16: 全アプリ共通の「保存の見はり」を `src/00-head.html` の `<head>` 先頭に入れた**（目印 `kagasen-hozon`・原本はルートの `hozon-guard.js`。
+> 手で直さず `node build-hozon.mjs`）。そのとき src に作業中の変更（tsunagu など）が未ビルドだったので **build-islands は走らせず**、
+> 生成物11こにも同じ埋めこみを直接入れ、sw.js の CACHE は build-islands と同じ sha1 で出しなおした（作業中の変更は まだ公開物に入っていない）。
+> ★バックアップ（backup-kit）は まだ無い。入れるなら build-islands.mjs で 各フォルダへ配る＋ASSETS に足す形に。
 **まず ../CLAUDE.md を読み、次にこのファイルを読むこと。** ここがこのアプリの設計合意と実装状況の source of truth。
 
 - フォルダ: `science-island/`

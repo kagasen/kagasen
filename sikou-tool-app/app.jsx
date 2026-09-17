@@ -75,9 +75,18 @@ function createNewPage(name) {
     };
 }
 
+// ★2026-09-16 保存場所を localStorage → IndexedDB（kioku-db.js）へ うつした。
+//   写真で 全アプリ共通の localStorage（約5MB）を うめないため。はじめて ひらいたときに 自動で 引っ越す。
+//   IndexedDB は 読むのが 非同期なので、読みおわってから 画面を 出す（いちばん下の boot）。
+const kioku = window.KiokuDB
+    ? window.KiokuDB.create({ db: 'sikou-tool-app', key: 'pages', lsKey: STORAGE_KEY })
+    : null;
+window.sikouKioku = kioku;   // バックアップ（index.html の BackupKit）から使う
+let bootRaw = null;          // 起動時に 読んだ 保存データ（文字列）
+
 function loadPersistedState() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = bootRaw;
         if (!raw) return null;
         const data = JSON.parse(raw);
         if (!data.pages || !Array.isArray(data.pages) || data.pages.length === 0) return null;
@@ -237,13 +246,19 @@ const penCursorUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent('<svg xm
 const eraserCursorUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>')}') 0 24, cell`;
 
 // --- メインアプリケーション ---
-function App() {
-    const persisted = loadPersistedState();
-    const initialPages = persisted?.pages ?? [createNewPage('ページ1')];
-    const initialActiveId = persisted?.activePageId ?? initialPages[0].id;
+let bootState;   // 起動時に 1回だけ 読む（むかしは 描くたびに 大きな JSON を 読みなおしていた）
+function initialState() {
+    if (bootState === undefined) {
+        const persisted = loadPersistedState();
+        const pages = persisted?.pages ?? [createNewPage('ページ1')];
+        bootState = { pages, activePageId: persisted?.activePageId ?? pages[0].id };
+    }
+    return bootState;
+}
 
-    const [pages, setPages] = useState(initialPages);
-    const [activePageId, setActivePageId] = useState(initialActiveId);
+function App() {
+    const [pages, setPages] = useState(() => initialState().pages);
+    const [activePageId, setActivePageId] = useState(() => initialState().activePageId);
     const [renamingPageId, setRenamingPageId] = useState(null);
     const cancelRenameBlurRef = useRef(false);
     const [saveFailed, setSaveFailed] = useState(false);
@@ -365,11 +380,16 @@ function App() {
     useEffect(() => {
         // 「元に戻す」の履歴は保存しない（写真が何枚ぶんも保存されて、全アプリの保存場所をうめるため）
         const toSave = pages.map((p) => ({ ...p, past: [], future: [] }));
+        const raw = JSON.stringify({ pages: toSave, activePageId });
+        // 失敗（容量不足など）は だまらない（ページを閉じると消えるので知らせる）
+        if (kioku) {
+            kioku.save(raw).then((ok) => setSaveFailed(!ok));
+            return;
+        }
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ pages: toSave, activePageId }));
+            localStorage.setItem(STORAGE_KEY, raw);
             setSaveFailed(false);
         } catch (e) {
-            // 容量不足など。だまって失敗しない（ページを閉じると消えるので知らせる）
             console.warn(e);
             setSaveFailed(true);
         }
@@ -1742,4 +1762,10 @@ function App() {
 }
 
 const root = createRoot(document.getElementById('root'));
-root.render(<App />);
+// 保存データを 読みおわってから 画面を 出す（kioku-db.js が 無いときは これまでどおり localStorage）
+(kioku ? kioku.load() : Promise.resolve(localStorage.getItem(STORAGE_KEY)))
+    .catch(() => null)
+    .then((raw) => {
+        bootRaw = raw;
+        root.render(<App />);
+    });

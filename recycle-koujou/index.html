@@ -1,6 +1,169 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- kagasen-hozon -->
+<script>
+/* =====================================================================
+   hozon-guard.js v1 — 「きろくが だまって きえる」を ふせぐ 共通の見はり（2026-09-16）
+   ★このファイルは「原本」。各アプリの <head> には build-hozon.mjs が
+     「kagasen-hozon」の目印コメントの あいだに そのまま埋めこむ。
+     直したら `node build-hozon.mjs` → 各 sw.js の CACHE を繰り上げ（ツールが自動でやる）。
+   ★ES2017+α縛り（?. ?? は書かない）。ほかのスクリプトより先に動くこと（<head> の先頭）。
+
+   なぜ要るか:
+     localStorage は kagasen.github.io の **全アプリで分け合う 約5MB**。
+     どれか1つ（思考ツールの写真・学級ボードの手書き など）が うめると、
+     ほかのアプリの保存が失敗する。ほとんどのアプリは失敗を catch(e){} で だまって
+     すてていたので、子どもは「あそんだのに きえた」と感じていた。
+
+   やること:
+     1. localStorage.setItem が失敗したら、すてても よい記録（古い日付の
+        kagasen_click_* ＝ポータルの「今日もう数えた」印）を掃除して、1回だけ やりなおす
+     2. それでも だめなら、画面の上に おしらせを出す（子どもむけ＋おとなむけ1行：
+        合計と 大きい順3つのアプリ名）。アプリの動きは 変えない（例外は そのまま投げる）
+     3. ひらいたときにも 古い kagasen_click_* を掃除する（毎日1つずつ ふえていた）
+     4. ブラウザに「このサイトのデータを 勝手に消さないで」と1回たのむ（storage.persist）
+        Firefox は 許可ダイアログが出て 子どもが こまるので たのまない
+
+   ★子どもの記録は **1つも消さない**。消すのは kagasen_click_* の「古い日付」だけ。
+   ページ側で自前のおしらせを出すとき（typing/shop.html）は
+   window.KAGASEN_HOZON_QUIET = true にすると、ここの おしらせは出ない。
+   ===================================================================== */
+(function () {
+  'use strict';
+  var LS;
+  try { LS = window.localStorage; } catch (e) { return; }
+  if (!LS || !window.Storage || Storage.prototype.__kagasenHozon) return;
+
+  /* キーの名前の はじまり → アプリ名（おとなむけの表示用）。アプリを増やしたら1行足す */
+  var NAMES = [
+    ['cb-v2', '教室サポートボード'],
+    ['sikou-tool-app', '思考ツール'],
+    ['kanji_', '漢字の冒険'],
+    ['kannjibusyu-ta', '漢字部首シューティング'],
+    ['kotobasagashi', '言葉さがし'],
+    ['lua_state', '自分レベルアップアドベンチャー'],
+    ['rekishiBattle', 'レキシバトル'],
+    ['sakka_', '作家の時間'],
+    ['science-island', 'りかの島（理科アプリ）'],
+    ['sekai-o-mawarou', 'せかいをまわろう！'],
+    ['shinmatorikusu', '心マトリクス'],
+    ['homeworkSubmissionData', '宿題提出ポスト'],
+    ['relay_runners', '体育リレー'],
+    ['todofuken', '都道府県の冒険'],
+    ['typing', 'キッズタイピング'],
+    ['kagasen_tokkun70', 'キッズタイピング'],
+    ['ugokiNoKiroku', 'うごきのきろく'],
+    ['kagasen_', 'アプリ集のトップ']
+  ];
+  function appName(k) {
+    for (var i = 0; i < NAMES.length; i++) if (k.indexOf(NAMES[i][0]) === 0) return NAMES[i][1];
+    return k;
+  }
+
+  /* ---------- 1. すててよい記録の掃除 ---------- */
+  function souji() {
+    var today = new Date().toISOString().split('T')[0];   /* ポータルと同じ数え方（UTCの日付） */
+    var dead = [];
+    try {
+      for (var i = 0; i < LS.length; i++) {
+        var k = LS.key(i);
+        var m = k && /^kagasen_click_.+_(\d{4}-\d{2}-\d{2})$/.exec(k);
+        if (m && m[1] !== today) dead.push(k);
+      }
+      for (var j = 0; j < dead.length; j++) LS.removeItem(dead[j]);
+    } catch (e) {}
+    return dead.length;
+  }
+
+  /* ---------- 2. どれだけ うまっているか ---------- */
+  function report() {
+    var byApp = {}, total = 0;
+    try {
+      for (var i = 0; i < LS.length; i++) {
+        var k = LS.key(i);
+        var n = (k.length + (LS.getItem(k) || '').length) * 2;   /* UTF-16で数える */
+        total += n;
+        var a = appName(k);
+        byApp[a] = (byApp[a] || 0) + n;
+      }
+    } catch (e) {}
+    var rows = Object.keys(byApp).map(function (a) { return { a: a, n: byApp[a] }; });
+    rows.sort(function (x, y) { return y.n - x.n; });
+    return { total: total, rows: rows };
+  }
+  function mb(n) { return (n / 1024 / 1024).toFixed(1) + 'MB'; }
+
+  /* ---------- おしらせ ---------- */
+  var shown = false;
+  function oshirase() {
+    if (shown || window.KAGASEN_HOZON_QUIET) return;
+    if (!document.body) { document.addEventListener('DOMContentLoaded', oshirase); return; }
+    shown = true;
+    var r = report();
+    var adult;
+    if (r.total >= 3 * 1024 * 1024) {
+      var big = r.rows.filter(function (x) { return x.n >= 50 * 1024; }).slice(0, 3);
+      adult = 'おとなの方へ：この端末の保存場所（かがせんのHAPPYアプリ集の全アプリで共通。iPad などでは約5MB）がいっぱいです（使用 ' +
+        mb(r.total) + '）。大きい順：' +
+        (big.length ? big : r.rows.slice(0, 1)).map(function (x) { return x.a + ' ' + mb(x.n); }).join('、') +
+        '。使っていないアプリのデータを整理するか、バックアップを書き出してください。';
+    } else {
+      adult = 'おとなの方へ：ブラウザが保存を止めています（プライベートブラウズ・ストレージの制限など）。' +
+        'ふつうのタブで開くか、ブラウザの設定を確認してください。';
+    }
+    var st = document.createElement('style');
+    st.textContent =
+      '#kagasen-hozon{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:2147483000;' +
+      'width:min(560px,calc(100% - 24px));box-sizing:border-box;background:#FEF2F2;color:#7F1D1D;' +
+      'border:3px solid #F87171;border-radius:16px;padding:12px 14px;box-shadow:0 8px 28px rgba(0,0,0,.25);' +
+      'font:600 16px/1.5 "Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","BIZ UDPGothic",sans-serif;text-align:left}' +
+      '#kagasen-hozon b{display:block;font-size:18px;margin-bottom:2px}' +
+      '#kagasen-hozon small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:6px}' +
+      '#kagasen-hozon button{float:right;min-width:72px;min-height:48px;margin:0 0 6px 10px;border:none;border-radius:12px;' +
+      'background:#DC2626;color:#fff;font:inherit;font-size:16px;cursor:pointer}' +
+      '@media print{#kagasen-hozon{display:none}}';
+    var box = document.createElement('div');
+    box.id = 'kagasen-hozon';
+    box.setAttribute('role', 'alert');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'とじる';
+    btn.onclick = function () { box.remove(); };
+    var t1 = document.createElement('b'); t1.textContent = '⚠️ きろくが ほぞんできませんでした';
+    var t2 = document.createElement('span'); t2.textContent = 'おうちの人か 先生に この画面を 見せてね。';
+    var t3 = document.createElement('small'); t3.textContent = adult;
+    box.appendChild(btn); box.appendChild(t1); box.appendChild(t2); box.appendChild(t3);
+    document.head.appendChild(st);
+    document.body.appendChild(box);
+  }
+
+  /* ---------- 見はり本体 ---------- */
+  var origSet = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) {
+    try { return origSet.call(this, k, v); } catch (e) {
+      if (this !== LS) throw e;
+      if (souji() > 0) {
+        try { return origSet.call(this, k, v); } catch (e2) { e = e2; }
+      }
+      oshirase();
+      throw e;   /* アプリの動きは これまでと同じ */
+    }
+  };
+  Storage.prototype.__kagasenHozon = 1;
+  window.kagasenHozon = { report: report, souji: souji, oshirase: oshirase };
+
+  /* ---------- 3. ひらいたときの掃除 ／ 4. 消さないでのお願い ---------- */
+  souji();
+  try {
+    var sm = navigator.storage;
+    if (sm && sm.persist && sm.persisted && !/Firefox\//.test(navigator.userAgent)) {
+      sm.persisted().then(function (p) { if (!p) return sm.persist(); }).catch(function () {});
+    }
+  } catch (e) {}
+})();
+</script>
+<!-- /kagasen-hozon -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F2A33C">

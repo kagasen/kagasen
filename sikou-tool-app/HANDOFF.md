@@ -16,6 +16,22 @@
 - SWキャッシュ名は「(アプリID)-cache-v1」。ローカルアセット全部をプリキャッシュ（ネットワーク優先・失敗時キャッシュ）。**アセットを更新したら sw.js の CACHE を繰り上げ、ASSETS の顔ぶれも見直す**こと。
 - **注意: Cache Storage は同一オリジン（GitHub Pages）で全アプリ共有**。activate の古キャッシュ掃除は自アプリのプレフィックス（`(アプリID)-cache-`）だけを対象にしてある。`k !== CACHE` だけの条件に戻すと他アプリのオフラインキャッシュを消してしまうので戻さない。
 
+## 保存場所を IndexedDB へ（2026-09-16）
+localStorage（全アプリ共通・約5MB）を写真でうめないよう、ページの保存を **IndexedDB（DB `sikou-tool-app` / キー `pages`）** に移した。
+- **共通部品 `kioku-db.js`**（sikou-tool-app / classroom-board に同一ファイル。直したら両方に配り直し＋`?v=`＋CACHE）。DB名＝アプリ名・ストア `kv`・値は文字列。
+  - `load()` … localStorage に旧キーが**ある＝そちらが新しい**（未引っ越し／IndexedDB が使えずそちらへ保存した）→ IndexedDB に書いて**読み返して一致したら** localStorage を消す。
+    IndexedDB に別のデータがあれば消さずに `キー_mae` へ退避。
+  - `save(raw)` … 1つずつ順に書く（書いている間に来たものは最新1つだけ）。load() がおわるまで待つ。IndexedDB が失敗したら localStorage へにがす。
+  - IndexedDB が無い・開けない（プライベートブラウズ／Safari 14.1 の open が返らない不具合→`databases()` で起こす・8秒で諦め）→ これまでどおり localStorage。
+  - `importRaw(raw)` … バックアップ読みこみ。前のデータを `キー_mae` に退避。以後の save は止める（古い画面が上書きしない）→ BackupKit の onImported で完了を待って reload。
+- `app.jsx`: 起動時に `kioku.load()` を待ってから `root.render`（`bootRaw`）。初期状態は `initialState()` で1回だけ作る（むかしは描画のたびに JSON を読み直していた）。
+  保存は `kioku.save(raw).then(ok => setSaveFailed(!ok))`。`window.sikouKioku` をバックアップが使う。
+- index.html: `kioku-db.js?v=1` を bundle より先に。BackupKit は collect/restore/onImported（`latest()` と `importRaw()`）。`app.bundle.js?v=5`、SW `sikou-tool-app-cache-v9`（kioku-db.js も ASSETS に）。
+- 写真を縮める処理（下の 2026-09-15）はそのまま残した（IndexedDB でも小さいほうが速い）。tailwind.css はクラスを足していないので再生成していない。
+- 検証(localhost): 旧 localStorage の保存（写真160万文字）→ ひらくと IndexedDB へ引っ越し・localStorage は空・写真とふせんが表示。
+  localStorage を完全に満杯にしても ふせん追加が IndexedDB に保存され、再読みこみで残る。バックアップ読みこみ→反映＋`pages_mae` 退避。
+  IndexedDB が無い想定（window.indexedDB を消す）でも localStorage で読み書きできる。**iPad 実機は未確認**。
+
 ## 写真で全アプリの保存場所をうめていた（2026-09-15）
 症状は **タイピングのペットショップで「いまは きろくが ほぞんできません」と出てペットが買えない**（iPad）。
 原因はこのアプリ。localStorage は **kagasen.github.io の全アプリで分け合う約5MB** なのに、

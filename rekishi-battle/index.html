@@ -174,12 +174,12 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <title>レキシバトル｜かがせんのHAPPYアプリ集</title>
 <!-- SEO:auto build-seo.mjs が作る。手で直さない -->
-<meta name="description" content="歴史人物42人のカードで合戦！弥生から明治まで51ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta name="description" content="歴史人物42人のカードで合戦！弥生から明治まで68ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
 <link rel="canonical" href="https://kagasen.github.io/kagasen/rekishi-battle/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="かがせんのHAPPYアプリ集">
 <meta property="og:title" content="レキシバトル｜かがせんのHAPPYアプリ集">
-<meta property="og:description" content="歴史人物42人のカードで合戦！弥生から明治まで51ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta property="og:description" content="歴史人物42人のカードで合戦！弥生から明治まで68ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
 <meta property="og:url" content="https://kagasen.github.io/kagasen/rekishi-battle/">
 <meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
 <meta property="og:locale" content="ja_JP">
@@ -450,6 +450,12 @@
   .stage-btn.hard3 { border: 2px solid #b39ddb; }
   .stage-btn.hard3 .sb-era { color: #ce93d8; }
   #hs-head .hs-hard3 { color: #4a148c; font-weight: 800; }
+  /* 「4」＝超激ムズ・やりくり（2026-09-23）。**金と黒**＝さいごの帯。
+     勝つと 出した なかまが 金色になる ごほうびと 色を そろえてある */
+  .stage-sep.s4.open { background: linear-gradient(90deg, #212121, #b8860b 55%, #212121); color: #ffe082; }
+  .stage-btn.hard4 { border: 2px solid #ffc107; }
+  .stage-btn.hard4 .sb-era { color: #ffd54f; }
+  #hs-head .hs-hard4 { color: #7a4f00; font-weight: 800; }
   .big-btn {
     display: block; width: 100%; min-height: 56px; padding: 10px;
     border: none; border-radius: 16px; cursor: pointer;
@@ -477,6 +483,7 @@
   .face.t-bushi { background: #ef5350; }
   .face.t-chie  { background: #42a5f5; }
   .face.t-inori { background: #66bb6a; }
+  .face.gold { background: radial-gradient(circle at 50% 35%, #fff59d 0%, #ffca28 50%, #ff8f00 100%); }
   /* レア度でわくの色と光り方が変わる（N=茶 / R=銀 / SR=金） */
   .face.r-n { border-color: #a1887f; }
   .face.r-r { border-color: #78909c; box-shadow: 0 0 8px 2px #b0bec5; }
@@ -558,6 +565,7 @@
   .hl-nohis { margin-left: 8px; font-size: 12px; font-weight: 800; color: inherit; opacity: 0.9; }
   /* 勝ったときに 新しくついた ⭐を 見せる帯 */
   .ov-star { font-size: 17px; font-weight: 800; color: #ffe082; margin: 4px 0 8px; line-height: 1.5; }
+  .ov-gold .face { margin: 2px 2px 0; vertical-align: middle; }
   /* 🏅 たたかいの ふりかえり（2026-08-10・ユーザー要望）。
      ★勝利画面の まん中に 出す わく。⭐の帯（黄色）と 見分けがつくよう **白いわく**にしてある。
      ★中身は MVP 1人＋いちばん出たわざ＋しろのちから の 3行まで。ふやさないこと
@@ -709,6 +717,9 @@
     font-size: 12px; font-weight: 700; color: #4e342e; line-height: 1.15;
   }
   .pick-btn.sel { border-color: #ffb300; background: #fff8e1; }
+  /* 🌟 金色の なかま。札の地も 金にする（えらぶ画面で いちばん 目に入る所） */
+  .pick-btn.gold { background: linear-gradient(160deg, #fffde7, #ffe082 60%, #ffca28); }
+  .pick-btn.gold.sel { background: linear-gradient(160deg, #fff8e1, #ffd54f 60%, #ffb300); }
   .pick-btn:active { transform: scale(0.96); }
   .pick-btn .rar-tag { font-size: 11px; font-weight: 800; }
   /* レベルを目立たせる（2026-07-28・「選ぶときレベルをもっと目立たせて」というユーザー要望）。
@@ -761,6 +772,10 @@
   /* レア度でわくの色と光り方が変わる（N=茶 / R=銀 / SR=金）。.face と同じ考えかた */
   .cstand.r-r  { border-color: #78909c; box-shadow: 0 0 8px 2px #b0bec5; }
   .cstand.r-sr { border-color: #ffb300; box-shadow: 0 0 13px 3px #ffd54f; }
+  /* 🌟 金色の なかま（2026-09-23・「4」で 出して 勝った人）。★わくの レア度の色は そのまま、
+     **うしろの 地の色だけ** 金にする（ユーザー指示「背景が 金色に」）。
+     タイプの色（赤・青・緑）より あとに 書くこと（同じ強さなので あとが 勝つ）。 */
+  .cstand.gold { background: radial-gradient(circle at 50% 30%, #fffde7 0%, #ffe082 35%, #ffb300 75%, #c68400 100%); }
   /* ずかんで まだ持っていない人は、影だけ見せて「だれだろう？」とわくわくさせる */
   .cstand.silhouette img { filter: brightness(0) opacity(0.35); }
 
@@ -774,6 +789,7 @@
   }
   .card-mini:active { transform: scale(0.96); }
   .card-mini.unknown { background: #d7ccc8; color: #8d6e63; cursor: default; }
+  .card-mini.gold { background: linear-gradient(160deg, #fffde7, #ffe082 60%, #ffca28); }
   .card-mini .cnt { font-size: 11px; color: #8d6e63; }
 
   /* ---------- レア度のわく ---------- */
@@ -1928,7 +1944,7 @@
 <div id="gc-flash"></div>
 <div id="modal"><div id="modal-box"></div></div>
 
-<script src="chars-data.js?v=24"></script>
+<script src="chars-data.js?v=25"></script>
 <script>
 /* =====================================================================
    レキシバトル 第1段（動く骨格）
@@ -2070,7 +2086,7 @@ var ASSET_V = 154;
 /* たち姿。バトル用の stand.webp をそのまま見せる（カード絵が無くても にぎやかになる）。
    rar が null（まだ持っていない）ときは影絵にして「だれだろう？」を残す。 */
 function standHTML(ch, rar, size) {
-  return '<span class="cstand t-' + ch.type + ' r-' + (rar || "n") + (rar ? "" : " silhouette")
+  return '<span class="cstand t-' + ch.type + ' r-' + (rar || "n") + (rar ? (isGold(ch.id) ? " gold" : "") : " silhouette")
     + '" style="width:' + size + 'px;height:' + size + 'px;">'
     + '<img src="images/chars/' + ch.id + '/stand.webp?v=' + ASSET_V + '" alt=""></span>';
 }
@@ -2126,7 +2142,7 @@ function faceZoomStyle(id) {
   return "width:" + z + "%;height:" + z + "%;top:" + (-(0.35 * z - 50) - a[1]).toFixed(1) + "%;";
 }
 function faceHTML(ch, rar, size) {
-  return '<span class="face t-' + ch.type + ' r-' + (rar || "n") + '" style="width:' + size + 'px;height:' + size + 'px;">'
+  return '<span class="face t-' + ch.type + ' r-' + (rar || "n") + (isGold(ch.id) ? " gold" : "") + '" style="width:' + size + 'px;height:' + size + 'px;">'
     /* ★絵が読めたら 名前の1文字(.fb)を **かならず消す**こと。スプライトは背景がとうめいなので、
        消さないと 体のすきまから 文字が すけて見える（野口英世で「野」が顔の上に出た）。 */
     + '<img src="images/chars/' + ch.id + '/stand.webp?v=' + ASSET_V + '" alt=""'
@@ -2470,6 +2486,9 @@ function loadSave() {
        gift    … その ごほうびを あげた人の id（1人だけ・記録用）
        ending2 … 👑完全制覇（⭐ぜんぶ）を 見た＝42人 ぜんいん MAXに した
      ★ここで 消したり 作りなおしたり しないこと（ごほうびの 二重どりに なる）。 */
+  /* 🌟 金色の なかま（2026-09-23に追加）。gold[id] = true ＝「4」で 出して 勝った人。
+     ★**新しいキー**なので 古いセーブは 無傷。1回 金色に なったら **もどらない**（§6 単調増加）。 */
+  if (!s.gold) s.gold = {};
   return s;
 }
 var save = loadSave();
@@ -2478,6 +2497,8 @@ BGM_ON = save.bgm !== false;
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 
 function cardCnt(id) { return save.cards[id] || { n: 0, r: 0, sr: 0 }; }
+/* 🌟 金色の なかま？（「4」で 出して 勝った人）。standHTML / faceHTML が 地の色を 金にする */
+function isGold(id) { return !!(typeof save !== "undefined" && save && save.gold && save.gold[id]); }
 function ownedTotal(id) { var c = cardCnt(id); return c.n + c.r + c.sr; }
 function charLevel(id) { var c = cardCnt(id); return c.n + c.r * LV_RARE + c.sr * LV_SRARE; }
 function bestRarity(id) { var lv = charLevel(id); if (lv >= LV_SRARE) return "sr"; if (lv >= LV_RARE) return "r"; if (lv >= 1) return "n"; return null; }
@@ -2621,6 +2642,10 @@ $("tb-back").onclick = function () {
    `st.hard` だけで見ると **3が 2とおなじあつかい**になる（ガチャの確率・ざこの強さ・見出し）。
    1シリーズには series を書いていないので、無ければ 1。 */
 function seriesOf(st) { return (st && st.series) || 1; }
+/* ★★「3」と「4」（2026-09-23に 4を足した）は **ボスが 2回 もどる・てきの てつはう・3回目の つよいボス**
+   の しかけを 同じように 持つ。「3より上か」を見るときは かならず これを通すこと
+   （`seriesOf(st) === 3` のままだと 4で しかけが ぜんぶ 消える）。 */
+function seriesHigh(st) { return seriesOf(st) >= 3; }
 /* ステージは まえの1つをクリアすると あく。並び順が 1→2→3 なので、
    **「2」を ぜんぶクリアすると「3」があく** のは これだけで自動的にそうなる。 */
 function stageUnlocked(i) { return i === 0 || !!save.cleared[STAGES[i - 1].id]; }
@@ -2697,7 +2722,9 @@ function goHome() {
     2: { open: "🔥 ここから「2」！ もっと強《つよ》い てき／レアが 出やすい",
          lock: "🔒 ぜんぶ クリアすると「2」が あらわれる…" },
     3: { open: "💀 ここから「3」＝激《げき》ムズ！ スーパーレアの 力《ちから》が いる…",
-         lock: "🔒 「2」を ぜんぶ クリアすると「3」が あらわれる…" }
+         lock: "🔒 「2」を ぜんぶ クリアすると「3」が あらわれる…" },
+    4: { open: "🏆 ここから「4」＝超《ちょう》激《げき》ムズ！ おかねの やりくりが カギ。かつと なかまが 金色《きんいろ》に！",
+         lock: "🔒 「3」を ぜんぶ クリアすると「4」が あらわれる…" }
   };
   STAGES.forEach(function (st, i) {
     var sep = (i > 0 && seriesOf(st) !== seriesOf(STAGES[i - 1])) ? SERIES_SEP[seriesOf(st)] : null;
@@ -2708,7 +2735,7 @@ function goHome() {
       el.appendChild(h);
     }
     var b = document.createElement("button");
-    b.className = "stage-btn" + (seriesOf(st) === 2 ? " hard" : (seriesOf(st) === 3 ? " hard3" : ""));
+    b.className = "stage-btn" + ({ 2: " hard", 3: " hard3", 4: " hard4" }[seriesOf(st)] || "");
     var open = stageUnlocked(i);
     b.disabled = !open;
     /* ★★その面の **時代の絵**を 札そのものにする（2026-08-11）。
@@ -2777,7 +2804,12 @@ function renderHensei() {
         : (seriesOf(st) === 3
             ? '<div class="hs-desc hs-hard3">' + rubi("💀 「3」は 激《げき》ムズ！ スーパーレアが 3体《たい》ぐらい いないと きびしい。"
                 + " そのかわり クイズ全問《ぜんもん》せいかいで レア50％・スーパーレア30％！") + '</div>'
-            : ''));
+            /* ★4は **何が きびしいのか（おかね）** と **かったら どうなるか（金色）** を 両方 書く */
+            : (seriesOf(st) === 4
+                ? '<div class="hs-desc hs-hard4">' + rubi("🏆 「4」は 超《ちょう》激《げき》ムズ！ <b>おかねが たまるのが おそい</b>。"
+                    + " 人を 出《だ》す？ しろの ちからを つかう？ ためる？ よく かんがえて やりくりしよう。"
+                    + " かつと、出《だ》した なかまの 背景《はいけい》が <b>🌟金色《きんいろ》</b>に なる！") + '</div>'
+                : '')));
   /* 🤝 いまのデッキで組めるコンビを見せる（2026-08-09）。
      ★これが無いと「そろえると強い」に **気づけない**（バトル中にたまたま出るのを待つことになる）。
        へんせい画面で見せることで、はじめて「だれと だれを つれていくか」を考える理由になる。
@@ -2863,7 +2895,7 @@ function renderHensei() {
   ownedIds().forEach(function (id) {
     var ch = CHAR_BY_ID[id], rar = bestRarity(id);
     var b = document.createElement("button");
-    b.className = "pick-btn" + (save.deck.indexOf(id) >= 0 ? " sel" : "");
+    b.className = "pick-btn" + (save.deck.indexOf(id) >= 0 ? " sel" : "") + (isGold(id) ? " gold" : "");
     /* ★★カードを たてに みじかくした（191px→約128px。2026-08-09・ユーザー要望
          「キャラクター選びが一番楽しめる。なるべくスクロールなしで選びたい」）。
        8だんを 5だんに たたんだだけで、**中身は 1つも消していない**:
@@ -3189,7 +3221,7 @@ function renderCards() {
     var b = document.createElement("button");
     var rar = bestRarity(ch.id);
     if (rar) {
-      b.className = "card-mini";
+      b.className = "card-mini" + (isGold(ch.id) ? " gold" : "");
       b.innerHTML = standHTML(ch, rar, 78) + '<span>' + ch.name + '</span>'
         + '<span class="rchip r' + rar + '">' + RAR_LABEL[rar] + '</span>'
         + lvBadge(ch.id);
@@ -3209,6 +3241,8 @@ function openCharModal(ch) {
   var html = '<div style="text-align:center;">' + standHTML(ch, rar, 132) + '</div>'
     + '<h3 style="text-align:center;">' + nameRuby(ch) + '</h3>'
     + '<div class="m-era" style="text-align:center;">' + eraChipHTML(ch.era) + '　<span class="type-chip t-' + ch.type + '">' + TYPES[ch.type].icon + TYPES[ch.type].label + '</span></div>'
+    + (isGold(ch.id) ? '<div class="m-era" style="text-align:center; font-weight:800; color:#b26a00;">'
+        + rubi("🌟 金色《きんいろ》の なかま（「4」で いっしょに かった！）") + '</div>' : '')
     + '<div class="m-skill">⚡ わざ: ' + rubi(ch.skill) + '</div>'
     + (function () {
         var sd = charStat(ch.id);
@@ -3784,7 +3818,7 @@ function startBattle() {
            bossMore=あと何回 出てくるか / bossBackT=出てくるまでの のこり秒（-1＝予定なし）。
            つくる型はボスがいないので 0（ボスを出すと現場に居すわって工事が進まない。§1-B）。 */
         bossMore: (st.mode === "build") ? 0
-                  : (seriesOf(st) === 3 ? BOSS_AGAIN3 : (seriesOf(st) === 2 ? BOSS_AGAIN : 0)), bossBackT: -1,
+                  : (seriesHigh(st) ? BOSS_AGAIN3 : (seriesOf(st) === 2 ? BOSS_AGAIN : 0)), bossBackT: -1,
         /* ★ボスが 何回目か（さいしょに立っているのが 1回目）。3シリーズの3回目だけ つよくする */
         bossNo: 1,
         /* 🤝 いま そろっているコンビ（2026-08-09）。カットインを1回だけ出すための おぼえ書き */
@@ -3803,7 +3837,7 @@ function startBattle() {
         /* 💣 てきの てつはう（2026-08-10・3シリーズだけ）。foeBombT=つぎに投げるまでの のこり秒 /
            foeBombSeen=1回目の おしらせを もう出したか。
            ★★1シリーズ・2シリーズは foeBombT が -1 のまま＝**この しかけは 1度も動かない**。 */
-        foeBombT: (seriesOf(st) === 3) ? E_TETSU_EVERY : -1, foeBombSeen: false,
+        foeBombT: seriesHigh(st) ? E_TETSU_EVERY : -1, foeBombSeen: false,
         aimMode: null, aim: null, groundY: 0, freeze: 0, hisFxId: 0 };
   $("hisfx").className = "";
   $("rainfx").className = "";
@@ -4131,8 +4165,10 @@ function kataDef(st, which) {
     /* ★★ほどくのは **ざこだけ**。`HARD3.mspd` は minion にしか かかっていないので、
        ボスまで わると 二重がけを ほどくのではなく **ただの弱体化**になる
        （実測でも st16c のボスが 20 → 14 に なってしまった。ここで 止めている）。 */
-    if (which === "minion" && sp > 1 && seriesOf(st) === 3
-        && typeof HARD3 !== "undefined" && HARD3.mspd) sp = sp / HARD3.mspd;
+    /* ★4シリーズも 同じ 二重がけに なるので、**そのシリーズの mspd** で ほどく（2026-09-23） */
+    var sH = seriesOf(st) === 3 ? (typeof HARD3 !== "undefined" ? HARD3 : null)
+           : (seriesOf(st) === 4 ? (typeof HARD4 !== "undefined" ? HARD4 : null) : null);
+    if (which === "minion" && sp > 1 && sH && sH.mspd) sp = sp / sH.mspd;
     d.speed = Math.round(src.speed * sp);
   }
   if (m.every) d.every = src.every * m.every;
@@ -4204,12 +4240,34 @@ function pressList(st) {
    ★★もし「最後まで まるごと 1.2倍で いい」なら last を **0.8にもどす**だけ。
      ぎゃくに「最後が かたすぎる」なら **last を 先に下げる**（HARD3 より こちらが 安全）。 */
 var PRESS3 = { first: 2.6, last: 0.7 };
+/* ★「4」（2026-09-23）も 3と同じ「下がっていく」形。わけも 3と同じ（もとの17面が 後半ほど つよい）。
+   数字は シミュレーションで 決めた（HANDOFF「「4」＝超激ムズ」）。**first＝入口の きびしさ／
+   last＝さいご(st17d)が 上限デッキで とどくかの 安全弁**、の 役目わけも 3と同じ。 */
+var PRESS4 = { first: 1.6, last: 0.55 };
+/* ★★「4」は 面ごとの 数字を シミュレーションで 決めた（2026-09-23）。
+   わけ: 4は おかねと ゲージを しぼったので、**面ごとの くせ**（st7 元軍の 弓＝とおくから うつ／
+   st8 つくる型／ぐんたいの 面）が そのまま 出て、1本の 線（first→last）では
+   「3面だけ ぜったい 勝てない・のこりは Lv30でも かんたん」に なった。
+   → 面ごとに「**Lv50の いちばん強いデッキ＋かしこい つかいかた で ぎりぎり 勝てる きつさ**」を
+     さがして（しきい値）、その **PRESS4_SAFE 倍**を 入れてある。
+   ★ここに 無い面（1シリーズに 面を 足したとき）は 上の first→last の 線で 自動に きまる。
+   ★作りかたと 検証の数字は HANDOFF「「4」＝超激ムズ」。直すときも かならず シミュレーションで。 */
+var PRESS4_SAFE = 0.9;
+/* しきい値（Lv50・かしこい つかいかた 4とおり×デッキ2とおり のうち 3回 勝てる いちばん きつい 数字） */
+var PRESS4_BY = {
+  st1: 3.34, st2: 4.79, st3: 3.71, st4: 2.59, st5: 4.11, st6: 3.34, st7: 1.14, st8: 0.98, st9: 0.93,
+  st10: 2.11, st11: 1.33, st12: 2.0, st13: 1.47, st14: 2.22, st15: 1.08, st16: 1.2, st17: 2.0
+};
 function stagePress(st) {
   var list = pressList(st);
   var i = list.indexOf(st);
   if (i < 0) return 1;
   var r = i / Math.max(1, list.length - 1);
   if (seriesOf(st) === 3) return PRESS3.first + (PRESS3.last - PRESS3.first) * r;
+  if (seriesOf(st) === 4) {
+    if (PRESS4_BY[st.base]) return PRESS4_BY[st.base] * PRESS4_SAFE;
+    return PRESS4.first + (PRESS4.last - PRESS4.first) * r;
+  }
   return 1 + (STAGE_PRESS_MAX - 1) * r;
 }
 function pressed(def, f) {
@@ -4261,8 +4319,10 @@ function tick(now) {
 
   /* おかね・ひっさつゲージがたまる */
   B.money = Math.min(moneyCap(), B.money + st.income * dt);
-  var gBase = GAUGE_MAX / GAUGE_SEC * dt;
-  var gExtra = Math.min(B.gaugeDmg, gBase * GAUGE_DEF_CAP);
+  /* ★「4」だけ ゲージの たまりかたを しぼる（GAUGE4・2026-09-23）。わけは GAUGE4 の★★★ */
+  var g4 = seriesOf(st) === 4 ? GAUGE4 : null;
+  var gBase = GAUGE_MAX / GAUGE_SEC * dt * (g4 ? g4.time : 1);
+  var gExtra = Math.min(B.gaugeDmg, gBase * (g4 ? g4.cap : GAUGE_DEF_CAP));
   B.gaugeDmg -= gExtra;
   addGauge(gBase + gExtra);
 
@@ -4282,7 +4342,7 @@ function tick(now) {
          ★★★**st.boss を 書きかえないこと**。st.boss は ステージのデータそのもので、
            バトルをまたいで 使い回される＝1回 かけ算すると **次に遊ぶときも 強いまま**
            どんどん ふくらんでいく。かならず **コピーを作って** そこに かける。 */
-      var bd = bsDef(st), big = (seriesOf(st) === 3 && B.bossNo === BOSS_LAST_NO);   /* ★型ぶん こみ */
+      var bd = bsDef(st), big = (seriesHigh(st) && B.bossNo === BOSS_LAST_NO);   /* ★型ぶん こみ */
       if (big) {
         var c = {}; for (var bk in bd) c[bk] = bd[bk];      /* ★bd＝型ぶんを かけたあとの ボス */
         c.hp  = Math.round(bd.hp  * BOSS_LAST_MULT);
@@ -4531,6 +4591,15 @@ var GAUGE_MAX = 1000;
 var GAUGE_SEC = 22;       /* 何もされなくても満タンになるまでの秒数（叩き台） */
 var GAUGE_DEF = 1.0;      /* 受けたダメージ1につき この量だけ余分にたまる */
 var GAUGE_DEF_CAP = 1.5;  /* ただし1秒あたり「時間ぶんの何倍」までしか上のせしない */
+/* ★★★「4」＝やりくり の もう1つの しかけ（2026-09-23）。**ひっさつゲージも しぼる**。
+   シミュレーションで 分かったこと: 3までは **敵が つよいほど ゲージが はやく たまる**
+   （受けたダメージで 上のせ＝GAUGE_DEF）。敵を いくら 強くしても ひっさつが 9秒に1回 出て
+   **むずかしさが 自分で 消えてしまう**（Lv50で 1戦に 5〜10回・城は 無きず）。
+   ひっさつ なしだと 同じ面が 30〜45秒で 負ける＝**火力の ほとんどが ひっさつ**。
+   → 4では ゲージも「いつ 使うか」を 考える 資源にする。
+   time … 時間で たまる はやさ（何ばい）／ cap … ダメージの 上のせの 上限（GAUGE_DEF_CAP の かわり）
+   ★数字は シミュレーションで 決めた 叩き台（HANDOFF「「4」＝超激ムズ」）。1〜3シリーズは 1バイトも 変わらない。 */
+var GAUGE4 = { time: 0.6, cap: 0.5 };
 var HIS_MULT = { n: 1.0, r: 1.3, sr: 1.6 };   /* レア度で必殺技の威力が上がる */
 
 /* ★★ひっさつを3つから えらべるようにした（2026-08-08・ユーザー指示）。
@@ -6064,6 +6133,17 @@ function winBattle() {
          ここを ひとまとめに すると、`use`の面の ボーナスが かんたんに なりすぎる。
        ★へんせい画面の 🎁の文（renderHensei）も 同じ分けかたで 書いてある。 */
   var hardWin = eraChalOk() && (stageChalKind(state.stage) === "his" ? true : B.hisCount <= NOHIS_MAX);
+  /* 🌟 「4」で かったら、**この たたかいで 出した なかま**を 金色に（2026-09-23・ユーザー指示
+       「ステージ4をクリアすると、今回使ったキャラクターの背景が金色に」）。
+     ★「使った」＝**出撃させた人**（B.depBy）。つれていっただけで 1回も 出さなかった人は ならない。
+     ★新しく 金色に なった人だけ goldNew に入れて 勝利画面で 名前を出す（前から 金の人は 出さない）。
+     ★persist は すぐ下の giveStars の中で まとめて やっている。 */
+  var goldNew = [];
+  if (seriesOf(state.stage) === 4) {
+    Object.keys(B.depBy).forEach(function (id) {
+      if (!save.gold[id]) { save.gold[id] = true; goldNew.push(id); }
+    });
+  }
   var got = giveStars();      /* ⭐チャレンジ。persist は giveStars の中でやっている */
   state.chalHard = hardWin;   /* ガチャ（rollCard / showGacha）が これを見る */
   persist();
@@ -6101,6 +6181,12 @@ function winBattle() {
          MVPが 下へ おされて また 見えなくなる。⭐は ホームの ステージ表にも のこるが、
          **MVPは ここでしか 見られない**ので、こちらを 上に置く。 */
     +   look.html + gotHtml + hardHtml
+    /* 🌟 金色に なった なかま（「4」だけ）。顔も 金の地で ならべる＝その場で 変わったのが 見える */
+    +   (goldNew.length
+          ? '<div class="ov-star ov-gold">' + rubi("🌟 金色《きんいろ》の なかまに なった！") + '<br>'
+            + goldNew.map(function (id) { return faceHTML(CHAR_BY_ID[id], bestRarity(id) || "n", 30); }).join("")
+            + '</div>'
+          : "")
     /* ★みじかい1行にすること。「つぎは クイズ！」は ボタンに 書いてあるので いらない。
          2行になると そのぶん MVPが 上に おされる（スマホは 1行が とても おもい）。 */
     +   '<div style="font-size:15px; font-weight:700;">ながれてきた じょうほうを 思い出そう</div>'
@@ -6734,7 +6820,7 @@ function showGacha() {
   state.starter = false;
   var c = state.quiz.correct, n = state.quiz.qs.length;
   $("gc-msg").innerHTML = "クイズ せいかい " + c + "／" + n + "！<br>ガチャを まわして カードを もらおう！"
-    + (seriesOf(state.stage) === 3 ? '<br>' + rubi("💀 「3」のガチャ！ スーパーレアが たくさん 出る！")
+    + (seriesHigh(state.stage) ? '<br>' + rubi("💀 「" + seriesOf(state.stage) + "」のガチャ！ スーパーレアが たくさん 出る！")
        : (seriesOf(state.stage) === 2 ? '<br>' + rubi("🔥 「2」のガチャ！ スーパーレアも 出るぞ！") : ""))
     /* めあて2つ そろえたときの +15%。★じっさいに 上がった回だけ出す（0〜1問せいかいでは 上がらない）。
        ★アイコンだけで書かないこと（へんせい画面の★★と同じ理由。2026-08-09） */
@@ -6859,7 +6945,7 @@ var SR_CHANCE3 = [0, 0, 0, 0.30];
 /* せいかい数と シリーズから ひく確率を出す（1か所にまとめる。§8） */
 function gachaOdds(st, i) {
   var s = seriesOf(st);
-  if (s === 3) return { r: R_CHANCE3[i], sr: SR_CHANCE3[i] };
+  if (s >= 3) return { r: R_CHANCE3[i], sr: SR_CHANCE3[i] };   /* ★4も 3と同じ（4の ごほうびは 金色） */
   if (s === 2) return { r: R_CHANCE2[i], sr: SR_CHANCE2[i] };
   return { r: R_CHANCE[i], sr: 0 };   /* 1シリーズでは SRは出ない（Lv30の進化だけ） */
 }
@@ -7029,14 +7115,20 @@ $("btn-rhome").onclick = function () {
      ずかんの まい数・レア度・技の数と 食いちがう。ぜったいに 下がる値を 作らないこと。
    ★出しどころは goHome() の あたま 1か所（checkEnding）。バトル→クイズ→ガチャの あと
      「🏠ホームへ」を 押した ところで 出る＝**カードを もらう よろこびを じゃましない**。 */
-var LAST_STAGE_ID = STAGES[STAGES.length - 1].id;   /* 3シリーズの さいご（st17c） */
+/* ★★★2026-09-23に「4」を足したので、エンディングの ものさしは **「3」までに とめた**。
+     もとは「さいごの ステージ」「ぜんぶの ステージ」を STAGES から 自動で とっていたので、
+     そのままだと ①は st17d ②は 204個の⭐ に かわり、**もう少しで エンディングだった子が
+     とつぜん 遠くなる**（「3」まで やりきった きろくが むだになる）。
+     「4」は エンディングの あとの おまけの 帯で、ごほうびは 🌟金色の なかま（winBattle）。 */
+var END_STAGES = STAGES.filter(function (st) { return seriesOf(st) <= 3; });
+var LAST_STAGE_ID = END_STAGES[END_STAGES.length - 1].id;   /* 3シリーズの さいご（st17c） */
 function allClearDone() { return !!save.cleared[LAST_STAGE_ID]; }
 function allStarsDone() {
-  return STAGES.every(function (st) { return chalCount(st.id) === CHALS.length; });
+  return END_STAGES.every(function (st) { return chalCount(st.id) === CHALS.length; });
 }
 function totalStars() {
   var n = 0;
-  STAGES.forEach(function (st) { n += chalCount(st.id); });
+  END_STAGES.forEach(function (st) { n += chalCount(st.id); });
   return n;
 }
 /* まだ ごほうび（ひとりだけ MAX）を うけとっていない？ */
@@ -7079,7 +7171,7 @@ function showEnding1() {
   sfx("win");
   confettiBurst(120);
   var first = CHARS[0], last = CHARS[CHARS.length - 1];
-  var stars = totalStars(), maxStars = STAGES.length * CHALS.length;
+  var stars = totalStars(), maxStars = END_STAGES.length * CHALS.length;
   var owned = ownedIds();
   var html = '<div class="ed-big">🎉 おめでとう！</div>'
     + '<div class="ed-sub">' + rubi("「3」の さいごの ステージまで クリアした！") + '</div>'
@@ -7088,7 +7180,7 @@ function showEnding1() {
     +   rubi(plain(first.era) + "の " + plain(first.name) + "《" + first.yomi + "》から、"
           + plain(last.era) + "の " + plain(last.name) + "《" + last.yomi + "》まで——<br>"
           + "きみは 日本《にほん》の れきしを ぜんぶ たどりぬいた。<br>"
-          + "たたかった ステージは " + STAGES.length + "面《めん》。"
+          + "たたかった ステージは " + END_STAGES.length + "面《めん》。"
           + "いっしょに 走《はし》った 人物《じんぶつ》は " + owned.length + "人。<br>"
           + "その 一人《ひとり》ひとりに、ほんとうに あった 人生《じんせい》が あったんだよ。")
     + '</div>'
@@ -7115,6 +7207,9 @@ function showEnding1() {
     : '<div class="ed-msg">' + rubi("つぎの めあて　⭐ " + stars + "／" + maxStars
         + "　ぜんぶの ステージで ⭐⭐⭐ を そろえると <b>完全制覇《かんぜんせいは》</b>！"
         + " そのときは 42人 ぜんいんが Lv" + LV_MAX + " に なるよ。") + '</div>';
+  /* ★「4」が あいたことも ここで 知らせる（2026-09-23）。エンディングの あとにも つづきが ある */
+  html += '<div class="ed-msg">' + rubi("🏆 さらに「4」＝超《ちょう》激《げき》ムズ が あらわれた！"
+      + " かつと、出《だ》した なかまが 🌟金色《きんいろ》に なるよ。") + '</div>';
   html += '<button class="big-btn brown" onclick="endLater()">🏠 あとで きめる（ホームへ）</button>';
   $("ed-body").innerHTML = html;
   showView("v-ending", "おめでとう！", false);
@@ -7184,14 +7279,14 @@ function showEnding2() {
   sfx("levelup");
   confettiBurst(200);
   setTimeout(function () { confettiBurst(140); }, 700);
-  var maxStars = STAGES.length * CHALS.length;
+  var maxStars = END_STAGES.length * CHALS.length;
   /* ★見出しは ルビを 付けずに 大きく（大きい字の上に 小さいルビが のると 行間が くずれる）。
      よみは すぐ下の 行で「かんぜんせいは！」と 見せているので 読めなくならない。 */
   $("ed-body").innerHTML = '<div class="ed-big">👑 完全制覇！</div>'
     + '<div class="ed-sub">' + rubi("かんぜんせいは！ ⭐ " + maxStars + "／" + maxStars + "　ぜんぶの めあてを やりきった！") + '</div>'
     + '<div class="ed-parade">' + endParadeHTML(21, 40) + '</div>'
     + '<div class="ed-msg">'
-    +   rubi(STAGES.length + "面《めん》 ぜんぶで ⭐⭐⭐。<br>"
+    +   rubi(END_STAGES.length + "面《めん》 ぜんぶで ⭐⭐⭐。<br>"
           + "つよい てきに 勝つだけじゃなく、その時代《じだい》の 人物《じんぶつ》を そろえたり、"
           + "ひっさつを 1回《かい》も つかわずに 勝ったり——<br>"
           + "きみは 42人 ぜんいんの ことを 知《し》って、ぜんいんと いっしょに たたかった。<br>"
@@ -7222,7 +7317,7 @@ function confettiBurst(n) {
    ★2026-08-08: 「2」シリーズ（st1b…）も直接ひらけるように どのステージidでも通るようにした。
      f を付けると 6ばい速で回る（動作確認用。ふつうに遊ぶ人は ハッシュを付けない）。 */
 (function boot() {
-  var m = location.hash.match(/^#(st\d+b?)(f?)$/);
+  var m = location.hash.match(/^#(st\d+[bcd]?)(f?)$/);
   if (m) {
     var st = null;
     STAGES.forEach(function (s) { if (s.id === m[1]) st = s; });
@@ -7259,7 +7354,8 @@ BackupKit.init({
     return [
       { label: 'あつめた人物', value: ids.length + '人' },
       { label: 'クリアした ステージ', value: Object.keys(d.cleared || {}).length + 'こ' },
-      { label: 'エンディング', value: d.ending2 ? '👑 完全制覇' : (d.ending1 ? '🎉 クリア' : 'まだ') }
+      { label: 'エンディング', value: d.ending2 ? '👑 完全制覇' : (d.ending1 ? '🎉 クリア' : 'まだ') },
+      { label: '🌟 金色の なかま', value: Object.keys(d.gold || {}).length + '人' }
     ];
   }
 });

@@ -1023,6 +1023,7 @@
             </a>
         </section>
 
+
         <section class="catalogue" id="catalogue" aria-label="アプリをさがす">
         <p class="catalogue-label">好きなことから、えらぼう。</p>
         <div class="filter-row" id="categoryContainer" role="group" aria-label="教科や目的で絞り込む">
@@ -1032,6 +1033,7 @@
             <button class="filter-btn" data-category="science">🧪 理科</button>
             <button class="filter-btn" data-category="social">🌏 社会</button>
             <button class="filter-btn" data-category="pe">🏃 体育</button>
+            <button class="filter-btn" data-category="song">🎵 学習ソング</button>
             <button class="filter-btn" data-category="others">🎲 その他</button>
             <button class="filter-btn" data-category="favorites">⭐ お気に入り</button>
             <button class="filter-btn" data-category="management">🏫 学級経営</button>
@@ -1093,14 +1095,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
     <script src="apps.js"></script>
+    <script src="songs.js"></script>
 
     <script>
         /* apps.js の 一覧から「まだ 公開しない アプリ」を のぞいた もの。
            entry に draft: true を つけると、ポータルの カードにも sitemap にも 出なくなる
            （build-seo.mjs の DRAFTS と 同じ しくみ。出せるように なったら draft を 消すだけ）。
            画面の 描画は かならず この visibleApps を 見る（appsData を 直接 見ない）。 */
-        const visibleApps = (typeof appsData === 'undefined')
-            ? [] : appsData.filter(function (a) { return !a.draft; });
+        const visibleApps = ((typeof appsData === 'undefined') ? [] : appsData.filter(function (a) { return !a.draft; }))
+            .concat((typeof songsData === 'undefined') ? [] : songsData);
+
+        /* 学習ソング（songs.js）＝ YouTube へ とぶ カード。新しい タブで ひらき、利用回数は 数えない。
+           「新しく仲間入り」と「あたらしい アプリ」の 棚は アプリだけに する */
+        function isSong(app) { return app.category === 'song'; }
+        function linkAttrs(app) { return isSong(app) ? ' target="_blank" rel="noopener"' : ''; }
 
         // タイトルを1文字ずつ虹色に（暗いヘッダーの上で読める明るい色だけ／となり同士は必ず別の色）
         const TITLE_COLORS = ['#ff8fb1', '#ffd65c', '#6fd0f2', '#8fe0a8', '#c3a6f2', '#ffa45c'];
@@ -1242,7 +1250,7 @@
         let featuredApp = null;
         function renderSpotlight() {
             if (visibleApps.length === 0) return;
-            featuredApp = visibleApps.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            featuredApp = visibleApps.filter(a => !isSong(a)).sort((a, b) => new Date(b.date) - new Date(a.date))[0];
             const colors = colorsOf(featuredApp);
             spotlight.href = featuredApp.link;
             spotlight.style.setProperty('--spot-main', colors.main);
@@ -1281,7 +1289,7 @@
         const SHELVES = [
             {
                 id: 'new', name: 'あたらしい アプリ', tag: 'NEW', color: '#b52e49',
-                list: (all) => all.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
+                list: (all) => all.filter(a => !isSong(a)).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
             },
             {
                 id: 'fav', name: 'おきにいり', tag: '⭐', color: '#E39A00',
@@ -1300,7 +1308,7 @@
         function shelfCardHTML(app) {
             const c = colorsOf(app);
             const fitClass = app.imageFit === 'contain' ? 'fit-contain' : '';
-            return `<a class="shelf-card" href="${app.link}" data-app="${app.id}"
+            return `<a class="shelf-card" href="${app.link}"${linkAttrs(app)} data-app="${app.id}"
                        style="--card-main:${c.main}; --card-deep:${c.deep}">
                         <div class="shelf-thumb">
                             <img class="${fitClass}" src="${app.image}" alt="${app.title}のサムネイル" loading="lazy">
@@ -1308,7 +1316,7 @@
                         <span class="shelf-name">${app.title}</span>
                         <div class="shelf-meta">
                             <span style="color:${c.deep}">${app.tagName}</span>
-                            <span data-count="${app.id}">👁 ---</span>
+                            ${isSong(app) ? '<span>▶ YouTube</span>' : `<span data-count="${app.id}">👁 ---</span>`}
                         </div>
                     </a>`;
         }
@@ -1351,7 +1359,7 @@
                 // タイルのクリック＝カウント＋1してから移動（カードと同じ動き）
                 sec.querySelectorAll('.shelf-card').forEach(tile => {
                     const app = visibleApps.filter(a => a.id === tile.dataset.app)[0];
-                    if (!app) return;
+                    if (!app || isSong(app)) return;   // ソングは ふつうの リンクの まま
                     tile.addEventListener('click', (e) => {
                         if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
                         e.preventDefault();
@@ -1488,19 +1496,19 @@
                                     <i data-lucide="star" class="${starClass}" style="width:20px;height:20px" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <h3 class="card-title"><a class="card-link" href="${app.link}">${app.title}</a></h3>
+                            <h3 class="card-title"><a class="card-link" href="${app.link}"${linkAttrs(app)}>${app.title}</a></h3>
                             <p class="card-desc">${app.description}</p>
                             <div class="card-meta">
-                                <span data-count="${app.id}">あそんでみよう</span>
+                                ${isSong(app) ? '<span>YouTube で ひらきます</span>' : `<span data-count="${app.id}">あそんでみよう</span>`}
                                 <span>更新 ${app.date}</span>
                             </div>
-                            <span class="open-btn" aria-hidden="true">${app.category === 'teacher' || app.category === 'management' || app.category === 'pe' ? 'つかってみる' : 'あそんでみる'} <span class="arrow">→</span></span>
+                            <span class="open-btn" aria-hidden="true">${isSong(app) ? '▶ きいてみる' : app.category === 'teacher' || app.category === 'management' || app.category === 'pe' ? 'つかってみる' : 'あそんでみる'} <span class="arrow">→</span></span>
                         </div>
                     `;
                     appGrid.appendChild(card);
 
-                    // カードクリック時にカウント+1して遷移
-                    card.querySelector('.card-link').addEventListener('click', (e) => {
+                    // カードクリック時にカウント+1して遷移（ソングは ふつうの リンクの まま）
+                    if (!isSong(app)) card.querySelector('.card-link').addEventListener('click', (e) => {
                         if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
                         e.preventDefault();
                         goToApp(app);
@@ -1559,8 +1567,8 @@
                 btn.classList.add('active');
                 currentCategory = btn.dataset.category;
                 // 見出しを「ぜんぶの アプリ」→「国語の アプリ」のように切りかえる（絵文字は落とす）
-                gridTitle.textContent = currentCategory === 'all'
-                    ? 'ぜんぶの アプリ'
+                gridTitle.textContent = currentCategory === 'all' ? 'ぜんぶの アプリ'
+                    : currentCategory === 'song' ? '学習ソング'
                     : btn.textContent.trim().replace(/^\S+\s*/, '') + 'の アプリ';
                 renderApps();
             });

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#2B1B6E"/>
+  <polyline points="120,150 256,150 392,300 256,390" fill="none" stroke="#FFC93C" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <g font-family="'Hiragino Maru Gothic ProN',sans-serif" font-weight="900" font-size="96" text-anchor="middle" fill="#fff">
+    <circle cx="120" cy="150" r="70" fill="#8A3FD8"/><text x="120" y="184">ご</text>
+    <circle cx="256" cy="150" r="70" fill="#1FA45A"/><text x="256" y="184">い</text>
+    <circle cx="392" cy="300" r="70" fill="#E8A400"/><text x="392" y="334">せ</text>
+    <circle cx="256" cy="390" r="70" fill="#E0478C"/><text x="256" y="424">ん</text>
+  </g>
+</svg>

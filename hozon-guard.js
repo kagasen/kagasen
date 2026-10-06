@@ -37,6 +37,8 @@
     ['kanji_', '漢字の冒険'],
     ['kannjibusyu-ta', '漢字部首シューティング'],
     ['kotobasagashi', '言葉さがし'],
+    ['kotobaPuzzle', 'ことばパズルバトル'],
+    ['goisen', '語彙線（ゴイセン）'],
     ['lua_state', '自分レベルアップアドベンチャー'],
     ['rekishiBattle', 'レキシバトル'],
     ['sakka_', '作家の時間'],

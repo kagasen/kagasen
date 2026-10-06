@@ -1,5 +1,28 @@
 const appsData = [
     {
+        id: "goisen",
+        title: "語彙線（ゴイセン）",
+        description: "もじを てきとうに なぞって 線を ひくと、とちゅうに かくれた ことばで モンスターに こうげき！ 3もじ以上・1本に3つで 必殺技チャンス、四字熟語に こたえて 大ダメージ！ 4万語の じしょで 1年生も 6年生や 中学の ことばに 出会えるよ。",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/10/06",
+        colorClass: "subject-purple",
+        image: "images/goisen-thumbnail.jpg",
+        link: "goisen/index.html"
+    },
+    {
+        id: "kotoba-puzzle",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
+        title: "ことばパズルバトル",
+        description: "玉を うごかして おなじ いろを 3つ そろえる パズル＆バトル。いろは 部首の なかま（💧さんずい・🌳きへん…）。コンボで モンスターを たおして、漢字を ずかんに あつめよう！",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/10/06",
+        colorClass: "subject-purple",
+        image: "images/kotoba-puzzle.svg",
+        link: "kotoba-puzzle/index.html"
+    },
+    {
         id: "denki-kairo",
         title: "でんき回路",
         description: "かん電池・豆電球・スイッチを つないで あかりを つける 全31もん。直列・並列・ショートまで、さわって たしかめよう。",

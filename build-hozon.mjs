@@ -19,7 +19,7 @@ const ROOT = path.dirname(new URL(import.meta.url).pathname);
 const CHECK = process.argv.includes('--check');
 
 const SIMPLE = [
-  'classroom-board', 'kanji-bouken', 'kannjibusyu-ta', 'kotobasagashi', 'level-up-adventure',
+  'classroom-board', 'goisen', 'kanji-bouken', 'kannjibusyu-ta', 'kotoba-puzzle', 'kotobasagashi', 'level-up-adventure',
   'rekishi-battle', 'sakkanojikan', 'sekai-o-mawarou', 'shinmatorikusu', 'shukudai',
   'sikou-tool-app', 'taiiku-relay', 'todofuken-bouken', 'ugoki-no-kiroku',
 ];

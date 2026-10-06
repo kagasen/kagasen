@@ -1,0 +1,20 @@
+{
+  "name": "語彙線（ゴイセン）",
+  "short_name": "ゴイセン",
+  "description": "もじを なぞって 線を ひき、とちゅうに かくれた ことばで モンスターと たたかう。3もじ以上・1本で2つ以上で 必殺技！",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2B1B6E",
+  "theme_color": "#5B3FD0",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

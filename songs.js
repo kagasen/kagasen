@@ -14,7 +14,7 @@ const songsData = [
         tagName: "学習ソング",
         date: "2026/10/14",
         colorClass: "subject-orange",
-        image: "images/songs/kuku-kuru.webp",
+        image: "images/songs/kuku-kuru-v2.webp",
         link: "https://youtu.be/EgWja7KAGRI"
     },
     {
@@ -25,7 +25,7 @@ const songsData = [
         tagName: "学習ソング",
         date: "2026/10/14",
         colorClass: "subject-orange",
-        image: "images/songs/genso.webp",
+        image: "images/songs/genso-v2.webp",
         link: "https://youtu.be/RhWFiavJh_8"
     },
     {
@@ -36,7 +36,7 @@ const songsData = [
         tagName: "学習ソング",
         date: "2026/10/14",
         colorClass: "subject-orange",
-        image: "images/songs/rekishi-jinbutsu.webp",
+        image: "images/songs/rekishi-jinbutsu-v2.webp",
         link: "https://youtu.be/JJrOFTdchyk"
     },
     {
@@ -47,7 +47,7 @@ const songsData = [
         tagName: "学習ソング",
         date: "2026/10/14",
         colorClass: "subject-orange",
-        image: "images/songs/zukei-koushiki.webp",
+        image: "images/songs/zukei-koushiki-v2.webp",
         link: "https://youtu.be/LaDycwkqsv4"
     },
     {
@@ -58,7 +58,7 @@ const songsData = [
         tagName: "学習ソング",
         date: "2026/10/14",
         colorClass: "subject-orange",
-        image: "images/songs/kumowahajiki.webp",
+        image: "images/songs/kumowahajiki-v2.webp",
         link: "https://youtu.be/wVluS0ZZIpc"
     },
     {

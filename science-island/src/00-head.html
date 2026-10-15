@@ -344,7 +344,17 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 .board{
   width:100%; background:#FFFFFF; border:2px solid var(--line); border-radius:20px;
   box-shadow:0 6px 18px rgba(15,51,80,.08); display:block; touch-action:manipulation;
+  user-select:none; -webkit-user-select:none;
 }
+.board .circuit-part{cursor:grab;}
+.board.dragging .circuit-part{cursor:grabbing;}
+.move-note{
+  display:none; max-width:620px; margin:8px auto 0; padding:8px 12px;
+  align-items:center; justify-content:center; gap:7px; text-align:center;
+  border-radius:12px; background:#EEF7FC; color:#315A70;
+  font-size:13px; font-weight:900;
+}
+.move-note.on{display:flex;}
 .tools{max-width:640px; margin:12px auto 0; padding:0 10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
 .tool{
   min-height:48px; padding:0 18px; border-radius:999px; background:#EAF3F8; color:var(--ink);
@@ -451,6 +461,7 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
     <div class="q-h" id="q-h"></div>
   </div>
   <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
+  <div class="move-note" id="move-note"></div>
   <div class="sw-pick" id="sw-pick"></div>
   <div class="status" id="status"></div>
   <!-- クリアの まどを どけて 見なおして いる あいだ 出る おび。 -->

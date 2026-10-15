@@ -1,6 +1,6 @@
 // リサイクル工場 — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'recycle-koujou-cache-04309f9d';
+const CACHE = 'recycle-koujou-cache-d583a72b';
 const ASSETS = [
   './',
   './index.html',

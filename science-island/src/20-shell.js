@@ -84,6 +84,8 @@ function loadStage(){
   pk.className = 'sw-pick'; pk.innerHTML = '';   /* ふりこ以外の 型では かくす */
   var fcCtl = document.getElementById('fc-controls');
   fcCtl.innerHTML = '';                          /* リサイクル工場いがいでは かくす */
+  var moveNote = document.getElementById('move-note');
+  moveNote.className = 'move-note'; moveNote.textContent = ''; /* 回路いがいでは かくす */
   engine().load(st);
   renderBoard();
 }
@@ -164,4 +166,3 @@ document.getElementById('btn-hint').onclick = function(){
   if (cur.si !== 0) cur.hint = true;
 };
 document.getElementById('btn-reset').onclick = function(){ loadStage(); };
-

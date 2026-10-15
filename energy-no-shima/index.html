@@ -356,7 +356,17 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 .board{
   width:100%; background:#FFFFFF; border:2px solid var(--line); border-radius:20px;
   box-shadow:0 6px 18px rgba(15,51,80,.08); display:block; touch-action:manipulation;
+  user-select:none; -webkit-user-select:none;
 }
+.board .circuit-part{cursor:grab;}
+.board.dragging .circuit-part{cursor:grabbing;}
+.move-note{
+  display:none; max-width:620px; margin:8px auto 0; padding:8px 12px;
+  align-items:center; justify-content:center; gap:7px; text-align:center;
+  border-radius:12px; background:#EEF7FC; color:#315A70;
+  font-size:13px; font-weight:900;
+}
+.move-note.on{display:flex;}
 .tools{max-width:640px; margin:12px auto 0; padding:0 10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
 .tool{
   min-height:48px; padding:0 18px; border-radius:999px; background:#EAF3F8; color:var(--ink);
@@ -452,6 +462,7 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
     <div class="q-h" id="q-h"></div>
   </div>
   <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 600 380" role="img" aria-label="かいろの ばん"></svg><div class="fc-controls" id="fc-controls"></div></div>
+  <div class="move-note" id="move-note"></div>
   <div class="sw-pick" id="sw-pick"></div>
   <div class="status" id="status"></div>
   <!-- クリアの まどを どけて 見なおして いる あいだ 出る おび。 -->
@@ -484,6 +495,7 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 <canvas id="confetti"></canvas>
 
 <script>
+
 /* =====================================================================
    サイエンスアイランド — 本体
    ここでの約束（CLAUDE.md より）
@@ -2025,7 +2037,7 @@ function svgLabel(y, text, color){
 
 function svgBattery(p, showName){
   var x = GX(p.gx), y = GY(p.gy);
-  return '<g transform="translate(' + x + ',' + y + ')">' +
+  return '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">' +
     '<rect x="-36" y="-24" width="72" height="48" rx="10" fill="#F4C34E" stroke="#A9812A" stroke-width="3"/>' +
     '<rect x="-36" y="-24" width="26" height="48" rx="10" fill="#E0A93A" stroke="none"/>' +
     '<rect x="-13" y="-24" width="4" height="48" fill="#A9812A" opacity=".5"/>' +
@@ -2046,7 +2058,7 @@ function svgLamp(p, cat, showName){
   var x = GX(p.gx), y = GY(p.gy);
   var gl = GLOW[cat] || null;
   var glass = gl ? gl.glass : '#F4F6F8';
-  var s = '<g transform="translate(' + x + ',' + y + ')">';
+  var s = '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">';
   if (gl){
     s += '<circle cx="0" cy="-14" r="' + (46 * gl.k).toFixed(1) + '" fill="#FFD54F" opacity="' + gl.o + '"/>';
     s += '<circle cx="0" cy="-14" r="' + (34 * gl.k).toFixed(1) + '" fill="#FFE082" opacity="' + gl.o + '"/>';
@@ -2075,7 +2087,7 @@ function svgMotor(p, r, name){
   var spd = (cat === 'faint' || cat === 'dim') ? 'ゆっくり ' : (cat === 'bright' ? 'はやく ' : '');
   var word = cat === 'off' ? 'とまって いる' : (spd + (dir === 'right' ? 'みぎ回り' : 'ひだり回り'));
   var body = cat === 'off' ? '#DDE3E8' : '#BFE3F5';
-  var s = '<g transform="translate(' + x + ',' + y + ')">';
+  var s = '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">';
   s += '<rect x="-44" y="-6" width="88" height="12" rx="6" fill="#D5D9DE" stroke="#9AA0A6" stroke-width="2"/>';
   s += '<circle cx="0" cy="-36" r="28" fill="' + body + '" stroke="#4A7C97" stroke-width="3"/>';
   s += '<rect x="-6" y="-14" width="12" height="14" fill="#8A8D93"/>';
@@ -2106,7 +2118,7 @@ function svgGalv(p, r, name){
   var tipX = (38 * Math.sin(a)).toFixed(1), tipY = (-10 - 38 * Math.cos(a)).toFixed(1);
   var size = (cat === 'faint' || cat === 'dim') ? '小さく ' : (cat === 'bright' ? '大きく ' : '');
   var word = cat === 'off' ? 'ふれない' : (dir === 'right' ? 'みぎに ' : 'ひだりに ') + size + 'ふれた';
-  var s = '<g transform="translate(' + x + ',' + y + ')">';
+  var s = '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">';
   s += '<rect x="-44" y="-6" width="88" height="12" rx="6" fill="#D5D9DE" stroke="#9AA0A6" stroke-width="2"/>';
   s += '<rect x="-40" y="-58" width="80" height="54" rx="9" fill="#FFFDF5" stroke="#5A7C93" stroke-width="3"/>';
   s += '<path d="M-37.1 -29.7 A42 42 0 0 1 37.1 -29.7" fill="none" stroke="#C3CDD5" stroke-width="3"/>';
@@ -2126,7 +2138,7 @@ function svgSwitch(p){
   var lever = p.on
     ? '<line x1="-28" y1="0" x2="28" y2="0" stroke="#5A7C93" stroke-width="8" stroke-linecap="round"/>'
     : '<line x1="-28" y1="0" x2="16" y2="-30" stroke="#5A7C93" stroke-width="8" stroke-linecap="round"/>';
-  return '<g transform="translate(' + x + ',' + y + ')">' +
+  return '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">' +
     '<rect x="-46" y="-8" width="92" height="30" rx="9" fill="#EFE6D2" stroke="#B9A87F" stroke-width="3"/>' +
     lever +
     '<circle cx="-28" cy="0" r="7" fill="#8A8D93"/><circle cx="28" cy="0" r="7" fill="#8A8D93"/>' +
@@ -2221,6 +2233,8 @@ function loadStage(){
   pk.className = 'sw-pick'; pk.innerHTML = '';   /* ふりこ以外の 型では かくす */
   var fcCtl = document.getElementById('fc-controls');
   fcCtl.innerHTML = '';                          /* リサイクル工場いがいでは かくす */
+  var moveNote = document.getElementById('move-note');
+  moveNote.className = 'move-note'; moveNote.textContent = ''; /* 回路いがいでは かくす */
   engine().load(st);
   renderBoard();
 }
@@ -2302,7 +2316,6 @@ document.getElementById('btn-hint').onclick = function(){
 };
 document.getElementById('btn-reset').onclick = function(){ loadStage(); };
 
-
 /* ---- つなぐ型：回路モード（第1段で 作ったもの） ---- */
 function loadCircuit(st){
   cur.parts = st.parts.map(function(p){
@@ -2311,6 +2324,10 @@ function loadCircuit(st){
     return q;
   });
   cur.wires = (st.wires || []).map(function(w){ return [w[0], w[1]]; });
+  cur.dragPart = null; cur.dragMoved = false; cur.dragIgnoreUntil = 0;
+  var note = document.getElementById('move-note');
+  note.className = 'move-note on';
+  note.textContent = '☝️ でんきゅうや かんでんちは、ドラッグで すきな ばしょに うごかせるよ';
 }
 function renderCircuit(){
   setBoardBox(600, 380);
@@ -2391,6 +2408,8 @@ function renderCircuit(){
 }
 
 function tapCircuit(e){
+  /* ドラッグの あとの click で、スイッチや たんしが いっしょに うごかないように する。 */
+  if (cur.dragIgnoreUntil && Date.now() < cur.dragIgnoreUntil) return;
   var sw = attrUp(e.target, 'data-sw');
   if (sw !== null){
     cur.parts.forEach(function(p){ if (p.id === sw) p.on = !p.on; });
@@ -2414,7 +2433,57 @@ function tapCircuit(e){
   }
   if (cur.sel !== null){ cur.sel = null; renderBoard(); }
 }
-ENGINES.tsunagu = { load:loadCircuit, render:renderCircuit, tap:tapCircuit };
+
+/* ぶひんを ゆびで つかんで うごかす。
+   たんしの ○から はじめた ときは、いままでどおり「せんを つなぐ」そうさを ゆうせんする。
+   少し さわっただけでは ドラッグに せず、スイッチの タップも そのまま つかえる。 */
+function circuitPoint(e){
+  var src = (e.touches && e.touches.length) ? e.touches[0] :
+            ((e.changedTouches && e.changedTouches.length) ? e.changedTouches[0] : e);
+  var box = document.getElementById('board').getBoundingClientRect();
+  if (!box.width || !box.height) return null;
+  return { x:(src.clientX - box.left) * 600 / box.width,
+           y:(src.clientY - box.top) * 380 / box.height,
+           cx:src.clientX, cy:src.clientY };
+}
+function circuitPart(id){
+  for (var i=0;i<cur.parts.length;i++) if (cur.parts[i].id === id) return cur.parts[i];
+  return null;
+}
+function downCircuit(e){
+  /* たんしは ぶひんの そとに えがいて あるが、ねんのため 明示して おく。 */
+  if (attrUp(e.target, 'data-t') !== null) return;
+  var id = attrUp(e.target, 'data-part');
+  if (id === null) return;
+  var p = circuitPart(id), pt = circuitPoint(e);
+  if (!p || !pt) return;
+  cur.dragPart = id; cur.dragMoved = false;
+  cur.dragStartCX = pt.cx; cur.dragStartCY = pt.cy;
+  cur.dragDX = GX(p.gx) - pt.x; cur.dragDY = GY(p.gy) - pt.y;
+}
+function moveCircuit(e){
+  if (!cur.dragPart) return;
+  var pt = circuitPoint(e), p = circuitPart(cur.dragPart);
+  if (!pt || !p) return;
+  var dx = pt.cx - cur.dragStartCX, dy = pt.cy - cur.dragStartCY;
+  if (!cur.dragMoved && Math.sqrt(dx*dx + dy*dy) < 7) return;
+  cur.dragMoved = true; cur.sel = null;
+  if (e.cancelable) e.preventDefault();
+  var x = Math.max(75, Math.min(525, pt.x + cur.dragDX));
+  var y = Math.max(80, Math.min(325, pt.y + cur.dragDY));
+  p.gx = (x - 80) / 115; p.gy = (y - 90) / 105;
+  var board = document.getElementById('board');
+  board.setAttribute('class', 'board dragging');
+  renderBoard();
+}
+function upCircuit(){
+  if (!cur.dragPart) return;
+  if (cur.dragMoved) cur.dragIgnoreUntil = Date.now() + 700;
+  cur.dragPart = null; cur.dragMoved = false;
+  document.getElementById('board').setAttribute('class', 'board');
+}
+ENGINES.tsunagu = { load:loadCircuit, render:renderCircuit, tap:tapCircuit,
+                    down:downCircuit, move:moveCircuit, up:upCircuit };
 
 /* ---- ヒントの「こたえの れい」（つなぐ型だけの もの）---- */
 /* ぶひんの 名まえを、子どもが ばんめんで 見て 分かる ことばに する。

@@ -6,6 +6,10 @@ function loadCircuit(st){
     return q;
   });
   cur.wires = (st.wires || []).map(function(w){ return [w[0], w[1]]; });
+  cur.dragPart = null; cur.dragMoved = false; cur.dragIgnoreUntil = 0;
+  var note = document.getElementById('move-note');
+  note.className = 'move-note on';
+  note.textContent = '☝️ でんきゅうや かんでんちは、ドラッグで すきな ばしょに うごかせるよ';
 }
 function renderCircuit(){
   setBoardBox(600, 380);
@@ -86,6 +90,8 @@ function renderCircuit(){
 }
 
 function tapCircuit(e){
+  /* ドラッグの あとの click で、スイッチや たんしが いっしょに うごかないように する。 */
+  if (cur.dragIgnoreUntil && Date.now() < cur.dragIgnoreUntil) return;
   var sw = attrUp(e.target, 'data-sw');
   if (sw !== null){
     cur.parts.forEach(function(p){ if (p.id === sw) p.on = !p.on; });
@@ -109,7 +115,57 @@ function tapCircuit(e){
   }
   if (cur.sel !== null){ cur.sel = null; renderBoard(); }
 }
-ENGINES.tsunagu = { load:loadCircuit, render:renderCircuit, tap:tapCircuit };
+
+/* ぶひんを ゆびで つかんで うごかす。
+   たんしの ○から はじめた ときは、いままでどおり「せんを つなぐ」そうさを ゆうせんする。
+   少し さわっただけでは ドラッグに せず、スイッチの タップも そのまま つかえる。 */
+function circuitPoint(e){
+  var src = (e.touches && e.touches.length) ? e.touches[0] :
+            ((e.changedTouches && e.changedTouches.length) ? e.changedTouches[0] : e);
+  var box = document.getElementById('board').getBoundingClientRect();
+  if (!box.width || !box.height) return null;
+  return { x:(src.clientX - box.left) * 600 / box.width,
+           y:(src.clientY - box.top) * 380 / box.height,
+           cx:src.clientX, cy:src.clientY };
+}
+function circuitPart(id){
+  for (var i=0;i<cur.parts.length;i++) if (cur.parts[i].id === id) return cur.parts[i];
+  return null;
+}
+function downCircuit(e){
+  /* たんしは ぶひんの そとに えがいて あるが、ねんのため 明示して おく。 */
+  if (attrUp(e.target, 'data-t') !== null) return;
+  var id = attrUp(e.target, 'data-part');
+  if (id === null) return;
+  var p = circuitPart(id), pt = circuitPoint(e);
+  if (!p || !pt) return;
+  cur.dragPart = id; cur.dragMoved = false;
+  cur.dragStartCX = pt.cx; cur.dragStartCY = pt.cy;
+  cur.dragDX = GX(p.gx) - pt.x; cur.dragDY = GY(p.gy) - pt.y;
+}
+function moveCircuit(e){
+  if (!cur.dragPart) return;
+  var pt = circuitPoint(e), p = circuitPart(cur.dragPart);
+  if (!pt || !p) return;
+  var dx = pt.cx - cur.dragStartCX, dy = pt.cy - cur.dragStartCY;
+  if (!cur.dragMoved && Math.sqrt(dx*dx + dy*dy) < 7) return;
+  cur.dragMoved = true; cur.sel = null;
+  if (e.cancelable) e.preventDefault();
+  var x = Math.max(75, Math.min(525, pt.x + cur.dragDX));
+  var y = Math.max(80, Math.min(325, pt.y + cur.dragDY));
+  p.gx = (x - 80) / 115; p.gy = (y - 90) / 105;
+  var board = document.getElementById('board');
+  board.setAttribute('class', 'board dragging');
+  renderBoard();
+}
+function upCircuit(){
+  if (!cur.dragPart) return;
+  if (cur.dragMoved) cur.dragIgnoreUntil = Date.now() + 700;
+  cur.dragPart = null; cur.dragMoved = false;
+  document.getElementById('board').setAttribute('class', 'board');
+}
+ENGINES.tsunagu = { load:loadCircuit, render:renderCircuit, tap:tapCircuit,
+                    down:downCircuit, move:moveCircuit, up:upCircuit };
 
 /* ---- ヒントの「こたえの れい」（つなぐ型だけの もの）---- */
 /* ぶひんの 名まえを、子どもが ばんめんで 見て 分かる ことばに する。

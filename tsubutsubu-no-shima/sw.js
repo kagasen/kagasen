@@ -1,6 +1,6 @@
 // つぶつぶの島 — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'tsubutsubu-no-shima-cache-a982dca1';
+const CACHE = 'tsubutsubu-no-shima-cache-79861d3c';
 const ASSETS = [
   './',
   './index.html',

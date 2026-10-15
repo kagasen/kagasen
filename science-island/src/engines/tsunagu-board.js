@@ -61,7 +61,7 @@ function svgLabel(y, text, color){
 
 function svgBattery(p, showName){
   var x = GX(p.gx), y = GY(p.gy);
-  return '<g transform="translate(' + x + ',' + y + ')">' +
+  return '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">' +
     '<rect x="-36" y="-24" width="72" height="48" rx="10" fill="#F4C34E" stroke="#A9812A" stroke-width="3"/>' +
     '<rect x="-36" y="-24" width="26" height="48" rx="10" fill="#E0A93A" stroke="none"/>' +
     '<rect x="-13" y="-24" width="4" height="48" fill="#A9812A" opacity=".5"/>' +
@@ -82,7 +82,7 @@ function svgLamp(p, cat, showName){
   var x = GX(p.gx), y = GY(p.gy);
   var gl = GLOW[cat] || null;
   var glass = gl ? gl.glass : '#F4F6F8';
-  var s = '<g transform="translate(' + x + ',' + y + ')">';
+  var s = '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">';
   if (gl){
     s += '<circle cx="0" cy="-14" r="' + (46 * gl.k).toFixed(1) + '" fill="#FFD54F" opacity="' + gl.o + '"/>';
     s += '<circle cx="0" cy="-14" r="' + (34 * gl.k).toFixed(1) + '" fill="#FFE082" opacity="' + gl.o + '"/>';
@@ -111,7 +111,7 @@ function svgMotor(p, r, name){
   var spd = (cat === 'faint' || cat === 'dim') ? 'ゆっくり ' : (cat === 'bright' ? 'はやく ' : '');
   var word = cat === 'off' ? 'とまって いる' : (spd + (dir === 'right' ? 'みぎ回り' : 'ひだり回り'));
   var body = cat === 'off' ? '#DDE3E8' : '#BFE3F5';
-  var s = '<g transform="translate(' + x + ',' + y + ')">';
+  var s = '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">';
   s += '<rect x="-44" y="-6" width="88" height="12" rx="6" fill="#D5D9DE" stroke="#9AA0A6" stroke-width="2"/>';
   s += '<circle cx="0" cy="-36" r="28" fill="' + body + '" stroke="#4A7C97" stroke-width="3"/>';
   s += '<rect x="-6" y="-14" width="12" height="14" fill="#8A8D93"/>';
@@ -142,7 +142,7 @@ function svgGalv(p, r, name){
   var tipX = (38 * Math.sin(a)).toFixed(1), tipY = (-10 - 38 * Math.cos(a)).toFixed(1);
   var size = (cat === 'faint' || cat === 'dim') ? '小さく ' : (cat === 'bright' ? '大きく ' : '');
   var word = cat === 'off' ? 'ふれない' : (dir === 'right' ? 'みぎに ' : 'ひだりに ') + size + 'ふれた';
-  var s = '<g transform="translate(' + x + ',' + y + ')">';
+  var s = '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">';
   s += '<rect x="-44" y="-6" width="88" height="12" rx="6" fill="#D5D9DE" stroke="#9AA0A6" stroke-width="2"/>';
   s += '<rect x="-40" y="-58" width="80" height="54" rx="9" fill="#FFFDF5" stroke="#5A7C93" stroke-width="3"/>';
   s += '<path d="M-37.1 -29.7 A42 42 0 0 1 37.1 -29.7" fill="none" stroke="#C3CDD5" stroke-width="3"/>';
@@ -162,7 +162,7 @@ function svgSwitch(p){
   var lever = p.on
     ? '<line x1="-28" y1="0" x2="28" y2="0" stroke="#5A7C93" stroke-width="8" stroke-linecap="round"/>'
     : '<line x1="-28" y1="0" x2="16" y2="-30" stroke="#5A7C93" stroke-width="8" stroke-linecap="round"/>';
-  return '<g transform="translate(' + x + ',' + y + ')">' +
+  return '<g class="circuit-part" data-part="' + p.id + '" transform="translate(' + x + ',' + y + ')">' +
     '<rect x="-46" y="-8" width="92" height="30" rx="9" fill="#EFE6D2" stroke="#B9A87F" stroke-width="3"/>' +
     lever +
     '<circle cx="-28" cy="0" r="7" fill="#8A8D93"/><circle cx="28" cy="0" r="7" fill="#8A8D93"/>' +

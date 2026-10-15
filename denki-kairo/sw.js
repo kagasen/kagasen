@@ -1,6 +1,6 @@
 // でんき回路 — Service Worker（build-islands.mjs が 作る。手で 直さない）
 // キャッシュ名は index.html の 中身から 出して いる ので、中身が かわれば かならず かわる。
-const CACHE = 'denki-kairo-cache-c8928ff0';
+const CACHE = 'denki-kairo-cache-725c6993';
 const ASSETS = [
   './',
   './index.html',

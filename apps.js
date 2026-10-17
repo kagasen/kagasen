@@ -23,6 +23,18 @@ const appsData = [
         link: "kotoba-puzzle/index.html"
     },
     {
+        id: "hissan-fever",
+        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
+        title: "算数フィーバー",
+        description: "たしざん・九九から ひっさん・しょうすう・ぶんすうまで 1けたずつ とく 算数ゲーム。げんざいちテスト・まちがいノート・にがてトレーニングつき！",
+        category: "math",
+        tagName: "算数",
+        date: "2026/09/27",
+        colorClass: "subject-red",
+        image: "images/hissan-fever.svg",
+        link: "hissan-fever/index.html"
+    },
+    {
         id: "denki-kairo",
         title: "でんき回路",
         description: "かん電池・豆電球・スイッチを つないで あかりを つける 全31もん。直列・並列・ショートまで、さわって たしかめよう。",

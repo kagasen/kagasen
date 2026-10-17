@@ -1,0 +1,15 @@
+{
+  "name": "算数フィーバー",
+  "short_name": "さんすう",
+  "description": "ひっさんを 1けたずつ といていく 計算ゲーム。せいかいするたびに ポイントが 万・億・兆…と ふえる！",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#272353",
+  "theme_color": "#29245C",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

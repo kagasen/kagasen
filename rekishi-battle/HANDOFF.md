@@ -12,6 +12,8 @@
 - 検証: JavaScript構文、ブラウザのホーム表示（390/768/1024px）、YouTubeボタンで指定動画が新規タブで開くことを確認。
   release-check はエラー0件（既存の他アプリ等の警告5件）。iPad実機・オフライン実機での再生は未確認。
 - 以前の `home_yayoinosorani.mp3` は削除せず残しているが、再生・先読みには使わない。
+- 同日あと: 保存の見はり（hozon-guard）のアプリ名表に ことばパズル・部首穴・語彙線・算数フィーバーを追加し `rekishi-cache-v13`。
+  セーブ（`rekishiBattle.save.v1`）には触れていない。v12→v13 の切りかえ後も cards/cleared/gold/wins/deck が同じなのをブラウザで確認。
 
 ★このファイルだけ読めば作業に入れる。日付ごとの経緯・失敗した試みは HISTORY.md（ふだん読まない）。
 

@@ -1,7 +1,7 @@
 // ひっさんフィーバー — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'hissan-fever-cache-v24';
+const CACHE = 'hissan-fever-cache-v25';
 const ASSETS = [
   './',
   './index.html',

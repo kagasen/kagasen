@@ -24,14 +24,13 @@ const appsData = [
     },
     {
         id: "hissan-fever",
-        draft: true,   /* まだ公開しない（ポータルのカード・sitemapに出さない）*/
         title: "算数フィーバー",
         description: "たしざん・九九から ひっさん・しょうすう・ぶんすうまで 1けたずつ とく 算数ゲーム。げんざいちテスト・まちがいノート・にがてトレーニングつき！",
         category: "math",
         tagName: "算数",
-        date: "2026/09/27",
+        date: "2026/10/17",
         colorClass: "subject-red",
-        image: "images/hissan-fever.svg",
+        image: "images/thumbnails-v5/hissan-fever.jpg",
         link: "hissan-fever/index.html"
     },
     {

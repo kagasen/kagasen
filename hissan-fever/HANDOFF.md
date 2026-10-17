@@ -8,7 +8,7 @@
 ## 構成
 - `index.html` … CSS/JS 込みの1ファイル＋同梱の透過キャラクターPNG。外部読み込みなし・音は WebAudio で その場で合成。
 - `backup-kit.js`（共通部品・💾ボタン）/ `manifest.json` / `sw.js` / `icon.svg`
-- サムネ: `../images/hissan-fever.svg`
+- サムネ: `../images/thumbnails-v5/hissan-fever.jpg`（1200x800。2026-10-17 にホーム画面の見た目＝紫の夜空・題字・ポコたちで作りなおし。旧 `images/hissan-fever.svg` は削除）
 
 ## 遊び方の流れ
 1. タイトルで けいさん（たし・ひき・かけ・わり・ミックス）と むずかしさ（★1〜3）を選ぶ
@@ -182,3 +182,8 @@
 - `BGM_SONGS` に `yt`（動画ID）を追加: 九九くる `EgWja7KAGRI` / 図形の公式（面積体積の歌）`LaDycwkqsv4` / くもわはじき `wVluS0ZZIpc`。リンクは `https://www.youtube.com/watch?v=ID` を `updateMusicLabel()` で曲に合わせて差しかえる。外部へのリンクだけで、埋め込み・読み込みはなし（オフライン方針のまま）。
 - PWA cache v24。`music.test.mjs` にホーム再生・YouTubeリンク・つぎのきょく・ミュート時は鳴らないを追加。
 - ブラウザ確認: ホームで♪を押すと九九くるが再生、ミュートで停止→解除で再生、⏭で公式の歌に切りかえ＋YouTubeリンク更新、ゲーム開始→やめてもどるでホームに戻っても再生継続。375px幅で横はみ出しなし。コンソールエラーなし。iPad実機は未確認。
+
+## 公開（2026-10-17）
+- `apps.js` の `draft: true` を外して公開。日付は公開日 2026/10/17（NEWバッジ・新着順）。
+- サムネイルを `images/thumbnails-v5/hissan-fever.jpg` に。ホーム画面の配色（#272353 の夜空＋ドット、題字「さんすう／フィーバー！」、ポコ・うさぎ・ねこ・ことり＝`assets/poko-friends-2d-v1.png`）を 1200x800 の HTML に組んで Chrome headless で撮影→ffmpeg で JPG。題字とポコは常に見える帯（y=240〜560）に入れ、左上の★ボタンの位置はあけてある。
+- `node build-seo.mjs` で title/description/canonical/OGP と sitemap.xml を追加。PWA cache v25。

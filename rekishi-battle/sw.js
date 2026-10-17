@@ -4,26 +4,26 @@
 //   CACHE のバージョン番号を上げる（v1 -> v2 …）。CLAUDE.md §4 の儀式。
 // ★chars-data.js の ?v= は index.html の <script src> と **同じ数字**にすること。
 //   ちがうと、キャッシュに入っていない別URLを毎回とりに行くことになる。
-const CACHE = 'rekishi-cache-v10';
+const CACHE = 'rekishi-cache-v12';
 
 // ① かならず要るもの（小さい・約0.5MB）。ここが1つでも取れないと install は失敗させる
 //    ＝「中途はんぱに入って 動かない」より「入っていない」ほうが 安全。
 const SHELL = [
   './',
   './index.html',
-  './chars-data.js?v=24',
+  './chars-data.js?v=25',
   './backup-kit.js?v=3',
   './fonts/KleeOne-title.woff2?v=1',
   './manifest.json',
   './icon.svg',
 ];
 
-// ② 大きいけれど 先に入れておきたいもの（曲 3.0MB）。
+// ② 大きいけれど 先に入れておきたいもの（ホームの歌とバトル曲）。
 //    ★1つずつ入れて、失敗しても install は 止めない（学校のWiFiが 細いことがある）。
 //    ★絵（images/ 7.5MB・51ステージぶん）は **ここに入れない**。
 //      ぜんぶ先に落とすと 初回が重すぎるので、下の fetch で **見たものから順に**キャッシュする。
 const EXTRA = [
-  './bgm/home_yayoinosorani.mp3',
+  './bgm/home_rekishi_jinbutsu.mp3',
   './bgm/battle_bakumatsubukyoku_ikusa.mp3',
 ];
 

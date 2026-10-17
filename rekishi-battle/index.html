@@ -1744,6 +1744,13 @@
   .sound-btn { background: #26313f; color: #d9c496; }
   .sound-btn.off { background: #1a222d; color: #6f7c8c; }
   body.home .sound-btn { min-height: 34px; padding: 4px 11px; font-size: 13px; }
+  /* 歌への入口は 小さく、ホームの真ん中に（2026-10-17）。 */
+  .home-song-link { align-self: center; display: inline-flex; align-items: center;
+    gap: 6px; min-height: 32px; margin: 0 0 8px; padding: 5px 12px;
+    border: 1px solid #6b5220; border-radius: 999px; color: #e6d5ac;
+    background: #1a222d; font-size: 13px; font-weight: 700; text-decoration: none; }
+  .home-song-link:hover { background: #26313f; }
+  .home-song-link:focus-visible { outline: 2px solid #ffd76a; outline-offset: 3px; }
   /* ★金は 明るすぎると 白い字が 読めない（#caa14c だと 2.18 しか なかった）。
      こく して 4.5以上に する。見た目の 金っぽさは のこる。 */
   .big-btn.brown { background: linear-gradient(180deg, #8a6620, #5c4413);
@@ -1782,6 +1789,9 @@
          ★ふだんは 何も出ない（goHome が 中身を 入れたときだけ 見える）。
          これが 無いと、エンディングで「あとで」を えらんだ子が **二度と たどりつけない**。 -->
     <div id="home-gift"></div>
+    <a id="home-song-link" class="home-song-link"
+       href="https://www.youtube.com/watch?v=JJrOFTdchyk" target="_blank" rel="noopener noreferrer"
+       aria-label="YouTubeで れきし人物の うたをきく（あたらしいタブで ひらく）">▶ YouTubeで うたをきく <span aria-hidden="true">↗</span></a>
     <!-- 音の 入／切。教室の大型モニタに映すときに 先生が すぐ消せるように ホームに出す。
          ★おと と おんがく を **べつべつ**にしてある。授業では「こうか音はいるけど
            曲はいらない」ことが あるため（2026-08-09） -->
@@ -1798,7 +1808,8 @@
         <p class="stage-more">ステージは これから もっと ふえるよ！</p>
         <!-- ★出典クレジット（CLAUDE.md §7「以後 絶対に消さない」）。
              曲を 差しかえたら ここも 直すこと。 -->
-        <p class="credit">♪ おんがく: 甘茶の音楽工房「弥生の空に」「幕末舞曲〜戦〜」<br>
+        <p class="credit">♪ ホーム: かがせん「日本の歴史上人物」<br>
+          バトル: 甘茶の音楽工房「幕末舞曲〜戦〜」<br>
           amachamusic.chagasi.com</p>
       </div>
       <button id="btn-cards" class="big-btn brown">🃏 カードいちらん</button>
@@ -2304,25 +2315,15 @@ var SFX = {
 function sfx(name) { var f = SFX[name]; if (f && SND_ON) { try { f(); } catch (e) {} } }
 
 /* =====================================================================
-   ★BGM＝ほんものの和楽器の曲（2026-08-11・ユーザー要望
-     「64ビットとかではなく フリーの何か歴史感のあるもの。一気にチープなゲームに
-       なってしまいます」）
+   ★BGM（2026-10-17）
    ---------------------------------------------------------------------
-   ★★**もとは Web Audio の オシレーターで鳴らす ピコピコの曲**だった（2026-08-09）。
-     音階だけ 和風（ヨナ抜き・都節）に していたが、音色が ピコピコなので
-     ゲーム全体が 安っぽく 聞こえていた。**曲の作り置き（SONGS の音符表）は 消した**。
-     ★もどさないこと。もどすと 同じ「チープ」の やりなおしになる。
-   ★曲は **甘茶の音楽工房**（https://amachamusic.chagasi.com/）の フリー素材:
-       ホーム … 「弥生の空に」  bgm/home_yayoinosorani.mp3        （1分48秒）
-       バトル … 「幕末舞曲〜戦〜」bgm/battle_bakumatsubukyoku_ikusa.mp3（2分23秒）
-     利用規約: ゲームのBGMに使ってよい／クレジット表記は任意／使用報告 不要。
-     禁止: **音楽だけを 取り出して 配布・販売する** ／ JASRAC等への登録 ／ 作曲者を いつわる。
-     ★★CLAUDE.md §7 のとおり **出典は 画面に 出したまま にする**（ホーム下の クレジット）。
-       消さないこと。曲を 差しかえるときは この コメントと クレジットも いっしょに 直す。
-   ★**ファイルは 同梱**（外から 読みこまない）＝完全オフラインは まもられている（§1）。
-     mp3は 96kbps に おとしてある（元は128kbps・4.0MB → **3.0MB**）。
-     おわりの 無音（3〜4秒）は 切ってあるので、ループの つなぎめが 短い。
-     ★作りなおすときは `ffmpeg -ss 0.45 -to <おわり> -b:a 96k`（HANDOFF.md に 手順）。
+   ホーム … かがせん「日本の歴史上人物」bgm/home_rekishi_jinbutsu.mp3
+     ユーザーのローカル原音から 96kbps MP3 に変換して同梱（約5分53秒）。
+     ホームの小さなリンクから YouTube の同じ歌へ移動できる。
+   バトル … 甘茶の音楽工房「幕末舞曲〜戦〜」
+     bgm/battle_bakumatsubukyoku_ikusa.mp3（2分23秒）。
+   曲は同梱して オフラインでも再生。YouTube はリンクを押したときだけ開く。
+   出典はホーム下のクレジットに表記。差しかえ時はコメントもいっしょに直す。
    ---------------------------------------------------------------------
    ★★★**音量は かならず GainNode で いじること**。`audio.volume = 0.5` は
      **iOS（iPad）では 何も 起きない**（Appleが わざと きかなくしている）。
@@ -2340,7 +2341,7 @@ var BGM_FADE = 0.6;           /* 曲を きりかえる ときの フェード�
 /* 曲の表。★曲を 足す・変えるのは **ここだけ**（CLAUDE.md §8）。
    vol＝曲ごとの 音量の つりあい（バトルの曲は もとが 大きいので 少し しぼる）。 */
 var BGM_SRC = {
-  home:   { file: "bgm/home_yayoinosorani.mp3",            vol: 1.00 },
+  home:   { file: "bgm/home_rekishi_jinbutsu.mp3",         vol: 1.00 },
   battle: { file: "bgm/battle_bakumatsubukyoku_ikusa.mp3", vol: 0.80 }
 };
 var BGM = { key: null, cur: null, tracks: {} };

@@ -242,7 +242,7 @@ button{font-family:inherit; cursor:pointer; touch-action:manipulation;}
 .top-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;}
 .top-bar h2{margin:0; font-size:26px; flex:1; min-width:180px; letter-spacing:.06em; text-shadow:0 3px 0 rgba(0,0,0,.4);}
 .pill{background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 14px; font-weight:800; font-size:15px;}
-.worlds{display:grid; gap:16px; max-width:1100px; margin:0 auto; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));}
+.worlds{display:grid; gap:16px; max-width:1100px; margin:0 auto; grid-template-columns:repeat(auto-fit, minmax(min(320px, 100%), 1fr));}
 .world{position:relative; overflow:hidden; border-radius:22px; padding:16px; color:#fff; min-height:250px;
   box-shadow:0 0 0 2px rgba(255,255,255,.22), 0 10px 24px rgba(0,0,0,.45); isolation:isolate;}
 .world .w-shade{position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, rgba(5,2,20,.88) 0%, rgba(5,2,20,.55) 55%, rgba(5,2,20,.15) 100%);}
@@ -727,7 +727,7 @@ function today() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.
 /* =====================================================================
    3. ステージ と モンスター（数値は ぜんぶ 叩き台。実機で 調整する）
    hp=たいりょく atk=こうげき cd=なんターンごとに こうげき
-   ab: 'min3' = 2もじの ことばが きかない ／ 'armor' = れんけつ必殺技で ないと ダメージ はんぶん
+   ab: min3 = 2もじ むこう ／ min4 = 3もじ以下 むこう ／ armor = れんけつ必殺技 以外 はんぶん ／ seal = min3＋armor
    ===================================================================== */
 /* ワールド（2026-10-06 その4: 「あいうえおのはら」では わからない → 子どもが 挑戦したく なる 冒険の 舞台に）
    bg = 背景画像（Codex 生成・assets/bg/）。画像が ない ときは grad で ぬる */
@@ -740,8 +740,14 @@ var WORLDS = [
     stages: ['さんごの入り江', 'しずんだ回廊', '神殿の大広間', '海の王の玉座'] },
   { id: 'sora',  icon: '⚡', name: '天空いかずち城', desc: '雲の上の 城。よろいの 敵は れんけつ必殺技で やぶれ！', grad: 'linear-gradient(160deg,#13163F,#3D3FA8 55%,#B9A8FF)',
     stages: ['雲のかいだん', 'かみなり橋', 'あらしの塔', '天空のいただき'] },
-  { id: 'maou',  icon: '👑', name: '魔王城',         desc: 'ことばを うばう 語彙の魔王 ゴイデモン。さいごの たたかい！', grad: 'linear-gradient(160deg,#0B0414,#3E0F57 55%,#C2338E)',
-    stages: ['魔王城の門', 'のろいの書庫', '闇の回廊', '最終決戦'] }
+  { id: 'maou',  icon: '👑', name: '魔王城',         desc: 'ことばを うばう 語彙の魔王 ゴイデモン。ことばの 力で たちむかえ！', grad: 'linear-gradient(160deg,#0B0414,#3E0F57 55%,#C2338E)',
+    stages: ['魔王城の門', 'のろいの書庫', '闇の回廊', '最終決戦'] },
+  { id: 'koori', icon: '❄️', name: 'こおりの迷宮',   desc: '魔王の 先に ひらいた 迷宮。4もじ いじょうの ことばで こおりの たてを やぶれ！', grad: 'linear-gradient(160deg,#031D39,#156A93 55%,#9FEAFF)',
+    bg: 'umi', tint: 'linear-gradient(160deg,rgba(4,36,65,.6),rgba(101,225,255,.35))',
+    stages: ['ふぶきの入り口', 'こおりの回廊', 'つららの広間', '氷竜の玉座'] },
+  { id: 'hoshi', icon: '🌟', name: '星の試練',       desc: 'さいなんかん！ 2もじが きかない 星のよろい。3もじ いじょうを つなぎ、れんけつ必殺技を きめよう！', grad: 'linear-gradient(160deg,#100D35,#50327D 55%,#E6BA68)',
+    bg: 'sora', tint: 'linear-gradient(160deg,rgba(23,9,58,.75),rgba(183,121,35,.35))',
+    stages: ['星くずの門', '流星の橋', '銀河の回廊', '星王の試練'] }
 ];
 /* モンスター: img = Codex 生成の 絵（assets/monsters/<id>.webp）。読めない ときは shape/color の SVG で かわりに 描く */
 var MON = {
@@ -759,7 +765,13 @@ var MON = {
   sora_boss: { name: 'いかずちグリフォン',  shape: 'bird',   color: '#8A7CFF', ch: 'い', crown: true },
   maou1:     { name: 'ガイコツけんし',      shape: 'golem',  color: '#E8E4F0', ch: 'が' },
   maou2:     { name: 'ダークまどうし',      shape: 'ghost',  color: '#6A3FA8', ch: 'だ' },
-  maou_boss: { name: '語彙の魔王 ゴイデモン', shape: 'dragon', color: '#5A1F7A', ch: 'ご', crown: true }
+  maou_boss: { name: '語彙の魔王 ゴイデモン', shape: 'dragon', color: '#5A1F7A', ch: 'ご', crown: true },
+  koori1:   { name: 'こおりゴーレム',      shape: 'golem',  color: '#64D9EE', ch: 'こ' },
+  koori2:   { name: 'ふぶきまじん',        shape: 'ghost',  color: '#B6EEFF', ch: 'ふ' },
+  koori_boss:{ name: '氷竜 フロストドラゴン', shape: 'dragon', color: '#65CDEF', ch: 'ひ', crown: true },
+  hoshi1:   { name: 'ほしくずナイト',      shape: 'golem',  color: '#FFE094', ch: 'ほ' },
+  hoshi2:   { name: 'ぎんがまどうし',      shape: 'ghost',  color: '#E9BAFF', ch: 'ぎ' },
+  hoshi_boss:{ name: '星王 アストラ',      shape: 'dragon', color: '#F5D17A', ch: 'せ', crown: true }
 };
 Object.keys(MON).forEach(function (id) { MON[id].id = id; });
 function E(m, hp, atk, cd, ab) { return { m: m, hp: hp, atk: atk, cd: cd, ab: ab || '' }; }
@@ -769,16 +781,24 @@ var STAGES = [   /* 2026-10-06 その2: 「敵が 一瞬で たおせる」→ �
   [ [E('kazan1', 1100, 14, 3)], [E('kazan2', 1150, 14, 3), E('kazan1', 1100, 14, 3)], [E('kazan1', 1200, 15, 2), E('kazan2', 1150, 15, 3)], [E('kazan_boss', 2800, 20, 3)] ],
   [ [E('umi1', 1250, 18, 3)], [E('umi2', 1300, 18, 3, 'min3')], [E('umi1', 1350, 19, 3), E('umi2', 1400, 19, 3, 'min3')], [E('umi_boss', 3200, 24, 3, 'min3')] ],
   [ [E('sora1', 1400, 22, 3)], [E('sora2', 1450, 22, 3, 'armor')], [E('sora1', 1500, 23, 3), E('sora2', 1550, 23, 3, 'armor')], [E('sora_boss', 3500, 28, 3, 'armor')] ],
-  [ [E('maou1', 1600, 26, 3)], [E('maou2', 1650, 26, 3, 'min3'), E('maou1', 1600, 26, 3)], [E('maou1', 1700, 27, 3, 'armor'), E('maou2', 1750, 27, 3, 'min3')], [E('maou_boss', 4000, 32, 3, 'min3')] ]
+  [ [E('maou1', 1600, 26, 3)], [E('maou2', 1650, 26, 3, 'min3'), E('maou1', 1600, 26, 3)], [E('maou1', 1700, 27, 3, 'armor'), E('maou2', 1750, 27, 3, 'min3')], [E('maou_boss', 4000, 32, 3, 'min3')] ],
+  /* 追加の 試練（2026-10-21）: 長いことばの 回復も つかって たたかう。数値は 実機調整用の 叩き台。 */
+  [ [E('koori1', 2200, 36, 2, 'min4')], [E('koori2', 2300, 38, 2, 'armor'), E('koori1', 2200, 36, 2, 'min4')], [E('koori1', 2400, 38, 2, 'min4'), E('koori2', 2500, 40, 2, 'armor')], [E('koori_boss', 5200, 44, 2, 'min4')] ],
+  [ [E('hoshi1', 2800, 42, 2, 'seal')], [E('hoshi2', 2900, 44, 2, 'seal'), E('hoshi1', 2800, 42, 2, 'seal')], [E('hoshi1', 3000, 46, 2, 'seal'), E('hoshi2', 3100, 46, 2, 'seal')], [E('hoshi_boss', 6800, 50, 2, 'seal')] ]
 ];
+function stageCount() { return STAGES.reduce(function (n, stages) { return n + stages.length; }, 0); }
 /* モンスターの 絵（画像が あれば 画像・なければ SVG） */
 function monsterHTML(m) {
   return '<img class="mon-img" src="assets/monsters/' + m.id + '.webp" alt="" draggable="false" onerror="this.parentNode.innerHTML=monsterSVG(MON[\'' + m.id + '\'])">';
 }
 function worldBg(w) {   /* 背景画像＋（読めなかった ときの）グラデーション */
-  return 'url(assets/bg/' + WORLDS[w].id + '.webp) center/cover no-repeat, ' + WORLDS[w].grad;
+  var wd = WORLDS[w];
+  return (wd.tint ? wd.tint + ', ' : '') + 'url(assets/bg/' + (wd.bg || wd.id) + '.webp) center/cover no-repeat, ' + wd.grad;
 }
-var AB_TEXT = { min3: '🛡 2もじの ことばは きかない！', armor: '🛡 よろい：れんけつ必殺技で やぶれ！' };
+var AB_TEXT = { min3: '🛡 2もじの ことばは きかない！', armor: '🛡 よろい：れんけつ必殺技で やぶれ！',
+  min4: '❄️ こおりの たて：4もじ いじょうで こうげき！', seal: '🌟 星のよろい：2もじ むこう＋れんけつ以外 はんぶん！' };
+function minWordLength(e) { return e.ab === 'min4' ? 4 : e.ab === 'min3' || e.ab === 'seal' ? 3 : 2; }
+function hasArmor(e) { return e.ab === 'armor' || e.ab === 'seal'; }
 function stageId(w, s) { return 'w' + (w + 1) + 's' + (s + 1); }
 function isOpen(w, s) {
   if (w === 0 && s === 0) return true;
@@ -917,12 +937,22 @@ function findAll(board) {
   for (var i = 0; i < N; i++) dfs(i, TRIE, [], {});
   return res;
 }
-function newBoard() {
+function newBoard(minLen) {
+  minLen = minLen || 2;
   for (var t = 0; t < 30; t++) {
     var b = new Array(N), all = [];
     for (var i = 0; i < N; i++) all.push(i);
+    /* こおりの たてに かならず こうげきできるよう、4もじの ことばを 1つ しこむ。 */
+    if (minLen >= 4) {
+      var r = pick(SEED[4]), free = {};
+      all.forEach(function (i) { free[i] = 1; });
+      var path = plantPath(r.length, free);
+      path.forEach(function (i, k) { b[i] = { ch: r[k], id: ++tileSeq }; });
+      all = all.filter(function (i) { return path.indexOf(i) < 0; });
+    }
     fillCells(b, all, PLANT_FIRST);
-    if (Object.keys(findAll(b)).length >= MIN_FINDABLE) return b;
+    var keys = Object.keys(findAll(b));
+    if (keys.length >= MIN_FINDABLE && keys.some(function (r) { return r.length >= minLen; })) return b;
   }
   return b;
 }
@@ -966,7 +996,7 @@ function startStage(w, s) {
   var list = STAGES[w][s];
   B = {
     w: w, s: s, ei: 0, enemies: list.map(function (e) { return { m: e.m, hp: e.hp, max: e.hp, atk: e.atk, cd: e.cd, left: e.cd, ab: e.ab }; }),
-    php: 100 + 40 * w, pmax: 100 + 40 * w, board: newBoard(), busy: false, words: [], newWords: [], turns: 0, skills: 0
+    php: 100 + 40 * w, pmax: 100 + 40 * w, board: newBoard(minWordLength(list[0])), busy: false, words: [], newWords: [], turns: 0, skills: 0
   };
   S.plays = (S.plays || 0) + 1; save();
   show('battle');
@@ -1539,7 +1569,7 @@ function resolveTurn(path) {
     ws.forEach(function (w) {
       var isNew = !S.found[w.r];
       var pw = wordPower(w.r, isNew);
-      if (e.ab === 'min3' && w.r.length < 3) { pw = 0; blocked++; }
+      if (w.r.length < minWordLength(e)) { pw = 0; blocked++; }
       if (w.r.length >= 4) heal += 8 * (w.r.length - 3);
       total += pw;
       if (isNew) { S.found[w.r] = { n: 0, d: today() }; B.newWords.push(w.r); }
@@ -1575,7 +1605,7 @@ function resolveTurn(path) {
         save();
       }
       total = base * mul;
-      if (e.ab === 'armor' && !(ok && sk.chain)) total = total / 2;
+      if (hasArmor(e) && !(ok && sk.chain)) total = total / 2;
       total = Math.round(total);
       return (ok ? yojiCutIn(res.y, mul, sk) : Promise.resolve()).then(function () {
         if (total > 0) {
@@ -1615,7 +1645,8 @@ function resolveTurn(path) {
   }).then(function () {
     if (!B || B.over) return;
     if (B.tut && B.tut < 4) return tutAfterTurn();
-    if (Object.keys(findAll(B.board)).length < MIN_FINDABLE) return shuffleBoard();
+    var keys = Object.keys(findAll(B.board));
+    if (keys.length < MIN_FINDABLE || !keys.some(function (r) { return r.length >= minWordLength(curEnemy()); })) return shuffleBoard();
   }).then(function () { return checkMilestones(); }).then(function () { if (B && !B.over) { B.busy = false; resetIdle(); } });
 }
 function dropAndRefill(gone) {
@@ -1638,7 +1669,7 @@ function shuffleBoard() {
   return wait(700).then(function () {
     msg.remove();
     Object.keys(tileEls).forEach(function (id) { tileEls[id].remove(); }); tileEls = {};
-    B.board = newBoard(); renderTiles(true);
+    B.board = newBoard(minWordLength(curEnemy())); renderTiles(true);
     return wait(350);
   });
 }
@@ -1705,7 +1736,7 @@ function showCards(cards, combo, e, sk) {
     d.addEventListener('click', function () { openWord(c.r); });
     z.appendChild(d);
   });
-  if (e.ab === 'armor') {
+  if (hasArmor(e)) {
     var a = document.createElement('div'); a.className = 'wcard miss'; a.textContent = '🛡 よろいは れんけつ必殺技（1本で 3つ いじょう＋四字熟語 せいかい）で やぶれるよ';
     z.appendChild(a);
   }
@@ -1725,7 +1756,7 @@ function resetIdle() {
 }
 function showHint(byButton) {
   if (!B || B.busy || trace || B.tut && B.tut < 4) return;
-  var all = findAll(B.board), keys = Object.keys(all);
+  var all = findAll(B.board), keys = Object.keys(all).filter(function (r) { return r.length >= minWordLength(curEnemy()); });
   if (!keys.length) return;
   /* いみの ある 3もじ以上を ゆうせん */
   keys.sort(function (a, b) {
@@ -1914,9 +1945,11 @@ function stageClear() {
     chipsHTML(B.words, nw) +
     '<p style="font-size:14px;">ことばを おすと いみが 見られるよ</p>' +
     '<div class="modal-btns">' +
-      (B.w * 4 + B.s < 19 ? '<button class="btn gold" data-act="next">つぎの ステージ ▶</button>' : '') +
+      (B.w * 4 + B.s < stageCount() - 1 ? '<button class="btn gold" data-act="next">つぎの ステージ ▶</button>' : '') +
       '<button class="btn blue" data-act="map">マップへ</button></div>' +
-    (B.w === 4 && B.s === 3 && first ? '<p><b>👑 語彙の魔王 ゴイデモンを たおした！ きみは ことばの 勇者だ！</b><br>ずかんを ぜんぶ うめられるかな？</p>' : '')
+    (B.w === 4 && B.s === 3 && first ? '<p><b>👑 語彙の魔王 ゴイデモンを たおした！ きみは ことばの 勇者だ！</b><br>❄️ こおりの迷宮が ひらいた！ さらに 強い 敵に ちょうせん！</p>' : '') +
+    (B.w === 5 && B.s === 3 && first ? '<p><b>❄️ 氷竜を たおした！ 🌟 星の試練が ひらいた！</b><br>つぎは さいなんかん。ことばを つないで たちむかおう！</p>' : '') +
+    (B.w === 6 && B.s === 3 && first ? '<p><b>🌟 星王 アストラを たおした！ 全ワールド クリア！</b><br>きみは 星の ことばの 勇者だ！ ずかんも ぜんぶ うめられるかな？</p>' : '')
   );
   B.busy = true;
 }
@@ -2297,7 +2330,7 @@ BackupKit.init({
   summarize: function (d) {
     return [
       { label: '見つけた ことば', value: Object.keys(d.found || {}).length + ' こ' },
-      { label: 'クリアした ステージ', value: Object.keys(d.cleared || {}).length + ' / 20' }
+      { label: 'クリアした ステージ', value: Object.keys(d.cleared || {}).length + ' / ' + stageCount() }
     ];
   }
 });

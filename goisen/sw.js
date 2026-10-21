@@ -1,7 +1,7 @@
 // 語彙線（ゴイセン） — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'goisen-cache-v18';
+const CACHE = 'goisen-cache-v21';
 const ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,12 @@ const ASSETS = [
   './assets/monsters/maou1.webp',
   './assets/monsters/maou2.webp',
   './assets/monsters/maou_boss.webp',
+  './assets/monsters/koori1.webp',
+  './assets/monsters/koori2.webp',
+  './assets/monsters/koori_boss.webp',
+  './assets/monsters/hoshi1.webp',
+  './assets/monsters/hoshi2.webp',
+  './assets/monsters/hoshi_boss.webp',
   './assets/bg/mori.webp',
   './assets/bg/kazan.webp',
   './assets/bg/umi.webp',

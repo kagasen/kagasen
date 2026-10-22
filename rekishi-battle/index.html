@@ -178,12 +178,12 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <title>レキシバトル｜かがせんのHAPPYアプリ集</title>
 <!-- SEO:auto build-seo.mjs が作る。手で直さない -->
-<meta name="description" content="歴史人物42人のカードで合戦！弥生から明治まで68ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta name="description" content="歴史人物42人のカードで合戦！全78ステージ。新登場の名将10人は勝つとなかまに！クイズや年表ずかん、まめちしきで歴史を学ぼう。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
 <link rel="canonical" href="https://kagasen.github.io/kagasen/rekishi-battle/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="かがせんのHAPPYアプリ集">
 <meta property="og:title" content="レキシバトル｜かがせんのHAPPYアプリ集">
-<meta property="og:description" content="歴史人物42人のカードで合戦！弥生から明治まで68ステージを進み、勝つとクイズ→カードがもらえてレベルアップ。年表ずかんやまめちしきつき。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
+<meta property="og:description" content="歴史人物42人のカードで合戦！全78ステージ。新登場の名将10人は勝つとなかまに！クイズや年表ずかん、まめちしきで歴史を学ぼう。｜小学校の先生「かがせん」が作った無料の教育・知育アプリ（広告なし・登録なし）。">
 <meta property="og:url" content="https://kagasen.github.io/kagasen/rekishi-battle/">
 <meta property="og:image" content="https://kagasen.github.io/kagasen/images/ogp.png">
 <meta property="og:locale" content="ja_JP">
@@ -1408,6 +1408,12 @@
   .pw-btn .pw-cost { position: relative; display: block; font-size: 12px; font-weight: 800; color: #5d4037; }
   .pw-btn.ok { background: #fff8e1; opacity: 1; box-shadow: 0 0 8px #ffb300; }
   .pw-btn.armed { background: #ffe082; opacity: 1; box-shadow: 0 0 0 3px #bf360c; }
+  .pw-btn.banned { background:repeating-linear-gradient(135deg,#edd3d1 0 9px,#f8e7e5 9px 18px);
+    opacity:1; cursor:not-allowed; box-shadow:inset 0 0 0 2px #ab4d47; }
+  .pw-btn.banned .pw-cost { color:#8b2421; }
+  #power-rule { display:none; flex:none; margin-top:5px; padding:3px 8px; border-radius:6px;
+    color:#ffe5df; background:#592d32; font-size:13px; font-weight:800; }
+  .legend-rule { display:block; margin-top:6px; color:#842c28; font-weight:800; }
   .pw-btn:active { transform: scale(0.95); }
   /* せまい画面（スマホのたて）では ならぶと つぶれるので、2だんに おりかえす。
      ★48px以上のタップはんい（CLAUDE.md §5）を まもるための おりかえし。
@@ -1760,6 +1766,57 @@
   .big-btn.brown { background: linear-gradient(180deg, #8a6620, #5c4413);
     box-shadow: 0 4px 0 #35270a; color: #fff8e1; }
   .big-btn.brown:active { box-shadow: 0 1px 0 #4d3a11; }
+
+  /* 「5」名将への挑戦。金色の背景（4のごほうび）とは別の白金のふち。 */
+  .stage-sep.s5.open { background:linear-gradient(100deg,#12243d,#315a76); color:#fff1b8; }
+  .stage-btn.hard5 { border:2px solid #b7d8e9; }
+  .stage-btn.hard5 .sb-era { color:#b7e3ff; }
+  .stage-btn.hard5 .sb-prize { display:block; font-size:12px; color:#fff1b8; margin-top:4px; }
+  .legend-note { padding:10px 12px; margin:8px 0; background:#e8f1f7; border:2px solid #557894;
+    border-radius:12px; color:#17334d; font-size:14px; line-height:1.7; }
+  .legend-collection { grid-column:1/-1; padding:14px 10px 4px; color:#17334d; font-weight:800; font-size:17px; }
+  .card-mini.legend-card, .pick-btn.legend-card { outline:2px solid #6e96ae; outline-offset:-2px; }
+  .legend-card .legend-tag { font-size:11px; color:#17334d; font-weight:800; }
+  .legend-victory { display:flex; gap:10px; align-items:center; text-align:left; background:#edf4fb;
+    color:#17334d; border:2px solid #a1bed3; border-radius:14px; padding:8px 12px; margin:6px auto; max-width:520px; }
+  .legend-victory .cstand { flex:none; }
+  .legend-victory strong { display:block; font-size:20px; }
+  .legend-victory p { font-size:14px; margin:4px 0; }
+  #legendbar { display:none; position:absolute; z-index:9; left:8px; right:8px; top:8px;
+    padding:7px 12px; color:#fff; background:rgba(16,34,57,.94); border:2px solid #c4dfeb;
+    border-radius:12px; pointer-events:none; font-size:15px; line-height:1.5; }
+  #legendbar.on { display:block; }
+  #legendbar.warn { border-color:#ffcb75; background:rgba(102,49,12,.96); }
+  #legendbar.active { border-color:#ff9687; background:rgba(111,34,39,.96); }
+  #legendbar.opening { border-color:#a8efbf; background:rgba(24,75,53,.96); }
+  #legendbar b { font-size:17px; }
+  #trial-notice { display:none; flex:none; align-items:center; justify-content:center; gap:12px;
+    padding:5px 10px; background:#e6f2ff; color:#17334d; font-size:13px; font-weight:800; text-align:center; }
+  #trial-notice a { color:#17334d; white-space:nowrap; min-height:48px; display:flex; align-items:center; }
+  #legendbar .legend-pressure { display:block; font-size:12px; color:#ffe3a3; }
+  #legendlane { display:none; position:absolute; z-index:2; height:38px; bottom:17%; pointer-events:none;
+    border:3px dashed #ffe082; border-radius:30px; background:repeating-linear-gradient(135deg,#f9a82566 0 12px,#fff1 12px 24px); }
+  #legendlane.on { display:block; }
+  .unit.legend-guard .sprite { filter:drop-shadow(0 0 6px #c7ecff); }
+  .unit.legend-attack .sprite { filter:drop-shadow(0 0 6px #ffbb6a); }
+  .unit.legend-opening .sprite { filter:drop-shadow(0 0 7px #93e4aa); }
+  @media(max-width:620px) {
+    #legendbar { font-size:12px; padding:5px 8px; left:4px; right:4px; top:4px; }
+    #legendbar b { font-size:14px; }
+    .legend-victory { padding:6px; gap:4px; }
+    .legend-victory strong { font-size:16px; }
+    .legend-victory p { font-size:12px; }
+    .legend-victory .cstand { width:64px!important; height:64px!important; }
+  }
+  @media(max-width:360px) {
+    /* 7人の固定45px枠とMAX札が320px画面を広げていた。顔とレベルは全員残す。 */
+    .dslot { flex:1 1 0; min-width:0; max-width:45px; }
+    .dslot .dname { max-width:100%; }
+    .dslot .lv-badge { max-width:100%; padding:0 1px; font-size:8px; }
+    .dslot .lv-badge .lv-max { display:none; }
+  }
+
+
 </style>
 </head>
 <body>
@@ -1778,6 +1835,8 @@
   <div id="tb-title">レキシバトル</div>
   <button class="tb-btn tb-hidden">← もどる</button>
 </div>
+
+<div id="trial-notice"><span>おためし：42人 Lv50<br>ここでの きろくは ほぞんされません</span><a href="./">いつもの ゲームへ</a></div>
 
 <main>
   <!-- ホーム -->
@@ -1802,7 +1861,7 @@
     <div class="snd-row">
       <button id="btn-bgm" class="sound-btn"></button>
       <button id="btn-sound" class="sound-btn"></button>
-      <button class="sound-btn" onclick="BackupKit.open()" title="きろくを まもる（バックアップ）">💾 きろく</button>
+      <button id="btn-backup" class="sound-btn" onclick="BackupKit.open()" title="きろくを まもる（バックアップ）">💾 きろく</button>
     </div>
     <div class="panel" style="flex:1;">
       <div class="scroll" style="flex:1;">
@@ -1863,6 +1922,7 @@
   <section id="v-battle" class="view">
     <div id="ticker"><div id="tk-line"></div></div>
     <div id="bfield">
+      <div id="legendbar" role="status"></div><div id="legendlane"></div>
       <!-- 時代の絵。stage.photo があるときだけ出す（無い時代は #bfield のグラデーションのまま） -->
       <div id="bphoto"></div>
       <div id="bdecor"></div>
@@ -1887,6 +1947,7 @@
       <div id="b-overlay"></div>
     </div>
     <!-- 城《しろ》のちから（カードを出す以外にできること。2026-08-06） -->
+    <div id="power-rule"></div>
     <div id="powerrow"></div>
     <!-- ひっさつゲージ。ふだんは棒グラフ、満タンになると「だれで うつ？」の顔ボタン列に変わる -->
     <div id="hisbar">
@@ -1959,7 +2020,7 @@
 <div id="gc-flash"></div>
 <div id="modal"><div id="modal-box"></div></div>
 
-<script src="chars-data.js?v=25"></script>
+<script src="chars-data.js?v=28"></script>
 <script>
 /* =====================================================================
    レキシバトル 第1段（動く骨格）
@@ -1985,11 +2046,12 @@ function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { va
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 
 var CHARS = REKISHI_CHARS, STAGES = REKISHI_STAGES, TYPES = REKISHI_TYPES;
+var LEGENDS = REKISHI_LEGENDS, ALL_CHARS = CHARS.concat(LEGENDS);
 var PAIRS = REKISHI_PAIRS;
 /* 🎓 まめちしき（2026-08-10）。★古い chars-data.js でも こわれないよう 無ければ空に */
 var TRIVIA = (typeof REKISHI_TRIVIA !== "undefined") ? REKISHI_TRIVIA : [];
 var CHAR_BY_ID = {};
-CHARS.forEach(function (c) { CHAR_BY_ID[c.id] = c; });
+ALL_CHARS.forEach(function (c) { CHAR_BY_ID[c.id] = c; });
 var RAR_LABEL = { n: "ノーマル", r: "レア ✦", sr: "スーパーレア ✦✦" };
 /* ---------- ⏳時代の色（2026-08-11・ユーザー要望「キャラクターの時代を もう少し分かりやすく」） ----------
    時代を **色でも** 見せる。おなじ色の帯＝おなじ時代の なかま、という かたまりで おぼえられる。
@@ -2096,7 +2158,7 @@ function nameRuby(ch) {
    繰り上げないと、子どもの端末（と自分のブラウザ）は前の絵を出しつづける。
    ★build-sprites.py が走るたびに自動で繰り上げるので、ふだんは手で直さなくてよい。
    （2026-08-03: スプライトを何度作りなおしても画面が変わらず、原因がこれだった） */
-var ASSET_V = 154;
+var ASSET_V = 157;
 
 /* たち姿。バトル用の stand.webp をそのまま見せる（カード絵が無くても にぎやかになる）。
    rar が null（まだ持っていない）ときは影絵にして「だれだろう？」を残す。 */
@@ -2459,13 +2521,22 @@ document.addEventListener("visibilitychange", function () {
 
 /* ---------- セーブ（localStorage のみ・CLAUDE.md §3） ---------- */
 var SAVE_KEY = "rekishiBattle.save.v1";
+/* 先生の試遊用。個人のセーブを読み込まず、書き込みもせず、閉じるまでだけ遊ぶ。 */
+var STAGE5_TRIAL = new URLSearchParams(location.search).get("trial") === "stage5";
 function loadSave() {
   /* ★deck の3人は **はじめてのプレイでは すぐ上書きされる**（下の「スターターをランダムに3人」）。
      ここに のこしてあるのは「カードは持っているのに deck だけ 無い」こわれたセーブ用の 予備。
      持っていない人が 入っていても openStage が 手持ちだけに 掃除するので 安全。 */
   var def = { ver: 1, cards: {}, deck: ["himiko", "shotoku", "nobunaga"], cleared: {} };
   var s = null;
-  try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (e) { s = null; }
+  if (STAGE5_TRIAL) {
+    CHARS.forEach(function (ch) { def.cards[ch.id] = { n:20, r:0, sr:1 }; });
+    def.deck = ["himiko", "kiyomori", "nobunaga", "hideyoshi", "yoshitsune", "ieyasu", "togo"];
+    def.sound = false; def.bgm = false;
+    s = def;
+  } else {
+    try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (e) { s = null; }
+  }
   if (!s || typeof s !== "object") s = def;
   /* 将来スキーマを変えるときは、ここで旧データを自動移行する（黙って捨てない） */
   if (!s.cards) s.cards = {};
@@ -2499,7 +2570,10 @@ function loadSave() {
 var save = loadSave();
 SND_ON = save.sound !== false;
 BGM_ON = save.bgm !== false;
-function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+function persist() {
+  if (STAGE5_TRIAL) return;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
+}
 
 function cardCnt(id) { return save.cards[id] || { n: 0, r: 0, sr: 0 }; }
 /* 🌟 金色の なかま？（「4」で 出して 勝った人）。standHTML / faceHTML が 地の色を 金にする */
@@ -2537,7 +2611,7 @@ function lvMult(lv) {
      **2回 四捨五入されて 1だけズレる**（実測: 1085 と出て バトルは 1084 だった）。
      spawnAlly は かけ算を ぜんぶ してから 1回だけ round するので、ここも そろえてある。 */
 function charPower(ch, mul) {
-  var t = TYPES[ch.type], sd = charStat(ch.id);
+  var t = allyType(ch), sd = charStat(ch.id);
   /* まだ持っていない人でも 1未満にしない */
   var m = lvMult(Math.max(1, charLevel(ch.id))) * (mul || 1);
   return { atk: Math.round(t.atk * statMul(sd.a) * m),
@@ -2576,7 +2650,7 @@ function addCard(id, rar) {
   save.cards[id][rar]++;
   return isNew;
 }
-function ownedIds() { return CHARS.filter(function (c) { return ownedTotal(c.id) > 0; }).map(function (c) { return c.id; }); }
+function ownedIds() { return ALL_CHARS.filter(function (c) { return ownedTotal(c.id) > 0; }).map(function (c) { return c.id; }); }
 
 /* はじめてのプレイ: スターターを **ランダムに3人** わたす（2026-08-09・ユーザー指示
    「初めてゲームする人は ランダムで3つのキャラクターが 手に入るように」）。
@@ -2650,10 +2724,18 @@ function seriesOf(st) { return (st && st.series) || 1; }
 /* ★★「3」と「4」（2026-09-23に 4を足した）は **ボスが 2回 もどる・てきの てつはう・3回目の つよいボス**
    の しかけを 同じように 持つ。「3より上か」を見るときは かならず これを通すこと
    （`seriesOf(st) === 3` のままだと 4で しかけが ぜんぶ 消える）。 */
-function seriesHigh(st) { return seriesOf(st) >= 3; }
+function seriesHigh(st) { return seriesOf(st) >= 3 && seriesOf(st) <= 4; }
 /* ステージは まえの1つをクリアすると あく。並び順が 1→2→3 なので、
    **「2」を ぜんぶクリアすると「3」があく** のは これだけで自動的にそうなる。 */
-function stageUnlocked(i) { return i === 0 || !!save.cleared[STAGES[i - 1].id]; }
+function stageUnlocked(i) {
+  if (i < 0 || i >= STAGES.length) return false;
+  var st = STAGES[i];
+  if (STAGE5_TRIAL) return isLegendStage(st);
+  if (isLegendStage(st) && st.solo) return !!save.cleared.st17d && STAGES.filter(function (x) {
+    return isLegendStage(x) && !x.solo;
+  }).every(function (x) { return !!save.cleared[x.id]; });
+  return i === 0 || !!save.cleared[STAGES[i - 1].id];
+}
 function drawSoundBtn() {
   var b = $("btn-sound");
   b.textContent = SND_ON ? "🔊 おと オン" : "🔇 おと オフ";
@@ -2705,11 +2787,12 @@ function goHome() {
      ここ1か所に まとめてあるので、バトルから もどっても・ガチャから もどっても 同じように 出る。 */
   if (checkEnding()) return;
   drawSoundBtn();
-  var got = ownedIds().length, total = 0;
+  var got = CHARS.filter(function (c) { return ownedTotal(c.id) > 0; }).length, total = 0;
   CHARS.forEach(function (c) { var cc = cardCnt(c.id); total += cc.n + cc.r + cc.sr; });
   var stars = 0;
   STAGES.forEach(function (st) { stars += chalCount(st.id); });
   $("home-stats").innerHTML = rubi("🃏 カード " + total + "まい ／ 人物《じんぶつ》 " + got + "／" + CHARS.length + "人")
+    + '<div class="hs-star">' + rubi("🏅 名将《めいしょう》 " + LEGENDS.filter(function (c) { return ownedTotal(c.id) > 0; }).length + "／10人") + '</div>'
     + '<div class="hs-star">' + rubi("⭐ " + stars + "／" + (STAGES.length * CHALS.length)) + '</div>'
     /* 👑 完全制覇した人の しるし。ホームに ずっと のこる＝やりきった きろく */
     + (save.ending2 ? '<div class="hs-crown">' + rubi("👑 完全制覇《かんぜんせいは》！ 42人 ぜんいん Lv" + LV_MAX) + '</div>' : "");
@@ -2729,9 +2812,12 @@ function goHome() {
     3: { open: "💀 ここから「3」＝激《げき》ムズ！ スーパーレアの 力《ちから》が いる…",
          lock: "🔒 「2」を ぜんぶ クリアすると「3」が あらわれる…" },
     4: { open: "🏆 ここから「4」＝超《ちょう》激《げき》ムズ！ おかねの やりくりが カギ。かつと なかまが 金色《きんいろ》に！",
-         lock: "🔒 「3」を ぜんぶ クリアすると「4」が あらわれる…" }
+         lock: "🔒 「3」を ぜんぶ クリアすると「4」が あらわれる…" },
+    5: { open: "🏅 ここから「5」！ 名将《めいしょう》への挑戦《ちょうせん》。かつと その人が なかまに！",
+         lock: "🔒 「4」を ぜんぶ クリアすると「5」！ 10人の名将《めいしょう》が まっている…" }
   };
   STAGES.forEach(function (st, i) {
+    if (STAGE5_TRIAL && !isLegendStage(st)) return;
     var sep = (i > 0 && seriesOf(st) !== seriesOf(STAGES[i - 1])) ? SERIES_SEP[seriesOf(st)] : null;
     if (sep) {
       var h = document.createElement("div");
@@ -2740,7 +2826,7 @@ function goHome() {
       el.appendChild(h);
     }
     var b = document.createElement("button");
-    b.className = "stage-btn" + ({ 2: " hard", 3: " hard3", 4: " hard4" }[seriesOf(st)] || "");
+    b.className = "stage-btn" + ({ 2: " hard", 3: " hard3", 4: " hard4", 5: " hard5" }[seriesOf(st)] || "");
     var open = stageUnlocked(i);
     b.disabled = !open;
     /* ★★その面の **時代の絵**を 札そのものにする（2026-08-11）。
@@ -2754,7 +2840,9 @@ function goHome() {
           + '" onerror="this.style.display=\'none\'">'
         : '')
       + '<span class="sb-veil"></span><span class="sb-in">'
-      + '<span class="sb-name"><span class="sb-era">' + rubi(st.era) + '</span>' + rubi(st.name) + '</span>'
+      + '<span class="sb-name"><span class="sb-era">' + rubi(st.era) + '</span>' + rubi(st.name)
+        + (isLegendStage(st) ? '<span class="sb-prize">' + (ownedTotal(st.legendId) ? '🏅 なかまになった！ 再戦で Lv＋5（50まで）' : (st.solo && !open ? '🔒 ほかの9人に かつと ひらく' : '🏅 初勝利で この人が なかまに！'))
+          + '<br>' + powerRuleText(st) + '</span>' : '') + '</span>'
       /* ★その面の 主役（ticker）の顔。「この面は だれの面か」が 絵で 伝わる。
          もっていない人は 顔わくだけ（faceHTML が 名前1文字を 出す）＝集める目じるしにもなる。 */
       + '<span class="sb-faces">'
@@ -2791,12 +2879,23 @@ function renderHensei() {
   $("hs-head").innerHTML = '<div><span class="hs-era">' + eraChipHTML(st.era) + '</span>'
     + '<span class="hs-name">' + rubi(st.name) + '</span></div>'
     + '<div class="hs-desc">' + rubi(st.desc) + '</div>'
-    + '<div class="hs-tip">' + rubi("⭐マークは この時代の人物《じんぶつ》。えらぶと 1.5倍《ばい》 つよくなるよ！") + '</div>'
+    + '<div class="hs-tip">' + rubi(isLegendStage(st) ? "⭐ 時代《じだい》をこえて みんな 1.5倍《ばい》！ 育《そだ》てた なかまで いどもう。" : "⭐マークは この時代の人物《じんぶつ》。えらぶと 1.5倍《ばい》 つよくなるよ！") + '</div>'
     /* ⚔ てきの とくちょう（2026-08-11・ユーザー要望「そういう情報があれば キャラを変える
          きっかけになるかも」）。★★**ここに出すのが 肝**。敵に個性をつけても、
        へんせい画面＝**人をえらぶ その場所**に書いていないと、負けてから気づくことになる。
        ★★を **太字**に変えて、いちばん だいじな ところが ひと目で 分かるようにする。 */
     + (function () {
+        if (isLegendStage(st)) {
+          var lg = legendOf(st);
+          return '<div class="legend-note">' + standHTML(lg, "sr", 80) + '<b>' + nameRuby(lg) + '</b><br>'
+            + rubi(lg.icon + ' ' + lg.ability) + '<br>' + rubi(lg.hint)
+            + '<span class="legend-rule">' + powerRuleText(st) + '</span>' + rubi(st.powerTip || '')
+            + '<br><b>' + (ownedTotal(lg.id) ? '再戦で Lv＋5（50まで）！' : '初勝利で かならず Lv40の なかまに！')
+            + '</b><br><b>Lv50でも 作戦が たいせつ！</b><br>ふだんは こうげきを ほとんど うけながすよ。'
+            + '<br>みどりの「すき」に ひっさつ！ 攻める人・守る人・回復する人を くみあわせよう。'
+            + '<br>てきは わざを くりかえすほど こうげきが つよまるよ（さいだい 2倍）。'
+            + '<br>※ 時代をこえた 力くらべ。わざの 効果は ゲームの お話です。</div>';
+        }
         var k = kataOf(st);
         return '<div class="hs-kata"><span class="hk-ttl">' + k.icon + ' てきの とくちょう</span>'
           + '<span class="hk-name">' + k.name + '</span>'
@@ -2835,7 +2934,7 @@ function renderHensei() {
   $("hs-chal").innerHTML = '<div class="hc-ttl">' + rubi("⭐ この ステージの めあて") + '</div>'
     + CHALS.map(function (k) {
         return '<div class="hc-row' + (cc[k.id] ? " got" : "") + '">'
-             + '<span class="hc-i">' + (cc[k.id] ? k.icon : "☆") + '</span>' + rubi(chalName(k, st)) + '</div>';
+             + '<span class="hc-i">' + (cc[k.id] ? chalIcon(k, st) : "☆") + '</span>' + rubi(chalName(k, st)) + '</div>';
       }).join("")
     /* ★2つ そろえたときの ごほうびを **たたかう前に**知らせる。
        知らないと わざわざ むずかしい かちかたを する理由が生まれない（2026-08-09）。
@@ -2855,7 +2954,7 @@ function renderHensei() {
     + '<div class="hc-bonus">' + rubi(stageChalKind(st) === "his"
         ? "🎁 「" + chalName(CHALS[1], st) + "」が できたら、"
           + "ガチャで レアが 出やすくなる！（＋" + Math.round(CHAL_R_BONUS * 100) + "％）"
-        : "🎁 「" + chalName(CHALS[1], st) + "」と 「" + CHALS[2].name + "」を いっしょに できたら、"
+        : "🎁 「" + chalName(CHALS[1], st) + "」と 「" + chalName(CHALS[2], st) + "」を いっしょに できたら、"
           + "ガチャで レアが 出やすくなる！（＋" + Math.round(CHAL_R_BONUS * 100) + "％）") + '</div>'
     /* ★★まだ もっていない人が いるときは そう言う（2026-08-11）。
        合戦の面の ⏳は **名ざしの人物**が いないと ぜったいに とれない。
@@ -2874,7 +2973,9 @@ function renderHensei() {
        ★これを 書かないと、🕊は ただ「火力が 半分の しばりプレイ」にしか 見えない。
          ほんとうは **おかねを ためて 人数で 押す**たたかい方に 変わる、という めあて。
          シミュレーションでも、この やり方に かえただけで **17面中6面 → 12面**が 勝てるようになった。 */
-    + '<div class="hc-bonus hc-nohis">' + rubi("🕊 の こつ　ひっさつを がまんするぶん、<b>おかねを ためて 一気《いっき》に"
+    + '<div class="hc-bonus hc-nohis">' + rubi(isLegendStage(st)
+        ? "⚡ の こつ　てきの わざのあと、<b>みどりの「いまが チャンス！」</b>が 出《で》たら ひっさつ！ ゲージを ためて おこう。"
+        : "🕊 の こつ　ひっさつを がまんするぶん、<b>おかねを ためて 一気《いっき》に"
         + " 何人《なんにん》も 出《だ》す</b>！ 🏹ゆみや ⚡かみなりなどの <b>しろの ちから</b>も どんどん つかおう。") + '</div>';
   var slots = $("deck-slots");
   slots.innerHTML = "";
@@ -2897,10 +2998,18 @@ function renderHensei() {
   }
   var grid = $("hensei-grid");
   grid.innerHTML = "";
-  ownedIds().forEach(function (id) {
+  var pickIds = ownedIds();
+  if (isLegendStage(st)) {
+    /* 加わった人を42人の下に埋もれさせない。自分で入れ替えを選べる位置に置く。 */
+    pickIds = pickIds.filter(function (id) { return CHAR_BY_ID[id].legend; })
+      .concat(pickIds.filter(function (id) { return !CHAR_BY_ID[id].legend; }));
+    var recent = state.legendReward && state.legendReward.ch.id;
+    if (recent && pickIds.indexOf(recent) >= 0) pickIds = [recent].concat(pickIds.filter(function (id) { return id !== recent; }));
+  }
+  pickIds.forEach(function (id) {
     var ch = CHAR_BY_ID[id], rar = bestRarity(id);
     var b = document.createElement("button");
-    b.className = "pick-btn" + (save.deck.indexOf(id) >= 0 ? " sel" : "") + (isGold(id) ? " gold" : "");
+    b.className = "pick-btn" + (ch.legend ? " legend-card" : "") + (save.deck.indexOf(id) >= 0 ? " sel" : "") + (isGold(id) ? " gold" : "");
     /* ★★カードを たてに みじかくした（191px→約128px。2026-08-09・ユーザー要望
          「キャラクター選びが一番楽しめる。なるべくスクロールなしで選びたい」）。
        8だんを 5だんに たたんだだけで、**中身は 1つも消していない**:
@@ -2914,7 +3023,7 @@ function renderHensei() {
       + faceHTML(ch, rar, 38)
       + '<span class="pk-nm">' + ch.name + '</span>'
       + lvBadge(id)
-      + '<span class="lv-next">' + nextGoal(id) + '</span>'
+      + '<span class="lv-next">' + (ch.legend ? '🏅 名将　' : '') + nextGoal(id) + '</span>'
       /* ★いまのレベルの つよさを 数字で（2026-08-11・ユーザー要望）。
          図鑑と おなじ charPower を使う＝**2か所で ちがう数字を 出さない**。
          ⭐じだいボーナスは ここでも 入れない（名前の頭の ⭐印が その合図）。
@@ -3097,7 +3206,9 @@ function eraChalEasy(st) {
    ②人が少ない・かいふくしか いない時代 ＝ ゆるい「つかって かつ」
    ③そのほか ＝ もとの「その時代の人だけで かつ」 */
 function chalName(k, st) {
+  if (isLegendStage(st) && k.id === "nohis") return "すきを ねらって ひっさつを つかって かつ";
   if (k.id !== "era") return k.name;
+  if (isLegendStage(st)) return "3人《にん》以上《いじょう》 出《だ》して かつ";
   var cs = stageChalChars(st);
   if (cs.length) {
     /* ★名前は 《よみ》つきで つなぐ（呼び出し側が rubi() を通すので ここでは 消さない）。
@@ -3118,6 +3229,7 @@ function chalName(k, st) {
 /* この たたかいで ⏳の じょうけんを みたしたか（B を見るので バトル中・勝った直後だけ） */
 function eraChalOk() {
   if (!B || B.deployed <= 0) return false;   /* だれも出していないなら つけない（下の★） */
+  if (isLegendStage(state.stage)) return Object.keys(B.depBy).length >= 3;
   var cs = stageChalChars(state.stage);
   if (cs.length) {
     /* ★**ぜんいんぶん** そろえること。ひとりでも のこっていたら つかない。
@@ -3152,7 +3264,7 @@ function giveStars() {
      だれも出さなくても 時間で完成して 勝てるので、それで ⭐が2つ付くのは おかしい。
      （その判定は eraChalOk() の中にある） */
   if (eraChalOk()) put("era");
-  if (B.hisCount <= NOHIS_MAX) put("nohis");   /* 🕊 1回までなら ⭐（0回でも もちろん つく） */
+  if (thirdChalOk()) put("nohis");   /* 5は「隙にひっさつ」、1〜4の1回までの条件は維持。 */
   persist();
   return got;
 }
@@ -3222,7 +3334,12 @@ function renderCards() {
   setCardsView(state.cardsView || "list");
   var grid = $("cards-grid");
   grid.innerHTML = "";
-  CHARS.forEach(function (ch) {
+  ALL_CHARS.forEach(function (ch) {
+    if (ch === LEGENDS[0]) {
+      var h = document.createElement("div"); h.className = "legend-collection";
+      h.innerHTML = rubi("🏅 挑戦《ちょうせん》で 出会《であ》う 名将《めいしょう》10人") + '<div style="font-size:13px;">「5」で かつと なかまに！ 再戦で Lv50まで そだつよ。</div>';
+      grid.appendChild(h);
+    }
     var b = document.createElement("button");
     var rar = bestRarity(ch.id);
     if (rar) {
@@ -3237,6 +3354,7 @@ function renderCards() {
       b.innerHTML = standHTML(ch, null, 78) + '<span>？？？</span>';
       b.disabled = true;
     }
+    if (ch.legend) { b.classList.add("legend-card"); if (!rar) b.innerHTML += '<span class="legend-tag">「5」で かつと なかまに</span>'; }
     grid.appendChild(b);
   });
   showView("v-cards", "カードいちらん", true);
@@ -3248,6 +3366,7 @@ function openCharModal(ch) {
     + '<div class="m-era" style="text-align:center;">' + eraChipHTML(ch.era) + '　<span class="type-chip t-' + ch.type + '">' + TYPES[ch.type].icon + TYPES[ch.type].label + '</span></div>'
     + (isGold(ch.id) ? '<div class="m-era" style="text-align:center; font-weight:800; color:#b26a00;">'
         + rubi("🌟 金色《きんいろ》の なかま（「4」で いっしょに かった！）") + '</div>' : '')
+    + (ch.legend ? '<div class="legend-note"><b>🏅 挑戦で 出会った なかま</b><br>' + rubi(ch.ally) + '<br>再戦に かつと Lv＋5（50まで）。わざの効果は ゲームのお話です。</div>' : '')
     + '<div class="m-skill">⚡ わざ: ' + rubi(ch.skill) + '</div>'
     + (function () {
         var sd = charStat(ch.id);
@@ -3454,7 +3573,7 @@ function mkUnitEl(html, label) {
 }
 function spawnAlly(ch) {
   var rar = bestRarity(ch.id) || "n";
-  var t = TYPES[ch.type];
+  var t = allyType(ch);
   var sd = charStat(ch.id);
   var boost = eraBonus(ch);
   var m = lvMult(charLevel(ch.id)) * (boost ? ERA_MULT : 1);
@@ -3691,13 +3810,17 @@ function spawnEnemy(def, kind, back) {
                         : B.W - EDGE_PAD + (state.stage.mode === "build" ? UNIT_W * 0.95 : 0))
        + (back || 0)
   };
+  /* 5の試練は、せまい盤だと後衛を出す前にボスの連撃が届く。
+     HPと技の周期は同じまま、準備距離に合わせてボスの一撃だけを補正する。
+     補正するのは新しいユニット。ステージの定義や1〜4には触らない。 */
+  if (kind === "boss" && isLegendStage(state.stage)) u.atk = Math.round(u.atk * trialArenaAttackScale());
   /* ざこは名前を出さない。波でまとめて出ると「今川の兵今川の兵…」と重なって読めなくなるうえ、
      どうせ全員おなじ名前で学習の役に立たないため（ボスの名前＝史実の相手役はちゃんと出す） */
   /* ★敵の絵（2026-08-07）。chars-data.js の boss/minion に img: "mitsuhide" と書くと
      images/enemies/{img}/stand|walk|atk|down.webp を出す。書かなければ 今までどおり絵文字。
      絵が読めなかったときも 絵文字のまま出る（.has-sprite が付かないため）。 */
   u.el = mkUnitEl('<span class="emoji' + (kind === "boss" ? " big" : "") + '">' + def.icon + '</span>'
-                  + (def.img ? spriteHTML(def.img, "enemies") : ""),
+                  + (def.img ? spriteHTML(def.img, def.spriteDir || "enemies") : ""),
                   kind === "minion" ? "" : plain(def.name));
   u.el.style.left = unitLeft(u.x);
   u.el.classList.add("enemy");
@@ -3778,6 +3901,7 @@ function startBattle() {
   showView("v-battle", st.name, true);
   var f = $("bfield");
   f.className = st.bg ? "bg-" + st.bg : "";
+  $("legendbar").className = ""; $("legendbar").innerHTML = ""; $("legendlane").className = "";
   $("buildbar").className = st.mode === "build" ? "on" : "";
   /* つくっている物の絵は ここで1回だけ入れる（毎フレームの drawBuild では作りなおさない）。
      絵が読めなければ .on を付けないので、今までどおり 文字だけのバーになる。 */
@@ -3822,7 +3946,7 @@ function startBattle() {
         /* ★ボスの ふっかつ（2026-08-08・ユーザー指示「2の面ではボスが死んでも あともう一度出る」）。
            bossMore=あと何回 出てくるか / bossBackT=出てくるまでの のこり秒（-1＝予定なし）。
            つくる型はボスがいないので 0（ボスを出すと現場に居すわって工事が進まない。§1-B）。 */
-        bossMore: (st.mode === "build") ? 0
+        bossMore: (st.mode === "build" || isLegendStage(st)) ? 0
                   : (seriesHigh(st) ? BOSS_AGAIN3 : (seriesOf(st) === 2 ? BOSS_AGAIN : 0)), bossBackT: -1,
         /* ★ボスが 何回目か（さいしょに立っているのが 1回目）。3シリーズの3回目だけ つよくする */
         bossNo: 1,
@@ -3874,8 +3998,9 @@ function startBattle() {
          みかたが ずっとボスと戦って いつまでも はたらけない（2026-08-05に実際そうなった）。
          じゃまをするのは 波でくる災いだけ、という位置づけにしてある。 */
     } else {
-      spawnEbase();
-      spawnEnemy(bsDef(st), "boss");        /* ★てきの型ぶんを かけてから 出す（§ENEMY_KATA） */
+      if (!isLegendStage(st)) spawnEbase();
+      var firstBoss = spawnEnemy(bsDef(st), "boss");
+      if (isLegendStage(st)) trialBossStart(firstBoss);        /* ★てきの型ぶんを かけてから 出す（§ENEMY_KATA） */
     }
     buildDeployRow();
     buildPowerRow();
@@ -3918,7 +4043,7 @@ function livePairs() {
   return out;
 }
 /* こうげきに かける倍率（はた × コンビ）。**ダメージを出す所は かならず これを通す** */
-function atkMul(u) { return (u.mor || 1) * (u.pr || 1); }
+function atkMul(u) { return (u.mor || 1) * (u.pr || 1) * legendMul(u, "attack") * trialAttackMul(u); }
 
 /* ---------- 🏅 たたかいの ふりかえり（2026-08-10・ユーザー要望） ----------
    だれが いちばん はたらいたかを 数えて、勝ったあとに 見せる。
@@ -4004,6 +4129,8 @@ function makeInv(u, sec) {
 }
 function hit(u, dmg, quiet, by) {
   if (!u.alive) return;
+  var guard = trialGuard(u);
+  if (guard !== 1) dmg = Math.max(1, Math.round(dmg * guard));
   /* 🛡 むてきの あいだは ダメージ 0。★`quiet` でも 止めること（矢や 火の じわじわも 止める）。
      ★ここ1か所で 止めるのが だいじ。こうげき・矢・火・技…と 入り口が たくさんあるので、
        それぞれで 見るようにすると **かならず 見のがす**。 */
@@ -4055,6 +4182,7 @@ function hit(u, dmg, quiet, by) {
          その前に出すと 同じボスが2体ならんで見えるため。実際に出すのは tick の中。 */
       if (B.bossMore > 0) { B.bossMore--; B.bossBackT = BOSS_BACK_SEC; }
     }
+    if (u.kind === "boss" && isLegendStage(state.stage)) winBattle();
     if (u.kind === "ebase") winBattle();                 /* 敵の城・町をこわしたら勝ち */
     if (u.kind === "base") loseBattle();                 /* みかたの城がこわれたら負け */
   }
@@ -4184,6 +4312,7 @@ function mnDef(st) { return kataDef(st, "minion"); }
 function bsDef(st) { return kataDef(st, "boss"); }
 
 function waveSize(st, wave) {
+  if (isLegendStage(st)) return st.minion.max;
   var mx = mnDef(st).max;
   return Math.min(mx + WAVE_GROW, mx - 1 + wave);
 }
@@ -4264,6 +4393,7 @@ var PRESS4_BY = {
   st10: 2.11, st11: 1.33, st12: 2.0, st13: 1.47, st14: 2.22, st15: 1.08, st16: 1.2, st17: 2.0
 };
 function stagePress(st) {
+  if (isLegendStage(st)) return 1;
   var list = pressList(st);
   var i = list.indexOf(st);
   if (i < 0) return 1;
@@ -4325,7 +4455,7 @@ function tick(now) {
   /* おかね・ひっさつゲージがたまる */
   B.money = Math.min(moneyCap(), B.money + st.income * dt);
   /* ★「4」だけ ゲージの たまりかたを しぼる（GAUGE4・2026-09-23）。わけは GAUGE4 の★★★ */
-  var g4 = seriesOf(st) === 4 ? GAUGE4 : null;
+  var g4 = isLegendStage(st) ? LEGEND_GAUGE : (seriesOf(st) === 4 ? GAUGE4 : null);
   var gBase = GAUGE_MAX / GAUGE_SEC * dt * (g4 ? g4.time : 1);
   var gExtra = Math.min(B.gaugeDmg, gBase * (g4 ? g4.cap : GAUGE_DEF_CAP));
   B.gaugeDmg -= gExtra;
@@ -4333,6 +4463,9 @@ function tick(now) {
 
   /* 城のちからの効きめ（あめ・ききん）を すすめる */
   tickPowers(dt);
+  if (B.over) return;
+  tickTrial(dt);
+  if (B.over) return;
 
   /* ★ボスの ふっかつ（「2」シリーズだけ・2026-08-08）。
      ★setTimeout ではなく ここで数えること。倍速（#st1f）や カットインの止め（B.freeze）の
@@ -4374,11 +4507,12 @@ function tick(now) {
 
   /* ざこ敵は「波」で来る。つくる型は ボスも敵の城も無いぶん、波を大きく・はやくする */
   B.spawnT -= dt;
-  if (B.spawnT <= 0) {
+  if (B.spawnT <= 0 && !st.solo) {
     B.wave++;
     var n = waveSize(st, B.wave);
     if (st.mode === "build") n = Math.round(n * BUILD_WAVE);
-    sendWave(st, n);
+    if (!isLegendStage(st)) sendWave(st, n);
+    else legendReinforcements(n);
     B.spawnT = mnDef(st).every * WAVE_REST * (st.mode === "build" ? BUILD_REST : 1);   /* ★型ぶん こみ */
   }
 
@@ -4420,15 +4554,15 @@ function tick(now) {
       /* 🌀 かみかぜで おされた敵は しばらく 動けない・こうげきもできない（2026-08-10）。
          ★ここに1つ足すだけで すむように、あるく・こうげき の **手前**で 止めている。
            つくる型の しごと(work)は みかたの話なので さわらない。 */
-      if (u.stun > 0) {
-        u.stun = Math.max(0, u.stun - dt);
+      if (u.stun > 0 || trialHolding(u)) {
+        u.stun = Math.max(0, (u.stun || 0) - dt);
         u.moved = false;
       } else {
         var foe = nearestFoe(u);
         if (foe && foe.d <= u.range) {
           u.moved = false;
           u.cdT -= dt;
-          if (u.cdT <= 0) { u.cdT = u.cd * (wet ? AME_ATK : 1); u.poseT = ATK_POSE;
+          if (u.cdT <= 0) { u.cdT = u.cd * (wet ? AME_ATK : 1) * trialCdMul(u); u.poseT = ATK_POSE;
                             hit(foe.t, Math.round(u.atk * atkMul(u)), false, byOf(u)); }
           /* たたかっている人も 手はうごかす（ただし ゆっくり） */
           if (st.mode === "build" && u.kind === "ally")
@@ -4440,7 +4574,7 @@ function tick(now) {
             work += WORK_PER_SEC * (u.eraB ? ERA_MULT : 1);
           u.moved = true;
           u.x += (u.side === "a" ? 1 : -1) * u.speed * (wet ? AME_SLOW : 1)
-               * (u.mor > 1 ? HATA_SPD : 1) * dt;
+               * (u.mor > 1 ? HATA_SPD : 1) * legendMul(u, "speed") * trialSpeedMul(u) * dt;
           /* 歩ける範囲。枠からはみ出して見切れないよう、左右とも半分の幅ぶん内側で止める */
           if (u.side === "a") u.x = Math.min(u.x, B.W - EDGE_PAD);
           else u.x = Math.max(u.x, EDGE_PAD);
@@ -4510,6 +4644,10 @@ function tick(now) {
         }
       }
     }
+    if (u.kind === "ally") {
+      u.el.classList.toggle("legend-guard", legendMul(u, "guard") < 1);
+      u.el.classList.toggle("legend-attack", legendMul(u, "attack") > 1);
+    }
     /* 見た目の更新 */
     u.el.style.left = unitLeft(u.x);
     u.el.querySelector(".hpfill").style.width = (u.hp / u.maxHp * 100) + "%";
@@ -4571,9 +4709,11 @@ function tick(now) {
     pb.fill.style.width = (B.powCds[pb.id] / pb.p.cd * 100) + "%";
     /* 🚩 はたは 立てたあと タダで動かせるので、おかねが無くても 光らせる（2026-08-07） */
     var free = (pb.id === "hata" && B.flag);
-    pb.el.classList.toggle("ok", free || (B.money >= pb.p.cost && B.powCds[pb.id] <= 0));
-    pb.el.classList.toggle("armed", B.aimMode === pb.id);
-    if (free && pb.cost.textContent !== "うごかす") pb.cost.textContent = "うごかす";
+    var allowed = powerAllowed(pb.id);
+    pb.el.disabled = !allowed;
+    pb.el.classList.toggle("ok", allowed && (free || (B.money >= pb.p.cost && B.powCds[pb.id] <= 0)));
+    pb.el.classList.toggle("armed", allowed && B.aimMode === pb.id);
+    if (allowed && free && pb.cost.textContent !== "うごかす") pb.cost.textContent = "うごかす";
   });
 
   requestAnimationFrame(tick);
@@ -4715,7 +4855,7 @@ function renderHisBar() {
        ★のこりが 無くなったら 何も出さない（せめる文は 書かない。CLAUDE.md §5）。 */
     var left = NOHIS_MAX - B.hisCount;
     $("his-label").innerHTML = "ひっさつゲージ"
-      + (left >= 0 ? '<span class="hl-nohis">' + rubi("🕊 あと" + left + "回《かい》まで") + '</span>' : "");
+      + (isLegendStage(state.stage) ? legendHisHint() : (left >= 0 ? '<span class="hl-nohis">' + rubi("🕊 あと" + left + "回《かい》まで") + '</span>' : ""));
     return;
   }
   var ready = hisReady();
@@ -4741,7 +4881,7 @@ function renderHisBar() {
     var left2 = NOHIS_MAX - B.hisCount;
     $("his-label").innerHTML = rubi(ready.length ? "⚡ ひっさつ！ だれで うつ？"
                                                  : "⚡ ひっさつ！ だれか 出撃《しゅつげき》させよう")
-      + (left2 >= 0 ? '<span class="hl-nohis">' + rubi("🕊 あと" + left2 + "回《かい》まで") + '</span>' : "");
+      + (isLegendStage(state.stage) ? legendHisHint() : (left2 >= 0 ? '<span class="hl-nohis">' + rubi("🕊 あと" + left2 + "回《かい》まで") + '</span>' : ""));
     ready.forEach(function (r) {
       var ch = CHAR_BY_ID[r.id];
       var b = document.createElement("button");
@@ -4809,6 +4949,7 @@ function fireHissatsu(id, kindId) {
   hisReady().forEach(function (r) { if (r.id === id) pick2 = r; });
   if (!pick2) return;
   var u = pick2.u, ch = u.ch;
+  if (B.trial && B.trial.phase === "opening") B.trialPunish = true;
   B.usedHis = true;          /* ひっさつを つかったか（⏳の 判定などで つかう） */
   B.hisCount++;              /* ⭐チャレンジ 🕊「ひっさつは 1回までで かつ」の 数（NOHIS_MAX と くらべる） */
   B.hisBy[id] = true;        /* ⭐チャレンジ「○○の ひっさつを つかって かつ」に ○がつく（2026-08-11）。
@@ -4864,7 +5005,9 @@ function fireHissatsu(id, kindId) {
       if (t.kind === "ebase") dmg = Math.min(dmg, Math.round(t.maxHp * ICHI_EBASE));
       hit(t, dmg, false, byOf(u));
       /* ★当たった手ごたえを 見せる。数字だけだと ボスに効いたのか 分からない */
-      if (t.kind === "boss") popup(t.x, "ボスに 大ダメージ！", "");
+      if (t.kind === "boss") popup(t.x, isLegendStage(state.stage) && B.trial
+        ? (B.trial.phase === "opening" ? "✨ すきに めいちゅう！" : "🛡 うけながされた！")
+        : "ボスに 大ダメージ！", "");
     }
     $("bfield").classList.remove("shake"); void $("bfield").offsetWidth; $("bfield").classList.add("shake");
   } else if (kind.id === "nagi") {
@@ -5040,6 +5183,16 @@ var POWERS = [
 ];
 var POW_BY_ID = {};
 POWERS.forEach(function (p) { POW_BY_ID[p.id] = p; });
+function powerAllowed(id, st) {
+  st = st || state.stage;
+  return !(st && st.blockedPowers && st.blockedPowers.indexOf(id) >= 0);
+}
+function powerRuleText(st) {
+  if (!st || !st.blockedPowers || !st.blockedPowers.length) return "";
+  return "🚫 このしれん：" + st.blockedPowers.map(function (id) {
+    return POW_BY_ID[id].name;
+  }).join("・") + "は つかえない";
+}
 
 /* ★ボスの ふっかつ（2026-08-08・ユーザー指示「2の面ではボスが死んでも あともう一度出る」）。
    ★1回だけ（＝1つの面でボスと2回たたかう）。ここを2にすると3回になる。
@@ -5193,9 +5346,15 @@ function buildPowerRow() {
   var row = $("powerrow");
   row.innerHTML = "";
   B.pwBtns = [];
+  $("power-rule").textContent = powerRuleText(state.stage);
+  $("power-rule").style.display = powerRuleText(state.stage) ? "block" : "none";
   POWERS.forEach(function (p) {
     var b = document.createElement("button");
-    b.className = "pw-btn";
+    var allowed = powerAllowed(p.id);
+    b.className = "pw-btn" + (allowed ? "" : " banned");
+    b.disabled = !allowed;
+    b.dataset.power = p.id;
+    if (!allowed) b.title = "このしれんでは つかえません";
     b.innerHTML = '<div class="pw-cd"></div>'
       /* ★絵文字と絵の両方を書いておいて、絵が読めたボタンだけ .has-img で入れかえる
          （人物のスプライトと同じ流儀。絵が無いアプリの状態でも そのまま遊べる） */
@@ -5205,7 +5364,7 @@ function buildPowerRow() {
       /* 🪙 と数字のあいだの空白をけずらないこと。フォントによっては
          コインの絵が となりの数字に かぶって「130」が「30」に見える */
       /* 火ぜめだけ ねだんが 長さで変わるので「40〜」と出す（ほんとうの額は なぞっているとき地面に出る） */
-      + '<span class="pw-cost">🪙 ' + p.cost + (p.id === "hi" ? "〜" : "") + '</span>';
+      + '<span class="pw-cost">' + (allowed ? '🪙 ' + p.cost + (p.id === "hi" ? "〜" : "") : '🚫 つかえない') + '</span>';
     b.onclick = function () { usePower(p.id); };
     if (p.img) {
       var im = b.querySelector(".pw-img");
@@ -5221,6 +5380,7 @@ function buildPowerRow() {
    おかねとクールタイムは、実際に はなった／おいた ときに はらう。 */
 function usePower(id) {
   if (!B || B.over) return;
+  if (!powerAllowed(id)) return;
   var p = POW_BY_ID[id];
   /* 🚩 はたは「もう立っている」ときだけ 例外。おかねも クールタイムも いらずに
      何回でも 動かせる（ユーザー要望「置いたあとも指で動かせるもの」）。 */
@@ -5267,6 +5427,7 @@ function disarmPower() {
    城には当たらない（城が落ちたら理不尽＝CLAUDE.md §6）。敵の町にも当たらない。
    ★2026-08-07: 場ぜんぶ → 落とす場所を えらぶ 形にした（ユーザー要望）。 */
 function fireKaminari(cx) {
+  if (!powerAllowed("kaminari")) return;
   sfx("boom");
   var dmg = Math.round(minionRef().hp * KAMI_DMG), r = UNIT_W * KAMI_R;
   B.units.slice().forEach(function (u) {
@@ -5321,6 +5482,7 @@ function drawBolts(cx) {
      ここを うっかり動かすと 城が 画面の外へ 出ていく）。
    ★みかたは 動かさない（ユーザーの言葉は「相手を後ろに下げる」）。 */
 function blowKaze() {
+  if (!powerAllowed("kaze")) return;
   sfx("power");
   var back = B.W - EDGE_PAD;          /* 敵が わいてくる場所（＝盤の 右のはし） */
   var n = 0;
@@ -5395,6 +5557,7 @@ function nenguPick(x) {
 }
 /* あげられたら true、あげられなかったら false（aimEnd が モードを切るかどうかに使う） */
 function giveNengu(x) {
+  if (!powerAllowed("nengu")) return false;
   var p = POW_BY_ID.nengu;
   if ((B.powCds.nengu || 0) > 0) return false;
   var u = nenguPick(x);
@@ -5510,6 +5673,7 @@ function aimMove(e) {
   if (!B || B.over || !B.aimMode) return;
   if (e.cancelable) e.preventDefault();
   var p = fieldPt(e), m = B.aimMode;
+  if (!powerAllowed(m)) { disarmPower(); return; }
   if (m === "yumi") {
     var x0 = EDGE_PAD + 6;
     /* ★2026-08-10にユーザー指示で **城の手前で切るのを やめた**（「相手の一番奥まで」）。
@@ -5552,6 +5716,7 @@ function aimEnd(e) {
   if (!B || B.over || !B.aimMode || !B.aim) return;
   if (e && e.cancelable) e.preventDefault();
   var m = B.aimMode;
+  if (!powerAllowed(m)) { disarmPower(); return; }
   if (m === "yumi") {
     B.aim = null;      /* 指をはなしたら 矢は止まる。ゆみモードのままなので すぐまた うてる */
     drawAim();
@@ -5572,6 +5737,7 @@ function aimEnd(e) {
 }
 /* ⚡ おかねを はらって、えらんだ場所に かみなりを落とす */
 function dropKaminari(x) {
+  if (!powerAllowed("kaminari")) return;
   var p = POW_BY_ID.kaminari;
   if (B.money < p.cost || (B.powCds.kaminari || 0) > 0) return;
   B.money -= p.cost;
@@ -5663,6 +5829,7 @@ function hiSpan(x1, x2) {
   return { x: x, w: w, cost: Math.round(POW_BY_ID.hi.cost + w / 100 * HI_COST100) };
 }
 function fireArrow(tx, h) {
+  if (!powerAllowed("yumi")) return;
   var p = POW_BY_ID.yumi;
   if (B.money < p.cost || (B.powCds.yumi || 0) > 0) return;
   B.money -= p.cost;
@@ -5717,6 +5884,7 @@ function tickArrows(dt) {
 /* 🪵 さく: 敵はこれを こわさないと 先へ進めない。みかたは すりぬける（じゃまにならない）。
    ★HPは「敵のこうげき何回ぶん」で決めるので、後半のステージでも同じ手ごたえになる。 */
 function placeWall(x) {
+  if (!powerAllowed("saku")) return;
   var p = POW_BY_ID.saku;
   /* ★音は **はらえたあと**に鳴らすこと。先に鳴らすと、おかねが足りず 何も起きていないのに
      音だけ鳴って「押せた」と かんちがいさせる（ちから4つとも同じ）。 */
@@ -5745,6 +5913,7 @@ function placeWall(x) {
    ★みかたには当たらない（かみなりが「みかたにも当たる」役なので、そこは かぶらせない）。
    ★敵の町(ebase)には効かせない（§1の★。必殺技で一度やらかしている）。 */
 function throwBomb(tx) {
+  if (!powerAllowed("tetsuhau")) return;
   var p = POW_BY_ID.tetsuhau;
   if (B.money < p.cost || (B.powCds.tetsuhau || 0) > 0) return;
   sfx("power");
@@ -5895,6 +6064,7 @@ function showBoom(cx, r) {
    ★みかたは やけない（子ども向け。理不尽をふやさない＝CLAUDE.md §6）。
    ★敵の町(ebase)にも効かない。 */
 function lightFire(x1, x2) {
+  if (!powerAllowed("hi")) return;
   var p = POW_BY_ID.hi, f = hiSpan(x1, x2);
   if (B.money < f.cost || (B.powCds.hi || 0) > 0) return;
   B.money -= f.cost;
@@ -5942,6 +6112,7 @@ function tickFires(dt) {
    ★はじめに立てるときだけ おかねが かかる。そのあとは タダで 何回でも 動かせる。
    ★はたは こわされない（敵は はたを ねらわない）。ユニットではなく ただの かざり＋はんいの計算。 */
 function placeFlag(x) {
+  if (!powerAllowed("hata")) return;
   if (!B.flag) {                                   /* はじめの1本＝おかねと クールタイムが かかる */
     var p = POW_BY_ID.hata;
     if (B.money < p.cost) return;
@@ -6045,7 +6216,10 @@ function fireSkill(u) {
   var did = false;
   /* 🚩 はた ＋ 🤝 コンビ の倍率。業績の技にも 同じだけ効く（ふつうの こうげきと そろえる） */
   var mor = atkMul(u);
-  if (u.type === "bushi") {
+  if (u.ch.legend) {
+    did = legendAllySkill(u);
+    if (!did) return false;
+  } else if (u.type === "bushi") {
     /* せっきん: 近くの敵に大ダメージ（攻撃×5・叩き台） */
     var near = foes.filter(function (f) { return Math.abs(f.x - u.x) <= u.range * 2.5; });
     if (near.length === 0) return false;
@@ -6126,6 +6300,7 @@ function winBattle() {
   disarmPower();                /* ねらいの弧を のこさない */
   $("rainfx").className = "";
   save.cleared[state.stage.id] = true;
+  state.legendReward = isLegendStage(state.stage) ? recruitLegend(state.stage) : null;
   /* ★★レアアップの判定は **ここでしかできない**（B はバトルが終わると 用ずみになる）。
      ⭐が すでに付いているかは 見ない＝**この たたかい**で むずかしい かちかたを したか、で見る
      （2回目からは 上がらない、では もどってくる理由にならないため）。 */
@@ -6137,7 +6312,7 @@ function winBattle() {
        ★★`use`の面（○○を ぜんいん 出して かつ）は **両立する**ので これまでどおり ⏳＋🕊。
          ここを ひとまとめに すると、`use`の面の ボーナスが かんたんに なりすぎる。
        ★へんせい画面の 🎁の文（renderHensei）も 同じ分けかたで 書いてある。 */
-  var hardWin = eraChalOk() && (stageChalKind(state.stage) === "his" ? true : B.hisCount <= NOHIS_MAX);
+  var hardWin = eraChalOk() && (stageChalKind(state.stage) === "his" ? true : thirdChalOk());
   /* 🌟 「4」で かったら、**この たたかいで 出した なかま**を 金色に（2026-09-23・ユーザー指示
        「ステージ4をクリアすると、今回使ったキャラクターの背景が金色に」）。
      ★「使った」＝**出撃させた人**（B.depBy）。つれていっただけで 1回も 出さなかった人は ならない。
@@ -6159,7 +6334,7 @@ function winBattle() {
   var gotHtml = got.length
     ? '<div class="ov-star">' + got.map(function (k) {
         var c = null; CHALS.forEach(function (x) { if (x.id === k) c = x; });
-        return c.icon + " " + rubi(chalName(c, state.stage));
+        return chalIcon(c, state.stage) + " " + rubi(chalName(c, state.stage));
       }).join("<br>") + '</div>'
     : "";
   /* ⏳＋🕊 でかった回は ここでも ほめる（クイズの前に 分かっていると がんばれる）
@@ -6181,7 +6356,8 @@ function winBattle() {
        ボタンも MVPも どちらも だいじなので、**べつのだん**に分けて 両方 見せる形にした。
      ★1だんに もどさないこと（上下どちらかが かならず 見えなくなる）。CSSの .ov-scroll も ペア。 */
   ov.innerHTML = '<div class="ov-scroll">'
-    +   '<div class="ov-big">🎉 しょうり！</div>'
+    +   '<div class="ov-big">' + (state.stage.solo ? '👑 名将10人 ぜんぶに しょうり！' : '🎉 しょうり！') + '</div>'
+    +   (state.legendReward ? legendVictoryHTML(state.legendReward) : '')
     /* ★ならびは 🏅MVP → ⭐ の じゅん。⭐を 先にすると、⭐が 3つ 一度に ついた回に
          MVPが 下へ おされて また 見えなくなる。⭐は ホームの ステージ表にも のこるが、
          **MVPは ここでしか 見られない**ので、こちらを 上に置く。 */
@@ -6198,6 +6374,7 @@ function winBattle() {
     + '</div>'
     + '<div class="ov-foot">'
     +   '<button class="big-btn" onclick="startQuiz()">📝 クイズへ すすむ ▶</button>'
+    +   (isLegendStage(state.stage) ? '<button class="big-btn brown" onclick="openLegendNext()">' + (nextLegendStage() ? '🏅 なかまを えらんで つぎの しれんへ' : '🏠 ホームで なかまを みる') + '</button>' : '')
     + '</div>';
   ov.classList.add("show");
   fitOverlay(ov);               /* 入りきらないときだけ 字を小さくする（下の関数） */
@@ -6665,6 +6842,7 @@ function pairQ(pr, askA) {
   };
 }
 function startQuiz() {
+  if (isLegendStage(state.stage)) { startLegendQuiz(); return; }
   B = null;
   var st = state.stage;
   var who = [], deed = [], about = [], eraOf = [], eraWho = [], oldest = [], odd = [], pair = [];
@@ -6982,7 +7160,7 @@ function eraPoolFor(st) {
   function add(ch) { if (ch && !inPool[ch.id]) { inPool[ch.id] = 1; pool.push(ch); } }
   /* ★「その時代の人物」の判定は eraChars 1か所に集めてある（⭐チャレンジ ⏳と 同じもの。§8） */
   eraChars(st).forEach(add);
-  if (st && st.ticker) st.ticker.forEach(function (id) { add(CHAR_BY_ID[id]); });
+  if (st && st.ticker) st.ticker.forEach(function (id) { var ch = CHAR_BY_ID[id]; if (ch && !ch.legend) add(ch); });
   if (!pool.length) return CHARS;
   /* 弥生（卑弥呼ひとり）のように人数が少ない時代は、同じ人ばかりになってしまう。
      CHARS は時代順に並んでいるので、となりの時代へ広げて最低3人にする。
@@ -7092,6 +7270,10 @@ function showReward() {
   $("btn-rhome").textContent = st
     ? (left ? "🎁 つぎの ガチャ！" : "🏠 ぼうけんを はじめる！")
     : "🏠 ホームへ";
+  var next = $("btn-legend-next");
+  if (!next) { next = document.createElement("button"); next.id = "btn-legend-next"; next.className = "big-btn"; $("btn-retry").parentNode.insertBefore(next, $("btn-retry")); }
+  next.style.display = !st && nextLegendStage() ? "" : "none";
+  next.textContent = "🏅 なかまを えらんで つぎの しれんへ"; next.onclick = openLegendNext;
   showView("v-reward", st ? "なかまが ふえた！" : "カードゲット！", false);
 }
 $("btn-retry").onclick = function () { renderHensei(); };
@@ -7318,11 +7500,257 @@ function confettiBurst(n) {
   }
 }
 
+
+/* ===== 「5」名将の試練と、勝って加わるなかま（2026-10-22） =====
+   秒数は tick の時計だけで進める。予告 → 得意技 → 隙 → 通常の順。
+   同じデータを再戦でも使うので、st.boss / st.minion は書きかえない。 */
+var LEGEND_GAUGE = { time: 0.65, cap: 0.6 };
+/* Lv50でも連打を最適解にしない。隙以外は受け流し、技ごとに敵軍の闘志が上がる。
+   無敵・時間切れにはしない。味方の強さを下げず、5だけに適用する。 */
+var LEGEND_GUARD = 0.08, LEGEND_OPENING = 1.8;
+var LEGEND_PRESSURE = { step: 0.12, max: 2 };
+function isLegendStage(st) { return !!(st && st.legendId); }
+function chalIcon(k, st) { return isLegendStage(st) && k.id === "nohis" ? "⚡" : k.icon; }
+function thirdChalOk() { return B && (isLegendStage(state.stage) ? !!B.trialPunish : B.hisCount <= NOHIS_MAX); }
+function legendHisHint() {
+  return '<span class="hl-nohis">' + (B.trialPunish ? '⚡ めあて たっせい！' : '⚡ すきに ひっさつ！') + '</span>';
+}
+function legendOf(st) { return st && CHAR_BY_ID[st.legendId]; }
+function trialArenaAttackScale() {
+  return Math.pow(Math.max(0.25, Math.min(1, (B.W - EDGE_PAD * 2) / 910)), 0.4);
+}
+function allyType(ch) {
+  var src = TYPES[ch.type], out = {};
+  for (var k in src) out[k] = src[k];
+  if (ch.combat) for (var key in ch.combat) out[key] = ch.combat[key];
+  return out;
+}
+function legendBuff(u, key, value, sec) {
+  if (!u.alive) return;
+  var old = u.legendBuffs || (u.legendBuffs = {});
+  var b = old[key];
+  /* 同じ効果はかけ算しない。長いほう・強いほうを保つ。 */
+  if (b && b.until > B.t) value = key === "guard" ? Math.min(value, b.value) : Math.max(value, b.value);
+  old[key] = { value: value, until: Math.max(B.t + sec, b ? b.until : 0) };
+}
+function legendMul(u, key) {
+  var b = u.legendBuffs && u.legendBuffs[key];
+  return b && b.until > B.t ? b.value : 1;
+}
+function trialBossStart(u) {
+  B.trial = { boss: u, phase: "rest", left: 8, cycle: 0, aidAt: -1, secondAt: -1, shown: "" };
+  u.el.classList.add("legend-boss");
+  drawLegendBar();
+}
+function trialMinions() {
+  return B.units.filter(function (u) { return u.alive && u.side === "e" && u.kind === "minion"; });
+}
+function legendReinforcements(n) {
+  var d = mnDef(state.stage), room = Math.max(0, 6 - trialMinions().length);
+  for (var i = 0; i < Math.min(n, room); i++) spawnEnemy(d, "minion", i * UNIT_W * 0.7);
+}
+function trialActive(u) { return B && B.trial && B.trial.boss === u && B.trial.phase === "active"; }
+function trialHolding(u) {
+  if (!B || !B.trial || B.trial.boss !== u) return false;
+  var p = B.trial.phase, key = legendOf(state.stage).key;
+  return p === "charge" || p === "opening" || (p === "active" && key === "musashi")
+    || (p === "active" && key === "nobushige" && B.trial.left > 3);
+}
+function trialGuard(u) {
+  var mul = legendMul(u, "guard");
+  if (!B || !B.trial || !isLegendStage(state.stage)) return mul;
+  var tr = B.trial, ch = legendOf(state.stage);
+  if (tr.boss === u) {
+    if (tr.phase === "opening") return mul * LEGEND_OPENING;
+    mul *= LEGEND_GUARD;
+    if (tr.phase === "charge" && ch.key === "musashi") return mul * 0.45;
+    if (tr.phase === "active") {
+      if (ch.key === "kenshin") mul *= 0.5;
+      if (ch.key === "nobushige" && tr.left > 3) mul *= 0.3;
+      if (ch.key === "shingen" && tr.cycle % 4 === 2) mul *= 0.45;
+      if (ch.key === "shingen" && tr.cycle % 4 === 0) mul *= 0.3;
+    }
+  }
+  if (u.side === "e" && tr.phase === "active" && ch.key === "motonari" && trialMinions().length >= 3) mul *= 0.5;
+  return mul;
+}
+function trialPressure() {
+  if (!B || !B.trial || !isLegendStage(state.stage)) return 1;
+  return Math.min(LEGEND_PRESSURE.max, 1 + Math.max(0, B.trial.cycle - 1) * LEGEND_PRESSURE.step);
+}
+function trialAttackMul(u) {
+  var mul = B && B.trial && u.side === "e" ? trialPressure() : 1;
+  if (!trialActive(u)) return mul;
+  var key = legendOf(state.stage).key;
+  if (key === "kenshin") return mul * 1.7;
+  if (key === "hijikata") return mul * 1.25;
+  if (key === "shingen" && B.trial.cycle % 4 === 3) return mul * 1.8;
+  if (key === "nobushige" && B.trial.left <= 3) return mul * 1.7;
+  return mul;
+}
+function trialSpeedMul(u) {
+  if (!trialActive(u)) return 1;
+  var key = legendOf(state.stage).key;
+  if (key === "shingen") return B.trial.cycle % 4 === 1 ? 1.8 : (B.trial.cycle % 4 === 0 ? 0 : 1);
+  return key === "nobushige" ? 2 : 1;
+}
+function trialCdMul(u) {
+  if (!trialActive(u)) return 1;
+  var key = legendOf(state.stage).key;
+  return key === "hijikata" ? 0.32 : (key === "kenshin" ? 0.65 : 1);
+}
+function trialStrike(mult, area) {
+  var u = B.trial.boss, foes = B.units.filter(function (a) {
+    return a.alive && a.side === "a" && Math.abs(a.x - u.x) <= u.range * 1.6;
+  });
+  foes.sort(function (a, b) { return Math.abs(a.x - u.x) - Math.abs(b.x - u.x); });
+  (area ? foes : foes.slice(0, 1)).forEach(function (a) { hit(a, Math.round(u.atk * mult * trialPressure()), false); });
+  u.poseT = 0.65;
+}
+function activateTrial() {
+  var tr = B.trial, u = tr.boss, key = legendOf(state.stage).key;
+  tr.phase = "active"; tr.left = key === "musashi" ? 1.1 : 5; tr.cycle++;
+  u.cdT = Math.min(u.cdT, 0.12);
+  if (key === "mitsunari") {
+    legendReinforcements(1);
+    trialMinions().forEach(function (m) { legendBuff(m, "attack", 1.6, 5); });
+  } else if (key === "ryoma") {
+    legendReinforcements(2); tr.aidAt = B.t + 2;
+  } else if (key === "motonari") {
+    legendReinforcements(Math.max(0, 3 - trialMinions().length));
+  } else if (key === "masako") {
+    B.units.forEach(function (m) {
+      if (!m.alive || m.side !== "e") return;
+      m.hp = Math.min(m.maxHp, m.hp + Math.round(m.maxHp * (m.kind === "boss" ? 0.06 : 0.3)));
+      legendBuff(m, "guard", 0.65, 5);
+      popup(m.x, "けっそく！", "heal");
+    });
+  } else if (key === "masamune") {
+    u.x = Math.max(EDGE_PAD + UNIT_W * 0.35, u.x - UNIT_W * 0.8);
+    trialStrike(1.4, true);
+  } else if (key === "musashi") {
+    trialStrike(1.55, false); tr.secondAt = B.t + 0.35;
+  }
+  sfx("power");
+}
+function tickTrial(dt) {
+  if (!B || B.over || !B.trial) return;
+  var tr = B.trial, u = tr.boss;
+  if (!u.alive) return;
+  if (tr.aidAt > 0 && B.t >= tr.aidAt) { tr.aidAt = -1; legendReinforcements(2); }
+  if (tr.secondAt > 0 && B.t >= tr.secondAt) { tr.secondAt = -1; trialStrike(1.55, false); }
+  if (B.over) return;
+  tr.left -= dt;
+  if (tr.left <= 0) {
+    if (tr.phase === "rest") { tr.phase = "charge"; tr.left = 2.5; u.cdT = Math.max(u.cdT, 0.3); }
+    else if (tr.phase === "charge") activateTrial();
+    else if (tr.phase === "active") { tr.phase = "opening"; tr.left = 4.5; }
+    else { tr.phase = "rest"; tr.left = 7; }
+  }
+  u.el.classList.toggle("legend-opening", tr.phase === "opening");
+  u.el.classList.toggle("legend-guard", trialGuard(u) < 1);
+  drawLegendBar();
+}
+function drawLegendBar() {
+  if (!B || !B.trial) return;
+  var tr = B.trial, ch = legendOf(state.stage), sec = Math.max(0, Math.ceil(tr.left));
+  var stage = { rest: "🛡 うけながし中 — つぎの わざまで " + sec + "びょう", charge: "⚠️ あと " + sec + "びょう！ ひっさつは まとう",
+    active: "🛡 わざの あいだ！ あと " + sec + "びょう", opening: "✨ すき！ ひっさつの チャンス " + sec + "びょう" };
+  var title = ch.ability;
+  if (ch.key === "shingen" && tr.phase === "active") title += " — " + ["山《やま》のまもり", "風《かぜ》のはやさ", "林《はやし》のまもり", "火《ひ》のこうげき"][tr.cycle % 4];
+  if (ch.key === "nobushige" && tr.phase === "active") title += tr.left > 3 ? " — まもり" : " — とつげき";
+  var pressure = "てきの こうげき ×" + trialPressure().toFixed(2);
+  var text = title + "|" + stage[tr.phase] + "|" + pressure;
+  if (tr.shown !== text) {
+    tr.shown = text;
+    $("legendbar").className = "on " + ({ charge:"warn", active:"active", opening:"opening" }[tr.phase] || "");
+    $("legendbar").innerHTML = "<b>" + rubi(ch.icon + " " + title) + "</b><br>" + stage[tr.phase]
+      + '<span class="legend-pressure">' + pressure + '</span>';
+  }
+  var lane = $("legendlane"), dash = (ch.key === "masamune" || ch.key === "nobushige") && tr.phase === "charge";
+  lane.className = dash ? "on" : "";
+  if (dash) {
+    var left = Math.max(EDGE_PAD, tr.boss.x - UNIT_W * 2);
+    lane.style.left = left + "px";
+    lane.style.width = Math.max(20, tr.boss.x - left) + "px";
+  }
+}
+function legendAllySkill(u) {
+  var ch = u.ch, allies = B.units.filter(function (a) { return a.alive && a.kind === "ally"; });
+  var near = allies.filter(function (a) { return Math.abs(a.x - u.x) <= 260; });
+  var foes = B.units.filter(function (a) { return a.alive && a.side === "e" && Math.abs(a.x - u.x) <= u.range * 2.5; });
+  var key = ch.key;
+  function protect(list, factor) { list.forEach(function (a) { legendBuff(a, "guard", factor, 6); popup(a.x, "🛡 まもり", "heal"); }); }
+  function strike(list, mult) { list.forEach(function (a) { hit(a, Math.round(u.atk * atkMul(u) * mult), false, ch.id); }); }
+  if (key === "mitsunari") near.forEach(function (a) { legendBuff(a, "attack", 1.2, 6); popup(a.x, "🚩 さいはい", "heal"); });
+  else if (key === "ryoma") {
+    allies.forEach(function (a) { legendBuff(a, "speed", 1.35, 6); });
+    Object.keys(B.cds).forEach(function (id) { B.cds[id] = Math.max(0, B.cds[id] - 2); });
+    popup(u.x, "🤝 れんけい！", "heal");
+  } else if (key === "motonari") protect(near, 0.75);
+  else if (key === "masako") protect(B.units.filter(function (a) { return a.alive && a.side === "a"; }), 0.75);
+  else if (key === "shingen") protect(near, 0.65);
+  else if (key === "kenshin") { protect([u], 0.75); legendBuff(u, "attack", 1.5, 6); }
+  else {
+    if (!foes.length) return false;
+    if (key === "masamune") {
+      u.x = Math.min(B.W - EDGE_PAD, u.x + UNIT_W * 0.5); strike(foes, 4);
+    } else if (key === "nobushige") { protect([u], 0.65); strike(foes, 3.5); }
+    else if (key === "hijikata") { strike(foes, 2); strike(foes, 2); }
+    else {
+      foes.sort(function (a, b) { return b.maxHp - a.maxHp; });
+      strike(foes.slice(0, 1), 2.5); strike(foes.slice(0, 1), 2.5);
+    }
+  }
+  return true;
+}
+function recruitLegend(st) {
+  var ch = legendOf(st);
+  if (!ch) return null;
+  var before = charLevel(ch.id), first = ownedTotal(ch.id) === 0;
+  if (first) {
+    /* SR30＋N10＝Lv40。初勝利のその場から終盤の編成で使える。 */
+    addCard(ch.id, "sr");
+    for (var i = 0; i < 10; i++) addCard(ch.id, "n");
+  } else {
+    for (var n = 0; n < Math.min(5, Math.max(0, LV_MAX - before)); n++) addCard(ch.id, "n");
+  }
+  return { ch: ch, first: first, before: before, level: charLevel(ch.id) };
+}
+function legendVictoryHTML(reward) {
+  var ch = reward.ch, msg = reward.first ? "これからは なかまだ！" : (reward.level > reward.before ? "いっしょに つよくなった！" : "しれんを のりこえた！");
+  return '<div class="legend-victory">' + standHTML(ch, bestRarity(ch.id), 88)
+    + '<div><strong>' + nameRuby(ch) + '</strong><b>' + msg + '</b>'
+    + '<p>🏅 Lv.' + reward.level + (reward.first ? "で なかまに！" : (reward.level > reward.before ? "（＋" + (reward.level - reward.before) + "）" : " MAX"))
+    + '</p><p>' + rubi(ch.info[0]) + '</p></div></div>';
+}
+function nextLegendStage() {
+  var i = STAGES.indexOf(state.stage), next = STAGES[i + 1];
+  return next && isLegendStage(next) && stageUnlocked(i + 1) ? next : null;
+}
+function openLegendNext() {
+  var next = nextLegendStage();
+  if (next) openStage(next); else goHome();
+}
+function startLegendQuiz() {
+  var ch = legendOf(state.stage);
+  B = null;
+  var qs = shuffle(ch.quiz.map(function (q) { return eraQ({ q:q[0], c:q[1] }); }));
+  qSeenPush(qs.map(function (q) { return q.key; }));
+  state.quiz = { qs:qs, i:0, correct:0 };
+  renderQuiz();
+}
+
+
 /* ---------- 起動（動作確認ハッシュ: #st1 / #st2f / #st5b など） ----------
    ★2026-08-08: 「2」シリーズ（st1b…）も直接ひらけるように どのステージidでも通るようにした。
      f を付けると 6ばい速で回る（動作確認用。ふつうに遊ぶ人は ハッシュを付けない）。 */
 (function boot() {
-  var m = location.hash.match(/^#(st\d+[bcd]?)(f?)$/);
+  if (STAGE5_TRIAL) {
+    $("trial-notice").style.display = "flex";
+    $("btn-backup").style.display = "none";
+  }
+  var m = location.hash.match(/^#(st\d+[bcde]?)(f?)$/);
   if (m) {
     var st = null;
     STAGES.forEach(function (s) { if (s.id === m[1]) st = s; });
@@ -7349,7 +7777,7 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
      ★localStorage は ブラウザの掃除や 保存場所いっぱいで 消えることがある。ファイルに 書き出しておけば もどせる。 -->
 <script src="backup-kit.js?v=3"></script>
 <script>
-BackupKit.init({
+if (!STAGE5_TRIAL) BackupKit.init({
   appId: 'rekishi-battle',
   appName: 'レキシバトル',
   storageKey: SAVE_KEY,

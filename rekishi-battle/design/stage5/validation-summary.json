@@ -1,0 +1,3094 @@
+{
+  "date": "2026-10-22",
+  "status": "implementation verified; prepared for GitHub main; deployment checked separately",
+  "browser": "headless Chrome; synthetic save only",
+  "versions": {
+    "data": 28,
+    "assets": 157,
+    "sw": 17
+  },
+  "ui_viewports": [
+    [
+      1180,
+      820
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      320,
+      740
+    ]
+  ],
+  "flow_checks": "加入・再戦育成・敗北・二重報酬防止・10人の技・隙の必殺による星・通常抽選からの除外・既存68面と42人・セーブ復元・オフライン起動・受け流しと隙の倍率・敵軍の強化上限と表示・再戦時リセット",
+  "data_tests_passed": 4,
+  "browser_contract_tests_passed": true,
+  "balance": [
+    {
+      "width": 1180,
+      "height": 1024,
+      "level": 50,
+      "existing_42_only": true,
+      "decks": [
+        [
+          "himiko",
+          "kiyomori",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "ieyasu",
+          "togo"
+        ],
+        [
+          "himiko",
+          "shomu",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "kiyomori",
+          "togo"
+        ],
+        [
+          "tokimune",
+          "kiyomori",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "ieyasu",
+          "togo"
+        ]
+      ],
+      "all_ten_have_winning_strategy": true,
+      "deployment_and_immediate_special_only": {
+        "wins": 0,
+        "defeats": 20
+      },
+      "no_special_with_normal_support": {
+        "wins": 0,
+        "defeats": 10
+      },
+      "results": [
+        {
+          "level": 50,
+          "id": "st1e",
+          "key": "mitsunari",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 223,
+              "hp": 0,
+              "boss": 47608,
+              "his": 10,
+              "cycle": 12
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 114,
+              "hp": 0,
+              "boss": 183025,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 119,
+              "hp": 0,
+              "boss": 184780,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 223,
+              "hp": 0,
+              "boss": 184112,
+              "his": 0,
+              "cycle": 12
+            }
+          ],
+          "blockedPowers": [
+            "kaminari"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st2e",
+          "key": "ryoma",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 221,
+              "hp": 0,
+              "boss": 47838,
+              "his": 9,
+              "cycle": 11
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 131,
+              "hp": 0,
+              "boss": 204847,
+              "his": 5,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 136,
+              "hp": 0,
+              "boss": 186586,
+              "his": 5,
+              "cycle": 7
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 221,
+              "hp": 0,
+              "boss": 182490,
+              "his": 0,
+              "cycle": 11
+            }
+          ],
+          "blockedPowers": [
+            "saku"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st3e",
+          "key": "motonari",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 256,
+              "hp": 0,
+              "boss": 51919,
+              "his": 11,
+              "cycle": 13
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 108,
+              "hp": 0,
+              "boss": 218766,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 125,
+              "hp": 0,
+              "boss": 218107,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 256,
+              "hp": 0,
+              "boss": 190738,
+              "his": 0,
+              "cycle": 13
+            }
+          ],
+          "blockedPowers": [
+            "yumi"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st4e",
+          "key": "masako",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 86,
+              "hp": 0,
+              "boss": 194667,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 115,
+              "hp": 0,
+              "boss": 193222,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 116,
+              "hp": 0,
+              "boss": 193222,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 86,
+              "hp": 0,
+              "boss": 194667,
+              "his": 0,
+              "cycle": 4
+            }
+          ],
+          "blockedPowers": [
+            "nengu"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st5e",
+          "key": "masamune",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 117,
+              "hp": 0,
+              "boss": 1080,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 126,
+              "hp": 0,
+              "boss": 18361,
+              "his": 4,
+              "cycle": 7
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 107,
+              "hp": 0,
+              "boss": 141871,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 82,
+              "hp": 0,
+              "boss": 171034,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 79,
+              "hp": 0,
+              "boss": 158403,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 107,
+              "hp": 0,
+              "boss": 151541,
+              "his": 0,
+              "cycle": 6
+            }
+          ],
+          "blockedPowers": [
+            "kaze"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st6e",
+          "key": "hijikata",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 76084,
+              "his": 7,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 113,
+              "hp": 0,
+              "boss": 187126,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 110,
+              "hp": 0,
+              "boss": 188852,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 188414,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "tetsuhau"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st7e",
+          "key": "shingen",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 204,
+              "hp": 0,
+              "boss": 67630,
+              "his": 9,
+              "cycle": 11
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 127,
+              "hp": 0,
+              "boss": 204332,
+              "his": 5,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 140,
+              "hp": 0,
+              "boss": 202218,
+              "his": 5,
+              "cycle": 7
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 204,
+              "hp": 0,
+              "boss": 183961,
+              "his": 0,
+              "cycle": 11
+            }
+          ],
+          "blockedPowers": [
+            "hi"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st8e",
+          "key": "kenshin",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 166,
+              "hp": 0,
+              "boss": 104151,
+              "his": 7,
+              "cycle": 9
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 112,
+              "hp": 0,
+              "boss": 208789,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 100,
+              "hp": 0,
+              "boss": 216096,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 166,
+              "hp": 0,
+              "boss": 213850,
+              "his": 0,
+              "cycle": 9
+            }
+          ],
+          "blockedPowers": [
+            "ame"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st9e",
+          "key": "nobushige",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 184,
+              "hp": 0,
+              "boss": 102671,
+              "his": 8,
+              "cycle": 10
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 140,
+              "hp": 0,
+              "boss": 160189,
+              "his": 6,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 117,
+              "hp": 0,
+              "boss": 224554,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 184,
+              "hp": 0,
+              "boss": 215123,
+              "his": 0,
+              "cycle": 10
+            }
+          ],
+          "blockedPowers": [
+            "hata"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st10e",
+          "key": "musashi",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 80872,
+              "his": 4,
+              "cycle": 10
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 178,
+              "hp": 0,
+              "boss": 17472,
+              "his": 4,
+              "cycle": 12
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 149,
+              "hp": 2300,
+              "boss": 0,
+              "his": 5,
+              "cycle": 10
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 174106,
+              "his": 6,
+              "cycle": 10
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 163,
+              "hp": 0,
+              "boss": 172092,
+              "his": 7,
+              "cycle": 11
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 158,
+              "hp": 0,
+              "boss": 172196,
+              "his": 6,
+              "cycle": 10
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 280932,
+              "his": 0,
+              "cycle": 10
+            }
+          ],
+          "blockedPowers": [
+            "kikin"
+          ]
+        }
+      ],
+      "js_errors": [],
+      "restrictions_applied": true
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "level": 50,
+      "existing_42_only": true,
+      "decks": [
+        [
+          "himiko",
+          "kiyomori",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "ieyasu",
+          "togo"
+        ],
+        [
+          "himiko",
+          "shomu",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "kiyomori",
+          "togo"
+        ],
+        [
+          "tokimune",
+          "kiyomori",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "ieyasu",
+          "togo"
+        ]
+      ],
+      "all_ten_have_winning_strategy": true,
+      "deployment_and_immediate_special_only": {
+        "wins": 0,
+        "defeats": 20
+      },
+      "no_special_with_normal_support": {
+        "wins": 0,
+        "defeats": 10
+      },
+      "results": [
+        {
+          "level": 50,
+          "id": "st1e",
+          "key": "mitsunari",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 172,
+              "hp": 2300,
+              "boss": 0,
+              "his": 8,
+              "cycle": 9
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 76,
+              "hp": 0,
+              "boss": 187723,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 113,
+              "hp": 0,
+              "boss": 176540,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 232,
+              "hp": 0,
+              "boss": 135696,
+              "his": 0,
+              "cycle": 12
+            }
+          ],
+          "blockedPowers": [
+            "kaminari"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st2e",
+          "key": "ryoma",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 175,
+              "hp": 0,
+              "boss": 135256,
+              "his": 7,
+              "cycle": 9
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 128,
+              "hp": 0,
+              "boss": 176884,
+              "his": 5,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 83,
+              "hp": 0,
+              "boss": 206258,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 175,
+              "hp": 0,
+              "boss": 193385,
+              "his": 0,
+              "cycle": 9
+            }
+          ],
+          "blockedPowers": [
+            "saku"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st3e",
+          "key": "motonari",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 201,
+              "hp": 0,
+              "boss": 77769,
+              "his": 9,
+              "cycle": 10
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 120,
+              "hp": 0,
+              "boss": 206455,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 122,
+              "hp": 0,
+              "boss": 215226,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 201,
+              "hp": 0,
+              "boss": 196156,
+              "his": 0,
+              "cycle": 10
+            }
+          ],
+          "blockedPowers": [
+            "yumi"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st4e",
+          "key": "masako",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 108,
+              "hp": 0,
+              "boss": 67497,
+              "his": 3,
+              "cycle": 6
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 138,
+              "hp": 0,
+              "boss": 193222,
+              "his": 6,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 133,
+              "hp": 0,
+              "boss": 194667,
+              "his": 5,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 105,
+              "hp": 0,
+              "boss": 193222,
+              "his": 4,
+              "cycle": 5
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 138,
+              "hp": 0,
+              "boss": 194667,
+              "his": 0,
+              "cycle": 7
+            }
+          ],
+          "blockedPowers": [
+            "nengu"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st5e",
+          "key": "masamune",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2131,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 1009,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 71,
+              "hp": 0,
+              "boss": 121683,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 81,
+              "hp": 0,
+              "boss": 126940,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 78,
+              "hp": 0,
+              "boss": 144390,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 71,
+              "hp": 0,
+              "boss": 129908,
+              "his": 0,
+              "cycle": 4
+            }
+          ],
+          "blockedPowers": [
+            "kaze"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st6e",
+          "key": "hijikata",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 102,
+              "hp": 0,
+              "boss": 27958,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 120,
+              "hp": 0,
+              "boss": 169787,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 83,
+              "hp": 0,
+              "boss": 191048,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 75,
+              "hp": 0,
+              "boss": 194452,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 120,
+              "hp": 0,
+              "boss": 180902,
+              "his": 0,
+              "cycle": 6
+            }
+          ],
+          "blockedPowers": [
+            "tetsuhau"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st7e",
+          "key": "shingen",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 113,
+              "hp": 80,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 108932,
+              "his": 7,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 89,
+              "hp": 0,
+              "boss": 209062,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 84,
+              "hp": 0,
+              "boss": 211177,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 171840,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "hi"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st8e",
+          "key": "kenshin",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 152,
+              "hp": 0,
+              "boss": 174512,
+              "his": 6,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 82,
+              "hp": 0,
+              "boss": 211762,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 87,
+              "hp": 0,
+              "boss": 212090,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 152,
+              "hp": 0,
+              "boss": 185626,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "ame"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st9e",
+          "key": "nobushige",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 133,
+              "hp": 0,
+              "boss": 42289,
+              "his": 4,
+              "cycle": 7
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 104,
+              "hp": 0,
+              "boss": 59330,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 128456,
+              "his": 7,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 82,
+              "hp": 0,
+              "boss": 227339,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 83,
+              "hp": 0,
+              "boss": 225561,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 160,
+              "hp": 0,
+              "boss": 190253,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "hata"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st10e",
+          "key": "musashi",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 118,
+              "hp": 0,
+              "boss": 23956,
+              "his": 3,
+              "cycle": 8
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 130,
+              "hp": 0,
+              "boss": 4646,
+              "his": 3,
+              "cycle": 8
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 118,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 8
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 178,
+              "hp": 0,
+              "boss": 125805,
+              "his": 7,
+              "cycle": 12
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 112,
+              "hp": 0,
+              "boss": 216689,
+              "his": 4,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 102,
+              "hp": 0,
+              "boss": 225308,
+              "his": 4,
+              "cycle": 7
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 178,
+              "hp": 0,
+              "boss": 237357,
+              "his": 0,
+              "cycle": 12
+            }
+          ],
+          "blockedPowers": [
+            "kikin"
+          ]
+        }
+      ],
+      "js_errors": [],
+      "restrictions_applied": true
+    },
+    {
+      "width": 390,
+      "height": 1024,
+      "level": 50,
+      "existing_42_only": true,
+      "decks": [
+        [
+          "himiko",
+          "kiyomori",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "ieyasu",
+          "togo"
+        ],
+        [
+          "himiko",
+          "shomu",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "kiyomori",
+          "togo"
+        ],
+        [
+          "tokimune",
+          "kiyomori",
+          "nobunaga",
+          "hideyoshi",
+          "yoshitsune",
+          "ieyasu",
+          "togo"
+        ]
+      ],
+      "all_ten_have_winning_strategy": true,
+      "deployment_and_immediate_special_only": {
+        "wins": 0,
+        "defeats": 20
+      },
+      "no_special_with_normal_support": {
+        "wins": 0,
+        "defeats": 10
+      },
+      "results": [
+        {
+          "level": 50,
+          "id": "st1e",
+          "key": "mitsunari",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 144,
+              "hp": 0,
+              "boss": 140292,
+              "his": 6,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 125,
+              "hp": 0,
+              "boss": 128872,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 121,
+              "hp": 0,
+              "boss": 152052,
+              "his": 5,
+              "cycle": 6
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 144,
+              "hp": 0,
+              "boss": 155186,
+              "his": 0,
+              "cycle": 7
+            }
+          ],
+          "blockedPowers": [
+            "kaminari"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st2e",
+          "key": "ryoma",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 149,
+              "hp": 0,
+              "boss": 161853,
+              "his": 6,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 104,
+              "hp": 0,
+              "boss": 183512,
+              "his": 4,
+              "cycle": 5
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 87,
+              "hp": 0,
+              "boss": 203726,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 149,
+              "hp": 0,
+              "boss": 177525,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "saku"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st3e",
+          "key": "motonari",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 66,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 191,
+              "hp": 0,
+              "boss": 80686,
+              "his": 8,
+              "cycle": 10
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 75,
+              "hp": 0,
+              "boss": 205023,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 79,
+              "hp": 0,
+              "boss": 207605,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 191,
+              "hp": 0,
+              "boss": 166934,
+              "his": 0,
+              "cycle": 10
+            }
+          ],
+          "blockedPowers": [
+            "yumi"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st4e",
+          "key": "masako",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 57,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 154,
+              "hp": 0,
+              "boss": 185322,
+              "his": 6,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 179,
+              "hp": 0,
+              "boss": 96866,
+              "his": 8,
+              "cycle": 9
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 144,
+              "hp": 0,
+              "boss": 187845,
+              "his": 6,
+              "cycle": 7
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 154,
+              "hp": 0,
+              "boss": 194667,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "nengu"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st5e",
+          "key": "masamune",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 1702,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 56,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 131,
+              "hp": 0,
+              "boss": 58387,
+              "his": 6,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 86,
+              "hp": 0,
+              "boss": 93569,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 97,
+              "hp": 0,
+              "boss": 93394,
+              "his": 4,
+              "cycle": 5
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 131,
+              "hp": 0,
+              "boss": 74466,
+              "his": 0,
+              "cycle": 7
+            }
+          ],
+          "blockedPowers": [
+            "kaze"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st6e",
+          "key": "hijikata",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 64,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 106,
+              "hp": 0,
+              "boss": 11904,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 92,
+              "hp": 0,
+              "boss": 27004,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 99,
+              "hp": 0,
+              "boss": 150680,
+              "his": 4,
+              "cycle": 5
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 61,
+              "hp": 0,
+              "boss": 174031,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 57,
+              "hp": 0,
+              "boss": 182865,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 99,
+              "hp": 0,
+              "boss": 161128,
+              "his": 0,
+              "cycle": 5
+            }
+          ],
+          "blockedPowers": [
+            "tetsuhau"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st7e",
+          "key": "shingen",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 56,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 163,
+              "hp": 0,
+              "boss": 125738,
+              "his": 7,
+              "cycle": 8
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 134,
+              "hp": 0,
+              "boss": 132376,
+              "his": 6,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 96,
+              "hp": 0,
+              "boss": 169823,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 163,
+              "hp": 0,
+              "boss": 141871,
+              "his": 0,
+              "cycle": 8
+            }
+          ],
+          "blockedPowers": [
+            "hi"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st8e",
+          "key": "kenshin",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 73,
+              "hp": 2300,
+              "boss": 0,
+              "his": 2,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 92,
+              "hp": 0,
+              "boss": 36996,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 96,
+              "hp": 0,
+              "boss": 177307,
+              "his": 4,
+              "cycle": 5
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 64,
+              "hp": 0,
+              "boss": 191364,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 65,
+              "hp": 0,
+              "boss": 199308,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 96,
+              "hp": 0,
+              "boss": 186977,
+              "his": 0,
+              "cycle": 5
+            }
+          ],
+          "blockedPowers": [
+            "ame"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st9e",
+          "key": "nobushige",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 96,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 5
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 112,
+              "hp": 2300,
+              "boss": 0,
+              "his": 4,
+              "cycle": 6
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 77,
+              "hp": 2300,
+              "boss": 0,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 192,
+              "hp": 2300,
+              "boss": 0,
+              "his": 9,
+              "cycle": 10
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 61,
+              "hp": 0,
+              "boss": 199218,
+              "his": 2,
+              "cycle": 3
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 71,
+              "hp": 0,
+              "boss": 205678,
+              "his": 3,
+              "cycle": 4
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 279,
+              "hp": 0,
+              "boss": 82644,
+              "his": 0,
+              "cycle": 14
+            }
+          ],
+          "blockedPowers": [
+            "hata"
+          ]
+        },
+        {
+          "level": 50,
+          "id": "st10e",
+          "key": "musashi",
+          "attempts": [
+            {
+              "mode": "opening-banner",
+              "deck": 0,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 149,
+              "hp": 2300,
+              "boss": 0,
+              "his": 5,
+              "cycle": 10
+            },
+            {
+              "mode": "opening-banner",
+              "deck": 1,
+              "win": true,
+              "defeat": false,
+              "timeout": false,
+              "t": 150,
+              "hp": 2300,
+              "boss": 0,
+              "his": 5,
+              "cycle": 10
+            },
+            {
+              "mode": "opening-assault-banner",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 102,
+              "hp": 0,
+              "boss": 133976,
+              "his": 3,
+              "cycle": 7
+            },
+            {
+              "mode": "immediate-supported",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 176,
+              "hp": 0,
+              "boss": 47912,
+              "his": 7,
+              "cycle": 11
+            },
+            {
+              "mode": "blind",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 102,
+              "hp": 0,
+              "boss": 219064,
+              "his": 4,
+              "cycle": 7
+            },
+            {
+              "mode": "blind",
+              "deck": 1,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 72,
+              "hp": 0,
+              "boss": 236316,
+              "his": 2,
+              "cycle": 5
+            },
+            {
+              "mode": "no-special",
+              "deck": 0,
+              "win": false,
+              "defeat": true,
+              "timeout": false,
+              "t": 176,
+              "hp": 0,
+              "boss": 205626,
+              "his": 0,
+              "cycle": 11
+            }
+          ],
+          "blockedPowers": [
+            "kikin"
+          ]
+        }
+      ],
+      "js_errors": [],
+      "restrictions_applied": true
+    }
+  ],
+  "known_limitations": [
+    "iPad/iPhone実機とSafariは未確認",
+    "全体release-checkは別アプリgoisenのSW版据え置きエラー1件と既存警告5件。歴史バトルのエラーは0。"
+  ],
+  "difficulty_request": "Lv50でも編成・必殺のタイミング・支援を考える必要がある",
+  "battle_rules": {
+    "boss_damage_outside_opening": 0.08,
+    "boss_damage_opening": 1.8,
+    "enemy_attack_step_per_additional_technique": 0.12,
+    "enemy_attack_max": 2,
+    "arena_attack_exponent": 0.4
+  },
+  "balance_method": "実tick、Lv50のSRと全時代ボーナス、実資金・CD・敵能力を使用。基本/回復重視/攻撃型の3編成・7戦法。隙＋旗/即撃ち＋支援/支援なしの出撃＋即撃ち/必殺なしを区別。演出のみ省略。敵定義不変を検査。450秒上限でタイムアウトを勝敗と分けて記録。 10試練の禁止道具は本番の発動処理で制限したまま。旗・年貢・あめ・かみかぜが禁止の面では該当の呼び出しも無効になり、未使用のまま攻略している。",
+  "balance_limits": "用意した自動プレイの結果。全戦法の不可能証明ではなく、数値は実機調整前提。即撃ち＋支援でも一部勝利可能。iPad/iPhone実機・Safariは未検証。",
+  "trial_mode": {
+    "url_query": "?trial=stage5",
+    "original_save_read": false,
+    "original_save_written": false,
+    "characters": 42,
+    "level": 50,
+    "stages_available": 10,
+    "browser_test": "tests/stage5-trial.mjs",
+    "checks": "実ボタン出撃・一時加入・再読込初期化・低レベルの元セーブとバックアップ不変・通常モード復帰・新規ユーザーのセーブ不作成・3画面幅・JSエラーなし"
+  },
+  "power_restrictions": {
+    "st1e": {
+      "character": "石田三成",
+      "blockedPowers": [
+        "kaminari"
+      ],
+      "label": "かみなり"
+    },
+    "st2e": {
+      "character": "坂本龍馬",
+      "blockedPowers": [
+        "saku"
+      ],
+      "label": "さく"
+    },
+    "st3e": {
+      "character": "毛利元就",
+      "blockedPowers": [
+        "yumi"
+      ],
+      "label": "ゆみ"
+    },
+    "st4e": {
+      "character": "北条政子",
+      "blockedPowers": [
+        "nengu"
+      ],
+      "label": "年貢"
+    },
+    "st5e": {
+      "character": "伊達政宗",
+      "blockedPowers": [
+        "kaze"
+      ],
+      "label": "かみかぜ"
+    },
+    "st6e": {
+      "character": "土方歳三",
+      "blockedPowers": [
+        "tetsuhau"
+      ],
+      "label": "てつはう"
+    },
+    "st7e": {
+      "character": "武田信玄",
+      "blockedPowers": [
+        "hi"
+      ],
+      "label": "火ぜめ"
+    },
+    "st8e": {
+      "character": "上杉謙信",
+      "blockedPowers": [
+        "ame"
+      ],
+      "label": "あめ"
+    },
+    "st9e": {
+      "character": "真田信繁（幸村）",
+      "blockedPowers": [
+        "hata"
+      ],
+      "label": "はた"
+    },
+    "st10e": {
+      "character": "宮本武蔵",
+      "blockedPowers": [
+        "kikin"
+      ],
+      "label": "兵糧攻め"
+    }
+  },
+  "power_restrictions_browser_tests_passed": true
+}

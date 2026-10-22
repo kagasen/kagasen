@@ -1,7 +1,7 @@
 // 語彙線（ゴイセン） — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'goisen-cache-v21';
+const CACHE = 'goisen-cache-v22';
 const ASSETS = [
   './',
   './index.html',

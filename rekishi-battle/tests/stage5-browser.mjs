@@ -185,7 +185,7 @@ try {
       const response=await fetch(file);if(!response.ok)throw new Error(file);
       await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve();im.onerror=()=>reject(new Error(file));im.src=file;});
     }));
-    const keys=await caches.keys();if(!keys.includes('rekishi-cache-v17'))throw new Error('SW not updated');
+    const keys=await caches.keys();if(!keys.includes('rekishi-cache-v18'))throw new Error('SW not updated');
   });
   await page.waitForTimeout(300);
   await context.setOffline(true);await page.reload({waitUntil:'load'});

@@ -5,7 +5,7 @@
   "versions": {
     "data": 28,
     "assets": 157,
-    "sw": 17
+    "sw": 18
   },
   "ui_viewports": [
     [
@@ -3016,7 +3016,15 @@
     "level": 50,
     "stages_available": 10,
     "browser_test": "tests/stage5-trial.mjs",
-    "checks": "実ボタン出撃・一時加入・再読込初期化・低レベルの元セーブとバックアップ不変・通常モード復帰・新規ユーザーのセーブ不作成・3画面幅・JSエラーなし"
+    "checks": "実ボタン出撃・一時加入・再読込初期化・低レベルの元セーブとバックアップ不変・通常モード復帰・新規ユーザーのセーブ不作成・3画面幅・JSエラーなし",
+    "allowed_hosts": [
+      "localhost",
+      "127.0.0.1",
+      "[::1]"
+    ],
+    "enabled_on_public_host": false,
+    "public_host_browser_test_passed": true,
+    "public_host_test_method": "公開と同じホスト名で本番コードを実行。通信をローカルに差し替え。URL指定による試遊の無効化・通常画面の入口なし・低レベルの記録保持を検証。"
   },
   "power_restrictions": {
     "st1e": {

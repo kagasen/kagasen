@@ -2521,8 +2521,10 @@ document.addEventListener("visibilitychange", function () {
 
 /* ---------- セーブ（localStorage のみ・CLAUDE.md §3） ---------- */
 var SAVE_KEY = "rekishiBattle.save.v1";
-/* 先生の試遊用。個人のセーブを読み込まず、書き込みもせず、閉じるまでだけ遊ぶ。 */
-var STAGE5_TRIAL = new URLSearchParams(location.search).get("trial") === "stage5";
+/* 先生のローカル試遊用。公開サイトでは指定URLでも有効にしない。
+   個人のセーブを読み込まず、書き込みもせず、閉じるまでだけ遊ぶ。 */
+var STAGE5_TRIAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+  && new URLSearchParams(location.search).get("trial") === "stage5";
 function loadSave() {
   /* ★deck の3人は **はじめてのプレイでは すぐ上書きされる**（下の「スターターをランダムに3人」）。
      ここに のこしてあるのは「カードは持っているのに deck だけ 無い」こわれたセーブ用の 予備。

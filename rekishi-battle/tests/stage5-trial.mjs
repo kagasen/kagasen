@@ -60,5 +60,27 @@ try{
  await q.locator('#trial-notice a').click();await q.waitForURL(url=>!url.search);
  assert.ok(await q.evaluate(()=>!STAGE5_TRIAL&&ownedIds().length===0&&save.starterQ.length===3));
  await fresh.close();
- console.log('PASS: 42人Lv50・10試練選択・実ボタン出撃・加入は一時的・旧記録とバックアップ不変・通常モード復帰・初回プレイ不変・3画面幅・JSエラーなし');
+ // 公開と同じホスト名で実コードを読み込み、URL指定でも試遊できないことを確認。
+ // 通信はローカルサーバーへの差し替えのみ。公開サイトへの変更・個人データの送信はない。
+ const published=await browser.newContext({serviceWorkers:'block'});
+ await published.addInitScript(({seed,key})=>localStorage.setItem(key,JSON.stringify(seed)),{seed,key});
+ const publicOrigin='https://kagasen.github.io';
+ await published.route('**/*',async route=>{
+  const url=new URL(route.request().url());
+  if(url.origin===publicOrigin&&url.pathname.startsWith('/kagasen/rekishi-battle/')){
+   const local=new URL(url.pathname.replace('/kagasen/rekishi-battle/','')+url.search,base);
+   await route.fulfill({response:await published.request.get(local.href)});
+  }else await route.abort();
+ });
+ const pub=await published.newPage(),publicErrors=[];pub.on('pageerror',e=>publicErrors.push(e.message));
+ await pub.goto(publicOrigin+'/kagasen/rekishi-battle/?trial=stage5',{waitUntil:'networkidle'});
+ assert.ok(await pub.evaluate(()=>!STAGE5_TRIAL&&charLevel('himiko')===2&&charLevel('nobunaga')===3&&save.custom==='keep-original'));
+ assert.equal(await pub.locator('#trial-notice').isVisible(),false);
+ assert.equal(await pub.locator('.stage-btn').count(),78);
+ assert.equal(await pub.locator('.stage-btn.hard5:enabled').count(),0);
+ assert.equal(await pub.locator('a[href*="trial=stage5"]').count(),0);
+ assert.equal(await pub.evaluate(key=>localStorage.getItem(key),key),JSON.stringify(seed));
+ assert.deepEqual(publicErrors,[]);
+ await published.close();
+ console.log('PASS: ローカル限定Lv50試遊・公開ホストではURL指定でも無効・通常画面に入口なし・42人Lv50・出撃・一時加入・記録不変・通常復帰・初回プレイ不変・3画面幅・JSエラーなし');
 }finally{await browser.close();}

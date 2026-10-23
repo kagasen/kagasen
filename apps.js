@@ -1,5 +1,16 @@
 const appsData = [
     {
+        id: "bushu-ana",
+        title: "部首穴（ぶしゅあな）",
+        description: "あなを うごかして、おなじ 部首の 漢字だけを のみこむ 3Dゲーム。さんずい・きへん・にんべん…10の 部首で 全100ステージ！ 泳は にげる・消は きえる、意味どおりに うごく 漢字も。にている ちがう部首を いれたら アウト、時間ぎれにも ちゅうい！",
+        category: "japanese",
+        tagName: "国語",
+        date: "2026/10/13",
+        colorClass: "subject-purple",
+        image: "images/thumbnails-v5/bushu-ana.jpg",
+        link: "bushu-ana/index.html"
+    },
+    {
         id: "goisen",
         title: "語彙線（ゴイセン）",
         description: "もじを てきとうに なぞって 線を ひくと、とちゅうに かくれた ことばで モンスターに こうげき！ 3もじ以上・1本に3つで 必殺技チャンス、四字熟語に こたえて 大ダメージ！ 4万語の じしょで 1年生も 6年生や 中学の ことばに 出会えるよ。",

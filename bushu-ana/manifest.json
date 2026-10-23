@@ -1,0 +1,20 @@
+{
+  "name": "部首穴（ぶしゅあな）",
+  "short_name": "部首穴",
+  "description": "あなを うごかして、おなじ ぶしゅの 漢字だけを のみこむ 3Dゲーム。ちがう ぶしゅを いれたら アウト！",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3d3dd",
+  "theme_color": "#ff7aa8",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

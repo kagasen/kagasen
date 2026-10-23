@@ -313,6 +313,33 @@
                 var pts = parseInt(localStorage.getItem('typing_total_points') || '0');
                 document.getElementById('total-pts-val').textContent = pts.toLocaleString();
             })();
+            /* ===== 裏ワザ：ホームで「kizzutaipinngu2」とタイプ → 好きなだけポイント追加（先生の運用・デモ用） ===== */
+            (function() {
+                var CHEAT_CODE = 'kizzutaipinngu2';
+                var cheatBuf = '';
+                window.addEventListener('keydown', function(e) {
+                    if (e.metaKey || e.ctrlKey || e.altKey) return;
+                    if (!e.key || e.key.length !== 1) return;
+                    cheatBuf = (cheatBuf + e.key.toLowerCase()).slice(-CHEAT_CODE.length);
+                    if (cheatBuf !== CHEAT_CODE) return;
+                    cheatBuf = '';
+                    var ans = window.prompt('うらワザ！ なんポイント ふやす？（すうじを いれてね）', '1000');
+                    if (ans === null) return;
+                    var add = parseInt(String(ans).replace(/[０-９]/g, function(c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[^0-9]/g, ''), 10);
+                    if (!add || add <= 0) { alert('すうじを いれてね'); return; }
+                    // 書く直前に最新の残高を読み直す（ほかのタブで増えた分を潰さない）
+                    var now = parseInt(localStorage.getItem('typing_total_points') || '0', 10) || 0;
+                    var next = now + add;
+                    try {
+                        localStorage.setItem('typing_total_points', String(next));
+                    } catch (err) {
+                        alert('ほぞん できなかったよ（きおくの ばしょが いっぱいかも）');
+                        return;
+                    }
+                    document.getElementById('total-pts-val').textContent = next.toLocaleString();
+                    alert('うらワザ！ ⭐ +' + add.toLocaleString() + ' pt');
+                });
+            })();
         </script>
 
         <!-- 注意書き -->

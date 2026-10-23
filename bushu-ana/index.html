@@ -320,6 +320,26 @@ button{font-family:var(--font);cursor:pointer;}
 .rule{display:flex;gap:10px;align-items:center;background:#fff;border-radius:14px;padding:8px 12px;font-weight:800;font-size:16px;line-height:1.45;}
 .rule .ic{flex:none;font-size:28px;width:40px;text-align:center;}
 .rule.danger{background:#ffeef0;color:#b3263a;}
+/* せつめい画面は スクロールなしで スタートを おせるように: ボタンは 下に はりつけ、ひくい 画面では ぜんたいを ちぢめる */
+#intro .card{padding-bottom:0;}
+.introBtns{position:sticky;bottom:0;display:flex;justify-content:center;flex-wrap:wrap;gap:4px 10px;
+  margin:4px -22px 0;padding:8px 16px 12px;background:var(--cream);border-top:2px solid #f3dbe6;}
+.introBtns .btn{margin:0;white-space:nowrap;}
+.introBtns #btnStart{flex:1;max-width:320px;}
+@media (max-width:420px){.introBtns{flex-wrap:nowrap;}.introBtns .btn{padding:0 16px;}.introBtns #btnStart{font-size:20px;}}
+@media (min-width:600px){#intro .rules{display:grid;grid-template-columns:1fr 1fr;max-width:none;}
+  #intro .rule.danger{grid-column:1 / -1;}}
+@media (max-height:860px){
+  #intro .bushuBig{width:76px;height:76px;font-size:52px;border-radius:20px;margin-bottom:2px;box-shadow:0 4px 0 #1765cc;}
+  #intro .h2{font-size:24px;margin:4px 0 0;}
+  #intro .sub{font-size:15px;line-height:1.45;}
+  #intro .exRow{margin:6px 0;gap:8px;}
+  #intro .exK{width:52px;height:52px;font-size:34px;}
+  #intro .exK em{font-size:20px;}
+  #intro .rules{margin:6px auto 8px;gap:6px;}
+  #intro .rule{padding:5px 10px;font-size:15px;}
+  #intro .rule .ic{font-size:22px;width:30px;}
+}
 
 /* ゲームオーバー */
 .outTitle{font-size:52px;font-weight:900;color:var(--red);text-shadow:0 4px 0 #a51a2c;letter-spacing:4px;}
@@ -524,8 +544,11 @@ button{font-family:var(--font);cursor:pointer;}
       <div class="rule"><span class="ic">⏱</span><span id="inRuleT"></span></div>
       <div class="rule danger"><span class="ic">⚠️</span><span id="inRule4">さんずい じゃない かんじを のみこんだら いっぱつ アウト！</span></div>
     </div>
-    <button class="btn blue" id="btnStart">▶ スタート！</button>
-    <div><button class="btn gray" id="btnIntroBack">もどる</button></div>
+    <!-- ボタンは カードの 下に いつも 見える（せつめいが ながくても スクロールなしで はじめられる） -->
+    <div class="introBtns">
+      <button class="btn gray" id="btnIntroBack">もどる</button>
+      <button class="btn blue" id="btnStart">▶ スタート！</button>
+    </div>
   </div>
 </div>
 

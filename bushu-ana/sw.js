@@ -1,7 +1,7 @@
 // 部首穴（ぶしゅあな） — Service Worker
 // オフライン動作とPWAインストールのためのキャッシュ。
 // アセットを更新したら CACHE のバージョン番号を上げる(v1->v2...)。
-const CACHE = 'bushu-ana-cache-v21';
+const CACHE = 'bushu-ana-cache-v22';
 const ASSETS = [
   './',
   './index.html',

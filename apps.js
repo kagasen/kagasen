@@ -5,7 +5,7 @@ const appsData = [
         description: "あなを うごかして、おなじ 部首の 漢字だけを のみこむ 3Dゲーム。さんずい・きへん・にんべん…10の 部首で 全100ステージ！ 泳は にげる・消は きえる、意味どおりに うごく 漢字も。にている ちがう部首を いれたら アウト、時間ぎれにも ちゅうい！",
         category: "japanese",
         tagName: "国語",
-        date: "2026/10/13",
+        date: "2026/10/23",
         colorClass: "subject-purple",
         image: "images/thumbnails-v5/bushu-ana.jpg",
         link: "bushu-ana/index.html"
